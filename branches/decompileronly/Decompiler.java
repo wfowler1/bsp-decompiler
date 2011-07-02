@@ -53,6 +53,11 @@ public class Decompiler {
 	public final int BRUSHSIDES=16;
 	public final int TEXMATRIX=17;
 	
+	// Allows us to reference the X Y or Z components of a vector by their letter
+	public final int X=0;
+	public final int Y=1;
+	public final int Z=2;
+	
 	// This allows us to get the name of the lump using its index.
 	public static final String[] LUMPNAMES = {"Entities", "Planes", "Textures", "Materials", "Vertices", "Normals", "Indices", "Visibility", "Nodes", "Faces",
 	                             "Lighting", "Leaves", "Mark Surfaces", "Mark Brushes", "Models", "Brushes", "Brushsides", "Texmatrix"};
