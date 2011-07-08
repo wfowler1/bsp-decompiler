@@ -27,7 +27,6 @@ public class Decompiler {
 	private Lump02 myL2;
 	private Lump03 myL3;
 	private Lump04 myL4;
-	private Lump06 myL6;
 	private Lump09 myL9;
 	private Lump11 myL11;
 	private Lump13 myL13;
@@ -91,7 +90,6 @@ public class Decompiler {
 			myL2 = new Lump02(filepath+"02 - Textures.hex");
 			myL3 = new Lump03(filepath+"03 - Materials.hex");
 			myL4 = new Lump04(filepath+"04 - Vertices.hex");
-			myL6 = new Lump06(filepath+"06 - Indices.hex");
 			myL9 = new Lump09(filepath+"09 - Faces.hex");
 			myL11 = new Lump11(filepath+"11 - Leaves.hex");
 			myL13 = new Lump13(filepath+"13 - Mark Brushes.hex");
@@ -107,7 +105,6 @@ public class Decompiler {
 			System.out.println("Textures lump: "+myL2.getLength()+" bytes, "+myL2.getNumElements()+" items");
 			System.out.println("Materials lump: "+myL3.getLength()+" bytes, "+myL3.getNumElements()+" items");
 			System.out.println("Vertices lump: "+myL4.getLength()+" bytes, "+myL4.getNumElements()+" items");
-			System.out.println("Indices lump: "+myL6.getLength()+" bytes, "+myL6.getNumElements()+" items");
 			System.out.println("Faces lump: "+myL9.getLength()+" bytes, "+myL9.getNumElements()+" items");
 			System.out.println("Leaves lump: "+myL11.getLength()+" bytes, "+myL11.getNumElements()+" items");
 			System.out.println("Leaf brushes lump: "+myL13.getLength()+" bytes, "+myL13.getNumElements()+" items");
@@ -173,7 +170,6 @@ public class Decompiler {
 								int numSides=currentBrush.getNumSides();
 								int numPlaneFacesThisBrsh=0;
 								int numVertFacesThisBrsh=0;
-								int vertFaceIndex=-1; // Will be the index of a vertex-based face
 								boolean[] vertFaces=new boolean[numSides]; // vertFaces[X] will be true if face X was defined by vertices
 								MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
 								Entity mapBrush=new Entity("{ // Brush "+numBrshs);
@@ -187,18 +183,24 @@ public class Decompiler {
 										int numVertices=currentFace.getNumVerts();
 										usedPlanes[currentSide.getPlane()]++;
 										Plane currentPlane=newPlanes.getPlane(currentSide.getPlane());
+										boolean pointsWorked=false;
 										if(numVertices!=0) { // If the face actually references a set of vertices
-											int firstMesh=currentFace.getMeshs(); // I don't need to know how many meshes there are, I'll just use the first three, since
-											                                      // they are read in threes by the engine. One could argue these will always be (0, 1, 2)
-											                                      // but I don't want to depend on data being something that it could possibly not be.
-											plane[0]=myL4.getVertex(firstVertex+myL6.getMesh(firstMesh));
-											plane[1]=myL4.getVertex(firstVertex+myL6.getMesh(firstMesh+1));
-											plane[2]=myL4.getVertex(firstVertex+myL6.getMesh(firstMesh+2));
-											numVertFacesThisBrsh++;
-											vertFaces[l]=true;
-											vertFaceIndex=l;
-										} else { // Fallback to planar decompilation. Since there are no explicitly defined points anymore,
-											      // we must find them ourselves using the A, B, C and D values.
+											plane[0]=myL4.getVertex(firstVertex);
+											plane[1]=myL4.getVertex(firstVertex+1);
+											for(int m=2;m<numVertices;m++) {
+												plane[2]=myL4.getVertex(firstVertex+m);
+												if((crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || 
+												   (crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getY()!=0) || 
+												   (crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getZ()!=0)) {
+													numVertFacesThisBrsh++;
+													vertFaces[l]=true;
+													pointsWorked=true;
+													break;
+												}
+											}
+										}
+										if(numVertices==0 || !pointsWorked) { // Fallback to planar decompilation. Since there are no explicitly defined points anymore,
+											                                   // we must find them ourselves using the A, B, C and D values.
 											numPlaneFacesThisBrsh++;
 											// Figure out if the plane is parallel to two of the axes. If so it can be reproduced easily
 											if(currentPlane.getB()==0 && currentPlane.getC()==0) { // parallel to plane YZ
@@ -428,8 +430,16 @@ public class Decompiler {
 	
 	// +dotProduct()
 	// Takes two Vertex objects which are read as vectors, then returns the dot product
-	private static double dotProduct(Vertex first, Vertex second) {
+	public static double dotProduct(Vertex first, Vertex second) {
 		return (first.getX()*second.getX())+(first.getY()*second.getY())+(first.getZ()*second.getZ());
+	}
+	
+	// +crossProduct()
+	// Takes two Vertex objects which are read as vectors, then returns their cross product
+	public static Vertex crossProduct(Vertex first, Vertex second) {
+		return new Vertex((first.getY()*second.getZ())-(first.getZ()*second.getY()),
+		                  (first.getZ()*second.getX())-(first.getX()*second.getZ()),
+								(first.getX()*second.getY())-(first.getY()*second.getX()));
 	}
 	
 	// ACCESSORS/MUTATORS
@@ -452,10 +462,6 @@ public class Decompiler {
 	
 	public Lump04 getLump04() {
 		return myL4;
-	}
-	
-	public Lump06 getLump06() {
-		return myL6;
 	}
 	
 	public Lump09 getLump09() {

@@ -37,7 +37,6 @@ public class DecompilerDriver {
 			File L2=new File(filepath.substring(0,filepath.length()-4)+"\\02 - "+Decompiler.LUMPNAMES[2]+".hex");
 			File L3=new File(filepath.substring(0,filepath.length()-4)+"\\03 - "+Decompiler.LUMPNAMES[3]+".hex");
 			File L4=new File(filepath.substring(0,filepath.length()-4)+"\\04 - "+Decompiler.LUMPNAMES[4]+".hex");
-			File L6=new File(filepath.substring(0,filepath.length()-4)+"\\06 - "+Decompiler.LUMPNAMES[6]+".hex");
 			File L9=new File(filepath.substring(0,filepath.length()-4)+"\\09 - "+Decompiler.LUMPNAMES[9]+".hex");
 			File L11=new File(filepath.substring(0,filepath.length()-4)+"\\11 - "+Decompiler.LUMPNAMES[11]+".hex");
 			File L13=new File(filepath.substring(0,filepath.length()-4)+"\\13 - "+Decompiler.LUMPNAMES[13]+".hex");
@@ -51,7 +50,6 @@ public class DecompilerDriver {
 			L2.delete();
 			L3.delete();
 			L4.delete();
-			L6.delete();
 			L9.delete();
 			L11.delete();
 			L13.delete();

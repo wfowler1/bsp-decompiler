@@ -104,13 +104,6 @@ public class LS {
 					Lump04.delete();
 					Lump04.createNewFile();
 				}
-				File Lump06 = new File(folderPath+"06 - "+Decompiler.LUMPNAMES[6]+".hex");
-				if(!Lump06.exists()) {
-					Lump06.createNewFile();
-				} else {
-					Lump06.delete();
-					Lump06.createNewFile();
-				}
 				File Lump09 = new File(folderPath+"09 - "+Decompiler.LUMPNAMES[9]+".hex");
 				if(!Lump09.exists()) {
 					Lump09.createNewFile();
@@ -231,16 +224,6 @@ public class LS {
 				Lump04Writer.write(input);
 				Lump04Reader.close();
 				Lump04Writer.close();
-				
-				// Read lump data into file
-				input = new byte[offsetlengths[LENGTH][6]]; // Changes input to be the length of the lump as defined in the header
-				FileInputStream Lump06Reader = new FileInputStream(inBSP);
-				Lump06Reader.skip(offsetlengths[OFFSET][6]);
-				Lump06Reader.read(input);
-				FileOutputStream Lump06Writer = new FileOutputStream(Lump06);
-				Lump06Writer.write(input);
-				Lump06Reader.close();
-				Lump06Writer.close();
 				
 				// Read lump data into file
 				input = new byte[offsetlengths[LENGTH][9]]; // Changes input to be the length of the lump as defined in the header

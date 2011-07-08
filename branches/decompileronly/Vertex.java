@@ -43,6 +43,11 @@ public class Vertex {
 	}
 	
 	// METHODS
+	// +subtract(Vertex)
+	// Subtracts all the components of another vertex from this one and returns the result
+	public Vertex subtract(Vertex in) {
+		return new Vertex(vertex[X]-in.getX(), vertex[Y]-in.getY(), vertex[Z]-in.getZ());
+	}
 	
 	// ACCESSORS/MUTATORS
 	
