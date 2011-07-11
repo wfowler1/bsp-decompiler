@@ -49,6 +49,12 @@ public class Vertex {
 		return new Vertex(vertex[X]-in.getX(), vertex[Y]-in.getY(), vertex[Z]-in.getZ());
 	}
 	
+	// +equals(Vertex)
+	// Return true if the components of the input Vertex are equivalent to those of this one
+	public boolean equals(Vertex in) {
+		return (vertex[X]==in.getX() && vertex[Y]==in.getY() && vertex[Z]==in.getZ());
+	}
+	
 	// ACCESSORS/MUTATORS
 	
 	public float getX() {

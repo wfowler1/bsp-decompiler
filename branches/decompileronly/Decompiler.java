@@ -173,7 +173,7 @@ public class Decompiler {
 								boolean[] vertFaces=new boolean[numSides]; // vertFaces[X] will be true if face X was defined by vertices
 								MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
 								Entity mapBrush=new Entity("{ // Brush "+numBrshs);
-								numBrshs++;
+								int numRealFaces=0;
 								for(int l=0;l<numSides;l++) { // For each side of the brush
 									Vertex[] plane=new Vertex[3]; // Three points define a plane. All I have to do is find three points on that plane.
 									BrushSide currentSide=myL16.getBrushSide(firstSide+l);
@@ -185,17 +185,25 @@ public class Decompiler {
 										Plane currentPlane=newPlanes.getPlane(currentSide.getPlane());
 										boolean pointsWorked=false;
 										if(numVertices!=0) { // If the face actually references a set of vertices
-											plane[0]=myL4.getVertex(firstVertex);
-											plane[1]=myL4.getVertex(firstVertex+1);
-											for(int m=2;m<numVertices;m++) {
+											plane[0]=myL4.getVertex(firstVertex); // Grab and store the first one
+											int m=1;
+											for(m=1;m<numVertices;m++) { // For each point after the first one
+												plane[1]=myL4.getVertex(firstVertex+m);
+												if(!plane[0].equals(plane[1])) { // Make sure the point isn't the same as the first one
+													break; // If it isn't the same, this point is good
+												}
+											}
+											for(m=m+1;m<numVertices;m++) { // For each point after the previous one used
 												plane[2]=myL4.getVertex(firstVertex+m);
-												if((crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || 
-												   (crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getY()!=0) || 
-												   (crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getZ()!=0)) {
-													numVertFacesThisBrsh++;
-													vertFaces[l]=true;
-													pointsWorked=true;
-													break;
+												if(!plane[2].equals(plane[0]) && !plane[2].equals(plane[1])) { // Make sure no point is equal to the third one
+													if((crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || // Make sure all
+													   (crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getY()!=0) || // three points 
+													   (crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getZ()!=0)) { // are not collinear
+														numVertFacesThisBrsh++;
+														vertFaces[l]=true;
+														pointsWorked=true;
+														break;
+													}
 												}
 											}
 										}
@@ -228,32 +236,35 @@ public class Decompiler {
 														}
 													} else { // If you reach this point the plane is not parallel to any two-axis plane.
 														if(currentPlane.getA()==0) { // parallel to X axis
-															plane[0]=new Vertex(0, currentPlane.getDist()/currentPlane.getB(), 0);
-															plane[1]=new Vertex(0, 0, currentPlane.getDist()/currentPlane.getC());
-															plane[2]=new Vertex(1, 0, currentPlane.getDist()/currentPlane.getC());
+															plane[0]=new Vertex(0, 0, currentPlane.getDist()/currentPlane.getC());
+															plane[1]=new Vertex(1, 1, -(currentPlane.getB()-currentPlane.getDist())/currentPlane.getC());
+															plane[2]=new Vertex(2, 4, -(4*currentPlane.getB()-currentPlane.getDist())/currentPlane.getC());
 															if(currentPlane.getB()*currentPlane.getC()>0) {
 																plane=flipPlane(plane);
 															}
 														} else {
 															if(currentPlane.getB()==0) { // parallel to Y axis
-																plane[0]=new Vertex(0, 0, currentPlane.getDist()/currentPlane.getC());
-																plane[1]=new Vertex(currentPlane.getDist()/currentPlane.getA(), 0, 0);
-																plane[2]=new Vertex(currentPlane.getDist()/currentPlane.getA(), 1, 0);
+																plane[0]=new Vertex(currentPlane.getDist()/currentPlane.getA(), 0, 0);
+																plane[1]=new Vertex(-(currentPlane.getC()-currentPlane.getDist())/currentPlane.getA(), 1, 1);
+																plane[2]=new Vertex(-(4*currentPlane.getC()-currentPlane.getDist())/currentPlane.getA(), 2, 4);
 																if(currentPlane.getA()*currentPlane.getC()>0) {
 																	plane=flipPlane(plane);
 																}
 															} else {
 																if(currentPlane.getC()==0) { // parallel to Z axis
-																	plane[0]=new Vertex(currentPlane.getDist()/currentPlane.getA(), 0, 0);
-																	plane[1]=new Vertex(0, currentPlane.getDist()/currentPlane.getB(), 0);
-																	plane[2]=new Vertex(0, currentPlane.getDist()/currentPlane.getB(), 1);
+																	plane[0]=new Vertex(0, currentPlane.getDist()/currentPlane.getB(), 0);
+																	plane[1]=new Vertex(1, -(currentPlane.getA()-currentPlane.getDist())/currentPlane.getB(), 1);
+																	plane[2]=new Vertex(4, -(4*currentPlane.getA()-currentPlane.getDist())/currentPlane.getB(), 2);
 																	if(currentPlane.getA()*currentPlane.getB()>0) {
 																		plane=flipPlane(plane);
 																	}
 																} else { // If you reach this point the plane is not parallel to any axis. Therefore, any two coordinates will give a third.
-																	plane[0]=new Vertex(currentPlane.getDist()/currentPlane.getA(), 0, 0);
-																	plane[1]=new Vertex(0, currentPlane.getDist()/currentPlane.getB(), 0);
-																	plane[2]=new Vertex(0, 0, currentPlane.getDist()/currentPlane.getC());
+																         // This will give duplicate points in the case of a certain exact plane.
+																         // I don't know what that plane is though, and the chances of the exact
+																         // one being in a map is tiny.
+																	plane[0]=new Vertex(-(currentPlane.getB()+currentPlane.getC()-currentPlane.getDist())/currentPlane.getA(), 1, 1);
+																	plane[1]=new Vertex(2, -(2*currentPlane.getA()+4*currentPlane.getC()-currentPlane.getDist())/currentPlane.getB(), 4);
+																	plane[2]=new Vertex(3, 9, -(3*currentPlane.getA()+9*currentPlane.getB()-currentPlane.getDist())/currentPlane.getC());
 																	if(currentPlane.getA()*currentPlane.getB()*currentPlane.getC()>0) {
 																		plane=flipPlane(plane);
 																	}
@@ -304,6 +315,7 @@ public class Decompiler {
 										} catch(InvalidMAPBrushSideException e) {
 											System.out.println("Error creating brush side "+l+" on brush "+k+" in leaf "+j+" in model "+i+", side not written.");
 										}
+										numRealFaces++;
 									}
 								}
 								// FOR DETERMINING PLANE FLIP
@@ -347,6 +359,8 @@ public class Decompiler {
 								                                                        // entity i as an attribute. The way I've coded this
 								                                                        // whole program and the entities parser, this shouldn't
 							                                                           // cause any issues at all.
+								
+								numBrshs++;
 							}
 						}
 					}
