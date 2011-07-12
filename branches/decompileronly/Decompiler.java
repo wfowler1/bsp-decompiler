@@ -236,35 +236,32 @@ public class Decompiler {
 														}
 													} else { // If you reach this point the plane is not parallel to any two-axis plane.
 														if(currentPlane.getA()==0) { // parallel to X axis
-															plane[0]=new Vertex(0, 0, currentPlane.getDist()/currentPlane.getC());
-															plane[1]=new Vertex(1, 1, -(currentPlane.getB()-currentPlane.getDist())/currentPlane.getC());
-															plane[2]=new Vertex(2, 4, -(4*currentPlane.getB()-currentPlane.getDist())/currentPlane.getC());
+															plane[0]=new Vertex(-1, 1, -(currentPlane.getB()-currentPlane.getDist())/currentPlane.getC());
+															plane[1]=new Vertex(0, 0, currentPlane.getDist()/currentPlane.getC());
+															plane[2]=new Vertex(1, 1, -(currentPlane.getB()-currentPlane.getDist())/currentPlane.getC());
 															if(currentPlane.getB()*currentPlane.getC()>0) {
 																plane=flipPlane(plane);
 															}
 														} else {
 															if(currentPlane.getB()==0) { // parallel to Y axis
-																plane[0]=new Vertex(currentPlane.getDist()/currentPlane.getA(), 0, 0);
-																plane[1]=new Vertex(-(currentPlane.getC()-currentPlane.getDist())/currentPlane.getA(), 1, 1);
-																plane[2]=new Vertex(-(4*currentPlane.getC()-currentPlane.getDist())/currentPlane.getA(), 2, 4);
+																plane[0]=new Vertex(-(currentPlane.getC()-currentPlane.getDist())/currentPlane.getA(), -1, 1);
+																plane[1]=new Vertex(currentPlane.getDist()/currentPlane.getA(), 0, 0);
+																plane[2]=new Vertex(-(currentPlane.getC()-currentPlane.getDist())/currentPlane.getA(), 1, 1);
 																if(currentPlane.getA()*currentPlane.getC()>0) {
 																	plane=flipPlane(plane);
 																}
 															} else {
 																if(currentPlane.getC()==0) { // parallel to Z axis
-																	plane[0]=new Vertex(0, currentPlane.getDist()/currentPlane.getB(), 0);
-																	plane[1]=new Vertex(1, -(currentPlane.getA()-currentPlane.getDist())/currentPlane.getB(), 1);
-																	plane[2]=new Vertex(4, -(4*currentPlane.getA()-currentPlane.getDist())/currentPlane.getB(), 2);
+																	plane[0]=new Vertex(1, -(currentPlane.getA()-currentPlane.getDist())/currentPlane.getB(), -1);
+																	plane[1]=new Vertex(0, currentPlane.getDist()/currentPlane.getB(), 0);
+																	plane[2]=new Vertex(1, -(currentPlane.getA()-currentPlane.getDist())/currentPlane.getB(), 1);
 																	if(currentPlane.getA()*currentPlane.getB()>0) {
 																		plane=flipPlane(plane);
 																	}
 																} else { // If you reach this point the plane is not parallel to any axis. Therefore, any two coordinates will give a third.
-																         // This will give duplicate points in the case of a certain exact plane.
-																         // I don't know what that plane is though, and the chances of the exact
-																         // one being in a map is tiny.
-																	plane[0]=new Vertex(-(currentPlane.getB()+currentPlane.getC()-currentPlane.getDist())/currentPlane.getA(), 1, 1);
-																	plane[1]=new Vertex(2, -(2*currentPlane.getA()+4*currentPlane.getC()-currentPlane.getDist())/currentPlane.getB(), 4);
-																	plane[2]=new Vertex(3, 9, -(3*currentPlane.getA()+9*currentPlane.getB()-currentPlane.getDist())/currentPlane.getC());
+																	plane[0]=new Vertex(-1, 1, -(currentPlane.getA()+currentPlane.getB()-currentPlane.getDist())/currentPlane.getC());
+																	plane[1]=new Vertex(0, 0, currentPlane.getDist()/currentPlane.getC());
+																	plane[2]=new Vertex(1, 1, -(currentPlane.getA()+currentPlane.getB()-currentPlane.getDist())/currentPlane.getC());
 																	if(currentPlane.getA()*currentPlane.getB()*currentPlane.getC()>0) {
 																		plane=flipPlane(plane);
 																	}
