@@ -17,11 +17,11 @@ public class DecompilerDriver {
 		Decompiler decompiler = new Decompiler(filepath);
 		
 		// Uncomment this to force planar decompilation
-		/*for(int i=0;i<myBSP.getLump09().getNumElements();i++) {
-			myBSP.getLump09().getFace(i).setVert(0);
-			myBSP.getLump09().getFace(i).setNumVerts(0);
-			myBSP.getLump09().getFace(i).setMeshs(0);
-			myBSP.getLump09().getFace(i).setNumMeshs(0);
+		/*for(int i=0;i<decompiler.getLump09().getNumElements();i++) {
+			decompiler.getLump09().getFace(i).setVert(0);
+			decompiler.getLump09().getFace(i).setNumVerts(0);
+			decompiler.getLump09().getFace(i).setMeshs(0);
+			decompiler.getLump09().getFace(i).setNumMeshs(0);
 		}*/
 		
 		System.out.print("Path to save decompiled map to: ");

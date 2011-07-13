@@ -175,7 +175,7 @@ public class Decompiler {
 								Entity mapBrush=new Entity("{ // Brush "+numBrshs);
 								int numRealFaces=0;
 								for(int l=0;l<numSides;l++) { // For each side of the brush
-									Vertex[] plane=new Vertex[3]; // Three points define a plane. All I have to do is find three points on that plane.
+									VertexD[] plane=new VertexD[3]; // Three points define a plane. All I have to do is find three points on that plane.
 									BrushSide currentSide=myL16.getBrushSide(firstSide+l);
 									Face currentFace=myL9.getFace(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
 									if(!myL2.getTexture(currentFace.getTexture()).equalsIgnoreCase("special/bevel")) { // If this face uses special/bevel, skip the face completely
@@ -185,16 +185,16 @@ public class Decompiler {
 										Plane currentPlane=newPlanes.getPlane(currentSide.getPlane());
 										boolean pointsWorked=false;
 										if(numVertices!=0) { // If the face actually references a set of vertices
-											plane[0]=myL4.getVertex(firstVertex); // Grab and store the first one
+											plane[0]=new VertexD(myL4.getVertex(firstVertex)); // Grab and store the first one
 											int m=1;
 											for(m=1;m<numVertices;m++) { // For each point after the first one
-												plane[1]=myL4.getVertex(firstVertex+m);
+												plane[1]=new VertexD(myL4.getVertex(firstVertex+m));
 												if(!plane[0].equals(plane[1])) { // Make sure the point isn't the same as the first one
 													break; // If it isn't the same, this point is good
 												}
 											}
 											for(m=m+1;m<numVertices;m++) { // For each point after the previous one used
-												plane[2]=myL4.getVertex(firstVertex+m);
+												plane[2]=new VertexD(myL4.getVertex(firstVertex+m));
 												if(!plane[2].equals(plane[0]) && !plane[2].equals(plane[1])) { // Make sure no point is equal to the third one
 													if((crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || // Make sure all
 													   (crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getY()!=0) || // three points 
@@ -212,57 +212,57 @@ public class Decompiler {
 											numPlaneFacesThisBrsh++;
 											// Figure out if the plane is parallel to two of the axes. If so it can be reproduced easily
 											if(currentPlane.getB()==0 && currentPlane.getC()==0) { // parallel to plane YZ
-												plane[0]=new Vertex(currentPlane.getDist()/currentPlane.getA(), 0, 0);
-												plane[1]=new Vertex(currentPlane.getDist()/currentPlane.getA(), 1, 0);
-												plane[2]=new Vertex(currentPlane.getDist()/currentPlane.getA(), 0, 1);
+												plane[0]=new VertexD(currentPlane.getDist()/currentPlane.getA(), -1, 1);
+												plane[1]=new VertexD(currentPlane.getDist()/currentPlane.getA(), 0, 0);
+												plane[2]=new VertexD(currentPlane.getDist()/currentPlane.getA(), 1, 1);
 												if(currentPlane.getA()>0) {
 													plane=flipPlane(plane);
 												}
 											} else {
 												if(currentPlane.getA()==0 && currentPlane.getC()==0) { // parallel to plane XZ
-													plane[0]=new Vertex(0, currentPlane.getDist()/currentPlane.getB(), 0);
-													plane[1]=new Vertex(0, currentPlane.getDist()/currentPlane.getB(), 1);
-													plane[2]=new Vertex(1, currentPlane.getDist()/currentPlane.getB(), 0);
+													plane[0]=new VertexD(1, currentPlane.getDist()/currentPlane.getB(), -1);
+													plane[1]=new VertexD(0, currentPlane.getDist()/currentPlane.getB(), 0);
+													plane[2]=new VertexD(1, currentPlane.getDist()/currentPlane.getB(), 1);
 													if(currentPlane.getB()>0) {
 														plane=flipPlane(plane);
 													}
 												} else {
 													if(currentPlane.getA()==0 && currentPlane.getB()==0) { // parallel to plane XY
-														plane[0]=new Vertex(0, 0, currentPlane.getDist()/currentPlane.getC());
-														plane[1]=new Vertex(1, 0, currentPlane.getDist()/currentPlane.getC());
-														plane[2]=new Vertex(0, 1, currentPlane.getDist()/currentPlane.getC());
+														plane[0]=new VertexD(-1, 1, currentPlane.getDist()/currentPlane.getC());
+														plane[1]=new VertexD(0, 0, currentPlane.getDist()/currentPlane.getC());
+														plane[2]=new VertexD(1, 1, currentPlane.getDist()/currentPlane.getC());
 														if(currentPlane.getC()>0) {
 															plane=flipPlane(plane);
 														}
 													} else { // If you reach this point the plane is not parallel to any two-axis plane.
 														if(currentPlane.getA()==0) { // parallel to X axis
-															plane[0]=new Vertex(-1, 1, -(currentPlane.getB()-currentPlane.getDist())/currentPlane.getC());
-															plane[1]=new Vertex(0, 0, currentPlane.getDist()/currentPlane.getC());
-															plane[2]=new Vertex(1, 1, -(currentPlane.getB()-currentPlane.getDist())/currentPlane.getC());
-															if(currentPlane.getB()*currentPlane.getC()>0) {
+															plane[0]=new VertexD(-1, 1, -((double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
+															plane[1]=new VertexD(0, 0, (double)currentPlane.getDist()/(double)currentPlane.getC());
+															plane[2]=new VertexD(1, 1, -((double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
+															if(currentPlane.getC()>0) {
 																plane=flipPlane(plane);
 															}
 														} else {
 															if(currentPlane.getB()==0) { // parallel to Y axis
-																plane[0]=new Vertex(-(currentPlane.getC()-currentPlane.getDist())/currentPlane.getA(), -1, 1);
-																plane[1]=new Vertex(currentPlane.getDist()/currentPlane.getA(), 0, 0);
-																plane[2]=new Vertex(-(currentPlane.getC()-currentPlane.getDist())/currentPlane.getA(), 1, 1);
-																if(currentPlane.getA()*currentPlane.getC()>0) {
+																plane[0]=new VertexD(-((double)currentPlane.getC()-(double)currentPlane.getDist())/(double)currentPlane.getA(), -1, 1);
+																plane[1]=new VertexD((double)currentPlane.getDist()/(double)currentPlane.getA(), 0, 0);
+																plane[2]=new VertexD(-((double)currentPlane.getC()-(double)currentPlane.getDist())/(double)currentPlane.getA(), 1, 1);
+																if(currentPlane.getA()>0) {
 																	plane=flipPlane(plane);
 																}
 															} else {
 																if(currentPlane.getC()==0) { // parallel to Z axis
-																	plane[0]=new Vertex(1, -(currentPlane.getA()-currentPlane.getDist())/currentPlane.getB(), -1);
-																	plane[1]=new Vertex(0, currentPlane.getDist()/currentPlane.getB(), 0);
-																	plane[2]=new Vertex(1, -(currentPlane.getA()-currentPlane.getDist())/currentPlane.getB(), 1);
-																	if(currentPlane.getA()*currentPlane.getB()>0) {
+																	plane[0]=new VertexD(1, -((double)currentPlane.getA()-(double)currentPlane.getDist())/(double)currentPlane.getB(), -1);
+																	plane[1]=new VertexD(0, (double)currentPlane.getDist()/(double)currentPlane.getB(), 0);
+																	plane[2]=new VertexD(1, -((double)currentPlane.getA()-(double)currentPlane.getDist())/(double)currentPlane.getB(), 1);
+																	if(currentPlane.getB()>0) {
 																		plane=flipPlane(plane);
 																	}
 																} else { // If you reach this point the plane is not parallel to any axis. Therefore, any two coordinates will give a third.
-																	plane[0]=new Vertex(-1, 1, -(currentPlane.getA()+currentPlane.getB()-currentPlane.getDist())/currentPlane.getC());
-																	plane[1]=new Vertex(0, 0, currentPlane.getDist()/currentPlane.getC());
-																	plane[2]=new Vertex(1, 1, -(currentPlane.getA()+currentPlane.getB()-currentPlane.getDist())/currentPlane.getC());
-																	if(currentPlane.getA()*currentPlane.getB()*currentPlane.getC()>0) {
+																	plane[0]=new VertexD(-1, 1, -((double)currentPlane.getA()+(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
+																	plane[1]=new VertexD(0, 0, (double)currentPlane.getDist()/(double)currentPlane.getC());
+																	plane[2]=new VertexD(1, 1, -((double)currentPlane.getA()+(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
+																	if(currentPlane.getC()>0) {
 																		plane=flipPlane(plane);
 																	}
 																}
@@ -272,40 +272,40 @@ public class Decompiler {
 												}
 											}
 										} // End plane stuff
-										plane[0].setX(plane[0].getX()+(float)origin[X]);
-										plane[0].setY(plane[0].getY()+(float)origin[Y]);
-										plane[0].setZ(plane[0].getZ()+(float)origin[Z]);
-										plane[1].setX(plane[1].getX()+(float)origin[X]);
-										plane[1].setY(plane[1].getY()+(float)origin[Y]);
-										plane[1].setZ(plane[1].getZ()+(float)origin[Z]);
-										plane[2].setX(plane[2].getX()+(float)origin[X]);
-										plane[2].setY(plane[2].getY()+(float)origin[Y]);
-										plane[2].setZ(plane[2].getZ()+(float)origin[Z]);
+										plane[0].setX(plane[0].getX()+origin[X]);
+										plane[0].setY(plane[0].getY()+origin[Y]);
+										plane[0].setZ(plane[0].getZ()+origin[Z]);
+										plane[1].setX(plane[1].getX()+origin[X]);
+										plane[1].setY(plane[1].getY()+origin[Y]);
+										plane[1].setZ(plane[1].getZ()+origin[Z]);
+										plane[2].setX(plane[2].getX()+origin[X]);
+										plane[2].setY(plane[2].getY()+origin[Y]);
+										plane[2].setZ(plane[2].getZ()+origin[Z]);
 										String texture=myL2.getTexture(currentFace.getTexture());
-										float[] textureS=new float[3];
-										float[] textureT=new float[3];
+										double[] textureS=new double[3];
+										double[] textureT=new double[3];
 										TexMatrix currentTexMatrix=myL17.getTexMatrix(currentFace.getTexStyle());
 										// Get the lengths of the axis vectors
-										double UAxisLength=Math.sqrt(Math.pow(currentTexMatrix.getUAxisX(),2)+Math.pow(currentTexMatrix.getUAxisY(),2)+Math.pow(currentTexMatrix.getUAxisZ(),2));
-										double VAxisLength=Math.sqrt(Math.pow(currentTexMatrix.getVAxisX(),2)+Math.pow(currentTexMatrix.getVAxisY(),2)+Math.pow(currentTexMatrix.getVAxisZ(),2));
+										double UAxisLength=Math.sqrt(Math.pow((double)currentTexMatrix.getUAxisX(),2)+Math.pow((double)currentTexMatrix.getUAxisY(),2)+Math.pow((double)currentTexMatrix.getUAxisZ(),2));
+										double VAxisLength=Math.sqrt(Math.pow((double)currentTexMatrix.getVAxisX(),2)+Math.pow((double)currentTexMatrix.getVAxisY(),2)+Math.pow((double)currentTexMatrix.getVAxisZ(),2));
 										// In compiled maps, shorter vectors=longer textures and vice versa. This will convert their lengths back to 1. We'll use the actual scale values for length.
-										float texScaleS=(float)(1/UAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
-										float texScaleT=(float)(1/VAxisLength);
-										textureS[0]=(float)(currentTexMatrix.getUAxisX()/UAxisLength);
-										textureS[1]=(float)(currentTexMatrix.getUAxisY()/UAxisLength);
-										textureS[2]=(float)(currentTexMatrix.getUAxisZ()/UAxisLength);
-										double originShiftS=((currentTexMatrix.getUAxisX()/UAxisLength)*origin[X]+(currentTexMatrix.getUAxisY()/UAxisLength)*origin[Y]+(currentTexMatrix.getUAxisZ()/UAxisLength)*origin[Z])/texScaleS;
-										float textureShiftS=currentTexMatrix.getUShift()-(float)originShiftS;
-										textureT[0]=(float)(currentTexMatrix.getVAxisX()/VAxisLength);
-										textureT[1]=(float)(currentTexMatrix.getVAxisY()/VAxisLength);
-										textureT[2]=(float)(currentTexMatrix.getVAxisZ()/VAxisLength);
-										double originShiftT=((currentTexMatrix.getVAxisX()/VAxisLength)*origin[X]+(currentTexMatrix.getVAxisY()/VAxisLength)*origin[Y]+(currentTexMatrix.getVAxisZ()/VAxisLength)*origin[Z])/texScaleT;
-										float textureShiftT=currentTexMatrix.getVShift()-(float)originShiftT;
+										double texScaleS=(1/UAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
+										double texScaleT=(1/VAxisLength);
+										textureS[0]=((double)currentTexMatrix.getUAxisX()/UAxisLength);
+										textureS[1]=((double)currentTexMatrix.getUAxisY()/UAxisLength);
+										textureS[2]=((double)currentTexMatrix.getUAxisZ()/UAxisLength);
+										double originShiftS=(((double)currentTexMatrix.getUAxisX()/UAxisLength)*origin[X]+((double)currentTexMatrix.getUAxisY()/UAxisLength)*origin[Y]+((double)currentTexMatrix.getUAxisZ()/UAxisLength)*origin[Z])/texScaleS;
+										double textureShiftS=(double)currentTexMatrix.getUShift()-originShiftS;
+										textureT[0]=((double)currentTexMatrix.getVAxisX()/VAxisLength);
+										textureT[1]=((double)currentTexMatrix.getVAxisY()/VAxisLength);
+										textureT[2]=((double)currentTexMatrix.getVAxisZ()/VAxisLength);
+										double originShiftT=(((double)currentTexMatrix.getVAxisX()/VAxisLength)*origin[X]+((double)currentTexMatrix.getVAxisY()/VAxisLength)*origin[Y]+((double)currentTexMatrix.getVAxisZ()/VAxisLength)*origin[Z])/texScaleT;
+										double textureShiftT=(double)currentTexMatrix.getVShift()-originShiftT;
 										float texRot=0; // In compiled maps this is calculated into the U and V axes, so set it to 0 until I can figure out a good way to determine a better value.
 										int flags=currentFace.getType(); // This is actually a set of flags. Whatever.
 										String material=myL3.getMaterial(currentFace.getMaterial());
-										float lgtScale=16; // These values are impossible to get from a compiled map since they
-										float lgtRot=0;    // are used by RAD for generating lightmaps, then are discarded, I believe.
+										double lgtScale=16; // These values are impossible to get from a compiled map since they
+										double lgtRot=0;    // are used by RAD for generating lightmaps, then are discarded, I believe.
 										try {
 											brushSides[l]=new MAPBrushSide(plane, texture, textureS, textureShiftS, textureT, textureShiftT,
 										                                          texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
@@ -370,45 +370,45 @@ public class Decompiler {
 				if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
 					Entity newOriginBrush=new Entity("{ // Brush "+numBrshs);
 					numBrshs++;
-					Vertex[][] planes=new Vertex[6][3]; // Six planes for a cube brush, three vertices for each plane
-					float[][] textureS=new float[6][3];
-					float[][] textureT=new float[6][3];
+					VertexD[][] planes=new VertexD[6][3]; // Six planes for a cube brush, three vertices for each plane
+					double[][] textureS=new double[6][3];
+					double[][] textureT=new double[6][3];
 					// The planes and their texture scales
 					// I got these from an origin brush created by Gearcraft. Don't worry where these numbers came from, they work.
 					// Top
-					planes[0][0]=new Vertex((float)(-16+origin[0]), (float)(16+origin[1]), (float)(16+origin[2]));
-					planes[0][1]=new Vertex((float)(16+origin[0]), (float)(16+origin[1]), (float)(16+origin[2]));
-					planes[0][2]=new Vertex((float)(16+origin[0]), (float)(-16+origin[1]), (float)(16+origin[2]));
+					planes[0][0]=new VertexD(-16+origin[0], 16+origin[1], 16+origin[2]);
+					planes[0][1]=new VertexD(16+origin[0], 16+origin[1], 16+origin[2]);
+					planes[0][2]=new VertexD(16+origin[0], -16+origin[1], 16+origin[2]);
 					textureS[0][0]=1;
 					textureT[0][1]=-1;
 					// Bottom
-					planes[1][0]=new Vertex((float)(-16+origin[0]), (float)(-16+origin[1]), (float)(-16+origin[2]));
-					planes[1][1]=new Vertex((float)(16+origin[0]), (float)(-16+origin[1]), (float)(-16+origin[2]));
-					planes[1][2]=new Vertex((float)(16+origin[0]), (float)(16+origin[1]), (float)(-16+origin[2]));
+					planes[1][0]=new VertexD(-16+origin[0], -16+origin[1], -16+origin[2]);
+					planes[1][1]=new VertexD(16+origin[0], -16+origin[1], -16+origin[2]);
+					planes[1][2]=new VertexD(16+origin[0], 16+origin[1], -16+origin[2]);
 					textureS[1][0]=1;
 					textureT[1][1]=-1;
 					// Left
-					planes[2][0]=new Vertex((float)(-16+origin[0]), (float)(16+origin[1]), (float)(16+origin[2]));
-					planes[2][1]=new Vertex((float)(-16+origin[0]), (float)(-16+origin[1]), (float)(16+origin[2]));
-					planes[2][2]=new Vertex((float)(-16+origin[0]), (float)(-16+origin[1]), (float)(-16+origin[2]));
+					planes[2][0]=new VertexD(-16+origin[0], 16+origin[1], 16+origin[2]);
+					planes[2][1]=new VertexD(-16+origin[0], -16+origin[1], 16+origin[2]);
+					planes[2][2]=new VertexD(-16+origin[0], -16+origin[1], -16+origin[2]);
 					textureS[2][1]=1;
 					textureT[2][2]=-1;
 					// Right
-					planes[3][0]=new Vertex((float)(16+origin[0]), (float)(16+origin[1]), (float)(-16+origin[2]));
-					planes[3][1]=new Vertex((float)(16+origin[0]), (float)(-16+origin[1]), (float)(-16+origin[2]));
-					planes[3][2]=new Vertex((float)(16+origin[0]), (float)(-16+origin[1]), (float)(16+origin[2]));
+					planes[3][0]=new VertexD(16+origin[0], 16+origin[1], -16+origin[2]);
+					planes[3][1]=new VertexD(16+origin[0], -16+origin[1], -16+origin[2]);
+					planes[3][2]=new VertexD(16+origin[0], -16+origin[1], 16+origin[2]);
 					textureS[3][1]=1;
 					textureT[3][2]=-1;
 					// Near
-					planes[4][0]=new Vertex((float)(16+origin[0]), (float)(16+origin[1]), (float)(16+origin[2]));
-					planes[4][1]=new Vertex((float)(-16+origin[0]), (float)(16+origin[1]), (float)(16+origin[2]));
-					planes[4][2]=new Vertex((float)(-16+origin[0]), (float)(16+origin[1]), (float)(-16+origin[2]));
+					planes[4][0]=new VertexD(16+origin[0], 16+origin[1], 16+origin[2]);
+					planes[4][1]=new VertexD(-16+origin[0], 16+origin[1], 16+origin[2]);
+					planes[4][2]=new VertexD(-16+origin[0], 16+origin[1], -16+origin[2]);
 					textureS[4][0]=1;
 					textureT[4][2]=-1;
 					// Far
-					planes[5][0]=new Vertex((float)(16+origin[0]), (float)(-16+origin[1]), (float)(-16+origin[2]));
-					planes[5][1]=new Vertex((float)(-16+origin[0]), (float)(-16+origin[1]), (float)(-16+origin[2]));
-					planes[5][2]=new Vertex((float)(-16+origin[0]), (float)(-16+origin[1]), (float)(16+origin[2]));
+					planes[5][0]=new VertexD(16+origin[0], -16+origin[1], -16+origin[2]);
+					planes[5][1]=new VertexD(-16+origin[0], -16+origin[1], -16+origin[2]);
+					planes[5][2]=new VertexD(-16+origin[0], -16+origin[1], 16+origin[2]);
 					textureS[5][0]=1;
 					textureT[5][2]=-1;
 					
@@ -432,25 +432,25 @@ public class Decompiler {
 		r.gc(); // Collect garbage, there will be a lot of it
 	}
 	
-	// -flipPlane(Vertex[])
+	// -flipPlane(VertexD[])
 	// Takes a plane as an array of vertices and flips it over.
-	private Vertex[] flipPlane(Vertex[] in) {
-		Vertex[] out={in[0], in[2], in[1]};
+	private VertexD[] flipPlane(VertexD[] in) {
+		VertexD[] out={in[0], in[2], in[1]};
 		return out;
 	}
 	
 	// +dotProduct()
 	// Takes two Vertex objects which are read as vectors, then returns the dot product
-	public static double dotProduct(Vertex first, Vertex second) {
+	public static double dotProduct(VertexD first, VertexD second) {
 		return (first.getX()*second.getX())+(first.getY()*second.getY())+(first.getZ()*second.getZ());
 	}
 	
 	// +crossProduct()
 	// Takes two Vertex objects which are read as vectors, then returns their cross product
-	public static Vertex crossProduct(Vertex first, Vertex second) {
-		return new Vertex((first.getY()*second.getZ())-(first.getZ()*second.getY()),
-		                  (first.getZ()*second.getX())-(first.getX()*second.getZ()),
-								(first.getX()*second.getY())-(first.getY()*second.getX()));
+	public static VertexD crossProduct(VertexD first, VertexD second) {
+		return new VertexD((first.getY()*second.getZ())-(first.getZ()*second.getY()),
+		                   (first.getZ()*second.getX())-(first.getX()*second.getZ()),
+								 (first.getX()*second.getY())-(first.getY()*second.getX()));
 	}
 	
 	// ACCESSORS/MUTATORS
