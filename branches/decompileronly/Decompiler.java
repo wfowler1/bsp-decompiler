@@ -259,7 +259,7 @@ public class Decompiler {
 																		plane=flipPlane(plane);
 																	}
 																} else { // If you reach this point the plane is not parallel to any axis. Therefore, any two coordinates will give a third.
-																	plane[0]=new VertexD(-1, 1, -((double)currentPlane.getA()+(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
+																	plane[0]=new VertexD(-1, 1, -(-(double)currentPlane.getA()+(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
 																	plane[1]=new VertexD(0, 0, (double)currentPlane.getDist()/(double)currentPlane.getC());
 																	plane[2]=new VertexD(1, 1, -((double)currentPlane.getA()+(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
 																	if(currentPlane.getC()>0) {
