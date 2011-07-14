@@ -29,9 +29,9 @@ public class Lump04 {
 			vertices=new Vertex[numVerts];
 			populateVertexList();
 		} catch(java.io.FileNotFoundException e) {
-			System.out.println("ERROR: File "+data+" not found!");
+			Decompiler.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
-			System.out.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Decompiler.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
 		}
 	}
 	
@@ -43,9 +43,9 @@ public class Lump04 {
 			vertices=new Vertex[numVerts];
 			populateVertexList();
 		} catch(java.io.FileNotFoundException e) {
-			System.out.println("ERROR: File "+data+" not found!");
+			Decompiler.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
-			System.out.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Decompiler.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
 		}
 	}
 	
@@ -62,7 +62,7 @@ public class Lump04 {
 				vertices[i]=new Vertex(datain);
 			}
 		} catch(InvalidVertexException e) {
-			System.out.println("WARNING: Funny lump size in "+data+", ignoring last vertex.");
+			Decompiler.window.println("WARNING: Funny lump size in "+data+", ignoring last vertex.");
 		}
 		reader.close();
 	}

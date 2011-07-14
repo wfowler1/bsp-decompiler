@@ -25,9 +25,9 @@ public class Lump13 {
 			markbrushes=new int[numMBrshs];
 			populateMBrshList();
 		} catch(java.io.FileNotFoundException e) {
-			System.out.println("ERROR: File "+data+" not found!");
+			Decompiler.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
-			System.out.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Decompiler.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
 		}
 	}
 	
@@ -39,9 +39,9 @@ public class Lump13 {
 			markbrushes=new int[numMBrshs];
 			populateMBrshList();
 		} catch(java.io.FileNotFoundException e) {
-			System.out.println("ERROR: File "+data+" not found!");
+			Decompiler.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
-			System.out.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Decompiler.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
 		}
 	}
 	
@@ -110,7 +110,7 @@ public class Lump13 {
 			mBrushWriter.write(data);
 			mBrushWriter.close();
 		} catch(java.io.IOException e) {
-			System.out.println("ERROR: Could not save "+newFile+", ensure the file is not open in another program and the path "+path+" exists");
+			Decompiler.window.println("ERROR: Could not save "+newFile+", ensure the file is not open in another program and the path "+path+" exists");
 		}
 	}
 	

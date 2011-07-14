@@ -26,9 +26,9 @@ public class Lump11 {
 			leaves=new Leaf[numLeaves];
 			populateLeafList();
 		} catch(java.io.FileNotFoundException e) {
-			System.out.println("ERROR: File "+data+" not found!");
+			Decompiler.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
-			System.out.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Decompiler.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
 		}
 	}
 	
@@ -40,9 +40,9 @@ public class Lump11 {
 			leaves=new Leaf[numLeaves];
 			populateLeafList();
 		} catch(java.io.FileNotFoundException e) {
-			System.out.println("ERROR: File "+data+" not found!");
+			Decompiler.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
-			System.out.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Decompiler.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
 		}
 	}
 	
@@ -65,7 +65,7 @@ public class Lump11 {
 			}
 			reader.close();
 		} catch(InvalidLeafException e) {
-			System.out.println("WARNING: funny lump size in "+data+", ignoring last leaf.");
+			Decompiler.window.println("WARNING: funny lump size in "+data+", ignoring last leaf.");
 		}
 	}
 		

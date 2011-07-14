@@ -25,9 +25,9 @@ public class Lump01 {
 			planes=new Plane[numPlns];
 			populatePlaneList();
 		} catch(java.io.FileNotFoundException e) {
-			System.out.println("ERROR: File "+data+" not found!");
+			Decompiler.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
-			System.out.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Decompiler.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
 		}
 	}
 	
@@ -39,9 +39,9 @@ public class Lump01 {
 			planes=new Plane[numPlns];
 			populatePlaneList();
 		} catch(java.io.FileNotFoundException e) {
-			System.out.println("ERROR: File "+data+" not found!");
+			Decompiler.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
-			System.out.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Decompiler.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
 		}
 	}
 	
@@ -66,7 +66,7 @@ public class Lump01 {
 				planes[i]=new Plane(datain);
 			}
 		} catch(InvalidPlaneException e) {
-			System.out.println("WARNING: Funny lump size in "+data+", ignoring last plane.");
+			Decompiler.window.println("WARNING: Funny lump size in "+data+", ignoring last plane.");
 		}
 		reader.close();
 	}

@@ -25,9 +25,9 @@ public class Lump00 {
 			entities = new Entity[numEnts];
 			populateEntityList();
 		} catch(java.io.FileNotFoundException e) {
-			System.out.println("ERROR: File "+data+" not found!");
+			Decompiler.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
-			System.out.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Decompiler.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
 		}
 	}
 	
@@ -39,9 +39,9 @@ public class Lump00 {
 			entities = new Entity[numEnts];
 			populateEntityList();
 		} catch(java.io.FileNotFoundException e) {
-			System.out.println("ERROR: File "+data+" not found!");
+			Decompiler.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
-			System.out.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Decompiler.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
 		}
 	}
 	
@@ -65,7 +65,7 @@ public class Lump00 {
 	// whenever possible.
 	// TODO: Rewrite this, try to make it faster.
 	private void populateEntityList() throws java.io.FileNotFoundException, java.io.IOException {
-		System.out.println("Populating entity list...");
+		Decompiler.window.println("Populating entity list...");
 		// I'd love to use Scanner here, but Scanner doesn't like using delimiters
 		// with "{" or "}" in them, which I fucking NEED
 		FileInputStream reader=new FileInputStream(data); // reads the file
@@ -265,7 +265,7 @@ public class Lump00 {
 			}
 			entityWriter.close();
 		} catch(java.io.IOException e) {
-			System.out.println("ERROR: Could not save "+newFile+", ensure the file is not open in another program and the path "+path+" exists");
+			Decompiler.window.println("ERROR: Could not save "+newFile+", ensure the file is not open in another program and the path "+path+" exists");
 		}
 	}
 	
@@ -285,7 +285,7 @@ public class Lump00 {
 	// Returns the number of entities.
 	public int getNumElements() {
 		if (numEnts==0) {
-			System.out.println("Counting entities...");
+			Decompiler.window.println("Counting entities...");
 			int count=0;
 			try {
 				FileInputStream fileReader = new FileInputStream(data);
@@ -296,7 +296,7 @@ public class Lump00 {
 				}
 				fileReader.close();
 			} catch(java.io.IOException e) {
-				System.out.println("Unable to read Entities.txt!");
+				Decompiler.window.println("Unable to read Entities.txt!");
 			}
 			return count;
 		} else {

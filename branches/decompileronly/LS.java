@@ -28,6 +28,21 @@ public class LS {
 	private String BSP; // path to the actual BSP file
 	private String folderPath; // path to the folder containing the lumps
 	
+	private File Lump00;
+	private File Lump01;
+	private File Lump02;
+	private File Lump03;
+	private File Lump04;
+	private File Lump09;
+	private File Lump11;
+	private File Lump13;
+	private File Lump14;
+	private File Lump15;
+	private File Lump16;
+	private File Lump17;
+	
+	private File dir;
+	
 	// CONSTRUCTORS
 	
 	// Takes a String in and assumes it is a path. If the String does not end
@@ -58,95 +73,96 @@ public class LS {
 	// complete rewrite to use arrays and loops instead of so much
 	// almost identical code.
 	public void separateLumps() {
-		new File(folderPath).mkdir(); // Create the lumps folder if it does not exist. If it does this will do nothing.
+		dir = new File(folderPath);
+		dir.mkdir(); // Create the lumps folder if it does not exist. If it does this will do nothing.
 		File inBSP=new File(BSP);
 		// Do all file stuff first, make sure the BSP exists and the lump files can be written/rewritten
 		if(!inBSP.exists()) {
-			System.out.println("Unable to open source BSP file, please ensure the BSP exists.");
+			Decompiler.window.println("Unable to open source BSP file, please ensure the BSP exists.");
 		} else {
 			try {
 				
 				// TODO: Code cleanliness
 				// ALL of this could be done with arrays of File and FileOutputStream. Rewrite to use loops and arrays.
 				
-				File Lump00 = new File(folderPath+"00 - "+Decompiler.LUMPNAMES[0]+".txt");
+				Lump00 = new File(folderPath+"00 - "+Decompiler.LUMPNAMES[0]+".txt");
 				if(!Lump00.exists()) {
 					Lump00.createNewFile();
 				} else {
 					Lump00.delete();
 					Lump00.createNewFile();
 				}
-				File Lump01 = new File(folderPath+"01 - "+Decompiler.LUMPNAMES[1]+".hex");
+				Lump01 = new File(folderPath+"01 - "+Decompiler.LUMPNAMES[1]+".hex");
 				if(!Lump01.exists()) {
 					Lump01.createNewFile();
 				} else {
 					Lump01.delete();
 					Lump01.createNewFile();
 				}
-				File Lump02 = new File(folderPath+"02 - "+Decompiler.LUMPNAMES[2]+".hex");
+				Lump02 = new File(folderPath+"02 - "+Decompiler.LUMPNAMES[2]+".hex");
 				if(!Lump02.exists()) {
 					Lump02.createNewFile();
 				} else {
 					Lump02.delete();
 					Lump02.createNewFile();
 				}
-				File Lump03 = new File(folderPath+"03 - "+Decompiler.LUMPNAMES[3]+".hex");
+				Lump03 = new File(folderPath+"03 - "+Decompiler.LUMPNAMES[3]+".hex");
 				if(!Lump03.exists()) {
 					Lump03.createNewFile();
 				} else {
 					Lump03.delete();
 					Lump03.createNewFile();
 				}
-				File Lump04 = new File(folderPath+"04 - "+Decompiler.LUMPNAMES[4]+".hex");
+				Lump04 = new File(folderPath+"04 - "+Decompiler.LUMPNAMES[4]+".hex");
 				if(!Lump04.exists()) {
 					Lump04.createNewFile();
 				} else {
 					Lump04.delete();
 					Lump04.createNewFile();
 				}
-				File Lump09 = new File(folderPath+"09 - "+Decompiler.LUMPNAMES[9]+".hex");
+				Lump09 = new File(folderPath+"09 - "+Decompiler.LUMPNAMES[9]+".hex");
 				if(!Lump09.exists()) {
 					Lump09.createNewFile();
 				} else {
 					Lump09.delete();
 					Lump09.createNewFile();
 				}
-				File Lump11 = new File(folderPath+"11 - "+Decompiler.LUMPNAMES[11]+".hex");
+				Lump11 = new File(folderPath+"11 - "+Decompiler.LUMPNAMES[11]+".hex");
 				if(!Lump11.exists()) {
 					Lump11.createNewFile();
 				} else {
 					Lump11.delete();
 					Lump11.createNewFile();
 				}
-				File Lump13 = new File(folderPath+"13 - "+Decompiler.LUMPNAMES[13]+".hex");
+				Lump13 = new File(folderPath+"13 - "+Decompiler.LUMPNAMES[13]+".hex");
 				if(!Lump13.exists()) {
 					Lump13.createNewFile();
 				} else {
 					Lump13.delete();
 					Lump13.createNewFile();
 				}
-				File Lump14 = new File(folderPath+"14 - "+Decompiler.LUMPNAMES[14]+".hex");
+				Lump14 = new File(folderPath+"14 - "+Decompiler.LUMPNAMES[14]+".hex");
 				if(!Lump14.exists()) {
 					Lump14.createNewFile();
 				} else {
 					Lump14.delete();
 					Lump14.createNewFile();
 				}
-				File Lump15 = new File(folderPath+"15 - "+Decompiler.LUMPNAMES[15]+".hex");
+				Lump15 = new File(folderPath+"15 - "+Decompiler.LUMPNAMES[15]+".hex");
 				if(!Lump15.exists()) {
 					Lump15.createNewFile();
 				} else {
 					Lump15.delete();
 					Lump15.createNewFile();
 				}
-				File Lump16 = new File(folderPath+"16 - "+Decompiler.LUMPNAMES[16]+".hex");
+				Lump16 = new File(folderPath+"16 - "+Decompiler.LUMPNAMES[16]+".hex");
 				if(!Lump16.exists()) {
 					Lump16.createNewFile();
 				} else {
 					Lump16.delete();
 					Lump16.createNewFile();
 				}
-				File Lump17 = new File(folderPath+"17 - "+Decompiler.LUMPNAMES[17]+".hex");
+				Lump17 = new File(folderPath+"17 - "+Decompiler.LUMPNAMES[17]+".hex");
 				if(!Lump17.exists()) {
 					Lump17.createNewFile();
 				} else {
@@ -164,7 +180,7 @@ public class LS {
 				BSP.read(input);
 				int version=(input[3] << 24) | ((input[2] & 0xff) << 16) | ((input[1] & 0xff) << 8) | (input[0] & 0xff);
 				if(version!=42) {
-					System.out.println("WARNING: BSP version is not 42.");
+					Decompiler.window.println("WARNING: BSP version is not 42.");
 				}
 				for(int i=0;i<18;i++) {
 					BSP.read(input);
@@ -295,8 +311,33 @@ public class LS {
 				Lump17Reader.close();
 				Lump17Writer.close();
 			} catch(java.io.IOException e) {
-				System.out.println("ERROR: Unable to open or rewrite at least one lump file, please ensure none of the lumps are open in another program.");
+				Decompiler.window.println("ERROR: Unable to open or rewrite at least one lump file, please ensure none of the lumps are open in another program.");
 			}
+		}
+	}
+	
+	// +deleteLumps()
+	// Deletes the lump files created by the current object of this class, as
+	// well as the folder containing them.
+	public void deleteLumps() {
+		try {
+			Lump00.delete();
+			Lump01.delete();
+			Lump02.delete();
+			Lump03.delete();
+			Lump04.delete();
+			Lump09.delete();
+			Lump11.delete();
+			Lump13.delete();
+			Lump14.delete();
+			Lump15.delete();
+			Lump16.delete();
+			Lump17.delete();
+			
+			// Of course, there's no guarantee this will work if someone makes new files in the lumps folder
+			dir.delete();
+		} catch(java.lang.NullPointerException e) {
+			Decompiler.window.print("Tried to delete lump files, but they haven't been created yet!");
 		}
 	}
 }

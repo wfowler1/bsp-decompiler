@@ -25,7 +25,7 @@ public class Lump03 {
 			materials=new String[numMtrls];
 			populateMaterialList();
 		} catch(java.io.FileNotFoundException e) {
-			System.out.println("ERROR: File "+data+" not found!");
+			Decompiler.window.println("ERROR: File "+data+" not found!");
 		}
 	}
 	
@@ -37,7 +37,7 @@ public class Lump03 {
 			materials=new String[numMtrls];
 			populateMaterialList();
 		} catch(java.io.FileNotFoundException e) {
-			System.out.println("ERROR: File "+data+" not found!");
+			Decompiler.window.println("ERROR: File "+data+" not found!");
 		}
 	}
 	

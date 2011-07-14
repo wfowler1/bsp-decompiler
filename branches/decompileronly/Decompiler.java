@@ -2,9 +2,39 @@
 // This class gathers all relevant information from the lumps, and attempts
 // to recreate the source MAP file of the BSP as accurately as possible.
 
+// Also sets up and runs the GUI through which the actions of this class are
+// controlled. It doesn't need to be very complicated.
+
 import java.io.File;
+import java.awt.*;
+import javax.swing.*;
 
 public class Decompiler {
+
+	protected static Window window;
+
+	// main method
+	// Launches and sets up the GUI to create an Object of this class
+	public static void main(String[] args) {
+		
+		UIManager myUI=new UIManager();
+		try {
+			myUI.setLookAndFeel(myUI.getSystemLookAndFeelClassName());
+		} catch(java.lang.Exception e) {
+			;
+		}
+		
+		JFrame frame = new JFrame("BSP v42 Decompiler by 005");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		window = new Window(frame.getContentPane());
+
+		frame.setPreferredSize(new Dimension(450, 400));
+
+		frame.pack();
+		frame.setResizable(false);
+		frame.setVisible(true);
+	}
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
@@ -69,21 +99,19 @@ public class Decompiler {
 	// Visibility varies for every map, and will be determined by constructor
 	public int[] lumpDataSizes = {-1, 20, 64, 64, 12, -1, 4, 0, 36, 48, 3, 48, 4, 4, 56, 12, 8, 32};
 	
+	// Declare this here since the lumps path of the BSP probably will not change
+	private LS ls;
+	
 	// CONSTRUCTORS
 	// This accepts a file path and parses it into the form needed. If the folder is empty (or not found)
 	// the program fails nicely.
 	public Decompiler(String in) {
 		try {
-			if (in.substring(in.length()-4).equalsIgnoreCase(".BSP")) {
-				filepath=in.substring(0,in.length()-4)+"\\";
-				LS ls=new LS(in);
-				ls.separateLumps();
-			} else {
-				if (in.charAt(in.length()-1) != '\\' && in.charAt(in.length()-1) != '/') {
-					in+="\\"; // Add a '\' character to the end of the path if it isn't already there
-				}
-				filepath=in;
-			}
+			window.clearConsole();
+		
+			filepath=in.substring(0,in.length()-4)+"\\";
+			ls=new LS(in);
+			ls.separateLumps();
 			
 			myL0 = new Lump00(filepath+"00 - Entities.txt");
 			myL1 = new Lump01(filepath+"01 - Planes.hex");
@@ -100,21 +128,21 @@ public class Decompiler {
 			
 			r.gc(); // Take a minute to collect garbage, all the file parsing can leave a lot of crap data.
 			
-			System.out.println("Entities lump: "+myL0.getLength()+" bytes, "+myL0.getNumElements()+" items");
-			System.out.println("Planes lump: "+myL1.getLength()+" bytes, "+myL1.getNumElements()+" items");
-			System.out.println("Textures lump: "+myL2.getLength()+" bytes, "+myL2.getNumElements()+" items");
-			System.out.println("Materials lump: "+myL3.getLength()+" bytes, "+myL3.getNumElements()+" items");
-			System.out.println("Vertices lump: "+myL4.getLength()+" bytes, "+myL4.getNumElements()+" items");
-			System.out.println("Faces lump: "+myL9.getLength()+" bytes, "+myL9.getNumElements()+" items");
-			System.out.println("Leaves lump: "+myL11.getLength()+" bytes, "+myL11.getNumElements()+" items");
-			System.out.println("Leaf brushes lump: "+myL13.getLength()+" bytes, "+myL13.getNumElements()+" items");
-			System.out.println("Models lump: "+myL14.getLength()+" bytes, "+myL14.getNumElements()+" items");
-			System.out.println("Brushes lump: "+myL15.getLength()+" bytes, "+myL15.getNumElements()+" items");
-			System.out.println("Brush sides lump: "+myL16.getLength()+" bytes, "+myL16.getNumElements()+" items");
-			System.out.println("Texture scales lump: "+myL17.getLength()+" bytes, "+myL17.getNumElements()+" items");
+			window.println("Entities lump: "+myL0.getLength()+" bytes, "+myL0.getNumElements()+" items");
+			window.println("Planes lump: "+myL1.getLength()+" bytes, "+myL1.getNumElements()+" items");
+			window.println("Textures lump: "+myL2.getLength()+" bytes, "+myL2.getNumElements()+" items");
+			window.println("Materials lump: "+myL3.getLength()+" bytes, "+myL3.getNumElements()+" items");
+			window.println("Vertices lump: "+myL4.getLength()+" bytes, "+myL4.getNumElements()+" items");
+			window.println("Faces lump: "+myL9.getLength()+" bytes, "+myL9.getNumElements()+" items");
+			window.println("Leaves lump: "+myL11.getLength()+" bytes, "+myL11.getNumElements()+" items");
+			window.println("Leaf brushes lump: "+myL13.getLength()+" bytes, "+myL13.getNumElements()+" items");
+			window.println("Models lump: "+myL14.getLength()+" bytes, "+myL14.getNumElements()+" items");
+			window.println("Brushes lump: "+myL15.getLength()+" bytes, "+myL15.getNumElements()+" items");
+			window.println("Brush sides lump: "+myL16.getLength()+" bytes, "+myL16.getNumElements()+" items");
+			window.println("Texture scales lump: "+myL17.getLength()+" bytes, "+myL17.getNumElements()+" items");
 			
 		} catch(java.lang.StringIndexOutOfBoundsException e) {
-			System.out.println("Error: invalid path");
+			window.println("Error: invalid path");
 		}
 	}
 	
@@ -310,7 +338,7 @@ public class Decompiler {
 											brushSides[l]=new MAPBrushSide(plane, texture, textureS, textureShiftS, textureT, textureShiftT,
 										                                          texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
 										} catch(InvalidMAPBrushSideException e) {
-											System.out.println("Error creating brush side "+l+" on brush "+k+" in leaf "+j+" in model "+i+", side not written.");
+											window.println("Error creating brush side "+l+" on brush "+k+" in leaf "+j+" in model "+i+", side not written.");
 										}
 										numRealFaces++;
 									}
@@ -418,7 +446,7 @@ public class Decompiler {
 							newOriginBrush.addAttribute(currentEdge.toString());
 						} catch(InvalidMAPBrushSideException e) {
 							// This message will never be displayed.
-							System.out.println("Bad origin brush, there's something wrong with the code.");
+							window.println("Bad origin brush, there's something wrong with the code.");
 						}
 					}
 					newOriginBrush.addAttribute("}");
@@ -427,8 +455,11 @@ public class Decompiler {
 				mapFile.getEntity(i).deleteAttribute("origin");
 			}
 		}
-		System.out.println("Saving .map...");
+		window.println("Saving "+path+"...");
 		mapFile.save(path);
+		window.println("Deleting lump files");
+		ls.deleteLumps();
+		window.println("Process completed!");
 		r.gc(); // Collect garbage, there will be a lot of it
 	}
 	
