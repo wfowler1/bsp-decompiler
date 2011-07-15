@@ -82,6 +82,12 @@ public class VertexD {
 		return new VertexD(vertex[X]+in.getX(), vertex[Y]+in.getY(), vertex[Z]+in.getZ());
 	}
 	
+	// +scale(double)
+	// Multiplies all components by the input and returns the result
+	public VertexD scale(double scalar) {
+		return new VertexD(vertex[X]*scalar, vertex[Y]*scalar, vertex[Z]*scalar);
+	}
+	
 	// +equals(VertexD)
 	// Return true if the components of the input Vertex are equivalent to those of this one
 	public boolean equals(VertexD in) {
@@ -124,5 +130,9 @@ public class VertexD {
 		} else {
 			vertex=in;
 		}
+	}
+	
+	public double getLength() {
+		return Math.sqrt(Math.pow(vertex[X], 2) + Math.pow(vertex[Y], 2) + Math.pow(vertex[Z], 2));
 	}
 }

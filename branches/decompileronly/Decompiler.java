@@ -29,7 +29,7 @@ public class Decompiler {
 
 		window = new Window(frame.getContentPane());
 
-		frame.setPreferredSize(new Dimension(450, 400));
+		frame.setPreferredSize(new Dimension(600, 400));
 
 		frame.pack();
 		frame.setResizable(false);
@@ -102,11 +102,68 @@ public class Decompiler {
 	// Declare this here since the lumps path of the BSP probably will not change
 	private LS ls;
 	
+	// Define the method of decompilation
+	private boolean vertexDecomp; // Use vetices or no?
+	private boolean checkVerts; // Check whether vertices match plane?
+	private boolean facesOnly; // Facial decompilation only (not implemented yet!)
+	private double planePointCoef; // What to scale points on for a plane by. Some maps like different numbers,
+	                               // even though anything besides zero SHOULD be fine.
+	
 	// CONSTRUCTORS
 	// This accepts a file path and parses it into the form needed. If the folder is empty (or not found)
 	// the program fails nicely.
 	public Decompiler(String in) {
 		try {
+			vertexDecomp=true;
+			checkVerts=true;
+			facesOnly=false;
+			planePointCoef=100;
+			window.clearConsole();
+		
+			filepath=in.substring(0,in.length()-4)+"\\";
+			ls=new LS(in);
+			ls.separateLumps();
+			
+			myL0 = new Lump00(filepath+"00 - Entities.txt");
+			myL1 = new Lump01(filepath+"01 - Planes.hex");
+			myL2 = new Lump02(filepath+"02 - Textures.hex");
+			myL3 = new Lump03(filepath+"03 - Materials.hex");
+			myL4 = new Lump04(filepath+"04 - Vertices.hex");
+			myL9 = new Lump09(filepath+"09 - Faces.hex");
+			myL11 = new Lump11(filepath+"11 - Leaves.hex");
+			myL13 = new Lump13(filepath+"13 - Mark Brushes.hex");
+			myL14 = new Lump14(filepath+"14 - Models.hex");
+			myL15 = new Lump15(filepath+"15 - Brushes.hex");
+			myL16 = new Lump16(filepath+"16 - Brushsides.hex");
+			myL17 = new Lump17(filepath+"17 - Texmatrix.hex");
+			
+			r.gc(); // Take a minute to collect garbage, all the file parsing can leave a lot of crap data.
+			
+			window.println("Entities lump: "+myL0.getLength()+" bytes, "+myL0.getNumElements()+" items");
+			window.println("Planes lump: "+myL1.getLength()+" bytes, "+myL1.getNumElements()+" items");
+			window.println("Textures lump: "+myL2.getLength()+" bytes, "+myL2.getNumElements()+" items");
+			window.println("Materials lump: "+myL3.getLength()+" bytes, "+myL3.getNumElements()+" items");
+			window.println("Vertices lump: "+myL4.getLength()+" bytes, "+myL4.getNumElements()+" items");
+			window.println("Faces lump: "+myL9.getLength()+" bytes, "+myL9.getNumElements()+" items");
+			window.println("Leaves lump: "+myL11.getLength()+" bytes, "+myL11.getNumElements()+" items");
+			window.println("Leaf brushes lump: "+myL13.getLength()+" bytes, "+myL13.getNumElements()+" items");
+			window.println("Models lump: "+myL14.getLength()+" bytes, "+myL14.getNumElements()+" items");
+			window.println("Brushes lump: "+myL15.getLength()+" bytes, "+myL15.getNumElements()+" items");
+			window.println("Brush sides lump: "+myL16.getLength()+" bytes, "+myL16.getNumElements()+" items");
+			window.println("Texture scales lump: "+myL17.getLength()+" bytes, "+myL17.getNumElements()+" items");
+			
+		} catch(java.lang.StringIndexOutOfBoundsException e) {
+			window.println("Error: invalid path");
+		}
+	}
+	
+	// Accepts a filepath as a string but also booleans for options like vertex decompilation
+	public Decompiler(String in, boolean inVertexDecomp, boolean inCheckVerts, boolean inFacesOnly, double coefs) {
+		try {
+			vertexDecomp=inVertexDecomp;
+			checkVerts=inCheckVerts;
+			facesOnly=inFacesOnly;
+			planePointCoef=coefs;
 			window.clearConsole();
 		
 			filepath=in.substring(0,in.length()-4)+"\\";
@@ -150,10 +207,6 @@ public class Decompiler {
 	
 	// +decompile()
 	// Attempts to convert the BSP file back into a .MAP file.
-	//
-	// TODO: There's one extremely hard problem. Sometimes planes are resused backward. It's nearly
-	// impossible to determine which way the plane needs to be flipped. Other than that, this
-	// algorithm is 100% finished.
 	//
 	// This is another one of the most complex things I've ever had to code. I've
 	// never nested for loops four deep before.
@@ -212,7 +265,7 @@ public class Decompiler {
 										usedPlanes[currentSide.getPlane()]++;
 										Plane currentPlane=newPlanes.getPlane(currentSide.getPlane());
 										boolean pointsWorked=false;
-										if(numVertices!=0) { // If the face actually references a set of vertices
+										if(numVertices!=0 && vertexDecomp) { // If the face actually references a set of vertices
 											plane[0]=new VertexD(myL4.getVertex(firstVertex)); // Grab and store the first one
 											int m=1;
 											for(m=1;m<numVertices;m++) { // For each point after the first one
@@ -232,6 +285,18 @@ public class Decompiler {
 														pointsWorked=true;
 														break;
 													}
+												}
+											}
+											if(pointsWorked && checkVerts) { // If the process above worked, check to make sure the normal generated from the
+											                                 // vertices is flipped the same as the one given by the plane. This is necessary
+											                                 // because I'm not always using the first three vertices.
+											                                 // However could cause problems with custom compiled maps, since they have wacky
+											                                 // plane flips.
+												VertexD vertCross = normalizedCrossProduct(plane[0].subtract(plane[2]), plane[0].subtract(plane[1]));
+												VertexD normalAdd = vertCross.add(new VertexD(currentPlane.getA(), currentPlane.getB(), currentPlane.getC()));
+												if(Math.sqrt(Math.pow(normalAdd.getX(), 2) + Math.pow(normalAdd.getY(), 2) + Math.pow(normalAdd.getZ(), 2)) < 1) {
+													plane=flipPlane(plane);
+													System.out.println("Black niggers");
 												}
 											}
 										}
@@ -264,32 +329,32 @@ public class Decompiler {
 														}
 													} else { // If you reach this point the plane is not parallel to any two-axis plane.
 														if(currentPlane.getA()==0) { // parallel to X axis
-															plane[0]=new VertexD(-1, 1, -((double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
+															plane[0]=new VertexD(-planePointCoef, planePointCoef, -(planePointCoef*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
 															plane[1]=new VertexD(0, 0, (double)currentPlane.getDist()/(double)currentPlane.getC());
-															plane[2]=new VertexD(1, 1, -((double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
+															plane[2]=new VertexD(planePointCoef, planePointCoef, -(planePointCoef*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
 															if(currentPlane.getC()>0) {
 																plane=flipPlane(plane);
 															}
 														} else {
 															if(currentPlane.getB()==0) { // parallel to Y axis
-																plane[0]=new VertexD(-((double)currentPlane.getC()-(double)currentPlane.getDist())/(double)currentPlane.getA(), -1, 1);
+																plane[0]=new VertexD(-(planePointCoef*(double)currentPlane.getC()-(double)currentPlane.getDist())/(double)currentPlane.getA(), -planePointCoef, planePointCoef);
 																plane[1]=new VertexD((double)currentPlane.getDist()/(double)currentPlane.getA(), 0, 0);
-																plane[2]=new VertexD(-((double)currentPlane.getC()-(double)currentPlane.getDist())/(double)currentPlane.getA(), 1, 1);
+																plane[2]=new VertexD(-(planePointCoef*(double)currentPlane.getC()-(double)currentPlane.getDist())/(double)currentPlane.getA(), planePointCoef, planePointCoef);
 																if(currentPlane.getA()>0) {
 																	plane=flipPlane(plane);
 																}
 															} else {
 																if(currentPlane.getC()==0) { // parallel to Z axis
-																	plane[0]=new VertexD(1, -((double)currentPlane.getA()-(double)currentPlane.getDist())/(double)currentPlane.getB(), -1);
+																	plane[0]=new VertexD(planePointCoef, -(planePointCoef*(double)currentPlane.getA()-(double)currentPlane.getDist())/(double)currentPlane.getB(), -planePointCoef);
 																	plane[1]=new VertexD(0, (double)currentPlane.getDist()/(double)currentPlane.getB(), 0);
-																	plane[2]=new VertexD(1, -((double)currentPlane.getA()-(double)currentPlane.getDist())/(double)currentPlane.getB(), 1);
+																	plane[2]=new VertexD(planePointCoef, -(planePointCoef*(double)currentPlane.getA()-(double)currentPlane.getDist())/(double)currentPlane.getB(), planePointCoef);
 																	if(currentPlane.getB()>0) {
 																		plane=flipPlane(plane);
 																	}
 																} else { // If you reach this point the plane is not parallel to any axis. Therefore, any two coordinates will give a third.
-																	plane[0]=new VertexD(-1, 1, -(-(double)currentPlane.getA()+(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
+																	plane[0]=new VertexD(-planePointCoef, planePointCoef, -(-planePointCoef*(double)currentPlane.getA()+planePointCoef*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
 																	plane[1]=new VertexD(0, 0, (double)currentPlane.getDist()/(double)currentPlane.getC());
-																	plane[2]=new VertexD(1, 1, -((double)currentPlane.getA()+(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
+																	plane[2]=new VertexD(planePointCoef, planePointCoef, -(planePointCoef*(double)currentPlane.getA()+planePointCoef*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
 																	if(currentPlane.getC()>0) {
 																		plane=flipPlane(plane);
 																	}
@@ -482,6 +547,15 @@ public class Decompiler {
 		return new VertexD((first.getY()*second.getZ())-(first.getZ()*second.getY()),
 		                   (first.getZ()*second.getX())-(first.getX()*second.getZ()),
 								 (first.getX()*second.getY())-(first.getY()*second.getX()));
+	}
+	
+	// +normalizedCrossProduct()
+	// Takes two Vertex objects which are read as vectors, then returns their normalized cross product.
+	// "normalized" means the length of the cross will be 1.
+	public static VertexD normalizedCrossProduct(VertexD first, VertexD second) {
+		VertexD result = crossProduct(first, second);
+		double len = Math.sqrt((Math.pow(result.getX(), 2) + Math.pow(result.getY(), 2) + Math.pow(result.getZ(), 2)));
+		return new VertexD(result.getX()/len, result.getY()/len, result.getZ()/len);
 	}
 	
 	// ACCESSORS/MUTATORS
