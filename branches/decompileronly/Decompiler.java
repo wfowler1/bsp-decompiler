@@ -329,32 +329,32 @@ public class Decompiler {
 														}
 													} else { // If you reach this point the plane is not parallel to any two-axis plane.
 														if(currentPlane.getA()==0) { // parallel to X axis
-															plane[0]=new VertexD(-planePointCoef, planePointCoef, -(planePointCoef*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
+															plane[0]=new VertexD(-planePointCoef, Math.pow(planePointCoef, 2), -(Math.pow(planePointCoef, 2)*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
 															plane[1]=new VertexD(0, 0, (double)currentPlane.getDist()/(double)currentPlane.getC());
-															plane[2]=new VertexD(planePointCoef, planePointCoef, -(planePointCoef*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
+															plane[2]=new VertexD(planePointCoef, Math.pow(planePointCoef, 2), -(Math.pow(planePointCoef, 2)*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
 															if(currentPlane.getC()>0) {
 																plane=flipPlane(plane);
 															}
 														} else {
 															if(currentPlane.getB()==0) { // parallel to Y axis
-																plane[0]=new VertexD(-(planePointCoef*(double)currentPlane.getC()-(double)currentPlane.getDist())/(double)currentPlane.getA(), -planePointCoef, planePointCoef);
+																plane[0]=new VertexD(-(Math.pow(planePointCoef, 2)*(double)currentPlane.getC()-(double)currentPlane.getDist())/(double)currentPlane.getA(), -planePointCoef, Math.pow(planePointCoef, 2));
 																plane[1]=new VertexD((double)currentPlane.getDist()/(double)currentPlane.getA(), 0, 0);
-																plane[2]=new VertexD(-(planePointCoef*(double)currentPlane.getC()-(double)currentPlane.getDist())/(double)currentPlane.getA(), planePointCoef, planePointCoef);
+																plane[2]=new VertexD(-(Math.pow(planePointCoef, 2)*(double)currentPlane.getC()-(double)currentPlane.getDist())/(double)currentPlane.getA(), planePointCoef, Math.pow(planePointCoef, 2));
 																if(currentPlane.getA()>0) {
 																	plane=flipPlane(plane);
 																}
 															} else {
 																if(currentPlane.getC()==0) { // parallel to Z axis
-																	plane[0]=new VertexD(planePointCoef, -(planePointCoef*(double)currentPlane.getA()-(double)currentPlane.getDist())/(double)currentPlane.getB(), -planePointCoef);
+																	plane[0]=new VertexD(Math.pow(planePointCoef, 2), -(Math.pow(planePointCoef, 2)*(double)currentPlane.getA()-(double)currentPlane.getDist())/(double)currentPlane.getB(), -planePointCoef);
 																	plane[1]=new VertexD(0, (double)currentPlane.getDist()/(double)currentPlane.getB(), 0);
-																	plane[2]=new VertexD(planePointCoef, -(planePointCoef*(double)currentPlane.getA()-(double)currentPlane.getDist())/(double)currentPlane.getB(), planePointCoef);
+																	plane[2]=new VertexD(Math.pow(planePointCoef, 2), -(Math.pow(planePointCoef, 2)*(double)currentPlane.getA()-(double)currentPlane.getDist())/(double)currentPlane.getB(), planePointCoef);
 																	if(currentPlane.getB()>0) {
 																		plane=flipPlane(plane);
 																	}
 																} else { // If you reach this point the plane is not parallel to any axis. Therefore, any two coordinates will give a third.
-																	plane[0]=new VertexD(-planePointCoef, planePointCoef, -(-planePointCoef*(double)currentPlane.getA()+planePointCoef*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
+																	plane[0]=new VertexD(-planePointCoef, Math.pow(planePointCoef, 2), -(-planePointCoef*(double)currentPlane.getA()+Math.pow(planePointCoef, 2)*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
 																	plane[1]=new VertexD(0, 0, (double)currentPlane.getDist()/(double)currentPlane.getC());
-																	plane[2]=new VertexD(planePointCoef, planePointCoef, -(planePointCoef*(double)currentPlane.getA()+planePointCoef*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
+																	plane[2]=new VertexD(planePointCoef, Math.pow(planePointCoef, 2), -(planePointCoef*(double)currentPlane.getA()+Math.pow(planePointCoef, 2)*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
 																	if(currentPlane.getC()>0) {
 																		plane=flipPlane(plane);
 																	}
@@ -408,33 +408,6 @@ public class Decompiler {
 										numRealFaces++;
 									}
 								}
-								// FOR DETERMINING PLANE FLIP
-								// To figure out the correct flip for the plane, I use two facts about BSP brushes
-								// 1. They are always convex, therefore a point on one of the faces will be on the negative side of every other plane in the brush
-								// 2. The positive side of every plane in a brush must face outwards, and the positive side is the side with the face
-								// Limitation: There must be at least one face which was defined by vertices.
-								// TODO: This doesn't fucking work. What is wrong? Probably the point used
-								/*if(numVertFacesThisBrsh>0) { // If there was a face defined by vertices, if not just move on
-									Vertex[] points=brushSides[vertFaceIndex].getPlane();
-									// Find the point in the middle of these three points. It'll be on the plane.
-									Vertex temp=new Vertex(points[0].getX()+(points[0].getX()-points[1].getX())/-2, points[0].getY()+(points[0].getY()-points[1].getY())/-2, points[0].getZ()+(points[0].getZ()-points[1].getZ())/-2);
-									Vertex point=new Vertex(temp.getX()+(temp.getX()-points[2].getX())/-2, temp.getY()+(temp.getY()-points[2].getY())/-2, temp.getZ()+(temp.getZ()-points[2].getZ())/-2);
-									for(int l=0;l<numSides;l++) { // For each side, AFTER the entire MAPBrushSide list has been populated
-										if(!vertFaces[l] && l!=vertFaceIndex) { // If the current face was not defined by vertices
-											BrushSide currentSide=myL16.getBrushSide(firstSide+l);
-											Face currentFace=myL9.getFace(currentSide.getFace());
-											if(!myL2.getTexture(currentFace.getTexture()).equalsIgnoreCase("special/bevel")) { // If this face uses special/bevel, skip the face completely
-												Plane currentPlane=newPlanes.getPlane(currentSide.getPlane());
-												// Formula for the signed distance from a plane to a point, I hope to jesus this works
-												// Source: http://mathworld.wolfram.com/Point-PlaneDistance.html
-												double signedDist=(currentPlane.getA()*point.getX()+currentPlane.getB()*point.getY()+currentPlane.getC()*point.getZ()-currentPlane.getDist())/(Math.sqrt(Math.pow(currentPlane.getA(),2)+Math.pow(currentPlane.getB(),2)+Math.pow(currentPlane.getC(),2)));
-												if(signedDist>0) { // This > may need to be flipped, I don't know yet
-													brushSides[l].flipPlane();
-												}
-											}
-										}
-									}
-								}*/
 								
 								for(int l=0;l<numSides;l++) { // For each side, AFTER the entire MAPBrushSide list has been populated and plane flip is sorted out
 									try {
