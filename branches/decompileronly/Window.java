@@ -13,6 +13,31 @@ import java.io.File;
 
 public class Window extends JPanel implements ActionListener {
 
+	protected static Window window;
+
+	// main method
+	// Creates an Object of this class and launches the GUI. Entry point to the whole program.
+	public static void main(String[] args) {
+		
+		UIManager myUI=new UIManager();
+		try {
+			myUI.setLookAndFeel(myUI.getSystemLookAndFeelClassName());
+		} catch(java.lang.Exception e) {
+			;
+		}
+		
+		JFrame frame = new JFrame("BSP v42 Decompiler by 005");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		window = new Window(frame.getContentPane());
+
+		frame.setPreferredSize(new Dimension(600, 400));
+
+		frame.pack();
+		frame.setResizable(false);
+		frame.setVisible(true);
+	}
+
 	private JFileChooser file_selector;
 	private JButton btn_open;
 	private JButton btn_decomp;
@@ -25,6 +50,7 @@ public class Window extends JPanel implements ActionListener {
 	private JCheckBox chk_planar;
 	private JCheckBox chk_skipVertCheck;
 	private JCheckBox chk_facesOnly;
+
 
 	public Window(Container pane) {
 		pane.setLayout(new GridBagLayout());
@@ -144,7 +170,6 @@ public class Window extends JPanel implements ActionListener {
 	} // constructor
 
 	public void actionPerformed(ActionEvent action) {
-		Decompiler decompiler;
 		File theBSP;
 		
 		if (action.getSource() == btn_open) {
@@ -163,9 +188,9 @@ public class Window extends JPanel implements ActionListener {
 				JOptionPane.showMessageDialog(this, "File \""+txt_file.getText()+"\" not found!");
 			} else {
 				btn_decomp.setEnabled(false);
-				decompiler = new Decompiler(theBSP.getAbsolutePath(), !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), false, Double.parseDouble(txt_coef.getText()));
-				String savePath=txt_file.getText().substring(0, txt_file.getText().length()-4);
-				decompiler.decompile(savePath+".map");
+				BSPData map = new BSPData(txt_file.getText());
+				Decompiler decompiler = new Decompiler(map, !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), false, Double.parseDouble(txt_coef.getText()));
+				map.close();
 				btn_decomp.setEnabled(true);
 			}
 		}

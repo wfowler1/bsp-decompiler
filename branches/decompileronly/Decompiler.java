@@ -1,206 +1,41 @@
 // Decompiler class
-// This class gathers all relevant information from the lumps, and attempts
-// to recreate the source MAP file of the BSP as accurately as possible.
 
-// Also sets up and runs the GUI through which the actions of this class are
-// controlled. It doesn't need to be very complicated.
-
-import java.io.File;
-import java.awt.*;
-import javax.swing.*;
+// Handles the actual decompilation.
 
 public class Decompiler {
 
-	protected static Window window;
-
-	// main method
-	// Launches and sets up the GUI to create an Object of this class
-	public static void main(String[] args) {
-		
-		UIManager myUI=new UIManager();
-		try {
-			myUI.setLookAndFeel(myUI.getSystemLookAndFeelClassName());
-		} catch(java.lang.Exception e) {
-			;
-		}
-		
-		JFrame frame = new JFrame("BSP v42 Decompiler by 005");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-		window = new Window(frame.getContentPane());
-
-		frame.setPreferredSize(new Dimension(600, 400));
-
-		frame.pack();
-		frame.setResizable(false);
-		frame.setVisible(true);
-	}
-
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
+	private static Runtime r = Runtime.getRuntime();
 	
-	Runtime r = Runtime.getRuntime(); // Get a runtime object. This is for calling
-	                                  // Java's garbage collector and does not need
-												 // to be ported. I try not to leave memory leaks
-												 // but since Java has no way explicitly reallocate
-												 // unused memory I have to tell it when a good
-												 // time is to run the garbage collector, by
-												 // calling gc(). Also, it is used to execute EXEs
-												 // from within the program by calling .exec(path).
-
-	// All lumps will be in the same folder. This String IS that folder.
-	private String filepath;
+	public static final int A = 0;
+	public static final int B = 1;
+	public static final int C = 2;
 	
-	// Each lump has its own class for handling its specific data structures.
-	// These are the only lumps we need for decompilation.
-	private Lump00 myL0;
-	private Lump01 myL1;
-	private Lump02 myL2;
-	private Lump03 myL3;
-	private Lump04 myL4;
-	private Lump09 myL9;
-	private Lump11 myL11;
-	private Lump13 myL13;
-	private Lump14 myL14;
-	private Lump15 myL15;
-	private Lump16 myL16;
-	private Lump17 myL17;
+	public static final int X = 0;
+	public static final int Y = 1;
+	public static final int Z = 2;
 	
-	public final int NUMLUMPS=18;
+	private BSPData BSP;
+	private boolean vertexDecomp;
+	private boolean checkVerts;
+	private boolean facesOnly;
+	private double planePointCoef;
 	
-	// This just allows us to reference the lump by name rather than index.
-	public final int ENTITIES=0;
-	public final int PLANES=1;
-	public final int TEXTURES=2;
-	public final int MATERIALS=3;
-	public final int VERTICES=4;
-	public final int INDICES=6;
-	public final int FACES=9;
-	public final int LEAVES=11;
-	public final int MARKBRUSHES=13;
-	public final int MODELS=14;
-	public final int BRUSHES=15;
-	public final int BRUSHSIDES=16;
-	public final int TEXMATRIX=17;
-	
-	// Allows us to reference the X Y or Z components of a vector by their letter
-	public final int X=0;
-	public final int Y=1;
-	public final int Z=2;
-	
-	// This allows us to get the name of the lump using its index.
-	public static final String[] LUMPNAMES = {"Entities", "Planes", "Textures", "Materials", "Vertices", "Normals", "Indices", "Visibility", "Nodes", "Faces",
-	                             "Lighting", "Leaves", "Mark Surfaces", "Mark Brushes", "Models", "Brushes", "Brushsides", "Texmatrix"};
-		
-	// This holds the size of the data structures for each lump. If
-	// the lump does not have a set size, the size is -1. If the lump's
-	// size has not been determined yet, the size is 0.
-	// The entities lump does not have a set data length per entity
-	// Since there is literally no data in lump05, there is no data structure
-	// Visibility varies for every map, and will be determined by constructor
-	public int[] lumpDataSizes = {-1, 20, 64, 64, 12, -1, 4, 0, 36, 48, 3, 48, 4, 4, 56, 12, 8, 32};
-	
-	// Declare this here since the lumps path of the BSP probably will not change
-	private LS ls;
-	
-	// Define the method of decompilation
-	private boolean vertexDecomp; // Use vetices or no?
-	private boolean checkVerts; // Check whether vertices match plane?
-	private boolean facesOnly; // Facial decompilation only (not implemented yet!)
-	private double planePointCoef; // What to scale points on for a plane by. Some maps like different numbers,
-	                               // even though anything besides zero SHOULD be fine.
+	private Entities mapFile;
+	private int numBrshs;
 	
 	// CONSTRUCTORS
-	// This accepts a file path and parses it into the form needed. If the folder is empty (or not found)
-	// the program fails nicely.
-	public Decompiler(String in) {
-		try {
-			vertexDecomp=true;
-			checkVerts=true;
-			facesOnly=false;
-			planePointCoef=100;
-			window.clearConsole();
-		
-			filepath=in.substring(0,in.length()-4)+"\\";
-			ls=new LS(in);
-			ls.separateLumps();
-			
-			myL0 = new Lump00(filepath+"00 - Entities.txt");
-			myL1 = new Lump01(filepath+"01 - Planes.hex");
-			myL2 = new Lump02(filepath+"02 - Textures.hex");
-			myL3 = new Lump03(filepath+"03 - Materials.hex");
-			myL4 = new Lump04(filepath+"04 - Vertices.hex");
-			myL9 = new Lump09(filepath+"09 - Faces.hex");
-			myL11 = new Lump11(filepath+"11 - Leaves.hex");
-			myL13 = new Lump13(filepath+"13 - Mark Brushes.hex");
-			myL14 = new Lump14(filepath+"14 - Models.hex");
-			myL15 = new Lump15(filepath+"15 - Brushes.hex");
-			myL16 = new Lump16(filepath+"16 - Brushsides.hex");
-			myL17 = new Lump17(filepath+"17 - Texmatrix.hex");
-			
-			r.gc(); // Take a minute to collect garbage, all the file parsing can leave a lot of crap data.
-			
-			window.println("Entities lump: "+myL0.getLength()+" bytes, "+myL0.getNumElements()+" items");
-			window.println("Planes lump: "+myL1.getLength()+" bytes, "+myL1.getNumElements()+" items");
-			window.println("Textures lump: "+myL2.getLength()+" bytes, "+myL2.getNumElements()+" items");
-			window.println("Materials lump: "+myL3.getLength()+" bytes, "+myL3.getNumElements()+" items");
-			window.println("Vertices lump: "+myL4.getLength()+" bytes, "+myL4.getNumElements()+" items");
-			window.println("Faces lump: "+myL9.getLength()+" bytes, "+myL9.getNumElements()+" items");
-			window.println("Leaves lump: "+myL11.getLength()+" bytes, "+myL11.getNumElements()+" items");
-			window.println("Leaf brushes lump: "+myL13.getLength()+" bytes, "+myL13.getNumElements()+" items");
-			window.println("Models lump: "+myL14.getLength()+" bytes, "+myL14.getNumElements()+" items");
-			window.println("Brushes lump: "+myL15.getLength()+" bytes, "+myL15.getNumElements()+" items");
-			window.println("Brush sides lump: "+myL16.getLength()+" bytes, "+myL16.getNumElements()+" items");
-			window.println("Texture scales lump: "+myL17.getLength()+" bytes, "+myL17.getNumElements()+" items");
-			
-		} catch(java.lang.StringIndexOutOfBoundsException e) {
-			window.println("Error: invalid path");
-		}
-	}
 	
-	// Accepts a filepath as a string but also booleans for options like vertex decompilation
-	public Decompiler(String in, boolean inVertexDecomp, boolean inCheckVerts, boolean inFacesOnly, double coefs) {
-		try {
-			vertexDecomp=inVertexDecomp;
-			checkVerts=inCheckVerts;
-			facesOnly=inFacesOnly;
-			planePointCoef=coefs;
-			window.clearConsole();
+	// This constructor controls the entire process.
+	public Decompiler(BSPData BSP, boolean vertexDecomp, boolean checkVerts, boolean facesOnly, double planePointCoef) {
+		// Set up global variables
+		this.BSP=BSP;
+		this.vertexDecomp=vertexDecomp;
+		this.checkVerts=checkVerts;
+		this.facesOnly=facesOnly;
+		this.planePointCoef=planePointCoef;
 		
-			filepath=in.substring(0,in.length()-4)+"\\";
-			ls=new LS(in);
-			ls.separateLumps();
-			
-			myL0 = new Lump00(filepath+"00 - Entities.txt");
-			myL1 = new Lump01(filepath+"01 - Planes.hex");
-			myL2 = new Lump02(filepath+"02 - Textures.hex");
-			myL3 = new Lump03(filepath+"03 - Materials.hex");
-			myL4 = new Lump04(filepath+"04 - Vertices.hex");
-			myL9 = new Lump09(filepath+"09 - Faces.hex");
-			myL11 = new Lump11(filepath+"11 - Leaves.hex");
-			myL13 = new Lump13(filepath+"13 - Mark Brushes.hex");
-			myL14 = new Lump14(filepath+"14 - Models.hex");
-			myL15 = new Lump15(filepath+"15 - Brushes.hex");
-			myL16 = new Lump16(filepath+"16 - Brushsides.hex");
-			myL17 = new Lump17(filepath+"17 - Texmatrix.hex");
-			
-			r.gc(); // Take a minute to collect garbage, all the file parsing can leave a lot of crap data.
-			
-			window.println("Entities lump: "+myL0.getLength()+" bytes, "+myL0.getNumElements()+" items");
-			window.println("Planes lump: "+myL1.getLength()+" bytes, "+myL1.getNumElements()+" items");
-			window.println("Textures lump: "+myL2.getLength()+" bytes, "+myL2.getNumElements()+" items");
-			window.println("Materials lump: "+myL3.getLength()+" bytes, "+myL3.getNumElements()+" items");
-			window.println("Vertices lump: "+myL4.getLength()+" bytes, "+myL4.getNumElements()+" items");
-			window.println("Faces lump: "+myL9.getLength()+" bytes, "+myL9.getNumElements()+" items");
-			window.println("Leaves lump: "+myL11.getLength()+" bytes, "+myL11.getNumElements()+" items");
-			window.println("Leaf brushes lump: "+myL13.getLength()+" bytes, "+myL13.getNumElements()+" items");
-			window.println("Models lump: "+myL14.getLength()+" bytes, "+myL14.getNumElements()+" items");
-			window.println("Brushes lump: "+myL15.getLength()+" bytes, "+myL15.getNumElements()+" items");
-			window.println("Brush sides lump: "+myL16.getLength()+" bytes, "+myL16.getNumElements()+" items");
-			window.println("Texture scales lump: "+myL17.getLength()+" bytes, "+myL17.getNumElements()+" items");
-			
-		} catch(java.lang.StringIndexOutOfBoundsException e) {
-			window.println("Error: invalid path");
-		}
+		decompile();
 	}
 	
 	// METHODS
@@ -215,38 +50,39 @@ public class Decompiler {
 	//  j: Current leaf, referenced in a list by the model referenced by the current entity
 	//   k: Current brush, referenced in a list by the current leaf.
 	//    l: Current side of the current brush.
-	public void decompile(String path) {
+	//     m: When attempting vertex decompilation, the current vertex.
+	public void decompile() {
 		// Begin by copying all the entities into another Lump00 object. This is
 		// necessary because if I just modified the current entity list then it
 		// could be saved back into the BSP and really mess some stuff up.
-		Lump00 mapFile=new Lump00(myL0);
+		mapFile=new Entities(BSP.getEntities());
 		// Then I need to go through each entity and see if it's brush-based.
 		// Worldspawn is brush-based as well as any entity with model *#.
 		for(int i=0;i<mapFile.getNumElements();i++) { // For each entity
 			int currentModel=-1;
 			if(mapFile.getEntity(i).isBrushBased()) {
-				currentModel=myL0.getEntity(i).getModelNumber();
+				currentModel=BSP.getEntities().getEntity(i).getModelNumber();
 			} else {
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("worldspawn")) {
 					currentModel=0; // If the entity is worldspawn, we're dealing with model 0, which is the world.
 				}
 			}
+			
 			if(currentModel!=-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
 				double[] origin=mapFile.getEntity(i).getOrigin();
-				int[] usedPlanes=new int[myL1.getNumElements()];
-				Lump01 newPlanes=new Lump01(myL1);
-				int firstLeaf=myL14.getModel(currentModel).getLeaf();
-				int numLeaves=myL14.getModel(currentModel).getNumLeafs();
-				boolean[] brushesUsed=new boolean[myL15.getNumElements()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
-				int numBrshs=0;
+				Planes newPlanes=new Planes(BSP.getPlanes());
+				int firstLeaf=BSP.getModels().getModel(currentModel).getLeaf();
+				int numLeaves=BSP.getModels().getModel(currentModel).getNumLeafs();
+				boolean[] brushesUsed=new boolean[BSP.getBrushes().getNumElements()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
+				numBrshs=0;
 				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
-					int firstBrushIndex=myL11.getLeaf(j+firstLeaf).getMarkBrush();
-					int numBrushIndices=myL11.getLeaf(j+firstLeaf).getNumMarkBrushes();
+					int firstBrushIndex=BSP.getLeaves().getLeaf(j+firstLeaf).getMarkBrush();
+					int numBrushIndices=BSP.getLeaves().getLeaf(j+firstLeaf).getNumMarkBrushes();
 					if(numBrushIndices>0) { // A lot of leaves reference no brushes. If this is one, this iteration of the j loop is finished
 						for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
-							if(!brushesUsed[myL13.getMarkBrush(firstBrushIndex+k)]) {
-								brushesUsed[myL13.getMarkBrush(firstBrushIndex+k)]=true;
-								Brush currentBrush=myL15.getBrush(myL13.getMarkBrush(firstBrushIndex+k)); // Get a handle to the brush
+							if(!brushesUsed[BSP.getMarkBrushes().getInt(firstBrushIndex+k)]) {
+								brushesUsed[BSP.getMarkBrushes().getInt(firstBrushIndex+k)]=true;
+								Brush currentBrush=BSP.getBrushes().getBrush(BSP.getMarkBrushes().getInt(firstBrushIndex+k)); // Get a handle to the brush
 								int firstSide=currentBrush.getFirstSide();
 								int numSides=currentBrush.getNumSides();
 								int numPlaneFacesThisBrsh=0;
@@ -257,25 +93,24 @@ public class Decompiler {
 								int numRealFaces=0;
 								for(int l=0;l<numSides;l++) { // For each side of the brush
 									VertexD[] plane=new VertexD[3]; // Three points define a plane. All I have to do is find three points on that plane.
-									BrushSide currentSide=myL16.getBrushSide(firstSide+l);
-									Face currentFace=myL9.getFace(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
-									if(!myL2.getTexture(currentFace.getTexture()).equalsIgnoreCase("special/bevel")) { // If this face uses special/bevel, skip the face completely
+									BrushSide currentSide=BSP.getBrushSides().getBrushSide(firstSide+l);
+									Face currentFace=BSP.getFaces().getFace(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
+									if(!BSP.getTextures().getTexture(currentFace.getTexture()).equalsIgnoreCase("special/bevel")) { // If this face uses special/bevel, skip the face completely
 										int firstVertex=currentFace.getVert();
 										int numVertices=currentFace.getNumVerts();
-										usedPlanes[currentSide.getPlane()]++;
 										Plane currentPlane=newPlanes.getPlane(currentSide.getPlane());
 										boolean pointsWorked=false;
 										if(numVertices!=0 && vertexDecomp) { // If the face actually references a set of vertices
-											plane[0]=new VertexD(myL4.getVertex(firstVertex)); // Grab and store the first one
+											plane[0]=new VertexD(BSP.getVertices().getVertex(firstVertex)); // Grab and store the first one
 											int m=1;
 											for(m=1;m<numVertices;m++) { // For each point after the first one
-												plane[1]=new VertexD(myL4.getVertex(firstVertex+m));
+												plane[1]=new VertexD(BSP.getVertices().getVertex(firstVertex+m));
 												if(!plane[0].equals(plane[1])) { // Make sure the point isn't the same as the first one
 													break; // If it isn't the same, this point is good
 												}
 											}
 											for(m=m+1;m<numVertices;m++) { // For each point after the previous one used
-												plane[2]=new VertexD(myL4.getVertex(firstVertex+m));
+												plane[2]=new VertexD(BSP.getVertices().getVertex(firstVertex+m));
 												if(!plane[2].equals(plane[0]) && !plane[2].equals(plane[1])) { // Make sure no point is equal to the third one
 													if((crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || // Make sure all
 													   (crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getY()!=0) || // three points 
@@ -296,7 +131,6 @@ public class Decompiler {
 												VertexD normalAdd = vertCross.add(new VertexD(currentPlane.getA(), currentPlane.getB(), currentPlane.getC()));
 												if(Math.sqrt(Math.pow(normalAdd.getX(), 2) + Math.pow(normalAdd.getY(), 2) + Math.pow(normalAdd.getZ(), 2)) < 1) {
 													plane=flipPlane(plane);
-													System.out.println("Black niggers");
 												}
 											}
 										}
@@ -329,32 +163,32 @@ public class Decompiler {
 														}
 													} else { // If you reach this point the plane is not parallel to any two-axis plane.
 														if(currentPlane.getA()==0) { // parallel to X axis
-															plane[0]=new VertexD(-planePointCoef, Math.pow(planePointCoef, 2), -(Math.pow(planePointCoef, 2)*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
+															plane[0]=new VertexD(-planePointCoef, planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
 															plane[1]=new VertexD(0, 0, (double)currentPlane.getDist()/(double)currentPlane.getC());
-															plane[2]=new VertexD(planePointCoef, Math.pow(planePointCoef, 2), -(Math.pow(planePointCoef, 2)*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
+															plane[2]=new VertexD(planePointCoef, planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
 															if(currentPlane.getC()>0) {
 																plane=flipPlane(plane);
 															}
 														} else {
 															if(currentPlane.getB()==0) { // parallel to Y axis
-																plane[0]=new VertexD(-(Math.pow(planePointCoef, 2)*(double)currentPlane.getC()-(double)currentPlane.getDist())/(double)currentPlane.getA(), -planePointCoef, Math.pow(planePointCoef, 2));
+																plane[0]=new VertexD(-(planePointCoef*planePointCoef*(double)currentPlane.getC()-(double)currentPlane.getDist())/(double)currentPlane.getA(), -planePointCoef, planePointCoef*planePointCoef);
 																plane[1]=new VertexD((double)currentPlane.getDist()/(double)currentPlane.getA(), 0, 0);
-																plane[2]=new VertexD(-(Math.pow(planePointCoef, 2)*(double)currentPlane.getC()-(double)currentPlane.getDist())/(double)currentPlane.getA(), planePointCoef, Math.pow(planePointCoef, 2));
+																plane[2]=new VertexD(-(planePointCoef*planePointCoef*(double)currentPlane.getC()-(double)currentPlane.getDist())/(double)currentPlane.getA(), planePointCoef, planePointCoef*planePointCoef);
 																if(currentPlane.getA()>0) {
 																	plane=flipPlane(plane);
 																}
 															} else {
 																if(currentPlane.getC()==0) { // parallel to Z axis
-																	plane[0]=new VertexD(Math.pow(planePointCoef, 2), -(Math.pow(planePointCoef, 2)*(double)currentPlane.getA()-(double)currentPlane.getDist())/(double)currentPlane.getB(), -planePointCoef);
+																	plane[0]=new VertexD(planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*(double)currentPlane.getA()-(double)currentPlane.getDist())/(double)currentPlane.getB(), -planePointCoef);
 																	plane[1]=new VertexD(0, (double)currentPlane.getDist()/(double)currentPlane.getB(), 0);
-																	plane[2]=new VertexD(Math.pow(planePointCoef, 2), -(Math.pow(planePointCoef, 2)*(double)currentPlane.getA()-(double)currentPlane.getDist())/(double)currentPlane.getB(), planePointCoef);
+																	plane[2]=new VertexD(planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*(double)currentPlane.getA()-(double)currentPlane.getDist())/(double)currentPlane.getB(), planePointCoef);
 																	if(currentPlane.getB()>0) {
 																		plane=flipPlane(plane);
 																	}
 																} else { // If you reach this point the plane is not parallel to any axis. Therefore, any two coordinates will give a third.
-																	plane[0]=new VertexD(-planePointCoef, Math.pow(planePointCoef, 2), -(-planePointCoef*(double)currentPlane.getA()+Math.pow(planePointCoef, 2)*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
+																	plane[0]=new VertexD(-planePointCoef, planePointCoef*planePointCoef, -(-planePointCoef*(double)currentPlane.getA()+planePointCoef*planePointCoef*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
 																	plane[1]=new VertexD(0, 0, (double)currentPlane.getDist()/(double)currentPlane.getC());
-																	plane[2]=new VertexD(planePointCoef, Math.pow(planePointCoef, 2), -(planePointCoef*(double)currentPlane.getA()+Math.pow(planePointCoef, 2)*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
+																	plane[2]=new VertexD(planePointCoef, planePointCoef*planePointCoef, -(planePointCoef*(double)currentPlane.getA()+planePointCoef*planePointCoef*(double)currentPlane.getB()-(double)currentPlane.getDist())/(double)currentPlane.getC());
 																	if(currentPlane.getC()>0) {
 																		plane=flipPlane(plane);
 																	}
@@ -374,10 +208,10 @@ public class Decompiler {
 										plane[2].setX(plane[2].getX()+origin[X]);
 										plane[2].setY(plane[2].getY()+origin[Y]);
 										plane[2].setZ(plane[2].getZ()+origin[Z]);
-										String texture=myL2.getTexture(currentFace.getTexture());
+										String texture=BSP.getTextures().getTexture(currentFace.getTexture());
 										double[] textureS=new double[3];
 										double[] textureT=new double[3];
-										TexMatrix currentTexMatrix=myL17.getTexMatrix(currentFace.getTexStyle());
+										TexMatrix currentTexMatrix=BSP.getTextureMatrices().getTexMatrix(currentFace.getTexStyle());
 										// Get the lengths of the axis vectors
 										double UAxisLength=Math.sqrt(Math.pow((double)currentTexMatrix.getUAxisX(),2)+Math.pow((double)currentTexMatrix.getUAxisY(),2)+Math.pow((double)currentTexMatrix.getUAxisZ(),2));
 										double VAxisLength=Math.sqrt(Math.pow((double)currentTexMatrix.getVAxisX(),2)+Math.pow((double)currentTexMatrix.getVAxisY(),2)+Math.pow((double)currentTexMatrix.getVAxisZ(),2));
@@ -396,14 +230,14 @@ public class Decompiler {
 										double textureShiftT=(double)currentTexMatrix.getVShift()-originShiftT;
 										float texRot=0; // In compiled maps this is calculated into the U and V axes, so set it to 0 until I can figure out a good way to determine a better value.
 										int flags=currentFace.getType(); // This is actually a set of flags. Whatever.
-										String material=myL3.getMaterial(currentFace.getMaterial());
+										String material=BSP.getMaterials().getMaterial(currentFace.getMaterial());
 										double lgtScale=16; // These values are impossible to get from a compiled map since they
 										double lgtRot=0;    // are used by RAD for generating lightmaps, then are discarded, I believe.
 										try {
 											brushSides[l]=new MAPBrushSide(plane, texture, textureS, textureShiftS, textureT, textureShiftT,
 										                                          texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
 										} catch(InvalidMAPBrushSideException e) {
-											window.println("Error creating brush side "+l+" on brush "+k+" in leaf "+j+" in model "+i+", side not written.");
+											Window.window.println("Error creating brush side "+l+" on brush "+k+" in leaf "+j+" in model "+i+", side not written.");
 										}
 										numRealFaces++;
 									}
@@ -484,7 +318,7 @@ public class Decompiler {
 							newOriginBrush.addAttribute(currentEdge.toString());
 						} catch(InvalidMAPBrushSideException e) {
 							// This message will never be displayed.
-							window.println("Bad origin brush, there's something wrong with the code.");
+							Window.window.println("Bad origin brush, there's something wrong with the code.");
 						}
 					}
 					newOriginBrush.addAttribute("}");
@@ -493,11 +327,9 @@ public class Decompiler {
 				mapFile.getEntity(i).deleteAttribute("origin");
 			}
 		}
-		window.println("Saving "+path+"...");
-		mapFile.save(path);
-		window.println("Deleting lump files");
-		ls.deleteLumps();
-		window.println("Process completed!");
+		Window.window.println("Saving "+BSP.getPath().substring(0, BSP.getPath().length()-1)+".map...");
+		mapFile.save(BSP.getPath().substring(0, BSP.getPath().length()-1)+".map");
+		Window.window.println("Process completed!");
 		r.gc(); // Collect garbage, there will be a lot of it
 	}
 	
@@ -529,55 +361,5 @@ public class Decompiler {
 		VertexD result = crossProduct(first, second);
 		double len = Math.sqrt((Math.pow(result.getX(), 2) + Math.pow(result.getY(), 2) + Math.pow(result.getZ(), 2)));
 		return new VertexD(result.getX()/len, result.getY()/len, result.getZ()/len);
-	}
-	
-	// ACCESSORS/MUTATORS
-	
-	public Lump00 getLump00() {
-		return myL0;
-	}
-	
-	public Lump01 getLump01() {
-		return myL1;
-	}
-	
-	public Lump02 getLump02() {
-		return myL2;
-	}
-	
-	public Lump03 getLump03() {
-		return myL3;
-	}
-	
-	public Lump04 getLump04() {
-		return myL4;
-	}
-	
-	public Lump09 getLump09() {
-		return myL9;
-	}
-	
-	public Lump11 getLump11() {
-		return myL11;
-	}
-	
-	public Lump13 getLump13() {
-		return myL13;
-	}
-	
-	public Lump14 getLump14() {
-		return myL14;
-	}
-	
-	public Lump15 getLump15() {
-		return myL15;
-	}
-	
-	public Lump16 getLump16() {
-		return myL16;
-	}
-	
-	public Lump17 getLump17() {
-		return myL17;
 	}
 }
