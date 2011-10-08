@@ -14,6 +14,7 @@ import java.io.File;
 public class Window extends JPanel implements ActionListener {
 
 	protected static Window window;
+	private static BSPFileFilter BSPFilter = new BSPFileFilter();
 
 	// main method
 	// Creates an Object of this class and launches the GUI. Entry point to the whole program.
@@ -30,26 +31,30 @@ public class Window extends JPanel implements ActionListener {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		window = new Window(frame.getContentPane());
+		
+		frame.setIconImage(new ImageIcon("icon32x32.PNG").getImage());
 
 		frame.setPreferredSize(new Dimension(600, 400));
 
 		frame.pack();
 		frame.setResizable(false);
 		frame.setVisible(true);
+		
+		window.print("Got a bug to report? Want to see something added?\nCreate an issue report at\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/list");
 	}
 
-	private JFileChooser file_selector;
-	private JButton btn_open;
-	private JButton btn_decomp;
-	private JTextField txt_file;
-	private JTextField txt_coef;
-	private JTextArea consolebox;
-	private JLabel lbl_spacer;
-	private JLabel lbl_coef;
-	private JScrollPane console_pane;
-	private JCheckBox chk_planar;
-	private JCheckBox chk_skipVertCheck;
-	private JCheckBox chk_facesOnly;
+	private static JFileChooser file_selector;
+	private static JButton btn_open;
+	protected static JButton btn_decomp;
+	private static JTextField txt_file;
+	private static JTextField txt_coef;
+	private static JTextArea consolebox;
+	private static JLabel lbl_spacer;
+	private static JLabel lbl_coef;
+	private static JScrollPane console_pane;
+	private static JCheckBox chk_planar;
+	private static JCheckBox chk_skipVertCheck;
+	private static JCheckBox chk_skipPlaneFlip;
 
 
 	public Window(Container pane) {
@@ -111,7 +116,6 @@ public class Window extends JPanel implements ActionListener {
 		pane.add(txt_coef, coefConstraints);
 		
 		consolebox = new JTextArea(15, 70);
-		consolebox.setEnabled(false);
 		
 		console_pane = new JScrollPane(consolebox);
 		
@@ -157,8 +161,7 @@ public class Window extends JPanel implements ActionListener {
 		
 		chk_skipVertCheck.addActionListener(this);
 		
-		// facial decompilation not implemented yet
-		/*chk_facesOnly = new JCheckBox("Decompile faces only");
+		chk_skipPlaneFlip = new JCheckBox("Skip plane flip");
 		
 		GridBagConstraints FacesOnlyConstraints = new GridBagConstraints();
 		FacesOnlyConstraints.fill = GridBagConstraints.NONE;
@@ -166,7 +169,7 @@ public class Window extends JPanel implements ActionListener {
 		FacesOnlyConstraints.gridy = 1;
 		FacesOnlyConstraints.gridwidth = 1;
 		FacesOnlyConstraints.gridheight = 1;
-		pane.add(chk_facesOnly, FacesOnlyConstraints);*/
+		pane.add(chk_skipPlaneFlip, FacesOnlyConstraints);
 	} // constructor
 
 	public void actionPerformed(ActionEvent action) {
@@ -174,6 +177,8 @@ public class Window extends JPanel implements ActionListener {
 		
 		if (action.getSource() == btn_open) {
 			file_selector = new JFileChooser();
+			file_selector.addChoosableFileFilter(BSPFilter);
+			// file_selector.setIconImage(new ImageIcon("folder32x32.PNG").getImage());
 			int returnVal = file_selector.showOpenDialog(this);
 			
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -184,14 +189,16 @@ public class Window extends JPanel implements ActionListener {
 		
 		if(action.getSource() == btn_decomp) {
 			theBSP=new File(txt_file.getText());
+			clearConsole();
 			if(!theBSP.exists()) {
-				JOptionPane.showMessageDialog(this, "File \""+txt_file.getText()+"\" not found!");
+				println("File \""+txt_file.getText()+"\" not found!");
 			} else {
+				consolebox.setEnabled(false);
 				btn_decomp.setEnabled(false);
-				BSPData map = new BSPData(txt_file.getText());
-				Decompiler decompiler = new Decompiler(map, !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), false, Double.parseDouble(txt_coef.getText()));
-				map.close();
-				btn_decomp.setEnabled(true);
+				Runnable decompiler = new Decompiler(txt_file.getText(), !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
+				Thread worker = new Thread(decompiler);
+				worker.setName("Decompiler");
+				worker.start();
 			}
 		}
 		

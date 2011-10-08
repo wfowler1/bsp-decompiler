@@ -17,7 +17,7 @@ public class Vertices {
 	
 	private File data;
 	private int numVerts=0;
-	private Vertex[] vertices;
+	private Point3D[] vertices;
 	
 	// CONSTRUCTORS
 	
@@ -26,7 +26,7 @@ public class Vertices {
 		data=new File(in);
 		try {
 			numVerts=getNumElements();
-			vertices=new Vertex[numVerts];
+			vertices=new Point3D[numVerts];
 			populateVertexList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
@@ -40,7 +40,7 @@ public class Vertices {
 		data=in;
 		try {
 			numVerts=getNumElements();
-			vertices=new Vertex[numVerts];
+			vertices=new Point3D[numVerts];
 			populateVertexList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
@@ -52,16 +52,16 @@ public class Vertices {
 	// METHODS
 	
 	// +populateVertexList()
-	// Parses all data into an array of Vertex.
+	// Parses all data into an array of Point3D.
 	public void populateVertexList() throws java.io.FileNotFoundException, java.io.IOException {
 		FileInputStream reader=new FileInputStream(data);
 		try {
 			for(int i=0;i<numVerts;i++) {
 				byte[] datain=new byte[12];
 				reader.read(datain);
-				vertices[i]=new Vertex(datain);
+				vertices[i]=new Point3D(datain);
 			}
-		} catch(InvalidVertexException e) {
+		} catch(InvalidPoint3DException e) {
 			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last vertex.");
 		}
 		reader.close();
@@ -83,11 +83,11 @@ public class Vertices {
 		}
 	}
 	
-	public Vertex getVertex(int i) {
+	public Point3D getVertex(int i) {
 		return vertices[i];
 	}
 	
-	public Vertex[] getVertices() {
+	public Point3D[] getVertices() {
 		return vertices;
 	}
 }

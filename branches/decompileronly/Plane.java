@@ -60,6 +60,16 @@ public class Plane {
 	
 	// METHODS
 	
+	// +distance(Point3D)
+	// Gets signed distance from plane to point
+	public double distance(Point3D in) {
+		return (normal[A]*in.getX() + normal[B]*in.getY() + normal[C]*in.getZ() - dist)/(Math.sqrt(Math.pow(normal[A],2) + Math.pow(normal[B],2) + Math.pow(normal[C],2)));
+	}
+	
+	// +intersect
+	// Defines the line where this plane intersects with another
+	// public 
+	
 	// ACCESSORS/MUTATORS
 	
 	// returns the coordinates as a float3

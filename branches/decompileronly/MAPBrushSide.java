@@ -4,7 +4,7 @@
 public class MAPBrushSide {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
-	private VertexD[] plane;
+	private Point3D[] plane;
 	private String texture;
 	private double[] textureS;
 	private double textureShiftS;
@@ -23,7 +23,7 @@ public class MAPBrushSide {
 	public static final int Z=2;
 	
 	// CONSTRUCTORS
-	public MAPBrushSide(VertexD[] inPlane, String inTexture, double[] inTextureS, double inTextureShiftS, double[] inTextureT, double inTextureShiftT, float inTexRot,
+	public MAPBrushSide(Point3D[] inPlane, String inTexture, double[] inTextureS, double inTextureShiftS, double[] inTextureT, double inTextureShiftT, float inTexRot,
 	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot) throws InvalidMAPBrushSideException {
 		if(inPlane.length!=3 || inTextureS.length!=3 || inTextureT.length!=3) {
 			throw new InvalidMAPBrushSideException();
@@ -61,5 +61,16 @@ public class MAPBrushSide {
 		       " [ "+lgtScale+" "+lgtRot+" ]";
 	}
 	
+	// flipPlane()
+	// Negate the plane
+	public void flipPlane() {
+		Point3D temp=plane[2];
+		plane[2]=plane[1];
+		plane[1]=temp;
+	}
+	
 	// ACCESSORS/MUTATORS
+	public Point3D[] getTriangle() {
+		return plane;
+	}
 }

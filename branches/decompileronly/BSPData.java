@@ -42,39 +42,10 @@ public class BSPData {
 	private BrushSides brushSides;
 	private TextureMatrices textureMatrices;
 	
-	public final int NUMLUMPS=18;
-	
-	// This just allows us to reference the lump by name rather than index.
-	public final int ENTITIES=0;
-	public final int PLANES=1;
-	public final int TEXTURES=2;
-	public final int MATERIALS=3;
-	public final int VERTICES=4;
-	public final int INDICES=6;
-	public final int FACES=9;
-	public final int LEAVES=11;
-	public final int MARKBRUSHES=13;
-	public final int MODELS=14;
-	public final int BRUSHES=15;
-	public final int BRUSHSIDES=16;
-	public final int TEXMATRIX=17;
-	
 	// Allows us to reference the X Y or Z components of a vector by their letter
 	public final int X=0;
 	public final int Y=1;
 	public final int Z=2;
-	
-	// This allows us to get the name of the lump using its index.
-	public static final String[] LUMPNAMES = {"Entities", "Planes", "Textures", "Materials", "Vertices", "Normals", "Indices", "Visibility", "Nodes", "Faces",
-	                             "Lighting", "Leaves", "Mark Surfaces", "Mark Brushes", "Models", "Brushes", "Brushsides", "Texmatrix"};
-		
-	// This holds the size of the data structures for each lump. If
-	// the lump does not have a set size, the size is -1. If the lump's
-	// size has not been determined yet, the size is 0.
-	// The entities lump does not have a set data length per entity
-	// Since there is literally no data in lump05, there is no data structure
-	// Visibility varies for every map, and will be determined by constructor
-	public int[] lumpDataSizes = {-1, 20, 64, 64, 12, -1, 4, 0, 36, 48, 3, 48, 4, 4, 56, 12, 8, 32};
 	
 	// Declare this here since the lumps path of the BSP probably will not change
 	private LS ls;
@@ -84,8 +55,6 @@ public class BSPData {
 	// the program fails nicely.
 	public BSPData(String in) {
 		try {
-			Window.window.clearConsole();
-		
 			filepath=in.substring(0,in.length()-4)+"\\";
 			ls=new LS(in);
 			version = ls.separateLumps();
