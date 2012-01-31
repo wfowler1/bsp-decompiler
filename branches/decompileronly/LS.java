@@ -149,84 +149,84 @@ public class LS {
 				}
 				BSP.close();
 				if(version==42) {
-					Lump00 = new File(folderPath+BSPData.LUMPNAMES[0]+".txt");
+					Lump00 = new File(folderPath+"Entities.txt");
 					if(!Lump00.exists()) {
 						Lump00.createNewFile();
 					} else {
 						Lump00.delete();
 						Lump00.createNewFile();
 					}
-					Lump01 = new File(folderPath+BSPData.LUMPNAMES[1]+".hex");
+					Lump01 = new File(folderPath+"Planes.hex");
 					if(!Lump01.exists()) {
 						Lump01.createNewFile();
 					} else {
 						Lump01.delete();
 						Lump01.createNewFile();
 					}
-					Lump02 = new File(folderPath+BSPData.LUMPNAMES[2]+".hex");
+					Lump02 = new File(folderPath+"Textures.hex");
 					if(!Lump02.exists()) {
 						Lump02.createNewFile();
 					} else {
 						Lump02.delete();
 						Lump02.createNewFile();
 					}
-					Lump03 = new File(folderPath+BSPData.LUMPNAMES[3]+".hex");
+					Lump03 = new File(folderPath+"Materials.hex");
 					if(!Lump03.exists()) {
 						Lump03.createNewFile();
 					} else {
 						Lump03.delete();
 						Lump03.createNewFile();
 					}
-					Lump04 = new File(folderPath+BSPData.LUMPNAMES[4]+".hex");
+					Lump04 = new File(folderPath+"Vertices.hex");
 					if(!Lump04.exists()) {
 						Lump04.createNewFile();
 					} else {
 						Lump04.delete();
 						Lump04.createNewFile();
 					}
-					Lump09 = new File(folderPath+BSPData.LUMPNAMES[9]+".hex");
+					Lump09 = new File(folderPath+"Faces.hex");
 					if(!Lump09.exists()) {
 						Lump09.createNewFile();
 					} else {
 						Lump09.delete();
 						Lump09.createNewFile();
 					}
-					Lump11 = new File(folderPath+BSPData.LUMPNAMES[11]+".hex");
+					Lump11 = new File(folderPath+"Leaves.hex");
 					if(!Lump11.exists()) {
 						Lump11.createNewFile();
 					} else {
 						Lump11.delete();
 						Lump11.createNewFile();
 					}
-					Lump13 = new File(folderPath+BSPData.LUMPNAMES[13]+".hex");
+					Lump13 = new File(folderPath+"Mark Brushes.hex");
 					if(!Lump13.exists()) {
 						Lump13.createNewFile();
 					} else {
 						Lump13.delete();
 						Lump13.createNewFile();
 					}
-					Lump14 = new File(folderPath+BSPData.LUMPNAMES[14]+".hex");
+					Lump14 = new File(folderPath+"Models.hex");
 					if(!Lump14.exists()) {
 						Lump14.createNewFile();
 					} else {
 						Lump14.delete();
 						Lump14.createNewFile();
 					}
-					Lump15 = new File(folderPath+BSPData.LUMPNAMES[15]+".hex");
+					Lump15 = new File(folderPath+"Brushes.hex");
 					if(!Lump15.exists()) {
 						Lump15.createNewFile();
 					} else {
 						Lump15.delete();
 						Lump15.createNewFile();
 					}
-					Lump16 = new File(folderPath+BSPData.LUMPNAMES[16]+".hex");
+					Lump16 = new File(folderPath+"Brushsides.hex");
 					if(!Lump16.exists()) {
 						Lump16.createNewFile();
 					} else {
 						Lump16.delete();
 						Lump16.createNewFile();
 					}
-					Lump17 = new File(folderPath+BSPData.LUMPNAMES[17]+".hex");
+					Lump17 = new File(folderPath+"Texmatrix.hex");
 					if(!Lump17.exists()) {
 						Lump17.createNewFile();
 					} else {

@@ -135,9 +135,9 @@ public class Window extends JPanel implements ActionListener {
 		
 		GridBagConstraints coeflblConstraints = new GridBagConstraints();
 		coeflblConstraints.fill = GridBagConstraints.NONE;
-		coeflblConstraints.gridx = 0;
+		coeflblConstraints.gridx = 1;
 		coeflblConstraints.gridy = 2;
-		coeflblConstraints.gridwidth = 2;
+		coeflblConstraints.gridwidth = 1;
 		coeflblConstraints.gridheight = 1;
 		pane.add(lbl_coef, coeflblConstraints);
 		
