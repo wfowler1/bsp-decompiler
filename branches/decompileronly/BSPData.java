@@ -13,12 +13,12 @@ public class BSPData {
 	
 	private static Runtime r = Runtime.getRuntime(); // Get a runtime object. This is for calling
 	                                                 // Java's garbage collector and does not need
-												                // to be ported. I try not to leave memory leaks
-												                // but since Java has no way explicitly reallocate
-												                // unused memory I have to tell it when a good
-												                // time is to run the garbage collector, by
-												                // calling gc(). Also, it is used to execute EXEs
-												                // from within the program by calling .exec(path).
+	                                                 // to be ported. I try not to leave memory leaks
+	                                                 // but since Java has no way explicitly reallocate
+	                                                 // unused memory I have to tell it when a good
+	                                                 // time is to run the garbage collector, by
+	                                                 // calling gc(). Also, it is used to execute EXEs
+	                                                 // from within the program by calling .exec(path).
 
 	// All lumps will be in the same folder. This String IS that folder.
 	private String filepath;

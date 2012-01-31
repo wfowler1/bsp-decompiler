@@ -31,13 +31,23 @@ public class Decompiler implements Runnable {
 	
 	// CONSTRUCTORS
 	
-	// This constructor controls the entire process.
+	// This constructor sets everything according to specified settings.
 	public Decompiler(String path, boolean vertexDecomp, boolean checkVerts, boolean correctPlaneFlip, double planePointCoef) {
 		// Set up global variables
 		this.vertexDecomp=vertexDecomp;
 		this.checkVerts=checkVerts;
 		this.correctPlaneFlip=correctPlaneFlip;
 		this.planePointCoef=planePointCoef;
+		this.path=path;
+	}
+	
+	// This constructor sets default settings
+	public Decompiler(String path) {
+		// Set up global variables
+		this.vertexDecomp=true;
+		this.checkVerts=true;
+		this.correctPlaneFlip=false;
+		this.planePointCoef=100;
 		this.path=path;
 	}
 	
@@ -55,125 +65,131 @@ public class Decompiler implements Runnable {
 	//    l: Current side of the current brush.
 	//     m: When attempting vertex decompilation, the current vertex.
 	public void run() {
-		// First thing to do: set up BSPData object
-		BSP=new BSPData(path);
-		// Begin by copying all the entities into another Lump00 object. This is
-		// necessary because if I just modified the current entity list then it
-		// could be saved back into the BSP and really mess some stuff up.
-		mapFile=new Entities(BSP.getEntities());
-		// Then I need to go through each entity and see if it's brush-based.
-		// Worldspawn is brush-based as well as any entity with model *#.
-		for(int i=0;i<mapFile.getNumElements();i++) { // For each entity
-			int currentModel=-1;
-			numBrshs=0; // Reset the brush count for each entity
-			if(mapFile.getEntity(i).isBrushBased()) {
-				currentModel=BSP.getEntities().getEntity(i).getModelNumber();
-			} else {
-				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("worldspawn")) {
-					currentModel=0; // If the entity is worldspawn, we're dealing with model 0, which is the world.
+		try {
+			// First thing to do: set up BSPData object
+			BSP=new BSPData(path);
+			// Begin by copying all the entities into another Lump00 object. This is
+			// necessary because if I just modified the current entity list then it
+			// could be saved back into the BSP and really mess some stuff up.
+			mapFile=new Entities(BSP.getEntities());
+			// Then I need to go through each entity and see if it's brush-based.
+			// Worldspawn is brush-based as well as any entity with model *#.
+			for(int i=0;i<mapFile.getNumElements();i++) { // For each entity
+				int currentModel=-1;
+				numBrshs=0; // Reset the brush count for each entity
+				if(mapFile.getEntity(i).isBrushBased()) {
+					currentModel=BSP.getEntities().getEntity(i).getModelNumber();
+				} else {
+					if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("worldspawn")) {
+						currentModel=0; // If the entity is worldspawn, we're dealing with model 0, which is the world.
+					}
 				}
-			}
-			
-			if(currentModel!=-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
-				double[] origin=mapFile.getEntity(i).getOrigin();
-				int firstLeaf=BSP.getModels().getModel(currentModel).getLeaf();
-				int numLeaves=BSP.getModels().getModel(currentModel).getNumLeafs();
-				boolean[] brushesUsed=new boolean[BSP.getBrushes().getNumElements()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
-				numBrshs=0;
-				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
-					int firstBrushIndex=BSP.getLeaves().getLeaf(j+firstLeaf).getMarkBrush();
-					int numBrushIndices=BSP.getLeaves().getLeaf(j+firstLeaf).getNumMarkBrushes();
-					if(numBrushIndices>0) { // A lot of leaves reference no brushes. If this is one, this iteration of the j loop is finished
-						for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
-							if(!brushesUsed[BSP.getMarkBrushes().getInt(firstBrushIndex+k)]) {
-								brushesUsed[BSP.getMarkBrushes().getInt(firstBrushIndex+k)]=true;
-								decompileBrush42(BSP.getBrushes().getBrush(BSP.getMarkBrushes().getInt(firstBrushIndex+k)), i); // Decompile the brush
-								numBrshs++;
+				
+				if(currentModel!=-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
+					double[] origin=mapFile.getEntity(i).getOrigin();
+					int firstLeaf=BSP.getModels().getModel(currentModel).getLeaf();
+					int numLeaves=BSP.getModels().getModel(currentModel).getNumLeafs();
+					boolean[] brushesUsed=new boolean[BSP.getBrushes().getNumElements()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
+					numBrshs=0;
+					for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
+						Leaf currentLeaf=BSP.getLeaves().getLeaf(j+firstLeaf);
+						int firstBrushIndex=currentLeaf.getMarkBrush();
+						int numBrushIndices=currentLeaf.getNumMarkBrushes();
+						if(numBrushIndices>0) { // A lot of leaves reference no brushes. If this is one, this iteration of the j loop is finished
+							for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
+								if(!brushesUsed[BSP.getMarkBrushes().getInt(firstBrushIndex+k)]) {
+									brushesUsed[BSP.getMarkBrushes().getInt(firstBrushIndex+k)]=true;
+									decompileBrush42(BSP.getBrushes().getBrush(BSP.getMarkBrushes().getInt(firstBrushIndex+k)), i); // Decompile the brush
+									numBrshs++;
+								}
 							}
 						}
 					}
-				}
-				mapFile.getEntity(i).deleteAttribute("model");
-				// Recreate origin brushes for entities that need them
-				// These are discarded on compile and replaced with an "origin" attribute in the entity.
-				// I need to undo that. For this I will create a 32x32 brush, centered at the point defined
-				// by the "origin" attribute.
-				if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
-					Entity newOriginBrush=new Entity("{ // Brush "+numBrshs);
-					numBrshs++;
-					Point3D[][] planes=new Point3D[6][3]; // Six planes for a cube brush, three vertices for each plane
-					double[][] textureS=new double[6][3];
-					double[][] textureT=new double[6][3];
-					// The planes and their texture scales
-					// I got these from an origin brush created by Gearcraft. Don't worry where these numbers came from, they work.
-					// Top
-					planes[0][0]=new Point3D(-16+origin[0], 16+origin[1], 16+origin[2]);
-					planes[0][1]=new Point3D(16+origin[0], 16+origin[1], 16+origin[2]);
-					planes[0][2]=new Point3D(16+origin[0], -16+origin[1], 16+origin[2]);
-					textureS[0][0]=1;
-					textureT[0][1]=-1;
-					// Bottom
-					planes[1][0]=new Point3D(-16+origin[0], -16+origin[1], -16+origin[2]);
-					planes[1][1]=new Point3D(16+origin[0], -16+origin[1], -16+origin[2]);
-					planes[1][2]=new Point3D(16+origin[0], 16+origin[1], -16+origin[2]);
-					textureS[1][0]=1;
-					textureT[1][1]=-1;
-					// Left
-					planes[2][0]=new Point3D(-16+origin[0], 16+origin[1], 16+origin[2]);
-					planes[2][1]=new Point3D(-16+origin[0], -16+origin[1], 16+origin[2]);
-					planes[2][2]=new Point3D(-16+origin[0], -16+origin[1], -16+origin[2]);
-					textureS[2][1]=1;
-					textureT[2][2]=-1;
-					// Right
-					planes[3][0]=new Point3D(16+origin[0], 16+origin[1], -16+origin[2]);
-					planes[3][1]=new Point3D(16+origin[0], -16+origin[1], -16+origin[2]);
-					planes[3][2]=new Point3D(16+origin[0], -16+origin[1], 16+origin[2]);
-					textureS[3][1]=1;
-					textureT[3][2]=-1;
-					// Near
-					planes[4][0]=new Point3D(16+origin[0], 16+origin[1], 16+origin[2]);
-					planes[4][1]=new Point3D(-16+origin[0], 16+origin[1], 16+origin[2]);
-					planes[4][2]=new Point3D(-16+origin[0], 16+origin[1], -16+origin[2]);
-					textureS[4][0]=1;
-					textureT[4][2]=-1;
-					// Far
-					planes[5][0]=new Point3D(16+origin[0], -16+origin[1], -16+origin[2]);
-					planes[5][1]=new Point3D(-16+origin[0], -16+origin[1], -16+origin[2]);
-					planes[5][2]=new Point3D(-16+origin[0], -16+origin[1], 16+origin[2]);
-					textureS[5][0]=1;
-					textureT[5][2]=-1;
-					
-					for(int j=0;j<6;j++) {
-						try {
-							MAPBrushSide currentEdge=new MAPBrushSide(planes[j], "special/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-							newOriginBrush.addAttribute(currentEdge.toString());
-						} catch(InvalidMAPBrushSideException e) {
-							// This message will never be displayed.
-							Window.window.println("Bad origin brush, there's something wrong with the code.");
+					mapFile.getEntity(i).deleteAttribute("model");
+					// Recreate origin brushes for entities that need them
+					// These are discarded on compile and replaced with an "origin" attribute in the entity.
+					// I need to undo that. For this I will create a 32x32 brush, centered at the point defined
+					// by the "origin" attribute.
+					if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
+						Entity newOriginBrush=new Entity("{ // Brush "+numBrshs);
+						numBrshs++;
+						Point3D[][] planes=new Point3D[6][3]; // Six planes for a cube brush, three vertices for each plane
+						double[][] textureS=new double[6][3];
+						double[][] textureT=new double[6][3];
+						// The planes and their texture scales
+						// I got these from an origin brush created by Gearcraft. Don't worry where these numbers came from, they work.
+						// Top
+						planes[0][0]=new Point3D(-16+origin[0], 16+origin[1], 16+origin[2]);
+						planes[0][1]=new Point3D(16+origin[0], 16+origin[1], 16+origin[2]);
+						planes[0][2]=new Point3D(16+origin[0], -16+origin[1], 16+origin[2]);
+						textureS[0][0]=1;
+						textureT[0][1]=-1;
+						// Bottom
+						planes[1][0]=new Point3D(-16+origin[0], -16+origin[1], -16+origin[2]);
+						planes[1][1]=new Point3D(16+origin[0], -16+origin[1], -16+origin[2]);
+						planes[1][2]=new Point3D(16+origin[0], 16+origin[1], -16+origin[2]);
+						textureS[1][0]=1;
+						textureT[1][1]=-1;
+						// Left
+						planes[2][0]=new Point3D(-16+origin[0], 16+origin[1], 16+origin[2]);
+						planes[2][1]=new Point3D(-16+origin[0], -16+origin[1], 16+origin[2]);
+						planes[2][2]=new Point3D(-16+origin[0], -16+origin[1], -16+origin[2]);
+						textureS[2][1]=1;
+						textureT[2][2]=-1;
+						// Right
+						planes[3][0]=new Point3D(16+origin[0], 16+origin[1], -16+origin[2]);
+						planes[3][1]=new Point3D(16+origin[0], -16+origin[1], -16+origin[2]);
+						planes[3][2]=new Point3D(16+origin[0], -16+origin[1], 16+origin[2]);
+						textureS[3][1]=1;
+						textureT[3][2]=-1;
+						// Near
+						planes[4][0]=new Point3D(16+origin[0], 16+origin[1], 16+origin[2]);
+						planes[4][1]=new Point3D(-16+origin[0], 16+origin[1], 16+origin[2]);
+						planes[4][2]=new Point3D(-16+origin[0], 16+origin[1], -16+origin[2]);
+						textureS[4][0]=1;
+						textureT[4][2]=-1;
+						// Far
+						planes[5][0]=new Point3D(16+origin[0], -16+origin[1], -16+origin[2]);
+						planes[5][1]=new Point3D(-16+origin[0], -16+origin[1], -16+origin[2]);
+						planes[5][2]=new Point3D(-16+origin[0], -16+origin[1], 16+origin[2]);
+						textureS[5][0]=1;
+						textureT[5][2]=-1;
+						
+						for(int j=0;j<6;j++) {
+							try {
+								MAPBrushSide currentEdge=new MAPBrushSide(planes[j], "special/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+								newOriginBrush.addAttribute(currentEdge.toString());
+							} catch(InvalidMAPBrushSideException e) {
+								// This message will never be displayed.
+								Window.window.println("Bad origin brush, there's something wrong with the code.");
+							}
 						}
+						newOriginBrush.addAttribute("}");
+						mapFile.getEntity(i).addAttribute(newOriginBrush.toString());
 					}
-					newOriginBrush.addAttribute("}");
-					mapFile.getEntity(i).addAttribute(newOriginBrush.toString());
+					mapFile.getEntity(i).deleteAttribute("origin");
 				}
-				mapFile.getEntity(i).deleteAttribute("origin");
 			}
+			Window.window.println("Saving "+BSP.getPath().substring(0, BSP.getPath().length()-1)+".map...");
+			mapFile.save(BSP.getPath().substring(0, BSP.getPath().length()-1)+".map");
+			if(checkVerts) {
+				Window.window.println("Corrected order of "+vertexCorrections+" sets of vertices.");
+			}
+			if(correctPlaneFlip) {
+				Window.window.println("Flipped "+numFlips+" planes in "+numFlipBrshs+" brushes.");
+			}
+			Window.window.println("Process completed!");
+			BSP.close();
+		} catch(java.lang.Exception e) {
+			Window.window.println("\nException caught: "+e+"\nPlease let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/list");
+			Window.consolebox.setEnabled(true);
 		}
-		Window.window.println("Saving "+BSP.getPath().substring(0, BSP.getPath().length()-1)+".map...");
-		mapFile.save(BSP.getPath().substring(0, BSP.getPath().length()-1)+".map");
-		if(checkVerts) {
-			Window.window.println("Corrected order of "+vertexCorrections+" sets of vertices.");
-		}
-		if(correctPlaneFlip) {
-			Window.window.println("Flipped "+numFlips+" planes in "+numFlipBrshs+" brushes.");
-		}
-		Window.window.println("Process completed!");
-		BSP.close();
 		Window.btn_decomp.setEnabled(true);
 		r.gc(); // Collect garbage, there will be a lot of it
 	}
 	
 	// +decompileBrush42(Brush, int)
-	// Decompiles the Brush and adds it to entitiy #int as .MAP data.
+	// Decompiles the Brush and adds it to entitiy #currentEntity as .MAP data.
 	public void decompileBrush42(Brush brush, int currentEntity) {
 		double[] origin=mapFile.getEntity(currentEntity).getOrigin();
 		int firstSide=brush.getFirstSide();
@@ -419,21 +435,21 @@ public class Decompiler implements Runnable {
 	}
 	
 	// +dotProduct()
-	// Takes two Vertex objects which are read as vectors, then returns the dot product
+	// Takes two Point objects which are read as vectors, then returns the dot product
 	public static double dotProduct(Point3D first, Point3D second) {
 		return (first.getX()*second.getX())+(first.getY()*second.getY())+(first.getZ()*second.getZ());
 	}
 	
 	// +crossProduct()
-	// Takes two Vertex objects which are read as vectors, then returns their cross product
+	// Takes two Point objects which are read as vectors, then returns their cross product
 	public static Point3D crossProduct(Point3D first, Point3D second) {
 		return new Point3D((first.getY()*second.getZ())-(first.getZ()*second.getY()),
 		                   (first.getZ()*second.getX())-(first.getX()*second.getZ()),
-								 (first.getX()*second.getY())-(first.getY()*second.getX()));
+		                   (first.getX()*second.getY())-(first.getY()*second.getX()));
 	}
 	
 	// +normal()
-	// Takes two Vertex objects which are read as vectors, then returns their normalized cross product.
+	// Takes two Point objects which are read as vectors, then returns their normalized cross product.
 	// "normalized" means the length of the cross will be 1.
 	public static Point3D normal(Point3D first, Point3D second) {
 		Point3D result = crossProduct(first, second);

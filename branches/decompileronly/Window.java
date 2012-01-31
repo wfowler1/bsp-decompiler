@@ -10,7 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
-
 public class Window extends JPanel implements ActionListener {
 
 	protected static Window window;
@@ -43,12 +42,13 @@ public class Window extends JPanel implements ActionListener {
 		window.print("Got a bug to report? Want to see something added?\nCreate an issue report at\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/list");
 	}
 
+	// All GUI components get initialized here
 	private static JFileChooser file_selector;
 	private static JButton btn_open;
 	protected static JButton btn_decomp;
 	private static JTextField txt_file;
 	private static JTextField txt_coef;
-	private static JTextArea consolebox;
+	protected static JTextArea consolebox;
 	private static JLabel lbl_spacer;
 	private static JLabel lbl_coef;
 	private static JScrollPane console_pane;
@@ -56,9 +56,21 @@ public class Window extends JPanel implements ActionListener {
 	private static JCheckBox chk_skipVertCheck;
 	private static JCheckBox chk_skipPlaneFlip;
 
-
+	// This constructor configures and displays the GUI
 	public Window(Container pane) {
 		pane.setLayout(new GridBagLayout());
+		
+		// First row
+		
+		txt_file = new JTextField(40);
+		
+		GridBagConstraints fileConstraints = new GridBagConstraints();
+		fileConstraints.fill = GridBagConstraints.NONE;
+		fileConstraints.gridx = 0;
+		fileConstraints.gridy = 0;
+		fileConstraints.gridwidth = 2;
+		fileConstraints.gridheight = 1;
+		pane.add(txt_file, fileConstraints);
 		
 		btn_open = new JButton("Browse");
 		
@@ -84,60 +96,10 @@ public class Window extends JPanel implements ActionListener {
 		
 		btn_decomp.addActionListener(this);
 		
-		txt_file = new JTextField(40);
-		
-		GridBagConstraints fileConstraints = new GridBagConstraints();
-		fileConstraints.fill = GridBagConstraints.NONE;
-		fileConstraints.gridx = 0;
-		fileConstraints.gridy = 0;
-		fileConstraints.gridwidth = 2;
-		fileConstraints.gridheight = 1;
-		pane.add(txt_file, fileConstraints);
-		
-		lbl_coef = new JLabel("Plane points coefficient: ");
-		
-		GridBagConstraints coeflblConstraints = new GridBagConstraints();
-		coeflblConstraints.fill = GridBagConstraints.NONE;
-		coeflblConstraints.gridx = 3;
-		coeflblConstraints.gridy = 1;
-		coeflblConstraints.gridwidth = 1;
-		coeflblConstraints.gridheight = 1;
-		pane.add(lbl_coef, coeflblConstraints);
-		
-		txt_coef = new JTextField(5);
-		txt_coef.setText("100");
-		
-		GridBagConstraints coefConstraints = new GridBagConstraints();
-		coefConstraints.fill = GridBagConstraints.NONE;
-		coefConstraints.gridx = 4;
-		coefConstraints.gridy = 1;
-		coefConstraints.gridwidth = 1;
-		coefConstraints.gridheight = 1;
-		pane.add(txt_coef, coefConstraints);
-		
-		consolebox = new JTextArea(15, 70);
-		
-		console_pane = new JScrollPane(consolebox);
-		
-		GridBagConstraints consoleConstraints = new GridBagConstraints();
-		consoleConstraints.fill = GridBagConstraints.NONE;
-		consoleConstraints.gridx = 0;
-		consoleConstraints.gridy = 3;
-		consoleConstraints.gridwidth = 5;
-		consoleConstraints.gridheight = 1;
-		pane.add(console_pane, consoleConstraints);
-		
-		lbl_spacer = new JLabel(" ");
-		
-		GridBagConstraints spacerConstraints = new GridBagConstraints();
-		spacerConstraints.fill = GridBagConstraints.NONE;
-		spacerConstraints.gridx = 0;
-		spacerConstraints.gridy = 2;
-		spacerConstraints.gridwidth = 5;
-		spacerConstraints.gridheight = 1;
-		pane.add(lbl_spacer, spacerConstraints);
+		// Second row
 		
 		chk_planar = new JCheckBox("Planar Decompilation Only");
+		chk_planar.addActionListener(this);
 		
 		GridBagConstraints planarConstraints = new GridBagConstraints();
 		planarConstraints.fill = GridBagConstraints.NONE;
@@ -146,8 +108,6 @@ public class Window extends JPanel implements ActionListener {
 		planarConstraints.gridwidth = 1;
 		planarConstraints.gridheight = 1;
 		pane.add(chk_planar, planarConstraints);
-		
-		chk_planar.addActionListener(this);
 		
 		chk_skipVertCheck = new JCheckBox("Skip Vertex Checking");
 		
@@ -159,22 +119,69 @@ public class Window extends JPanel implements ActionListener {
 		vertCheckConstraints.gridheight = 1;
 		pane.add(chk_skipVertCheck, vertCheckConstraints);
 		
-		chk_skipVertCheck.addActionListener(this);
-		
 		chk_skipPlaneFlip = new JCheckBox("Skip plane flip");
 		
-		GridBagConstraints FacesOnlyConstraints = new GridBagConstraints();
-		FacesOnlyConstraints.fill = GridBagConstraints.NONE;
-		FacesOnlyConstraints.gridx = 2;
-		FacesOnlyConstraints.gridy = 1;
-		FacesOnlyConstraints.gridwidth = 1;
-		FacesOnlyConstraints.gridheight = 1;
-		pane.add(chk_skipPlaneFlip, FacesOnlyConstraints);
+		GridBagConstraints SkipFlipConstraints = new GridBagConstraints();
+		SkipFlipConstraints.fill = GridBagConstraints.NONE;
+		SkipFlipConstraints.gridx = 2;
+		SkipFlipConstraints.gridy = 1;
+		SkipFlipConstraints.gridwidth = 1;
+		SkipFlipConstraints.gridheight = 1;
+		pane.add(chk_skipPlaneFlip, SkipFlipConstraints);
+		
+		// Third row
+		
+		lbl_coef = new JLabel("Plane points coefficient: ");
+		
+		GridBagConstraints coeflblConstraints = new GridBagConstraints();
+		coeflblConstraints.fill = GridBagConstraints.NONE;
+		coeflblConstraints.gridx = 0;
+		coeflblConstraints.gridy = 2;
+		coeflblConstraints.gridwidth = 2;
+		coeflblConstraints.gridheight = 1;
+		pane.add(lbl_coef, coeflblConstraints);
+		
+		txt_coef = new JTextField(5);
+		txt_coef.setText("100");
+		
+		GridBagConstraints coefConstraints = new GridBagConstraints();
+		coefConstraints.fill = GridBagConstraints.NONE;
+		coefConstraints.gridx = 2;
+		coefConstraints.gridy = 2;
+		coefConstraints.gridwidth = 1;
+		coefConstraints.gridheight = 1;
+		pane.add(txt_coef, coefConstraints);
+		
+		// Fourth row
+		
+		lbl_spacer = new JLabel(" ");
+		
+		GridBagConstraints spacerConstraints = new GridBagConstraints();
+		spacerConstraints.fill = GridBagConstraints.NONE;
+		spacerConstraints.gridx = 0;
+		spacerConstraints.gridy = 3;
+		spacerConstraints.gridwidth = 5;
+		spacerConstraints.gridheight = 1;
+		pane.add(lbl_spacer, spacerConstraints);consolebox = new JTextArea(15, 70);
+		
+		// Fifth row
+		
+		console_pane = new JScrollPane(consolebox);
+		
+		GridBagConstraints consoleConstraints = new GridBagConstraints();
+		consoleConstraints.fill = GridBagConstraints.NONE;
+		consoleConstraints.gridx = 0;
+		consoleConstraints.gridy = 4;
+		consoleConstraints.gridwidth = 5;
+		consoleConstraints.gridheight = 1;
+		pane.add(console_pane, consoleConstraints);
 	} // constructor
 
+	// actionPerformed(ActionEvent)
+	// Any time something happens on the GUI, this is called. However we're only
+	// going to perform actions when certain things are clicked. The rest are discarded.
 	public void actionPerformed(ActionEvent action) {
-		File theBSP;
-		
+		// User clicks the "open" button
 		if (action.getSource() == btn_open) {
 			file_selector = new JFileChooser();
 			file_selector.addChoosableFileFilter(BSPFilter);
@@ -187,21 +194,28 @@ public class Window extends JPanel implements ActionListener {
 			}
 		}
 		
+		// User clicks the "decompile" button
 		if(action.getSource() == btn_decomp) {
-			theBSP=new File(txt_file.getText());
+			File theBSP=new File(txt_file.getText());
 			clearConsole();
 			if(!theBSP.exists()) {
 				println("File \""+txt_file.getText()+"\" not found!");
 			} else {
 				consolebox.setEnabled(false);
 				btn_decomp.setEnabled(false);
-				Runnable decompiler = new Decompiler(txt_file.getText(), !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
-				Thread worker = new Thread(decompiler);
-				worker.setName("Decompiler");
-				worker.start();
+				try {
+					Runnable decompiler = new Decompiler(txt_file.getText(), !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
+					Thread worker = new Thread(decompiler);
+					worker.setName("Decompiler");
+					worker.start();
+				} catch (java.lang.Exception e) {
+					println("\nException caught: "+e+"\nPlease let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/list");
+					consolebox.setEnabled(true);
+				}
 			}
 		}
 		
+		// User clicks the "planar decompilation only" checkbox
 		if(action.getSource() == chk_planar) {
 			if(chk_planar.isSelected()) {
 				chk_skipVertCheck.setEnabled(false);
@@ -209,10 +223,6 @@ public class Window extends JPanel implements ActionListener {
 			} else {
 				chk_skipVertCheck.setEnabled(true);
 			}
-		}
-		
-		if(action.getSource() == chk_skipVertCheck) {
-			;
 		}
 	}
 	
