@@ -12,6 +12,7 @@ public class Texture64 {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
+	private int length;
 	private int numTxts=0;
 	private String[] textures;
 	
@@ -22,6 +23,7 @@ public class Texture64 {
 		data=new File(in);
 		try {
 			numTxts=getNumElements();
+			length=(int)data.length();
 			textures=new String[numTxts];
 			populateTextureList();
 		} catch(java.io.FileNotFoundException e) {
@@ -34,12 +36,31 @@ public class Texture64 {
 		data=in;
 		try {
 			numTxts=getNumElements();
+			length=(int)data.length();
 			textures=new String[numTxts];
 			populateTextureList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
 		}
 	}
+	
+	public Texture64(byte[] in) {
+		int offset=0;
+		numTxts=in.length/64;
+		length=in.length;
+		textures=new String[numTxts];
+		for(int i=0;i<numTxts;i++) {
+			textures[i]=(char)in[offset]+""; // must do this first. Doing += right away adds "null" to the beginning
+			for(int j=1;j<64;j++) {
+				if(in[offset+j]==0x00) {
+					break;
+				} // else
+				textures[i]+=(char)in[offset+j]+"";
+			}
+			offset+=64;
+		}
+	}
+
 	
 	// METHODS
 	
@@ -57,18 +78,26 @@ public class Texture64 {
 			}
 		}
 	}
+	
+	// +printTxts()
+	// Prints the contents of every String in the array
+	public void printTxts() {
+		for(int i=0;i<numTxts;i++) {
+			Window.window.println(textures[i]);
+		}
+	}
 		
 	// ACCESSORS/MUTATORS
 	
 	// Returns the length (in bytes) of the lump
-	public long getLength() {
-		return data.length();
+	public int getLength() {
+		return length;
 	}
 	
 	// Returns the number of textures.
 	public int getNumElements() {
 		if(numTxts==0) {
-			return (int)data.length()/64;
+			return length/64;
 		} else {
 			return numTxts;
 		}

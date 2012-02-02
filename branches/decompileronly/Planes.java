@@ -12,6 +12,7 @@ public class Planes {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
+	private int length;
 	private int numPlns=0;
 	private Plane[] planes;
 	
@@ -22,6 +23,7 @@ public class Planes {
 		data=new File(in);
 		try {
 			numPlns=getNumElements();
+			length=(int)data.length();
 			planes=new Plane[numPlns];
 			populatePlaneList();
 		} catch(java.io.FileNotFoundException e) {
@@ -36,6 +38,7 @@ public class Planes {
 		data=in;
 		try {
 			numPlns=getNumElements();
+			length=(int)data.length();
 			planes=new Plane[numPlns];
 			populatePlaneList();
 		} catch(java.io.FileNotFoundException e) {
@@ -47,9 +50,29 @@ public class Planes {
 	
 	public Planes(Planes in) {
 		numPlns=in.getNumElements();
+		length=in.length*20;
 		planes=new Plane[numPlns];
 		for(int i=0;i<numPlns;i++) {
 			planes[i]=new Plane(in.getPlane(i).getA(), in.getPlane(i).getB(), in.getPlane(i).getC(), in.getPlane(i).getDist(), in.getPlane(i).getType());
+		}
+	}
+	
+	public Planes(byte[] in) {
+		int offset=0;
+		length=in.length;
+		numPlns=in.length/20;
+		planes=new Plane[numPlns];
+		try {
+			for(int i=0;i<numPlns;i++) {
+				byte[] planeBytes=new byte[20];
+				for(int j=0;j<20;j++) {
+					planeBytes[j]=in[offset+j];
+				}
+				planes[i]=new Plane(planeBytes);
+				offset+=20;
+			}
+		} catch(InvalidPlaneException e) {
+			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last plane.");
 		}
 	}
 	
@@ -74,14 +97,14 @@ public class Planes {
 	// ACCESSORS/MUTATORS
 	
 	// Returns the length (in bytes) of the lump
-	public long getLength() {
-		return data.length();
+	public int getLength() {
+		return length;
 	}
 	
 	// Returns the number of planes.
 	public int getNumElements() {
 		if(numPlns==0) {
-			return (int)data.length()/20;
+			return length/20;
 		} else {
 			return numPlns;
 		}

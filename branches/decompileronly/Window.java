@@ -196,18 +196,21 @@ public class Window extends JPanel implements ActionListener {
 		
 		// User clicks the "decompile" button
 		if(action.getSource() == btn_decomp) {
-			File theBSP=new File(txt_file.getText());
+			File BSPFile = new File(txt_file.getText());
 			clearConsole();
-			if(!theBSP.exists()) {
+			if(!BSPFile.exists()) {
 				println("File \""+txt_file.getText()+"\" not found!");
 			} else {
+				BSPReader myBSPReader=new BSPReader(txt_file.getText(), !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
 				consolebox.setEnabled(false);
 				btn_decomp.setEnabled(false);
 				try {
+				/*
 					Runnable decompiler = new Decompiler(txt_file.getText(), !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
 					Thread worker = new Thread(decompiler);
 					worker.setName("Decompiler");
-					worker.start();
+					worker.start();*/
+					myBSPReader.readBSP();
 				} catch (java.lang.Exception e) {
 					println("\nException caught: "+e+"\nPlease let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/list");
 					consolebox.setEnabled(true);

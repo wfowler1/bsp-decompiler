@@ -10,6 +10,7 @@ public class Brushes {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
+	private int length;
 	private int numBrshs=0;
 	private Brush[] brushes;
 	
@@ -18,6 +19,7 @@ public class Brushes {
 	// This one accepts the lump path as a String
 	public Brushes(String in) {
 		data=new File(in);
+		length=(int)data.length();
 		try {
 			numBrshs=getNumElements();
 			brushes=new Brush[numBrshs];
@@ -32,6 +34,7 @@ public class Brushes {
 	// This one accepts the input file path as a File
 	public Brushes(File in) {
 		data=in;
+		length=(int)data.length();
 		try {
 			numBrshs=getNumElements();
 			brushes=new Brush[numBrshs];
@@ -40,6 +43,25 @@ public class Brushes {
 			Window.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
 			Window.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+		}
+	}
+	
+	public Brushes(byte[] in) {
+		int offset=0;
+		numBrshs=in.length/12;
+		length=in.length;
+		brushes=new Brush[numBrshs];
+		try {
+			for(int i=0;i<numBrshs;i++) {
+				byte[] brushBytes=new byte[12];
+				for(int j=0;j<12;j++) {
+					brushBytes[j]=in[offset+j];
+				}
+				brushes[i]=new Brush(brushBytes);
+				offset+=12;
+			}
+		} catch(InvalidBrushException e) {
+			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last brush.");
 		}
 	}
 	
@@ -65,14 +87,14 @@ public class Brushes {
 	// ACCESSORS/MUTATORS
 	
 	// Returns the length (in bytes) of the lump
-	public long getLength() {
-		return data.length();
+	public int getLength() {
+		return length;
 	}
 	
 	// Returns the number of brushes.
 	public int getNumElements() {
 		if(numBrshs==0) {
-			return (int)data.length()/12;
+			return length/12;
 		} else {
 			return numBrshs;
 		}

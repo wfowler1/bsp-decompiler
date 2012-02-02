@@ -2,7 +2,7 @@
 
 // Handles the actual decompilation.
 
-public class Decompiler implements Runnable {
+public class Decompiler {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	private static Runtime r = Runtime.getRuntime();
@@ -15,8 +15,6 @@ public class Decompiler implements Runnable {
 	public static final int Y = 1;
 	public static final int Z = 2;
 	
-	private BSPData BSP;
-	private String path;
 	private boolean vertexDecomp;
 	private boolean checkVerts;
 	private boolean correctPlaneFlip;
@@ -32,29 +30,27 @@ public class Decompiler implements Runnable {
 	// CONSTRUCTORS
 	
 	// This constructor sets everything according to specified settings.
-	public Decompiler(String path, boolean vertexDecomp, boolean checkVerts, boolean correctPlaneFlip, double planePointCoef) {
+	public Decompiler(boolean vertexDecomp, boolean checkVerts, boolean correctPlaneFlip, double planePointCoef) {
 		// Set up global variables
 		this.vertexDecomp=vertexDecomp;
 		this.checkVerts=checkVerts;
 		this.correctPlaneFlip=correctPlaneFlip;
 		this.planePointCoef=planePointCoef;
-		this.path=path;
 	}
 	
 	// This constructor sets default settings
-	public Decompiler(String path) {
+	public Decompiler() {
 		// Set up global variables
 		this.vertexDecomp=true;
 		this.checkVerts=true;
 		this.correctPlaneFlip=false;
 		this.planePointCoef=100;
-		this.path=path;
 	}
 	
 	// METHODS
 	
-	// +run() (decompile)
-	// Attempts to convert the BSP file back into a .MAP file.
+	// +decompileBSP42(BSPData)
+	// Attempts to convert the Nightfire BSP file back into a .MAP file.
 	//
 	// This is another one of the most complex things I've ever had to code. I've
 	// never nested for loops four deep before.
@@ -64,10 +60,8 @@ public class Decompiler implements Runnable {
 	//   k: Current brush, referenced in a list by the current leaf.
 	//    l: Current side of the current brush.
 	//     m: When attempting vertex decompilation, the current vertex.
-	public void run() {
-		try {
-			// First thing to do: set up BSPData object
-			BSP=new BSPData(path);
+	public void decompileBSP42(BSPData BSP) {
+		//try {
 			// Begin by copying all the entities into another Lump00 object. This is
 			// necessary because if I just modified the current entity list then it
 			// could be saved back into the BSP and really mess some stuff up.
@@ -99,7 +93,7 @@ public class Decompiler implements Runnable {
 							for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
 								if(!brushesUsed[BSP.getMarkBrushes().getInt(firstBrushIndex+k)]) {
 									brushesUsed[BSP.getMarkBrushes().getInt(firstBrushIndex+k)]=true;
-									decompileBrush42(BSP.getBrushes().getBrush(BSP.getMarkBrushes().getInt(firstBrushIndex+k)), i); // Decompile the brush
+									decompileBrush42(BSP, BSP.getBrushes().getBrush(BSP.getMarkBrushes().getInt(firstBrushIndex+k)), i); // Decompile the brush
 									numBrshs++;
 								}
 							}
@@ -170,8 +164,8 @@ public class Decompiler implements Runnable {
 					mapFile.getEntity(i).deleteAttribute("origin");
 				}
 			}
-			Window.window.println("Saving "+BSP.getPath().substring(0, BSP.getPath().length()-1)+".map...");
-			mapFile.save(BSP.getPath().substring(0, BSP.getPath().length()-1)+".map");
+			Window.window.println("Saving "+BSP.getPath().substring(0, BSP.getPath().length()-4)+".map...");
+			mapFile.save(BSP.getPath().substring(0, BSP.getPath().length()-4)+".map");
 			if(checkVerts) {
 				Window.window.println("Corrected order of "+vertexCorrections+" sets of vertices.");
 			}
@@ -179,18 +173,17 @@ public class Decompiler implements Runnable {
 				Window.window.println("Flipped "+numFlips+" planes in "+numFlipBrshs+" brushes.");
 			}
 			Window.window.println("Process completed!");
-			BSP.close();
-		} catch(java.lang.Exception e) {
+		/*} catch(java.lang.Exception e) {
 			Window.window.println("\nException caught: "+e+"\nPlease let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/list");
 			Window.consolebox.setEnabled(true);
-		}
+		}*/
 		Window.btn_decomp.setEnabled(true);
 		r.gc(); // Collect garbage, there will be a lot of it
 	}
 	
 	// +decompileBrush42(Brush, int)
 	// Decompiles the Brush and adds it to entitiy #currentEntity as .MAP data.
-	public void decompileBrush42(Brush brush, int currentEntity) {
+	public void decompileBrush42(BSPData BSP, Brush brush, int currentEntity) {
 		double[] origin=mapFile.getEntity(currentEntity).getOrigin();
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();

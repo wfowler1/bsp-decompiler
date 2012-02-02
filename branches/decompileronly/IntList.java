@@ -12,6 +12,7 @@ public class IntList {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
+	private int length;
 	private int numInts=0;
 	private int[] ints;
 	
@@ -22,6 +23,7 @@ public class IntList {
 		data=new File(in);
 		try {
 			numInts=getNumElements();
+			length=(int)data.length();
 			ints=new int[numInts];
 			populateIntList();
 		} catch(java.io.FileNotFoundException e) {
@@ -36,12 +38,28 @@ public class IntList {
 		data=in;
 		try {
 			numInts=getNumElements();
+			length=(int)data.length();
 			ints=new int[numInts];
 			populateIntList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
 			Window.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+		}
+	}
+	
+	public IntList(byte[] in) {
+		int offset=0;
+		numInts=in.length/4;
+		length=in.length;
+		ints=new int[numInts];
+		for(int i=0;i<numInts;i++) {
+			byte[] intBytes=new byte[4];
+			for(int j=0;j<4;j++) {
+				intBytes[j]=in[offset+j];
+			}
+			ints[i]=(intBytes[3] << 24) | ((intBytes[2] & 0xff) << 16) | ((intBytes[1] & 0xff) << 8) | (intBytes[0] & 0xff);
+			offset+=4;
 		}
 	}
 	
@@ -62,14 +80,14 @@ public class IntList {
 	// ACCESSORS/MUTATORS
 	
 	// Returns the length (in bytes) of the lump
-	public long getLength() {
-		return data.length();
+	public int getLength() {
+		return length;
 	}
 	
 	// Returns the number of brush indices. This lump is RETARDED.
 	public int getNumElements() {
 		if(numInts==0) {
-			return (int)data.length()/4;
+			return length/4;
 		} else {
 			return numInts;
 		}

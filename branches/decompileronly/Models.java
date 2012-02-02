@@ -11,6 +11,7 @@ public class Models {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
+	private int length;
 	private int numModels=0;
 	private Model[] models;
 	
@@ -19,6 +20,7 @@ public class Models {
 	// This one accepts the lump path as a String
 	public Models(String in) {
 		data=new File(in);
+		length=(int)data.length();
 		try {
 			numModels=getNumElements();
 			models=new Model[numModels];
@@ -33,6 +35,7 @@ public class Models {
 	// This one accepts the input file path as a File
 	public Models(File in) {
 		data=in;
+		length=(int)data.length();
 		try {
 			numModels=getNumElements();
 			models=new Model[numModels];
@@ -41,6 +44,25 @@ public class Models {
 			Window.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
 			Window.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+		}
+	}
+	
+	public Models(byte[] in) {
+		int offset=0;
+		numModels=in.length/56;
+		length=in.length;
+		models=new Model[numModels];
+		try {
+			for(int i=0;i<numModels;i++) {
+				byte[] modelBytes=new byte[56];
+				for(int j=0;j<56;j++) {
+					modelBytes[j]=in[offset+j];
+				}
+				models[i]=new Model(modelBytes);
+				offset+=56;
+			}
+		} catch(InvalidModelException e) {
+			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last model.");
 		}
 	}
 	
@@ -67,14 +89,14 @@ public class Models {
 	// ACCESSORS/MUTATORS
 	
 	// Returns the length (in bytes) of the lump
-	public long getLength() {
-		return data.length();
+	public int getLength() {
+		return length;
 	}
 	
 	// Returns the number of models.
 	public int getNumElements() {
 		if(numModels==0) {
-			return (int)data.length()/56;
+			return length/56;
 		} else {
 			return numModels;
 		}

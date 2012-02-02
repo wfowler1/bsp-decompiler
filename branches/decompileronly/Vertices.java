@@ -16,6 +16,7 @@ public class Vertices {
 	public final int Z=2;
 	
 	private File data;
+	private int length;
 	private int numVerts=0;
 	private Point3D[] vertices;
 	
@@ -26,6 +27,7 @@ public class Vertices {
 		data=new File(in);
 		try {
 			numVerts=getNumElements();
+			length=(int)data.length();
 			vertices=new Point3D[numVerts];
 			populateVertexList();
 		} catch(java.io.FileNotFoundException e) {
@@ -40,12 +42,32 @@ public class Vertices {
 		data=in;
 		try {
 			numVerts=getNumElements();
+			length=(int)data.length();
 			vertices=new Point3D[numVerts];
 			populateVertexList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
 			Window.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+		}
+	}
+	
+	public Vertices(byte[] in) {
+		int offset=0;
+		numVerts=in.length/12;
+		length=in.length;
+		vertices=new Point3D[numVerts];
+		try {
+			for(int i=0;i<numVerts;i++) {
+				byte[] vertexBytes=new byte[12];
+				for(int j=0;j<12;j++) {
+					vertexBytes[j]=in[offset+j];
+				}
+				vertices[i]=new Point3D(vertexBytes);
+				offset+=12;
+			}
+		} catch(InvalidPoint3DException e) {
+			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last vertex.");
 		}
 	}
 	
@@ -70,14 +92,14 @@ public class Vertices {
 	// ACCESSORS/MUTATORS
 	
 	// Returns the length (in bytes) of the lump
-	public long getLength() {
-		return data.length();
+	public int getLength() {
+		return length;
 	}
 	
 	// Returns the number of vertices.
 	public int getNumElements() {
 		if(numVerts==0) {
-			return (int)data.length()/12;
+			return length/12;
 		} else {
 			return numVerts;
 		}

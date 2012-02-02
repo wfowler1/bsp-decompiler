@@ -6,12 +6,14 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.File;
 import java.util.Scanner;
+import java.util.Date;
 
 public class Entities {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
-	private File data;
+	private File dataFile;
+	private int length;
 	private int numEnts=0;
 	private Entity[] entities;
 	
@@ -19,29 +21,39 @@ public class Entities {
 	
 	// This one accepts the lump path as a String
 	public Entities(String in) {
-		data=new File(in);
+		dataFile=new File(in);
 		try {
-			numEnts=getNumElements();
+			FileInputStream reader=new FileInputStream(dataFile); // reads the file
+			byte[] data=new byte[(int)dataFile.length()];
+			reader.read(data);
+			length=data.length;
+			reader.close();
+			numEnts=getNumElements(data);
 			entities = new Entity[numEnts];
-			populateEntityList();
+			populateEntityList(data);
 		} catch(java.io.FileNotFoundException e) {
-			Window.window.println("ERROR: File "+data+" not found!");
+			Window.window.println("ERROR: File "+dataFile+" not found!");
 		} catch(java.io.IOException e) {
-			Window.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Window.window.println("ERROR: File "+dataFile+" could not be read, ensure the file is not open in another program");
 		}
 	}
 	
 	// This one accepts the input file path as a File
 	public Entities(File in) {
-		data=in;
+		dataFile=in;
 		try {
-			numEnts=getNumElements();
+			FileInputStream reader=new FileInputStream(dataFile); // reads the file
+			byte[] data=new byte[(int)dataFile.length()];
+			reader.read(data);
+			length=data.length;
+			reader.close();
+			numEnts=getNumElements(data);
 			entities = new Entity[numEnts];
-			populateEntityList();
+			populateEntityList(data);
 		} catch(java.io.FileNotFoundException e) {
-			Window.window.println("ERROR: File "+data+" not found!");
+			Window.window.println("ERROR: File "+dataFile+" not found!");
 		} catch(java.io.IOException e) {
-			Window.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Window.window.println("ERROR: File "+dataFile+" could not be read, ensure the file is not open in another program");
 		}
 	}
 	
@@ -54,6 +66,14 @@ public class Entities {
 		}
 	}
 	
+	// This one just takes an array of byte[]
+	public Entities(byte[] data) {
+		length=data.length;
+		numEnts=getNumElements(data);
+		entities = new Entity[numEnts];
+		populateEntityList(data);
+	}
+	
 	// METHODS
 	
 	// -populateEntityList()
@@ -64,30 +84,42 @@ public class Entities {
 	// Even so, this method is a complete mess, so documentation is provided
 	// whenever possible.
 	// TODO: Rewrite this, try to make it faster.
-	private void populateEntityList() throws java.io.FileNotFoundException, java.io.IOException {
-		Window.window.println("Populating entity list...");
+	private void populateEntityList(byte[] data) {
+		Window.window.print("Populating entity list... ");
+		Date begin=new Date();
 		// I'd love to use Scanner here, but Scanner doesn't like using delimiters
-		// with "{" or "}" in them, which I fucking NEED
-		FileInputStream reader=new FileInputStream(data); // reads the file
+		// with "{" or "}" in them, which I NEED
 		char currentChar; // The current character being read in the file. This is necessary because
 		                  // we need to know exactly when the { and } characters occur and capture
 								// all text between them.
+		int offset=0;
 		for(int i=0;i<numEnts;i++) { // For every entity
 			String current=""; // This will be the resulting entity, fed into the Entity class
-			currentChar=(char)reader.read(); // begin reading the file
+			currentChar=(char)data[offset]; // begin reading the file
 			while(currentChar!='{') { // Eat bytes until we find the beginning of an entity structure
-				currentChar=(char)reader.read();
+				offset++;
+				currentChar=(char)data[offset];
 			}
-			reader.read(); // This will eat a 0x0A
-			currentChar=(char)reader.read(); // reads the first character after the 0x0A, which will be 
-			                                 // a quote (though it doesn't matter what the hell it is)
+			offset++; // This will eat a 0x0A
+			currentChar=(char)data[offset]; // reads the first character after the 0x0A, which will be 
+			                                // a quote (though it doesn't matter what the hell it is)
 			do {
 				current+=currentChar+""; // adds characters to the current string
-				currentChar=(char)reader.read();
+				offset++;
+				currentChar=(char)data[offset];
 			} while(currentChar!='}'); // Read bytes until we find the end of the current entity structure
 			entities[i]=new Entity(current); // puts the resulting String into the constructor of the Entity class
 		}
-		reader.close();
+		Date end=new Date();
+		Window.window.println(end.getTime()-begin.getTime()+"ms");
+	}
+	
+	// +printEnts()
+	// prints all parsed entities into the console
+	public void printEnts() {
+		for(int i=0;i<numEnts;i++) {
+			Window.window.print("{\n"+entities[i].toString()+"}");
+		}
 	}
 	
 	// +add(String)
@@ -131,32 +163,6 @@ public class Entities {
 		}
 		newList[numEnts-1]=in;
 		entities=newList;
-	}
-	
-	// +add(Entities)
-	// Adds every entity in the passed Entities into this one
-	// This was the hardest lump to add the ability to combine, since all
-	// references to other lumps are Strings contained in ATTRIBUTES. agh
-	public void add(Entities in) throws java.io.FileNotFoundException, java.io.IOException {
-		Entity[] newlist=new Entity[numEnts+in.getNumElements()];
-		for(int i=0;i<numEnts;i++) { // copy the entities from this lump into a new array
-			newlist[i]=entities[i];
-		}
-		File myLump14=new File(data.getParent()+"\\14 - Models.hex");
-		int num14objs=(int)myLump14.length()/56;
-		for(int i=0;i<in.getEntities().length;i++) {
-			int oldModelNumber=in.getEntity(i).getModelNumber();
-			if(oldModelNumber>0) {
-				int newModelNumber=in.getEntity(i).getModelNumber()+num14objs-1; // Must subtract 1 from model number,
-				in.getEntity(i).setAttribute("model", "*"+newModelNumber);       // since model 0 is the world, and that
-			}                                                                   // is getting combined into one model
-		}                                                                      // for both maps
-		for(int i=0;i<in.getNumElements();i++) {
-			newlist[i+numEnts]=in.getEntity(i);
-		}
-		
-		numEnts=numEnts+in.getNumElements();
-		entities=newlist;
 	}
 	
 	// +deleteAllOfType(String, String)
@@ -272,36 +278,37 @@ public class Entities {
 	// save()
 	// Saves the lump, overwriting the one data was read from
 	public void save() {
-		save(data.getParent());
+		save(dataFile.getParent());
 	}
 	
 	// ACCESSORS/MUTATORS
 		
 	// Returns the length (in bytes) of the lump
-	public long getLength() {
-		return data.length();
+	public int getLength() {
+		return length;
 	}
 	
 	// Returns the number of entities.
-	public int getNumElements() {
+	public int getNumElements(byte[] data) {
 		if (numEnts==0) {
-			Window.window.println("Counting entities...");
+			Window.window.print("Counting entities... ");
+			Date begin=new Date();
 			int count=0;
-			try {
-				FileInputStream fileReader = new FileInputStream(data);
-				for(int i=0;i<data.length();i++) {
-					if(fileReader.read() == '{') {
-						count++;
-					}
+			for(int i=0;i<data.length;i++) {
+				if(data[i] == '{') {
+					count++;
 				}
-				fileReader.close();
-			} catch(java.io.IOException e) {
-				Window.window.println("Unable to read Entities.txt!");
 			}
+			Date end=new Date();
+			Window.window.println(end.getTime()-begin.getTime()+"ms");
 			return count;
 		} else {
 			return numEnts;
 		}
+	}
+	
+	public int getNumElements() {
+		return numEnts;
 	}
 	
 	// Returns a specific entity as an Entity object.

@@ -11,6 +11,7 @@ public class Faces {
 	
 	private File data;
 	private int numFaces=0;
+	private int length;
 	// There are two types of faces, world and model. The BSP compiler and the game engine
 	// fails to make the distinction, instead reading all world faces into model 0, and all
 	// model faces are read by models 1-numModels. Model 0 is the world model, dereference
@@ -27,6 +28,7 @@ public class Faces {
 		data=new File(in);
 		try {
 			numFaces=getNumElements();
+			length=(int)data.length();
 			numWorldFaces=getNumWorldFaces();
 			numModelFaces=numFaces-numWorldFaces;
 			faces=new Face[numFaces];
@@ -43,6 +45,7 @@ public class Faces {
 		data=in;
 		try {
 			numFaces=getNumElements();
+			length=(int)data.length();
 			numWorldFaces=getNumWorldFaces();
 			numModelFaces=numFaces-numWorldFaces;
 			faces=new Face[numFaces];
@@ -58,6 +61,25 @@ public class Faces {
 	public Faces(Face[] in) {
 		faces=in;
 		numFaces=faces.length;
+	}
+	
+	public Faces(byte[] in) {
+		int offset=0;
+		numFaces=in.length/48;
+		length=in.length;
+		faces=new Face[numFaces];
+		try {
+			for(int i=0;i<numFaces;i++) {
+				byte[] faceBytes=new byte[48];
+				for(int j=0;j<48;j++) {
+					faceBytes[j]=in[offset+j];
+				}
+				faces[i]=new Face(faceBytes);
+				offset+=48;
+			}
+		} catch(InvalidFaceException e) {
+			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last face.");
+		}
 	}
 	
 	// METHODS
@@ -81,14 +103,14 @@ public class Faces {
 	// ACCESSORS/MUTATORS
 	
 	// Returns the length (in bytes) of the lump
-	public long getLength() {
-		return data.length();
+	public int getLength() {
+		return length;
 	}
 	
 	// Returns the number of faces.
 	public int getNumElements() {
 		if(numFaces==0) {
-			return (int)data.length()/48;
+			return length/48;
 		} else {
 			return numFaces;
 		}

@@ -12,6 +12,7 @@ public class TextureMatrices {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
+	private int length;
 	private int numTxmatxs=0; // I really don't know what to call this lump
 	private TexMatrix[] texturematrix;
 	
@@ -20,6 +21,7 @@ public class TextureMatrices {
 	// This one accepts the lump path as a String
 	public TextureMatrices(String in) {
 		data=new File(in);
+		length=(int)data.length();
 		try {
 			numTxmatxs=getNumElements();
 			texturematrix=new TexMatrix[numTxmatxs];
@@ -34,6 +36,7 @@ public class TextureMatrices {
 	// This one accepts the input file path as a File
 	public TextureMatrices(File in) {
 		data=in;
+		length=(int)data.length();
 		try {
 			numTxmatxs=getNumElements();
 			texturematrix=new TexMatrix[numTxmatxs];
@@ -42,6 +45,25 @@ public class TextureMatrices {
 			Window.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
 			Window.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+		}
+	}
+	
+	public TextureMatrices(byte[] in) {
+		int offset=0;
+		numTxmatxs=in.length/32;
+		length=in.length;
+		texturematrix=new TexMatrix[numTxmatxs];
+		try {
+			for(int i=0;i<numTxmatxs;i++) {
+				byte[] texMatrixBytes=new byte[32];
+				for(int j=0;j<32;j++) {
+					texMatrixBytes[j]=in[offset+j];
+				}
+				texturematrix[i]=new TexMatrix(texMatrixBytes);
+				offset+=32;
+			}
+		} catch(InvalidTextureMatrixException e) {
+			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last texture matrix.");
 		}
 	}
 	
@@ -67,14 +89,14 @@ public class TextureMatrices {
 	// ACCESSORS/MUTATORS
 	
 	// Returns the length (in bytes) of the lump
-	public long getLength() {
-		return data.length();
+	public int getLength() {
+		return length;
 	}
 	
 	// Returns the number of texture scales.
 	public int getNumElements() {
 		if(numTxmatxs==0) {
-			return (int)data.length()/32;
+			return length/32;
 		} else {
 			return numTxmatxs;
 		}

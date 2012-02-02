@@ -12,6 +12,7 @@ public class Leaves {
 	
 	private File data;
 	private int numLeaves=0;
+	private int length;
 	private int numWorldLeaves=0;
 	private int numModelLeaves=numLeaves-numWorldLeaves;
 	private Leaf[] leaves;
@@ -21,6 +22,7 @@ public class Leaves {
 	// This one accepts the lump path as a String
 	public Leaves(String in) {
 		data=new File(in);
+		length=(int)data.length();
 		try {
 			numLeaves=getNumElements();
 			leaves=new Leaf[numLeaves];
@@ -35,6 +37,7 @@ public class Leaves {
 	// This one accepts the input file path as a File
 	public Leaves(File in) {
 		data=in;
+		length=(int)data.length();
 		try {
 			numLeaves=getNumElements();
 			leaves=new Leaf[numLeaves];
@@ -49,6 +52,25 @@ public class Leaves {
 	public Leaves(Leaf[] in) {
 		leaves=in;
 		numLeaves=leaves.length;
+	}
+	
+	public Leaves(byte[] in) {
+		int offset=0;
+		length=in.length;
+		numLeaves=in.length/48;
+		leaves=new Leaf[numLeaves];
+		try {
+			for(int i=0;i<numLeaves;i++) {
+				byte[] leafBytes=new byte[48];
+				for(int j=0;j<48;j++) {
+					leafBytes[j]=in[offset+j];
+				}
+				leaves[i]=new Leaf(leafBytes);
+				offset+=48;
+			}
+		} catch(InvalidLeafException e) {
+			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last leaf.");
+		}
 	}
 	
 	// METHODS
@@ -72,14 +94,14 @@ public class Leaves {
 	// ACCESSORS/MUTATORS
 	
 	// Returns the length (in bytes) of the lump
-	public long getLength() {
-		return data.length();
+	public int getLength() {
+		return length;
 	}
 	
 	// Returns the number of Leaves.
 	public int getNumElements() {
 		if(numLeaves==0) {
-			return (int)data.length()/48;
+			return length/48;
 		} else {
 			return numLeaves;
 		}

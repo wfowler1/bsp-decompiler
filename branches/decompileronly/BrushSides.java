@@ -12,6 +12,7 @@ public class BrushSides {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
+	private int length;
 	private int numBrshsds=0;
 	private BrushSide[] brushsides;
 	
@@ -20,6 +21,7 @@ public class BrushSides {
 	// This one accepts the lump path as a String
 	public BrushSides(String in) {
 		data=new File(in);
+		length=(int)data.length();
 		try {
 			numBrshsds=getNumElements();
 			brushsides=new BrushSide[numBrshsds];
@@ -34,6 +36,7 @@ public class BrushSides {
 	// This one accepts the input file path as a File
 	public BrushSides(File in) {
 		data=in;
+		length=(int)data.length();
 		try {
 			numBrshsds=getNumElements();
 			brushsides=new BrushSide[numBrshsds];
@@ -42,6 +45,25 @@ public class BrushSides {
 			Window.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
 			Window.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+		}
+	}
+	
+	public BrushSides(byte[] in) {
+		int offset=0;
+		numBrshsds=in.length/8;
+		length=in.length;
+		brushsides=new BrushSide[numBrshsds];
+		try {
+			for(int i=0;i<numBrshsds;i++) {
+				byte[] brushSideBytes=new byte[8];
+				for(int j=0;j<8;j++) {
+					brushSideBytes[j]=in[offset+j];
+				}
+				brushsides[i]=new BrushSide(brushSideBytes);
+				offset+=8;
+			}
+		} catch(InvalidBrushSideException e) {
+			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last brush side.");
 		}
 	}
 	
@@ -67,14 +89,14 @@ public class BrushSides {
 	// ACCESSORS/MUTATORS
 	
 	// Returns the length (in bytes) of the lump
-	public long getLength() {
-		return data.length();
+	public int getLength() {
+		return length;
 	}
 	
 	// Returns the number of brush sides.
 	public int getNumElements() {
 		if(numBrshsds==0) {
-			return (int)data.length()/8;
+			return length/8;
 		} else {
 			return numBrshsds;
 		}

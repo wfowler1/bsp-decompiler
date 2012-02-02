@@ -12,6 +12,7 @@ public class Materials64 {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
+	private int length;
 	private int numMtrls=0;
 	private String[] materials;
 	
@@ -22,6 +23,7 @@ public class Materials64 {
 		data=new File(in);
 		try {
 			numMtrls=getNumElements();
+			length=(int)data.length();
 			materials=new String[numMtrls];
 			populateMaterialList();
 		} catch(java.io.FileNotFoundException e) {
@@ -34,10 +36,28 @@ public class Materials64 {
 		data=in;
 		try {
 			numMtrls=getNumElements();
+			length=(int)data.length();
 			materials=new String[numMtrls];
 			populateMaterialList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
+		}
+	}
+	
+	public Materials64(byte[] in) {
+		int offset=0;
+		numMtrls=in.length/64;
+		length=in.length;
+		materials=new String[numMtrls];
+		for(int i=0;i<numMtrls;i++) {
+			materials[i]=(char)in[offset]+""; // must do this first. Doing += right away adds "null" to the beginning
+			for(int j=1;j<64;j++) {
+				if(in[offset+j]==0x00) {
+					break;
+				} // else
+				materials[i]+=(char)in[offset+j]+"";
+			}
+			offset+=64;
 		}
 	}
 	
@@ -60,14 +80,14 @@ public class Materials64 {
 	// ACCESSORS/MUTATORS
 	
 	// Returns the length (in bytes) of the lump
-	public long getLength() {
-		return data.length();
+	public int getLength() {
+		return length;
 	}
 	
 	// Returns the number of materials.
 	public int getNumElements() {
 		if(numMtrls==0) {
-			return (int)data.length()/64;
+			return length/64;
 		} else {
 			return numMtrls;
 		}
