@@ -1,9 +1,9 @@
-// BSPData class
-// This class gathers all relevant information from the lumps.
+// BSPv42 class
+// This class gathers all relevant information from the lumps of a BSP version 42.
 
 import java.io.File;
 
-public class BSPData {
+public class BSPv42 {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
@@ -40,35 +40,8 @@ public class BSPData {
 	// CONSTRUCTORS
 	// This accepts a folder path and looks for the lump files there. If the folder is empty (or not found)
 	// the program fails nicely.
-	public BSPData(String in) {
+	public BSPv42(String in) {
 		filepath=in;
-		/*
-		try {
-			filepath=in.substring(0,in.length()-4)+"\\";
-
-			entities = new Entities(filepath+"00 - Entities.txt");
-			planes = new Planes(filepath+"01 - Planes.hex");
-			textures = new Texture64(filepath+"02 - Textures.hex");
-			materials = new Materials64(filepath+"03 - Materials.hex");
-			vertices = new Vertices(filepath+"04 - Vertices.hex");
-			faces = new Faces(filepath+"09 - Faces.hex");
-			leaves = new Leaves(filepath+"11 - Leaves.hex");
-			markbrushes = new IntList(filepath+"12 - Mark Brushes.hex");
-			models = new Models(filepath+"14 - Models.hex");
-			brushes = new Brushes(filepath+"15 - Brushes.hex");
-			brushSides = new BrushSides(filepath+"16 - Brushsides.hex");
-			textureMatrices = new TextureMatrices(filepath+"17 - Texmatrix.hex");
-			
-			r.gc(); // Take a minute to collect garbage, all the file parsing can leave a lot of crap data.
-			
-		} catch(java.lang.StringIndexOutOfBoundsException e) {
-			Window.window.println("Error: invalid path");
-		}*/
-	}
-	
-	// Simply sets up the BSP object
-	public BSPData() {
-		;
 	}
 
 	public void printBSPReport() {

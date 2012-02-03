@@ -26,7 +26,7 @@ public class Window extends JPanel implements ActionListener {
 			;
 		}
 		
-		JFrame frame = new JFrame("BSP v42 Decompiler by 005");
+		JFrame frame = new JFrame("BSP Decompiler by 005");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		window = new Window(frame.getContentPane());
@@ -55,6 +55,8 @@ public class Window extends JPanel implements ActionListener {
 	private static JCheckBox chk_planar;
 	private static JCheckBox chk_skipVertCheck;
 	private static JCheckBox chk_skipPlaneFlip;
+
+	private static JProgressBar progressBar;
 
 	// This constructor configures and displays the GUI
 	public Window(Container pane) {
@@ -175,6 +177,19 @@ public class Window extends JPanel implements ActionListener {
 		consoleConstraints.gridwidth = 5;
 		consoleConstraints.gridheight = 1;
 		pane.add(console_pane, consoleConstraints);
+		
+		// Sixth row
+		
+		progressBar = new JProgressBar(0, 1);
+		
+		GridBagConstraints barConstraints = new GridBagConstraints();
+		barConstraints.fill = GridBagConstraints.NONE;
+		barConstraints.gridx = 0;
+		barConstraints.gridy = 5;
+		barConstraints.gridwidth = 5;
+		barConstraints.gridheight = 1;
+		pane.add(progressBar, barConstraints);
+		
 	} // constructor
 
 	// actionPerformed(ActionEvent)
@@ -201,19 +216,26 @@ public class Window extends JPanel implements ActionListener {
 			if(!BSPFile.exists()) {
 				println("File \""+txt_file.getText()+"\" not found!");
 			} else {
-				BSPReader myBSPReader=new BSPReader(txt_file.getText(), !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
 				consolebox.setEnabled(false);
 				btn_decomp.setEnabled(false);
 				try {
-				/*
-					Runnable decompiler = new Decompiler(txt_file.getText(), !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
-					Thread worker = new Thread(decompiler);
-					worker.setName("Decompiler");
-					worker.start();*/
-					myBSPReader.readBSP();
+					BSPReader reader = new BSPReader(txt_file.getText());
+					reader.readBSP();
+					switch(reader.getVersion()) {
+						case 42:
+							progressBar.setMaximum(reader.BSP42.getBrushes().getNumElements());
+							progressBar.setValue(0);
+							progressBar.setString("0%");
+							progressBar.setStringPainted(true);
+							Runnable decompiler = new Decompiler(reader.BSP42, !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
+							Thread decompilerworker = new Thread(decompiler);
+							decompilerworker.setName("Decompiler");
+							decompilerworker.start();
+					}
 				} catch (java.lang.Exception e) {
 					println("\nException caught: "+e+"\nPlease let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/list");
 					consolebox.setEnabled(true);
+					btn_decomp.setEnabled(true);
 				}
 			}
 		}
@@ -238,7 +260,16 @@ public class Window extends JPanel implements ActionListener {
 		print("\n");
 	}
 	
-	protected void clearConsole() {
+	protected static void clearConsole() {
 		consolebox.replaceRange("", 0, consolebox.getText().length());
+	}
+	
+	protected static void setProgress(int in, int max) {
+		progressBar.setValue(in);
+		if(in==max) {
+			progressBar.setString("Done!");
+		} else {
+			progressBar.setString((int)((in/(float)max)*100)+"%");
+		}
 	}
 }

@@ -19,36 +19,19 @@ public class BSPReader {
 	// Both MoHAA and Source engines use different version numbering systems than the standard.
 	private boolean source=false;
 	private boolean mohaa=false;
-
-	private BSPData myBSP;
 	
 	public final int OFFSET=0;
 	public final int LENGTH=1;
 	
-	private boolean vertexDecomp;
-	private boolean checkVerts;
-	private boolean correctPlaneFlip;
-	private double planePointCoef;
+	private int version=0;
 	
-	// This constructor sets everything according to specified settings.
-	// DELETE THIS CONSTRUCTOR once the decompiler classes are ready, this is
-	// hacky and prohibits use of multithreading!!!!!!
-	public BSPReader(String in, boolean vertexDecomp, boolean checkVerts, boolean correctPlaneFlip, double planePointCoef) {
-		BSP=new File(in); // The read String points directly to the BSP file.
-		if(!BSP.exists()) {
-			Window.window.println("Unable to open source BSP file, please ensure the BSP exists.");
-		} else {
-			folder=BSP.getParent(); // The read string minus the .BSP is the lumps folder
-			if(folder==null) {
-				folder="";
-			}
-			// Set up global variables
-			this.vertexDecomp=vertexDecomp;
-			this.checkVerts=checkVerts;
-			this.correctPlaneFlip=correctPlaneFlip;
-			this.planePointCoef=planePointCoef;
-		}
-	}
+	// Declare all kinds of BSPs here, the one actually used will be determined by constructor
+	// protected BSPv29n30
+	// protected BSPv38
+	protected BSPv42 BSP42;
+	// protected BSPv47
+	// protected MOHAABSP
+	// protected SourceBSPv20
 	
 	// CONSTRUCTORS
 	
@@ -96,9 +79,11 @@ public class BSPReader {
 						case 29: // Quake
 						case 30: // Half-life
 							Window.window.println("Sorry, no Quake/Half-life support (yet)!");
+							Window.btn_decomp.setEnabled(true);
 							break;
 						case 38: // Quake 2
 							Window.window.println("Sorry, no Quake 2 support (yet)!");
+							Window.btn_decomp.setEnabled(true);
 							break;
 						/*case 41: // JBN Beta
 							numLumps=16; //??????
@@ -106,7 +91,7 @@ public class BSPReader {
 						case 42: // JBN
 							Window.window.println("BSP v42 found (Nightfire)");
 							FileInputStream offsetReader = new FileInputStream(BSP);
-							myBSP = new BSPData(BSP.getPath());
+							BSP42 = new BSPv42(BSP.getPath());
 							byte[] read=new byte[4];
 							offsetReader.skip(4); // Skip the file header, putting the reader into the offset/length pairs
 							
@@ -115,35 +100,35 @@ public class BSPReader {
 							int offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
 							offsetReader.read(read); // Read 4 more bytes
 							int length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
-							myBSP.setEntities(readLump(offset, length));
+							BSP42.setEntities(readLump(offset, length));
 							
 							// Lump 01
 							offsetReader.read(read); // Read 4 bytes
 							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
 							offsetReader.read(read); // Read 4 more bytes
 							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
-							myBSP.setPlanes(readLump(offset, length));
+							BSP42.setPlanes(readLump(offset, length));
 							
 							// Lump 02
 							offsetReader.read(read); // Read 4 bytes
 							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
 							offsetReader.read(read); // Read 4 more bytes
 							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
-							myBSP.setTextures(readLump(offset, length));
+							BSP42.setTextures(readLump(offset, length));
 							
 							// Lump 03
 							offsetReader.read(read); // Read 4 bytes
 							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
 							offsetReader.read(read); // Read 4 more bytes
 							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
-							myBSP.setMaterials(readLump(offset, length));
+							BSP42.setMaterials(readLump(offset, length));
 							
 							// Lump 04
 							offsetReader.read(read); // Read 4 bytes
 							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
 							offsetReader.read(read); // Read 4 more bytes
 							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
-							myBSP.setVertices(readLump(offset, length));
+							BSP42.setVertices(readLump(offset, length));
 							
 							offsetReader.skip(32); // Do not need offset/length for lumps 5-8
 							
@@ -152,7 +137,7 @@ public class BSPReader {
 							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
 							offsetReader.read(read); // Read 4 more bytes
 							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
-							myBSP.setFaces(readLump(offset, length));
+							BSP42.setFaces(readLump(offset, length));
 							
 							offsetReader.skip(8); // Do not need offset/length for lump 10
 							
@@ -161,7 +146,7 @@ public class BSPReader {
 							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
 							offsetReader.read(read); // Read 4 more bytes
 							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
-							myBSP.setLeaves(readLump(offset, length));
+							BSP42.setLeaves(readLump(offset, length));
 							
 							offsetReader.skip(8); // Do not need offset/length for lump 12
 							
@@ -170,53 +155,51 @@ public class BSPReader {
 							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
 							offsetReader.read(read); // Read 4 more bytes
 							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
-							myBSP.setMarkBrushes(readLump(offset, length));
+							BSP42.setMarkBrushes(readLump(offset, length));
 							
 							// Lump 14
 							offsetReader.read(read); // Read 4 bytes
 							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
 							offsetReader.read(read); // Read 4 more bytes
 							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
-							myBSP.setModels(readLump(offset, length));
+							BSP42.setModels(readLump(offset, length));
 							
 							// Lump 15
 							offsetReader.read(read); // Read 4 bytes
 							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
 							offsetReader.read(read); // Read 4 more bytes
 							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
-							myBSP.setBrushes(readLump(offset, length));
+							BSP42.setBrushes(readLump(offset, length));
 							
 							// Lump 16
 							offsetReader.read(read); // Read 4 bytes
 							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
 							offsetReader.read(read); // Read 4 more bytes
 							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
-							myBSP.setBrushSides(readLump(offset, length));
+							BSP42.setBrushSides(readLump(offset, length));
 							
 							// Lump 17
 							offsetReader.read(read); // Read 4 bytes
 							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
 							offsetReader.read(read); // Read 4 more bytes
 							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
-							myBSP.setTextureMatrices(readLump(offset, length));
+							BSP42.setTextureMatrices(readLump(offset, length));
 							
 							offsetReader.close();
 							
-							myBSP.printBSPReport();
-							
-							// In the near future, decompiler won't be called from here.
-							Decompiler decompiler=new Decompiler(vertexDecomp, checkVerts, correctPlaneFlip, planePointCoef);
-							decompiler.decompileBSP42(myBSP);
-							
+							BSP42.printBSPReport();
 							break;
 						case 46: // Quake 3/close derivative
 							Window.window.println("Sorry, no Quake 3 support (yet)!");
+							Window.btn_decomp.setEnabled(true);
 							break;
 						case 47: // RTC Wolfenstein, I believe it's almost identical to Q3
 							Window.window.println("Sorry, no Wolfenstein support (yet)!");
+							Window.btn_decomp.setEnabled(true);
 							break;
 						default:
 							Window.window.println("I don't know what kind of BSP this is! Please post an issue on the bug tracker!");
+							Window.btn_decomp.setEnabled(true);
 					}
 				}
 			}
@@ -242,31 +225,32 @@ public class BSPReader {
 				
 	// ACCESSORS/MUTATORS
 	public int getVersion() throws java.io.IOException {
-		byte[] read=new byte[4];
-		FileInputStream versionNumberReader=new FileInputStream(BSP); // This filestream will be used to read version number only
-		versionNumberReader.read(read);
-		int version=0;
-		int in=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
-		if(in == 1347633737) { // 1347633737 reads in ASCII as "IBSP"
+		if(version==0) {
+			byte[] read=new byte[4];
+			FileInputStream versionNumberReader=new FileInputStream(BSP); // This filestream will be used to read version number only
 			versionNumberReader.read(read);
-			version=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
-		} else {
-			if(in == 892416050) { // 892416050 reads in ASCII as "2015," the game studio which developed MoHAA
-				mohaa=true;
+			int in=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+			if(in == 1347633737) { // 1347633737 reads in ASCII as "IBSP"
 				versionNumberReader.read(read);
-				version=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff); // Should be 19
+				version=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
 			} else {
-			if(in == 1095516485) { // 1095516485 reads in ASCII as "EALA," the ones who developed MoHAA Spearhead and Breakthrough
+				if(in == 892416050) { // 892416050 reads in ASCII as "2015," the game studio which developed MoHAA
 					mohaa=true;
 					versionNumberReader.read(read);
-					version=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff); // Should be 21
+					version=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff); // Should be 19
 				} else {
-					if(in == 1347633750) { // 1347633750 reads in ASCII as "VBSP." Indicates Source engine.
-						source=true;
+				if(in == 1095516485) { // 1095516485 reads in ASCII as "EALA," the ones who developed MoHAA Spearhead and Breakthrough
+						mohaa=true;
 						versionNumberReader.read(read);
-						version=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+						version=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff); // Should be 21
 					} else {
-						version=in;
+						if(in == 1347633750) { // 1347633750 reads in ASCII as "VBSP." Indicates Source engine.
+							source=true;
+							versionNumberReader.read(read);
+							version=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+						} else {
+							version=in;
+						}
 					}
 				}
 			}
