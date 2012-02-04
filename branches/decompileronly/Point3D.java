@@ -60,17 +60,13 @@ public class Point3D {
 	
 	// This constructor takes twelve bytes in a byte array, as though
 	// it had just been read by a FileInputStream.
-	public Point3D(byte[] in) throws InvalidPoint3DException {
-		if(in.length==12) {
-			int myInt=(in[3] << 24) | ((in[2] & 0xff) << 16) | ((in[1] & 0xff) << 8) | (in[0] & 0xff);
-			point[X]=(double)Float.intBitsToFloat(myInt);
-			myInt=(in[7] << 24) | ((in[6] & 0xff) << 16) | ((in[5] & 0xff) << 8) | (in[4] & 0xff);
-			point[Y]=(double)Float.intBitsToFloat(myInt);
-			myInt=(in[11] << 24) | ((in[10] & 0xff) << 16) | ((in[9] & 0xff) << 8) | (in[8] & 0xff);
-			point[Z]=(double)Float.intBitsToFloat(myInt);
-		} else { // Could add support for a bytestream of doubles here
-			throw new InvalidPoint3DException();
-		}
+	public Point3D(byte[] in) {
+		int myInt=(in[3] << 24) | ((in[2] & 0xff) << 16) | ((in[1] & 0xff) << 8) | (in[0] & 0xff);
+		point[X]=(double)Float.intBitsToFloat(myInt);
+		myInt=(in[7] << 24) | ((in[6] & 0xff) << 16) | ((in[5] & 0xff) << 8) | (in[4] & 0xff);
+		point[Y]=(double)Float.intBitsToFloat(myInt);
+		myInt=(in[11] << 24) | ((in[10] & 0xff) << 16) | ((in[9] & 0xff) << 8) | (in[8] & 0xff);
+		point[Z]=(double)Float.intBitsToFloat(myInt);
 	}
 	
 	// METHODS

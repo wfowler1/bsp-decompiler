@@ -29,10 +29,7 @@ public class Plane {
 		type=inType;
 	}
 	
-	public Plane(float[] inNormal, float inDist, int inType) throws InvalidPlaneException{
-		if(inNormal.length!=3) {
-			throw new InvalidPlaneException();
-		}
+	public Plane(float[] inNormal, float inDist, int inType) {
 		normal=inNormal;
 		dist=inDist;
 		type=inType;
@@ -43,10 +40,7 @@ public class Plane {
 	// Another reason to port this to a different language: JAVA USES BIG ENDIAN BYTE ORDER
 	// Maybe there's some property of the runtime you can set to use little endian. Maybe
 	// Java is just retarded.
-	public Plane(byte[] in) throws InvalidPlaneException {
-		if(in.length!=20) {
-			throw new InvalidPlaneException();
-		}
+	public Plane(byte[] in) {
 		int myInt=(in[3] << 24) | ((in[2] & 0xff) << 16) | ((in[1] & 0xff) << 8) | (in[0] & 0xff);
 		normal[A]=Float.intBitsToFloat(myInt);
 		myInt=(in[7] << 24) | ((in[6] & 0xff) << 16) | ((in[5] & 0xff) << 8) | (in[4] & 0xff);

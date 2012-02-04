@@ -5,7 +5,6 @@
 public class Decompiler implements Runnable {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
-	private static Runtime r = Runtime.getRuntime();
 	
 	public static final int A = 0;
 	public static final int B = 1;
@@ -29,8 +28,8 @@ public class Decompiler implements Runnable {
 	
 	// Declare all kinds of BSPs here, the one actually used will be determined by constructor
 	// private BSPv29n30
-	// private BSPv38
-	private BSPv42 BSP42;
+	private v38BSP BSP38;
+	private v42BSP BSP42;
 	// private BSPv47
 	// private MOHAABSP
 	// private SourceBSPv20
@@ -40,7 +39,18 @@ public class Decompiler implements Runnable {
 	// CONSTRUCTORS
 	
 	// This constructor sets everything according to specified settings.
-	public Decompiler(BSPv42 BSP42, boolean vertexDecomp, boolean checkVerts, boolean correctPlaneFlip, double planePointCoef) {
+	public Decompiler(v38BSP BSP38, boolean vertexDecomp, boolean checkVerts, boolean correctPlaneFlip, double planePointCoef) {
+		// Set up global variables
+		this.BSP38=BSP38;
+		version=38;
+		this.vertexDecomp=vertexDecomp;
+		this.checkVerts=checkVerts;
+		this.correctPlaneFlip=correctPlaneFlip;
+		this.planePointCoef=planePointCoef;
+	}
+	
+	// This constructor sets everything according to specified settings.
+	public Decompiler(v42BSP BSP42, boolean vertexDecomp, boolean checkVerts, boolean correctPlaneFlip, double planePointCoef) {
 		// Set up global variables
 		this.BSP42=BSP42;
 		version=42;
@@ -59,9 +69,13 @@ public class Decompiler implements Runnable {
 			case 42:
 				decompileBSP42();
 				break;
+			case 38:
+				Window.window.println("Decompiling of Quake 2 map not yet written!");
+				break;
 			default:
 				Window.window.println("wtf");
 		}
+		Window.btn_decomp.setEnabled(true);
 	}
 	
 	// -decompileBSP42()
@@ -101,7 +115,7 @@ public class Decompiler implements Runnable {
 				boolean[] brushesUsed=new boolean[BSP42.getBrushes().getNumElements()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
 				numBrshs=0;
 				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
-					Leaf currentLeaf=BSP42.getLeaves().getLeaf(j+firstLeaf);
+					v42Leaf currentLeaf=BSP42.getLeaves().getLeaf(j+firstLeaf);
 					int firstBrushIndex=currentLeaf.getMarkBrush();
 					int numBrushIndices=currentLeaf.getNumMarkBrushes();
 					if(numBrushIndices>0) { // A lot of leaves reference no brushes. If this is one, this iteration of the j loop is finished
@@ -167,13 +181,8 @@ public class Decompiler implements Runnable {
 					textureT[5][2]=-1;
 					
 					for(int j=0;j<6;j++) {
-						try {
-							MAPBrushSide currentEdge=new MAPBrushSide(planes[j], "special/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-							newOriginBrush.addAttribute(currentEdge.toString());
-						} catch(InvalidMAPBrushSideException e) {
-							// This message will never be displayed.
-							Window.window.println("Bad origin brush, there's something wrong with the code.");
-						}
+						MAPBrushSide currentEdge=new MAPBrushSide(planes[j], "special/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+						newOriginBrush.addAttribute(currentEdge.toString());
 					}
 					newOriginBrush.addAttribute("}");
 					mapFile.getEntity(i).addAttribute(newOriginBrush.toString());
@@ -190,13 +199,11 @@ public class Decompiler implements Runnable {
 			Window.window.println("Flipped "+numFlips+" planes in "+numFlipBrshs+" brushes.");
 		}
 		Window.window.println("Process completed!");
-		Window.btn_decomp.setEnabled(true);
-		r.gc(); // Collect garbage, there will be a lot of it
 	}
 	
 	// -decompileBrush42(Brush, int)
 	// Decompiles the Brush and adds it to entitiy #currentEntity as .MAP data.
-	private void decompileBrush42(Brush brush, int currentEntity) {
+	private void decompileBrush42(v42Brush brush, int currentEntity) {
 		double[] origin=mapFile.getEntity(currentEntity).getOrigin();
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
@@ -208,9 +215,9 @@ public class Decompiler implements Runnable {
 		int numRealFaces=0;
 		for(int l=0;l<numSides;l++) { // For each side of the brush
 			Point3D[] plane=new Point3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
-			BrushSide currentSide=BSP42.getBrushSides().getBrushSide(firstSide+l);
-			Face currentFace=BSP42.getFaces().getFace(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
-			if(!BSP42.getTextures().getTexture(currentFace.getTexture()).equalsIgnoreCase("special/bevel")) { // If this face uses special/bevel, skip the face completely
+			v42BrushSide currentSide=BSP42.getBrushSides().getBrushSide(firstSide+l);
+			v42Face currentFace=BSP42.getFaces().getFace(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
+			if(!BSP42.getTextures().getString(currentFace.getTexture()).equalsIgnoreCase("special/bevel")) { // If this face uses special/bevel, skip the face completely
 				int firstVertex=currentFace.getVert();
 				int numVertices=currentFace.getNumVerts();
 				Plane currentPlane=BSP42.getPlanes().getPlane(currentSide.getPlane());
@@ -264,10 +271,10 @@ public class Decompiler implements Runnable {
 				plane[2].setX(plane[2].getX()+origin[X]);
 				plane[2].setY(plane[2].getY()+origin[Y]);
 				plane[2].setZ(plane[2].getZ()+origin[Z]);
-				String texture=BSP42.getTextures().getTexture(currentFace.getTexture());
+				String texture=BSP42.getTextures().getString(currentFace.getTexture());
 				double[] textureS=new double[3];
 				double[] textureT=new double[3];
-				TexMatrix currentTexMatrix=BSP42.getTextureMatrices().getTexMatrix(currentFace.getTexStyle());
+				v42TexMatrix currentTexMatrix=BSP42.getTextureMatrices().getTexMatrix(currentFace.getTexStyle());
 				// Get the lengths of the axis vectors
 				double UAxisLength=Math.sqrt(Math.pow((double)currentTexMatrix.getUAxisX(),2)+Math.pow((double)currentTexMatrix.getUAxisY(),2)+Math.pow((double)currentTexMatrix.getUAxisZ(),2));
 				double VAxisLength=Math.sqrt(Math.pow((double)currentTexMatrix.getVAxisX(),2)+Math.pow((double)currentTexMatrix.getVAxisY(),2)+Math.pow((double)currentTexMatrix.getVAxisZ(),2));
@@ -286,15 +293,11 @@ public class Decompiler implements Runnable {
 				double textureShiftT=(double)currentTexMatrix.getVShift()-originShiftT;
 				float texRot=0; // In compiled maps this is calculated into the U and V axes, so set it to 0 until I can figure out a good way to determine a better value.
 				int flags=currentFace.getType(); // This is actually a set of flags. Whatever.
-				String material=BSP42.getMaterials().getMaterial(currentFace.getMaterial());
+				String material=BSP42.getMaterials().getString(currentFace.getMaterial());
 				double lgtScale=16; // These values are impossible to get from a compiled map since they
 				double lgtRot=0;    // are used by RAD for generating lightmaps, then are discarded, I believe.
-				try {
-					brushSides[l]=new MAPBrushSide(plane, texture, textureS, textureShiftS, textureT, textureShiftT,
-				                                          texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
-				} catch(InvalidMAPBrushSideException e) {
-					Window.window.println("Error creating a brush side "+l+" in model "+currentEntity+", side not written."); // I've never seen this error
-				}
+				brushSides[l]=new MAPBrushSide(plane, texture, textureS, textureShiftS, textureT, textureShiftT,
+				                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
 				numRealFaces++;
 				if(brushSides[l]!=null) {
 					mapBrush.add(brushSides[l], usedVerts[l], currentPlane); // Add the MAPBrushSide to the current brush

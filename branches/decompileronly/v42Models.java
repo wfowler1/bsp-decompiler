@@ -1,4 +1,4 @@
-// Models class
+// v42Models class
 
 // This class holds an array of Model objects. Each model is a crazy
 // amount of data.
@@ -6,24 +6,24 @@
 import java.io.FileInputStream;
 import java.io.File;
 
-public class Models {
+public class v42Models {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
 	private int length;
 	private int numModels=0;
-	private Model[] models;
+	private v42Model[] models;
 	
 	// CONSTRUCTORS
 	
 	// This one accepts the lump path as a String
-	public Models(String in) {
+	public v42Models(String in) {
 		data=new File(in);
 		length=(int)data.length();
 		try {
 			numModels=getNumElements();
-			models=new Model[numModels];
+			models=new v42Model[numModels];
 			populateModelList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
@@ -33,12 +33,12 @@ public class Models {
 	}
 	
 	// This one accepts the input file path as a File
-	public Models(File in) {
+	public v42Models(File in) {
 		data=in;
 		length=(int)data.length();
 		try {
 			numModels=getNumElements();
-			models=new Model[numModels];
+			models=new v42Model[numModels];
 			populateModelList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
@@ -47,22 +47,18 @@ public class Models {
 		}
 	}
 	
-	public Models(byte[] in) {
+	public v42Models(byte[] in) {
 		int offset=0;
 		numModels=in.length/56;
 		length=in.length;
-		models=new Model[numModels];
-		try {
-			for(int i=0;i<numModels;i++) {
-				byte[] modelBytes=new byte[56];
-				for(int j=0;j<56;j++) {
-					modelBytes[j]=in[offset+j];
-				}
-				models[i]=new Model(modelBytes);
-				offset+=56;
+		models=new v42Model[numModels];
+		for(int i=0;i<numModels;i++) {
+			byte[] modelBytes=new byte[56];
+			for(int j=0;j<56;j++) {
+				modelBytes[j]=in[offset+j];
 			}
-		} catch(InvalidModelException e) {
-			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last model.");
+			models[i]=new v42Model(modelBytes);
+			offset+=56;
 		}
 	}
 	
@@ -74,16 +70,12 @@ public class Models {
 	// of the map.
 	private void populateModelList() throws java.io.FileNotFoundException, java.io.IOException {
 		FileInputStream reader=new FileInputStream(data);
-		try {
-			for(int i=0;i<numModels;i++) {
-				byte[] datain=new byte[56];
-				reader.read(datain);
-				models[i]=new Model(datain);
-			}
-			reader.close();
-		} catch(InvalidModelException e) {
-			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last model.");
+		for(int i=0;i<numModels;i++) {
+			byte[] datain=new byte[56];
+			reader.read(datain);
+			models[i]=new v42Model(datain);
 		}
+		reader.close();
 	}
 	
 	// ACCESSORS/MUTATORS
@@ -102,15 +94,15 @@ public class Models {
 		}
 	}
 	
-	public Model[] getModels() {
+	public v42Model[] getModels() {
 		return models;
 	}
 	
-	public Model getModel(int i) {
+	public v42Model getModel(int i) {
 		return models[i];
 	}
 	
-	public void setModel(int i, Model in) {
+	public void setModel(int i, v42Model in) {
 		models[i]=in;
 	}
 }

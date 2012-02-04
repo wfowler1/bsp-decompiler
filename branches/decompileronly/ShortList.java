@@ -1,4 +1,4 @@
-// IntList class
+// ShortList class
 
 // This class holds an array of integers. The lump which these indices reference
 // depends on the context.
@@ -6,25 +6,25 @@
 import java.io.FileInputStream;
 import java.io.File;
 
-public class IntList {
+public class ShortList {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
 	private int length;
-	private int numInts=0;
-	private int[] ints;
+	private int numShorts=0;
+	private short[] shorts;
 	
 	// CONSTRUCTORS
 	
 	// This one accepts the lump path as a String
-	public IntList(String in) {
+	public ShortList(String in) {
 		data=new File(in);
 		try {
-			numInts=getNumElements();
+			numShorts=getNumElements();
 			length=(int)data.length();
-			ints=new int[numInts];
-			populateIntList();
+			shorts=new short[numShorts];
+			populateShortList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
@@ -33,13 +33,13 @@ public class IntList {
 	}
 	
 	// This one accepts the input file path as a File
-	public IntList(File in) {
+	public ShortList(File in) {
 		data=in;
 		try {
-			numInts=getNumElements();
+			numShorts=getNumElements();
 			length=(int)data.length();
-			ints=new int[numInts];
-			populateIntList();
+			shorts=new short[numShorts];
+			populateShortList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
@@ -47,31 +47,31 @@ public class IntList {
 		}
 	}
 	
-	public IntList(byte[] in) {
+	public ShortList(byte[] in) {
 		int offset=0;
-		numInts=in.length/4;
+		numShorts=in.length/2;
 		length=in.length;
-		ints=new int[numInts];
-		for(int i=0;i<numInts;i++) {
-			byte[] intBytes=new byte[4];
-			for(int j=0;j<4;j++) {
-				intBytes[j]=in[offset+j];
+		shorts=new short[numShorts];
+		for(int i=0;i<numShorts;i++) {
+			byte[] bytes=new byte[2];
+			for(int j=0;j<2;j++) {
+				bytes[j]=in[offset+j];
 			}
-			ints[i]=(intBytes[3] << 24) | ((intBytes[2] & 0xff) << 16) | ((intBytes[1] & 0xff) << 8) | (intBytes[0] & 0xff);
-			offset+=4;
+			shorts[i]=(short)((bytes[1] << 8) | (bytes[0] & 0xff));
+			offset+=2;
 		}
 	}
 	
 	// METHODS
 	
-	// -populateIntList()
+	// -populateShortList()
 	// Uses the file in the instance data to populate the list of indices
-	private void populateIntList() throws java.io.FileNotFoundException, java.io.IOException {
+	private void populateShortList() throws java.io.FileNotFoundException, java.io.IOException {
 		FileInputStream reader=new FileInputStream(data);
-		for(int i=0;i<numInts;i++) {
-			byte[] datain=new byte[4];
+		for(int i=0;i<numShorts;i++) {
+			byte[] datain=new byte[2];
 			reader.read(datain);
-			ints[i]=(datain[3] << 24) | ((datain[2] & 0xff) << 16) | ((datain[1] & 0xff) << 8) | (datain[0] & 0xff);
+			shorts[i]=(short)((datain[1] << 8) | (datain[0] & 0xff));
 		}
 		reader.close();
 	}
@@ -85,22 +85,22 @@ public class IntList {
 	
 	// Returns the number of brush indices. This lump is RETARDED.
 	public int getNumElements() {
-		if(numInts==0) {
-			return length/4;
+		if(numShorts==0) {
+			return length/2;
 		} else {
-			return numInts;
+			return numShorts;
 		}
 	}
 	
-	public void setInt(int i, int in) {
-		ints[i]=in;
+	public void setShort(int i, short in) {
+		shorts[i]=in;
 	}
 	
-	public int getInt(int i) {
-		return ints[i];
+	public short getShort(int i) {
+		return shorts[i];
 	}
 	
-	public int[] getInt() {
-		return ints;
+	public short[] getShort() {
+		return shorts;
 	}
 }

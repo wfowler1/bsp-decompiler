@@ -1,35 +1,29 @@
-// Vertices class
+// v42Brushes class
 
-// This class holds an array of vertices of the Vertex class. Really it's an array
-// of float3 but that's how it is for consistency's sake.
+// This class holds an array of Brush objects.
 
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.File;
 
-public class Vertices {
-	
+public class v42Brushes {
+
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
-	
-	public final int X=0;
-	public final int Y=1;
-	public final int Z=2;
 	
 	private File data;
 	private int length;
-	private int numVerts=0;
-	private Point3D[] vertices;
+	private int numBrshs=0;
+	private v42Brush[] brushes;
 	
 	// CONSTRUCTORS
 	
 	// This one accepts the lump path as a String
-	public Vertices(String in) {
+	public v42Brushes(String in) {
 		data=new File(in);
+		length=(int)data.length();
 		try {
-			numVerts=getNumElements();
-			length=(int)data.length();
-			vertices=new Point3D[numVerts];
-			populateVertexList();
+			numBrshs=getNumElements();
+			brushes=new v42Brush[numBrshs];
+			populateBrushList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
@@ -38,13 +32,13 @@ public class Vertices {
 	}
 	
 	// This one accepts the input file path as a File
-	public Vertices(File in) {
+	public v42Brushes(File in) {
 		data=in;
+		length=(int)data.length();
 		try {
-			numVerts=getNumElements();
-			length=(int)data.length();
-			vertices=new Point3D[numVerts];
-			populateVertexList();
+			numBrshs=getNumElements();
+			brushes=new v42Brush[numBrshs];
+			populateBrushList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
@@ -52,31 +46,32 @@ public class Vertices {
 		}
 	}
 	
-	public Vertices(byte[] in) {
+	public v42Brushes(byte[] in) {
 		int offset=0;
-		numVerts=in.length/12;
+		numBrshs=in.length/12;
 		length=in.length;
-		vertices=new Point3D[numVerts];
-		for(int i=0;i<numVerts;i++) {
-			byte[] vertexBytes=new byte[12];
+		brushes=new v42Brush[numBrshs];
+		for(int i=0;i<numBrshs;i++) {
+			byte[] brushBytes=new byte[12];
 			for(int j=0;j<12;j++) {
-				vertexBytes[j]=in[offset+j];
+				brushBytes[j]=in[offset+j];
 			}
-			vertices[i]=new Point3D(vertexBytes);
+			brushes[i]=new v42Brush(brushBytes);
 			offset+=12;
 		}
 	}
 	
 	// METHODS
 	
-	// +populateVertexList()
-	// Parses all data into an array of Point3D.
-	public void populateVertexList() throws java.io.FileNotFoundException, java.io.IOException {
+	// -populateBrushList()
+	// Uses the data file in the instance data to populate the array
+	// of Brush objects
+	private void populateBrushList() throws java.io.FileNotFoundException, java.io.IOException {
 		FileInputStream reader=new FileInputStream(data);
-		for(int i=0;i<numVerts;i++) {
+		for(int i=0;i<numBrshs;i++) {
 			byte[] datain=new byte[12];
 			reader.read(datain);
-			vertices[i]=new Point3D(datain);
+			brushes[i]=new v42Brush(datain);
 		}
 		reader.close();
 	}
@@ -88,20 +83,24 @@ public class Vertices {
 		return length;
 	}
 	
-	// Returns the number of vertices.
+	// Returns the number of brushes.
 	public int getNumElements() {
-		if(numVerts==0) {
+		if(numBrshs==0) {
 			return length/12;
 		} else {
-			return numVerts;
+			return numBrshs;
 		}
 	}
 	
-	public Point3D getVertex(int i) {
-		return vertices[i];
+	public v42Brush getBrush(int i) {
+		return brushes[i];
 	}
 	
-	public Point3D[] getVertices() {
-		return vertices;
+	public v42Brush[] getBrushes() {
+		return brushes;
+	}
+	
+	public void setBrush(int i, v42Brush in) {
+		brushes[i]=in;
 	}
 }

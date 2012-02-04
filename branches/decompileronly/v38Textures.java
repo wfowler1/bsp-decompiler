@@ -1,29 +1,30 @@
-// Brushes class
+// v38Textures class
 
-// This class holds an array of Brush objects.
+// This class keeps and maintains an array, which is a list
+// of the textures and their information in the map.
 
 import java.io.FileInputStream;
 import java.io.File;
 
-public class Brushes {
+public class v38Textures {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
+	private int numTxts=0;
 	private int length;
-	private int numBrshs=0;
-	private Brush[] brushes;
+	private v38Texture[] textures;
 	
 	// CONSTRUCTORS
 	
 	// This one accepts the lump path as a String
-	public Brushes(String in) {
+	public v38Textures(String in) {
 		data=new File(in);
 		length=(int)data.length();
 		try {
-			numBrshs=getNumElements();
-			brushes=new Brush[numBrshs];
-			populateBrushList();
+			numTxts=getNumElements();
+			textures=new v38Texture[numTxts];
+			populateTextureList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
@@ -32,13 +33,13 @@ public class Brushes {
 	}
 	
 	// This one accepts the input file path as a File
-	public Brushes(File in) {
+	public v38Textures(File in) {
 		data=in;
 		length=(int)data.length();
 		try {
-			numBrshs=getNumElements();
-			brushes=new Brush[numBrshs];
-			populateBrushList();
+			numTxts=getNumElements();
+			textures=new v38Texture[numTxts];
+			populateTextureList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
 		} catch(java.io.IOException e) {
@@ -46,36 +47,35 @@ public class Brushes {
 		}
 	}
 	
-	public Brushes(byte[] in) {
+	public v38Textures(byte[] in) {
 		int offset=0;
-		numBrshs=in.length/12;
 		length=in.length;
-		brushes=new Brush[numBrshs];
-		for(int i=0;i<numBrshs;i++) {
-			byte[] brushBytes=new byte[12];
-			for(int j=0;j<12;j++) {
-				brushBytes[j]=in[offset+j];
+		numTxts=in.length/76;
+		textures=new v38Texture[numTxts];
+		for(int i=0;i<numTxts;i++) {
+			byte[] textureBytes=new byte[76];
+			for(int j=0;j<76;j++) {
+				textureBytes[j]=in[offset+j];
 			}
-			brushes[i]=new Brush(brushBytes);
-			offset+=12;
+			textures[i]=new v38Texture(textureBytes);
+			offset+=76;
 		}
 	}
 	
 	// METHODS
 	
-	// -populateBrushList()
-	// Uses the data file in the instance data to populate the array
-	// of Brush objects
-	private void populateBrushList() throws java.io.FileNotFoundException, java.io.IOException {
+	// -populateTextureList()
+	// Uses the instance data to populate the array of v38Texture
+	private void populateTextureList() throws java.io.FileNotFoundException, java.io.IOException {
 		FileInputStream reader=new FileInputStream(data);
-		for(int i=0;i<numBrshs;i++) {
-			byte[] datain=new byte[12];
+		for(int i=0;i<numTxts;i++) {
+			byte[] datain=new byte[76];
 			reader.read(datain);
-			brushes[i]=new Brush(datain);
+			textures[i]=new v38Texture(datain);
 		}
 		reader.close();
 	}
-	
+		
 	// ACCESSORS/MUTATORS
 	
 	// Returns the length (in bytes) of the lump
@@ -83,24 +83,20 @@ public class Brushes {
 		return length;
 	}
 	
-	// Returns the number of brushes.
+	// Returns the number of Leaves.
 	public int getNumElements() {
-		if(numBrshs==0) {
-			return length/12;
+		if(numTxts==0) {
+			return length/76;
 		} else {
-			return numBrshs;
+			return numTxts;
 		}
 	}
 	
-	public Brush getBrush(int i) {
-		return brushes[i];
+	public v38Texture getTexture(int i) {
+		return textures[i];
 	}
 	
-	public Brush[] getBrushes() {
-		return brushes;
-	}
-	
-	public void setBrush(int i, Brush in) {
-		brushes[i]=in;
+	public v38Texture[] getTextures() {
+		return textures;
 	}
 }

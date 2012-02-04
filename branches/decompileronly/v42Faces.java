@@ -1,11 +1,11 @@
-// Faces class
+// v42Faces class
 
 // Stores references to each face object in a BSP.
 
 import java.io.FileInputStream;
 import java.io.File;
 
-public class Faces {
+public class v42Faces {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
@@ -19,19 +19,19 @@ public class Faces {
 	// there.
 	private int numWorldFaces=0;
 	private int numModelFaces=0;
-	private Face[] faces;
+	private v42Face[] faces;
 	
 	// CONSTRUCTORS
 	
 	// This one accepts the lump path as a String
-	public Faces(String in) {
+	public v42Faces(String in) {
 		data=new File(in);
 		try {
 			numFaces=getNumElements();
 			length=(int)data.length();
 			numWorldFaces=getNumWorldFaces();
 			numModelFaces=numFaces-numWorldFaces;
-			faces=new Face[numFaces];
+			faces=new v42Face[numFaces];
 			populateFaceList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
@@ -41,14 +41,14 @@ public class Faces {
 	}
 	
 	// This one accepts the input file path as a File
-	public Faces(File in) {
+	public v42Faces(File in) {
 		data=in;
 		try {
 			numFaces=getNumElements();
 			length=(int)data.length();
 			numWorldFaces=getNumWorldFaces();
 			numModelFaces=numFaces-numWorldFaces;
-			faces=new Face[numFaces];
+			faces=new v42Face[numFaces];
 			populateFaceList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
@@ -58,27 +58,23 @@ public class Faces {
 	}
 	
 	// Accepts an array of Face objects and sets the entire lump to it
-	public Faces(Face[] in) {
+	public v42Faces(v42Face[] in) {
 		faces=in;
 		numFaces=faces.length;
 	}
 	
-	public Faces(byte[] in) {
+	public v42Faces(byte[] in) {
 		int offset=0;
 		numFaces=in.length/48;
 		length=in.length;
-		faces=new Face[numFaces];
-		try {
-			for(int i=0;i<numFaces;i++) {
-				byte[] faceBytes=new byte[48];
-				for(int j=0;j<48;j++) {
-					faceBytes[j]=in[offset+j];
-				}
-				faces[i]=new Face(faceBytes);
-				offset+=48;
+		faces=new v42Face[numFaces];
+		for(int i=0;i<numFaces;i++) {
+			byte[] faceBytes=new byte[48];
+			for(int j=0;j<48;j++) {
+				faceBytes[j]=in[offset+j];
 			}
-		} catch(InvalidFaceException e) {
-			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last face.");
+			faces[i]=new v42Face(faceBytes);
+			offset+=48;
 		}
 	}
 	
@@ -88,14 +84,10 @@ public class Faces {
 	// Creates an array of all the faces in the lump using the instance data.
 	private void populateFaceList() throws java.io.FileNotFoundException, java.io.IOException {
 		FileInputStream reader=new FileInputStream(data);
-		try {
-			for(int i=0;i<numFaces;i++) {
-				byte[] datain=new byte[48];
-				reader.read(datain);
-				faces[i]=new Face(datain);
-			}
-		} catch(InvalidFaceException e) {
-			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last face.");
+		for(int i=0;i<numFaces;i++) {
+			byte[] datain=new byte[48];
+			reader.read(datain);
+			faces[i]=new v42Face(datain);
 		}
 		reader.close();
 	}
@@ -144,11 +136,11 @@ public class Faces {
 		return numModelFaces;
 	}
 	
-	public Face getFace(int i) {
+	public v42Face getFace(int i) {
 		return faces[i];
 	}
 	
-	public Face[] getFaces() {
+	public v42Face[] getFaces() {
 		return faces;
 	}
 }

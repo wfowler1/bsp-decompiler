@@ -62,17 +62,13 @@ public class Planes {
 		length=in.length;
 		numPlns=in.length/20;
 		planes=new Plane[numPlns];
-		try {
-			for(int i=0;i<numPlns;i++) {
-				byte[] planeBytes=new byte[20];
-				for(int j=0;j<20;j++) {
-					planeBytes[j]=in[offset+j];
-				}
-				planes[i]=new Plane(planeBytes);
-				offset+=20;
+		for(int i=0;i<numPlns;i++) {
+			byte[] planeBytes=new byte[20];
+			for(int j=0;j<20;j++) {
+				planeBytes[j]=in[offset+j];
 			}
-		} catch(InvalidPlaneException e) {
-			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last plane.");
+			planes[i]=new Plane(planeBytes);
+			offset+=20;
 		}
 	}
 	
@@ -82,14 +78,10 @@ public class Planes {
 	// Parses all data into an array of Plane.
 	private void populatePlaneList() throws java.io.FileNotFoundException, java.io.IOException {
 		FileInputStream reader=new FileInputStream(data);
-		try {
-			for(int i=0;i<numPlns;i++) {
-				byte[] datain=new byte[20];
-				reader.read(datain);
-				planes[i]=new Plane(datain);
-			}
-		} catch(InvalidPlaneException e) {
-			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last plane.");
+		for(int i=0;i<numPlns;i++) {
+			byte[] datain=new byte[20];
+			reader.read(datain);
+			planes[i]=new Plane(datain);
 		}
 		reader.close();
 	}

@@ -1,20 +1,9 @@
-// BSPv42 class
+// v42BSP class
 // This class gathers all relevant information from the lumps of a BSP version 42.
 
-import java.io.File;
-
-public class BSPv42 {
+public class v42BSP {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
-	
-	private static Runtime r = Runtime.getRuntime(); // Get a runtime object. This is for calling
-	                                                 // Java's garbage collector and does not need
-	                                                 // to be ported. I try not to leave memory leaks
-	                                                 // but since Java has no way explicitly reallocate
-	                                                 // unused memory I have to tell it when a good
-	                                                 // time is to run the garbage collector, by
-	                                                 // calling gc(). Also, it is used to execute EXEs
-	                                                 // from within the program by calling .exec(path).
 	
 	// This is the version of the BSP. This will determine the lumps order and aid in
 	// decompilation.
@@ -26,21 +15,20 @@ public class BSPv42 {
 	// These are the only lumps we need for decompilation.
 	private Entities entities;
 	private Planes planes;
-	private Texture64 textures;
-	private Materials64 materials;
+	private v42Strings64 textures;
+	private v42Strings64 materials;
 	private Vertices vertices;
-	private Faces faces;
-	private Leaves leaves;
+	private v42Faces faces;
+	private v42Leaves leaves;
 	private IntList markbrushes;
-	private Models models;
-	private Brushes brushes;
-	private BrushSides brushSides;
-	private TextureMatrices textureMatrices;
+	private v42Models models;
+	private v42Brushes brushes;
+	private v42BrushSides brushSides;
+	private v42TextureMatrices textureMatrices;
 	
 	// CONSTRUCTORS
-	// This accepts a folder path and looks for the lump files there. If the folder is empty (or not found)
-	// the program fails nicely.
-	public BSPv42(String in) {
+	// This accepts a folder path and looks for the BSP there.
+	public v42BSP(String in) {
 		filepath=in;
 	}
 
@@ -143,18 +131,18 @@ public class BSPv42 {
 	}
 	
 	public void setTextures(byte[] data) {
-		textures=new Texture64(data);
+		textures=new v42Strings64(data);
 	}
 	
-	public Texture64 getTextures() {
+	public v42Strings64 getTextures() {
 		return textures;
 	}
 	
 	public void setMaterials(byte[] data) {
-		materials=new Materials64(data);
+		materials=new v42Strings64(data);
 	}
 	
-	public Materials64 getMaterials() {
+	public v42Strings64 getMaterials() {
 		return materials;
 	}
 	
@@ -167,18 +155,18 @@ public class BSPv42 {
 	}
 	
 	public void setFaces(byte[] data) {
-		faces=new Faces(data);
+		faces=new v42Faces(data);
 	}
 	
-	public Faces getFaces() {
+	public v42Faces getFaces() {
 		return faces;
 	}
 	
 	public void setLeaves(byte[] data) {
-		leaves=new Leaves(data);
+		leaves=new v42Leaves(data);
 	}
 	
-	public Leaves getLeaves() {
+	public v42Leaves getLeaves() {
 		return leaves;
 	}
 	
@@ -191,34 +179,34 @@ public class BSPv42 {
 	}
 	
 	public void setModels(byte[] data) {
-		models=new Models(data);
+		models=new v42Models(data);
 	}
 	
-	public Models getModels() {
+	public v42Models getModels() {
 		return models;
 	}
 	
 	public void setBrushes(byte[] data) {
-		brushes=new Brushes(data);
+		brushes=new v42Brushes(data);
 	}
 	
-	public Brushes getBrushes() {
+	public v42Brushes getBrushes() {
 		return brushes;
 	}
 	
 	public void setBrushSides(byte[] data) {
-		brushSides=new BrushSides(data);
+		brushSides=new v42BrushSides(data);
 	}
 	
-	public BrushSides getBrushSides() {
+	public v42BrushSides getBrushSides() {
 		return brushSides;
 	}
 	
 	public void setTextureMatrices(byte[] data) {
-		textureMatrices=new TextureMatrices(data);
+		textureMatrices=new v42TextureMatrices(data);
 	}
 	
-	public TextureMatrices getTextureMatrices() {
+	public v42TextureMatrices getTextureMatrices() {
 		return textureMatrices;
 	}
 }

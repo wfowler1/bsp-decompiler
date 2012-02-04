@@ -1,4 +1,4 @@
-// BrushSides class
+// v42BrushSides class
 
 // This class holds references to all the brush sides defined
 // by the map. These are referenced directly by the previous
@@ -7,24 +7,24 @@
 import java.io.FileInputStream;
 import java.io.File;
 
-public class BrushSides {
+public class v42BrushSides {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
 	private int length;
 	private int numBrshsds=0;
-	private BrushSide[] brushsides;
+	private v42BrushSide[] brushsides;
 	
 	// CONSTRUCTORS
 	
 	// This one accepts the lump path as a String
-	public BrushSides(String in) {
+	public v42BrushSides(String in) {
 		data=new File(in);
 		length=(int)data.length();
 		try {
 			numBrshsds=getNumElements();
-			brushsides=new BrushSide[numBrshsds];
+			brushsides=new v42BrushSide[numBrshsds];
 			populateBrushSideList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
@@ -34,12 +34,12 @@ public class BrushSides {
 	}
 	
 	// This one accepts the input file path as a File
-	public BrushSides(File in) {
+	public v42BrushSides(File in) {
 		data=in;
 		length=(int)data.length();
 		try {
 			numBrshsds=getNumElements();
-			brushsides=new BrushSide[numBrshsds];
+			brushsides=new v42BrushSide[numBrshsds];
 			populateBrushSideList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
@@ -48,22 +48,18 @@ public class BrushSides {
 		}
 	}
 	
-	public BrushSides(byte[] in) {
+	public v42BrushSides(byte[] in) {
 		int offset=0;
 		numBrshsds=in.length/8;
 		length=in.length;
-		brushsides=new BrushSide[numBrshsds];
-		try {
-			for(int i=0;i<numBrshsds;i++) {
-				byte[] brushSideBytes=new byte[8];
-				for(int j=0;j<8;j++) {
-					brushSideBytes[j]=in[offset+j];
-				}
-				brushsides[i]=new BrushSide(brushSideBytes);
-				offset+=8;
+		brushsides=new v42BrushSide[numBrshsds];
+		for(int i=0;i<numBrshsds;i++) {
+			byte[] brushSideBytes=new byte[8];
+			for(int j=0;j<8;j++) {
+				brushSideBytes[j]=in[offset+j];
 			}
-		} catch(InvalidBrushSideException e) {
-			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last brush side.");
+			brushsides[i]=new v42BrushSide(brushSideBytes);
+			offset+=8;
 		}
 	}
 	
@@ -74,16 +70,12 @@ public class BrushSides {
 	// array of BrushSide objects with the data from the file
 	private void populateBrushSideList() throws java.io.FileNotFoundException, java.io.IOException {
 		FileInputStream reader=new FileInputStream(data);
-		try {
-			for(int i=0;i<numBrshsds;i++) {
-				byte[] datain=new byte[8];
-				reader.read(datain);
-				brushsides[i]=new BrushSide(datain);
-			}
-			reader.close();
-		} catch(InvalidBrushSideException e) {
-			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last brush side.");
+		for(int i=0;i<numBrshsds;i++) {
+			byte[] datain=new byte[8];
+			reader.read(datain);
+			brushsides[i]=new v42BrushSide(datain);
 		}
+		reader.close();
 	}
 		
 	// ACCESSORS/MUTATORS
@@ -102,15 +94,15 @@ public class BrushSides {
 		}
 	}
 	
-	public BrushSide getBrushSide(int i) {
+	public v42BrushSide getBrushSide(int i) {
 		return brushsides[i];
 	}
 	
-	public BrushSide[] getBrushSides() {
+	public v42BrushSide[] getBrushSides() {
 		return brushsides;
 	}
 	
-	public void setBrushSide(int i, BrushSide in) {
+	public void setBrushSide(int i, v42BrushSide in) {
 		brushsides[i]=in;
 	}
 }

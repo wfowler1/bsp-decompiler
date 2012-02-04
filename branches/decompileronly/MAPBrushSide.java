@@ -24,10 +24,7 @@ public class MAPBrushSide {
 	
 	// CONSTRUCTORS
 	public MAPBrushSide(Point3D[] inPlane, String inTexture, double[] inTextureS, double inTextureShiftS, double[] inTextureT, double inTextureShiftT, float inTexRot,
-	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot) throws InvalidMAPBrushSideException {
-		if(inPlane.length!=3 || inTextureS.length!=3 || inTextureT.length!=3) {
-			throw new InvalidMAPBrushSideException();
-		}
+	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot) {
 		plane=inPlane;
 		texture=inTexture;
 		textureS=inTextureS;

@@ -1,4 +1,4 @@
-// Leaves class
+// v42Leaves class
 
 // This class keeps and maintains an array, which is a list
 // of the leaves in the map.
@@ -6,7 +6,7 @@
 import java.io.FileInputStream;
 import java.io.File;
 
-public class Leaves {
+public class v42Leaves {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
@@ -15,17 +15,17 @@ public class Leaves {
 	private int length;
 	private int numWorldLeaves=0;
 	private int numModelLeaves=numLeaves-numWorldLeaves;
-	private Leaf[] leaves;
+	private v42Leaf[] leaves;
 	
 	// CONSTRUCTORS
 	
 	// This one accepts the lump path as a String
-	public Leaves(String in) {
+	public v42Leaves(String in) {
 		data=new File(in);
 		length=(int)data.length();
 		try {
 			numLeaves=getNumElements();
-			leaves=new Leaf[numLeaves];
+			leaves=new v42Leaf[numLeaves];
 			populateLeafList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
@@ -35,12 +35,12 @@ public class Leaves {
 	}
 	
 	// This one accepts the input file path as a File
-	public Leaves(File in) {
+	public v42Leaves(File in) {
 		data=in;
 		length=(int)data.length();
 		try {
 			numLeaves=getNumElements();
-			leaves=new Leaf[numLeaves];
+			leaves=new v42Leaf[numLeaves];
 			populateLeafList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
@@ -49,27 +49,23 @@ public class Leaves {
 		}
 	}
 	
-	public Leaves(Leaf[] in) {
+	public v42Leaves(v42Leaf[] in) {
 		leaves=in;
 		numLeaves=leaves.length;
 	}
 	
-	public Leaves(byte[] in) {
+	public v42Leaves(byte[] in) {
 		int offset=0;
 		length=in.length;
 		numLeaves=in.length/48;
-		leaves=new Leaf[numLeaves];
-		try {
-			for(int i=0;i<numLeaves;i++) {
-				byte[] leafBytes=new byte[48];
-				for(int j=0;j<48;j++) {
-					leafBytes[j]=in[offset+j];
-				}
-				leaves[i]=new Leaf(leafBytes);
-				offset+=48;
+		leaves=new v42Leaf[numLeaves];
+		for(int i=0;i<numLeaves;i++) {
+			byte[] leafBytes=new byte[48];
+			for(int j=0;j<48;j++) {
+				leafBytes[j]=in[offset+j];
 			}
-		} catch(InvalidLeafException e) {
-			Window.window.println("WARNING: Funny lump size in "+data+", ignoring last leaf.");
+			leaves[i]=new v42Leaf(leafBytes);
+			offset+=48;
 		}
 	}
 	
@@ -79,16 +75,12 @@ public class Leaves {
 	// Uses the instance data to populate the array of Leaf
 	private void populateLeafList() throws java.io.FileNotFoundException, java.io.IOException {
 		FileInputStream reader=new FileInputStream(data);
-		try {
-			for(int i=0;i<numLeaves;i++) {
-				byte[] datain=new byte[48];
-				reader.read(datain);
-				leaves[i]=new Leaf(datain);
-			}
-			reader.close();
-		} catch(InvalidLeafException e) {
-			Window.window.println("WARNING: funny lump size in "+data+", ignoring last leaf.");
+		for(int i=0;i<numLeaves;i++) {
+			byte[] datain=new byte[48];
+			reader.read(datain);
+			leaves[i]=new v42Leaf(datain);
 		}
+		reader.close();
 	}
 		
 	// ACCESSORS/MUTATORS
@@ -107,11 +99,11 @@ public class Leaves {
 		}
 	}
 	
-	public Leaf getLeaf(int i) {
+	public v42Leaf getLeaf(int i) {
 		return leaves[i];
 	}
 	
-	public Leaf[] getLeaves() {
+	public v42Leaf[] getLeaves() {
 		return leaves;
 	}
 }

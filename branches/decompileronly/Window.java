@@ -41,6 +41,15 @@ public class Window extends JPanel implements ActionListener {
 		
 		window.print("Got a bug to report? Want to see something added?\nCreate an issue report at\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/list");
 	}
+	
+	private static Runtime r = Runtime.getRuntime(); // Get a runtime object. This is for calling
+	                                                 // Java's garbage collector and does not need
+	                                                 // to be ported. I try not to leave memory leaks
+	                                                 // but since Java has no way explicitly reallocate
+	                                                 // unused memory I have to tell it when a good
+	                                                 // time is to run the garbage collector, by
+	                                                 // calling gc(). Also, it is used to execute EXEs
+	                                                 // from within the program by calling .exec(path).
 
 	// All GUI components get initialized here
 	private static JFileChooser file_selector;
@@ -221,23 +230,30 @@ public class Window extends JPanel implements ActionListener {
 				try {
 					BSPReader reader = new BSPReader(txt_file.getText());
 					reader.readBSP();
+					progressBar.setValue(0);
+					progressBar.setString("0%");
+					progressBar.setStringPainted(true);
+					Runnable decompiler=null;
 					switch(reader.getVersion()) {
+						case 38:
+							progressBar.setMaximum(reader.BSP38.getBrushes().getNumElements());
+							decompiler = new Decompiler(reader.BSP38, !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
+							break;
 						case 42:
 							progressBar.setMaximum(reader.BSP42.getBrushes().getNumElements());
-							progressBar.setValue(0);
-							progressBar.setString("0%");
-							progressBar.setStringPainted(true);
-							Runnable decompiler = new Decompiler(reader.BSP42, !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
-							Thread decompilerworker = new Thread(decompiler);
-							decompilerworker.setName("Decompiler");
-							decompilerworker.start();
+							decompiler = new Decompiler(reader.BSP42, !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
+							break;
 					}
+					Thread decompilerworker = new Thread(decompiler);
+					decompilerworker.setName("Decompiler");
+					decompilerworker.start();
 				} catch (java.lang.Exception e) {
 					println("\nException caught: "+e+"\nPlease let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/list");
 					consolebox.setEnabled(true);
 					btn_decomp.setEnabled(true);
 				}
 			}
+			r.gc(); // Now the program has time to rest while the user does whatever. Collect garbage.
 		}
 		
 		// User clicks the "planar decompilation only" checkbox
