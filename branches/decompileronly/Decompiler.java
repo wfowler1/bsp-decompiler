@@ -62,7 +62,7 @@ public class Decompiler implements Runnable {
 	}
 	
 	// This constructor sets everything according to specified settings.
-	public Decompiler(v46BSP BSP42, boolean vertexDecomp, boolean checkVerts, boolean correctPlaneFlip, double planePointCoef) {
+	public Decompiler(v46BSP BSP46, boolean vertexDecomp, boolean checkVerts, boolean correctPlaneFlip, double planePointCoef) {
 		// Set up global variables
 		this.BSP46=BSP46;
 		version=46;
@@ -235,7 +235,7 @@ public class Decompiler implements Runnable {
 			if(!BSP42.getTextures().getString(currentFace.getTexture()).equalsIgnoreCase("special/bevel")) { // If this face uses special/bevel, skip the face completely
 				int firstVertex=currentFace.getVert();
 				int numVertices=currentFace.getNumVerts();
-				Plane currentPlane=BSP42.getPlanes().getPlane(currentSide.getPlane());
+				BSPPlane currentPlane=BSP42.getPlanes().getPlane(currentSide.getPlane());
 				boolean pointsWorked=false;
 				if(numVertices!=0 && vertexDecomp) { // If the face actually references a set of vertices
 					plane[0]=new Point3D(BSP42.getVertices().getVertex(firstVertex)); // Grab and store the first one
@@ -331,7 +331,7 @@ public class Decompiler implements Runnable {
 	                                                                       // cause any issues at all.
 	}
 		
-	public Point3D[] extrapPlanePoints(Plane in) {
+	public Point3D[] extrapPlanePoints(BSPPlane in) {
 		Point3D[] plane=new Point3D[3];
 		// Figure out if the plane is parallel to two of the axes. If so it can be reproduced easily
 		if(in.getB()==0 && in.getC()==0) { // parallel to plane YZ

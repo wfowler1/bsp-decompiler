@@ -4,7 +4,7 @@
 public class MAPBrushSide {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
-	private Point3D[] plane;
+	private Point3D[] plane; // Plane defined as three points
 	private String texture;
 	private double[] textureS;
 	private double textureShiftS;

@@ -6,9 +6,9 @@ public class MAPBrush {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	MAPBrushSide[] sides;
-	Plane[] planes; // Keep a record of which side uses which plane
-	                // This isn't 100% necessary unless you want to use the original normal+dist
-	                // info AFTER the MAPBrushSide object has been created.
+	BSPPlane[] planes; // Keep a record of which side uses which plane
+	                   // This isn't 100% necessary unless you want to use the original normal+dist
+	                   // info AFTER the MAPBrushSide object has been created.
 	boolean[] goodSides; // This will be the index of a side which is definitely facing the right direction.
 	                 // Heavy reliance on the user of this class knowing wtf he's doing XD
 	int brushNum; // Set this to which brush this is; not really 100% necessary either
@@ -17,22 +17,22 @@ public class MAPBrush {
 	
 	public MAPBrush() {
 		sides=new MAPBrushSide[0];
-		planes=new Plane[0];
+		planes=new BSPPlane[0];
 		goodSides=new boolean[0];
 	}
 	
 	public MAPBrush(int num) {
 		sides=new MAPBrushSide[0];
-		planes=new Plane[0];
+		planes=new BSPPlane[0];
 		goodSides=new boolean[0];
 		brushNum=num;
 	}
 	
 	// METHODS
 	
-	public void add(MAPBrushSide in, boolean isGoodSide, Plane plane) {
+	public void add(MAPBrushSide in, boolean isGoodSide, BSPPlane plane) {
 		MAPBrushSide[] newList=new MAPBrushSide[sides.length+1];
-		Plane[] newPlaneList=new Plane[sides.length+1];
+		BSPPlane[] newPlaneList=new BSPPlane[sides.length+1];
 		boolean[] newGoodSideList=new boolean[sides.length+1];
 		for(int i=0;i<sides.length;i++) {
 			newList[i]=sides[i];
@@ -75,7 +75,7 @@ public class MAPBrush {
 		return sides[i];
 	}
 	
-	public Plane getPlane(int i) {
+	public BSPPlane getPlane(int i) {
 		return planes[i];
 	}
 	

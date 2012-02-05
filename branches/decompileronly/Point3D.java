@@ -61,12 +61,9 @@ public class Point3D {
 	// This constructor takes twelve bytes in a byte array, as though
 	// it had just been read by a FileInputStream.
 	public Point3D(byte[] in) {
-		int myInt=(in[3] << 24) | ((in[2] & 0xff) << 16) | ((in[1] & 0xff) << 8) | (in[0] & 0xff);
-		point[X]=(double)Float.intBitsToFloat(myInt);
-		myInt=(in[7] << 24) | ((in[6] & 0xff) << 16) | ((in[5] & 0xff) << 8) | (in[4] & 0xff);
-		point[Y]=(double)Float.intBitsToFloat(myInt);
-		myInt=(in[11] << 24) | ((in[10] & 0xff) << 16) | ((in[9] & 0xff) << 8) | (in[8] & 0xff);
-		point[Z]=(double)Float.intBitsToFloat(myInt);
+		point[X]=(double)DataReader.readFloat(in[0], in[1], in[2], in[3]);
+		point[Y]=(double)DataReader.readFloat(in[4], in[5], in[6], in[7]);
+		point[Z]=(double)DataReader.readFloat(in[8], in[9], in[10], in[11]);
 	}
 	
 	// METHODS

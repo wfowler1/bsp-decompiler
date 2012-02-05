@@ -14,7 +14,7 @@ public class v46BSP {
 	// Each lump has its own class for handling its specific data structures.
 	// These are the only lumps we need for decompilation.
 	private Entities entities;
-	private Planes planes;
+	private PlaneList planes;
 	private v46Textures textures;
 	private v46Models models;
 	private Brushes brushes;
@@ -99,10 +99,10 @@ public class v46BSP {
 	}
 	
 	public void setPlanes(byte[] data) {
-		planes=new Planes(data);
+		planes=new PlaneList(data);
 	}
 	
-	public Planes getPlanes() {
+	public PlaneList getPlanes() {
 		return planes;
 	}
 	

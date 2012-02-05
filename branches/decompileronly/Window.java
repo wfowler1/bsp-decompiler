@@ -251,7 +251,7 @@ public class Window extends JPanel implements ActionListener {
 					Thread decompilerworker = new Thread(decompiler);
 					decompilerworker.setName("Decompiler");
 					decompilerworker.start();
-				} catch (java.io.IOException e) {
+				} catch (java.lang.Exception e) {
 					println("\nException caught: "+e+"\nPlease let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/list");
 					consolebox.setEnabled(true);
 					btn_decomp.setEnabled(true);
