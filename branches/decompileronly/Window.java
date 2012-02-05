@@ -1,6 +1,6 @@
 // Window class
 
-// My first attempt at a GUI for the decompiler.
+// GUI for the decompiler.
 // For a list of swing components check here:
 // http://download.oracle.com/javase/tutorial/ui/features/components.html
 
@@ -236,18 +236,22 @@ public class Window extends JPanel implements ActionListener {
 					Runnable decompiler=null;
 					switch(reader.getVersion()) {
 						case 38:
-							progressBar.setMaximum(reader.BSP38.getBrushes().getNumElements());
+							progressBar.setMaximum(reader.BSP38.getBrushes().getNumElements()+reader.BSP38.getEntities().getNumElements());
 							decompiler = new Decompiler(reader.BSP38, !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
 							break;
 						case 42:
-							progressBar.setMaximum(reader.BSP42.getBrushes().getNumElements());
+							progressBar.setMaximum(reader.BSP42.getBrushes().getNumElements()+reader.BSP42.getEntities().getNumElements());
 							decompiler = new Decompiler(reader.BSP42, !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
+							break;
+						case 46:
+							progressBar.setMaximum(reader.BSP46.getBrushes().getNumElements()+reader.BSP46.getEntities().getNumElements());
+							decompiler = new Decompiler(reader.BSP46, !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
 							break;
 					}
 					Thread decompilerworker = new Thread(decompiler);
 					decompilerworker.setName("Decompiler");
 					decompilerworker.start();
-				} catch (java.lang.Exception e) {
+				} catch (java.io.IOException e) {
 					println("\nException caught: "+e+"\nPlease let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/list");
 					consolebox.setEnabled(true);
 					btn_decomp.setEnabled(true);

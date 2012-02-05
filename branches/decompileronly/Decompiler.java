@@ -30,6 +30,7 @@ public class Decompiler implements Runnable {
 	// private BSPv29n30
 	private v38BSP BSP38;
 	private v42BSP BSP42;
+	private v46BSP BSP46;
 	// private BSPv47
 	// private MOHAABSP
 	// private SourceBSPv20
@@ -60,22 +61,34 @@ public class Decompiler implements Runnable {
 		this.planePointCoef=planePointCoef;
 	}
 	
+	// This constructor sets everything according to specified settings.
+	public Decompiler(v46BSP BSP42, boolean vertexDecomp, boolean checkVerts, boolean correctPlaneFlip, double planePointCoef) {
+		// Set up global variables
+		this.BSP46=BSP46;
+		version=46;
+		this.vertexDecomp=vertexDecomp;
+		this.checkVerts=checkVerts;
+		this.correctPlaneFlip=correctPlaneFlip;
+		this.planePointCoef=planePointCoef;
+	}
+	
 	// METHODS
 	
 	// +run()
 	// For the sake of multithreading, this method exists.
 	public void run() {
 		switch(version) {
-			case 42:
-				decompileBSP42();
-				break;
 			case 38:
 				Window.window.println("Decompiling of Quake 2 map not yet written!");
 				break;
-			default:
-				Window.window.println("wtf");
+			case 42:
+				decompileBSP42();
+				break;
+			case 46:
+				Window.window.println("Decompiling of Quake 3 map not yet written!");
+				break;
 		}
-		Window.btn_decomp.setEnabled(true);
+		Window.btn_decomp.setEnabled(true); // Once the thread is finished running, reenable the Decompile button
 	}
 	
 	// -decompileBSP42()
@@ -94,7 +107,7 @@ public class Decompiler implements Runnable {
 		// necessary because if I just modified the current entity list then it
 		// could be saved back into the BSP and really mess some stuff up.
 		mapFile=new Entities(BSP42.getEntities());
-		int numTotalBrushes=0;
+		int numTotalItems=0;
 		// Then I need to go through each entity and see if it's brush-based.
 		// Worldspawn is brush-based as well as any entity with model *#.
 		for(int i=0;i<mapFile.getNumElements();i++) { // For each entity
@@ -124,8 +137,8 @@ public class Decompiler implements Runnable {
 								brushesUsed[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)]=true;
 								decompileBrush42(BSP42.getBrushes().getBrush(BSP42.getMarkBrushes().getInt(firstBrushIndex+k)), i); // Decompile the brush
 								numBrshs++;
-								numTotalBrushes++;
-								Window.setProgress(numTotalBrushes, BSP42.getBrushes().getNumElements());
+								numTotalItems++;
+								Window.setProgress(numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements());
 							}
 						}
 					}
@@ -189,6 +202,8 @@ public class Decompiler implements Runnable {
 				}
 				mapFile.getEntity(i).deleteAttribute("origin");
 			}
+			numTotalItems++;
+			Window.setProgress(numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements());
 		}
 		Window.window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map...");
 		mapFile.save(BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map");

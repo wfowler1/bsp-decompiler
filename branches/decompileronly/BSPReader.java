@@ -29,6 +29,7 @@ public class BSPReader {
 	// protected BSPv29n30
 	protected v38BSP BSP38;
 	protected v42BSP BSP42;
+	protected v46BSP BSP46;
 	// protected BSPv47
 	// protected MOHAABSP
 	// protected SourceBSPv20
@@ -289,7 +290,75 @@ public class BSPReader {
 							BSP42.printBSPReport();
 							break;
 						case 46: // Quake 3/close derivative
-							Window.window.println("Sorry, no Quake 3 support (yet)!");
+							Window.window.println("BSP v46 found (Quake 3)");
+							offsetReader = new FileInputStream(BSP);
+							BSP46 = new v46BSP(BSP.getPath());
+							offsetReader.skip(8); // Skip the file header, putting the reader into the offset/length pairs
+							
+							// Lump 00
+							offsetReader.read(read); // Read 4 bytes
+							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							offsetReader.read(read); // Read 4 more bytes
+							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							BSP46.setEntities(readLump(offset, length));
+							
+							// Lump 01
+							offsetReader.read(read); // Read 4 bytes
+							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							offsetReader.read(read); // Read 4 more bytes
+							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							BSP46.setTextures(readLump(offset, length));
+							
+							// Lump 02
+							offsetReader.read(read); // Read 4 bytes
+							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							offsetReader.read(read); // Read 4 more bytes
+							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							BSP46.setPlanes(readLump(offset, length));
+							
+							offsetReader.skip(32); // Do not need offset/length for lumps 3-6
+							
+							// Lump 07
+							offsetReader.read(read); // Read 4 bytes
+							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							offsetReader.read(read); // Read 4 more bytes
+							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							BSP46.setModels(readLump(offset, length));
+							
+							// Lump 08
+							offsetReader.read(read); // Read 4 bytes
+							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							offsetReader.read(read); // Read 4 more bytes
+							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							BSP46.setBrushes(readLump(offset, length));
+							
+							// Lump 09
+							offsetReader.read(read); // Read 4 bytes
+							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							offsetReader.read(read); // Read 4 more bytes
+							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							BSP46.setBrushSides(readLump(offset, length));
+							
+							// Lump 10
+							offsetReader.read(read); // Read 4 bytes
+							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							offsetReader.read(read); // Read 4 more bytes
+							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							BSP46.setVertices(readLump(offset, length));
+							
+							offsetReader.skip(16); // Do not need offset/length for lumps 11 and 12
+							
+							// Lump 13
+							offsetReader.read(read); // Read 4 bytes
+							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							offsetReader.read(read); // Read 4 more bytes
+							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							BSP46.setFaces(readLump(offset, length));
+							
+							offsetReader.close();
+							
+							BSP46.printBSPReport();
+							
 							Window.btn_decomp.setEnabled(true);
 							break;
 						case 47: // RTC Wolfenstein, I believe it's almost identical to Q3

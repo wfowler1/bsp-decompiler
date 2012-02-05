@@ -1,29 +1,29 @@
-// v38Faces class
+// v46Faces class
 
-// Contains all information for faces for a BSPv38
+// Contains all information for faces for a BSPv46
 
 import java.io.FileInputStream;
 import java.io.File;
 
-public class v38Faces {
+public class v46Faces {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
 	private int numElems=0;
 	private int length;
-	private v38Face[] elements;
+	private v46Face[] elements;
 
-	public static int structureLength=20;
+	public static int structureLength=104;
 
 	// CONSTRUCTORS
 	
-	public v38Faces(String in) {
+	public v46Faces(String in) {
 		data=new File(in);
 		length=(int)data.length();
 		try {
 			numElems=getNumElements();
-			elements=new v38Face[numElems];
+			elements=new v46Face[numElems];
 			populateList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
@@ -33,12 +33,12 @@ public class v38Faces {
 	}
 	
 	// This one accepts the input file path as a File
-	public v38Faces(File in) {
+	public v46Faces(File in) {
 		data=in;
 		length=(int)data.length();
 		try {
 			numElems=getNumElements();
-			elements=new v38Face[numElems];
+			elements=new v46Face[numElems];
 			populateList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
@@ -47,17 +47,17 @@ public class v38Faces {
 		}
 	}
 	
-	public v38Faces(byte[] in) {
+	public v46Faces(byte[] in) {
 		int offset=0;
 		length=in.length;
 		numElems=in.length/structureLength;
-		elements=new v38Face[numElems];
+		elements=new v46Face[numElems];
 		for(int i=0;i<numElems;i++) {
 			byte[] bytes=new byte[structureLength];
 			for(int j=0;j<structureLength;j++) {
 				bytes[j]=in[offset+j];
 			}
-			elements[i]=new v38Face(bytes);
+			elements[i]=new v46Face(bytes);
 			offset+=structureLength;
 		}
 	}
@@ -65,13 +65,13 @@ public class v38Faces {
 	// METHODS
 	
 	// -populateList()
-	// Uses the instance data to populate the array of v38Face
+	// Uses the instance data to populate the array of v46Face
 	private void populateList() throws java.io.FileNotFoundException, java.io.IOException {
 		FileInputStream reader=new FileInputStream(data);
 		for(int i=0;i<numElems;i++) {
 			byte[] datain=new byte[structureLength];
 			reader.read(datain);
-			elements[i]=new v38Face(datain);
+			elements[i]=new v46Face(datain);
 		}
 		reader.close();
 	}
@@ -92,11 +92,11 @@ public class v38Faces {
 		}
 	}
 	
-	public v38Face getFace(int i) {
+	public v46Face getFace(int i) {
 		return elements[i];
 	}
 	
-	public v38Face[] getFaces() {
+	public v46Face[] getFaces() {
 		return elements;
 	}
 }
