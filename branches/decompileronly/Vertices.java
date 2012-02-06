@@ -18,7 +18,7 @@ public class Vertices {
 	private File data;
 	private int length;
 	private int numVerts=0;
-	private Point3D[] vertices;
+	private Vector3D[] vertices;
 	
 	// CONSTRUCTORS
 	
@@ -28,7 +28,7 @@ public class Vertices {
 		try {
 			numVerts=getNumElements();
 			length=(int)data.length();
-			vertices=new Point3D[numVerts];
+			vertices=new Vector3D[numVerts];
 			populateVertexList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
@@ -43,7 +43,7 @@ public class Vertices {
 		try {
 			numVerts=getNumElements();
 			length=(int)data.length();
-			vertices=new Point3D[numVerts];
+			vertices=new Vector3D[numVerts];
 			populateVertexList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.window.println("ERROR: File "+data+" not found!");
@@ -56,13 +56,13 @@ public class Vertices {
 		int offset=0;
 		numVerts=in.length/12;
 		length=in.length;
-		vertices=new Point3D[numVerts];
+		vertices=new Vector3D[numVerts];
 		for(int i=0;i<numVerts;i++) {
 			byte[] vertexBytes=new byte[12];
 			for(int j=0;j<12;j++) {
 				vertexBytes[j]=in[offset+j];
 			}
-			vertices[i]=new Point3D(vertexBytes);
+			vertices[i]=new Vector3D(vertexBytes);
 			offset+=12;
 		}
 	}
@@ -70,13 +70,13 @@ public class Vertices {
 	// METHODS
 	
 	// +populateVertexList()
-	// Parses all data into an array of Point3D.
+	// Parses all data into an array of Vector3D.
 	public void populateVertexList() throws java.io.FileNotFoundException, java.io.IOException {
 		FileInputStream reader=new FileInputStream(data);
 		for(int i=0;i<numVerts;i++) {
 			byte[] datain=new byte[12];
 			reader.read(datain);
-			vertices[i]=new Point3D(datain);
+			vertices[i]=new Vector3D(datain);
 		}
 		reader.close();
 	}
@@ -97,11 +97,11 @@ public class Vertices {
 		}
 	}
 	
-	public Point3D getVertex(int i) {
+	public Vector3D getVertex(int i) {
 		return vertices[i];
 	}
 	
-	public Point3D[] getVertices() {
+	public Vector3D[] getVertices() {
 		return vertices;
 	}
 }

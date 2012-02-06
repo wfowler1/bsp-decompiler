@@ -4,7 +4,7 @@
 public class MAPBrushSide {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
-	private Point3D[] plane; // Plane defined as three points
+	private Vector3D[] plane; // Plane defined as three points
 	private String texture;
 	private double[] textureS;
 	private double textureShiftS;
@@ -23,7 +23,7 @@ public class MAPBrushSide {
 	public static final int Z=2;
 	
 	// CONSTRUCTORS
-	public MAPBrushSide(Point3D[] inPlane, String inTexture, double[] inTextureS, double inTextureShiftS, double[] inTextureT, double inTextureShiftT, float inTexRot,
+	public MAPBrushSide(Vector3D[] inPlane, String inTexture, double[] inTextureS, double inTextureShiftS, double[] inTextureT, double inTextureShiftT, float inTexRot,
 	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot) {
 		plane=inPlane;
 		texture=inTexture;
@@ -61,13 +61,13 @@ public class MAPBrushSide {
 	// flipPlane()
 	// Negate the plane
 	public void flipPlane() {
-		Point3D temp=plane[2];
+		Vector3D temp=plane[2];
 		plane[2]=plane[1];
 		plane[1]=temp;
 	}
 	
 	// ACCESSORS/MUTATORS
-	public Point3D[] getTriangle() {
+	public Vector3D[] getTriangle() {
 		return plane;
 	}
 }

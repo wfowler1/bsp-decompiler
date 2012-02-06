@@ -25,10 +25,10 @@ public class v46Face {
 	private int lm_startY;
 	private int lm_sizeX;
 	private int lm_sizeY;
-	private Point3D lm_origin;
-	private Point3D lm_s;
-	private Point3D lm_t;
-	private Point3D normal;
+	private Vector3D lm_origin;
+	private Vector3D lm_s;
+	private Vector3D lm_t;
+	private Vector3D normal;
 	private int sizeX;
 	private int sizeY;
 	
@@ -36,8 +36,8 @@ public class v46Face {
 	
 	// This constructor takes all data in their proper data types
 	public v46Face(int texture, int effect, int type, int vertex, int numVertexes, int meshvert, int numMeshverts,
-	               int lm_index, int lm_startX, int lm_startY, int lm_sizeX, int lm_sizeY, Point3D lm_origin,
-	               Point3D lm_s, Point3D lm_t, Point3D normal, int sizeX, int sizeY) {
+	               int lm_index, int lm_startX, int lm_startY, int lm_sizeX, int lm_sizeY, Vector3D lm_origin,
+	               Vector3D lm_s, Vector3D lm_t, Vector3D normal, int sizeX, int sizeY) {
 		this.texture=texture;
 		this.effect=effect;
 		this.type=type;
@@ -81,7 +81,7 @@ public class v46Face {
 		point[Y]=Float.intBitsToFloat(myInt);
 		myInt=(in[59] << 24) | ((in[58] & 0xff) << 16) | ((in[57] & 0xff) << 8) | (in[56] & 0xff);
 		point[Z]=Float.intBitsToFloat(myInt);
-		lm_origin=new Point3D(point[X], point[Y], point[Z]);
+		lm_origin=new Vector3D(point[X], point[Y], point[Z]);
 		
 		myInt=(in[63] << 24) | ((in[62] & 0xff) << 16) | ((in[61] & 0xff) << 8) | (in[60] & 0xff);
 		point[X]=Float.intBitsToFloat(myInt);
@@ -89,7 +89,7 @@ public class v46Face {
 		point[Y]=Float.intBitsToFloat(myInt);
 		myInt=(in[71] << 24) | ((in[70] & 0xff) << 16) | ((in[69] & 0xff) << 8) | (in[68] & 0xff);
 		point[Z]=Float.intBitsToFloat(myInt);
-		lm_s=new Point3D(point[X], point[Y], point[Z]);
+		lm_s=new Vector3D(point[X], point[Y], point[Z]);
 		
 		myInt=(in[75] << 24) | ((in[74] & 0xff) << 16) | ((in[73] & 0xff) << 8) | (in[72] & 0xff);
 		point[X]=Float.intBitsToFloat(myInt);
@@ -97,7 +97,7 @@ public class v46Face {
 		point[Y]=Float.intBitsToFloat(myInt);
 		myInt=(in[83] << 24) | ((in[82] & 0xff) << 16) | ((in[81] & 0xff) << 8) | (in[80] & 0xff);
 		point[Z]=Float.intBitsToFloat(myInt);
-		lm_t=new Point3D(point[X], point[Y], point[Z]);
+		lm_t=new Vector3D(point[X], point[Y], point[Z]);
 		
 		myInt=(in[87] << 24) | ((in[86] & 0xff) << 16) | ((in[85] & 0xff) << 8) | (in[84] & 0xff);
 		point[X]=Float.intBitsToFloat(myInt);
@@ -105,7 +105,7 @@ public class v46Face {
 		point[Y]=Float.intBitsToFloat(myInt);
 		myInt=(in[95] << 24) | ((in[94] & 0xff) << 16) | ((in[93] & 0xff) << 8) | (in[92] & 0xff);
 		point[Z]=Float.intBitsToFloat(myInt);
-		normal=new Point3D(point[X], point[Y], point[Z]);
+		normal=new Vector3D(point[X], point[Y], point[Z]);
 		
 		sizeX=(in[99] << 24) | ((in[98] & 0xff) << 16) | ((in[97] & 0xff) << 8) | (in[96] & 0xff);
 		sizeY=(in[103] << 24) | ((in[102] & 0xff) << 16) | ((in[101] & 0xff) << 8) | (in[100] & 0xff);
@@ -211,27 +211,27 @@ public class v46Face {
 		return lm_sizeY;
 	}
 	
-	public void setLightmapOrigin(Point3D lm_origin) {
+	public void setLightmapOrigin(Vector3D lm_origin) {
 		this.lm_origin=lm_origin;
 	}
 	
-	public Point3D getLightmapOrigin() {
+	public Vector3D getLightmapOrigin() {
 		return lm_origin;
 	}
 	
-	public void setLightmapS(Point3D lm_s) {
+	public void setLightmapS(Vector3D lm_s) {
 		this.lm_s=lm_s;
 	}
 	
-	public Point3D getLightmapS() {
+	public Vector3D getLightmapS() {
 		return lm_s;
 	}
 	
-	public void setLightmapT(Point3D lm_t) {
+	public void setLightmapT(Vector3D lm_t) {
 		this.lm_t=lm_t;
 	}
 	
-	public Point3D getLightmapT() {
+	public Vector3D getLightmapT() {
 		return lm_t;
 	}
 	

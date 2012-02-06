@@ -6,9 +6,9 @@ public class v38Texture {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
-	Point3D u;
+	Vector3D u;
 	float uShift;
-	Point3D v;
+	Vector3D v;
 	float vShift;
 	int flags;
 	int unknown;
@@ -18,7 +18,7 @@ public class v38Texture {
 	// CONSTRUCTORS
 	
 	// Takes everything exactly as it is stored
-	public v38Texture(Point3D inU, float inUShift, Point3D inV, float inVShift, int inFlags, int inUnk, String inName, int inNext) {
+	public v38Texture(Vector3D inU, float inUShift, Vector3D inV, float inVShift, int inFlags, int inUnk, String inName, int inNext) {
 		u=inU;
 		uShift=inUShift;
 		v=inV;
@@ -38,7 +38,7 @@ public class v38Texture {
 		float ub=Float.intBitsToFloat(datain);
 		datain=(in[11] << 24) | ((in[10] & 0xff) << 16) | ((in[9] & 0xff) << 8) | (in[8] & 0xff);
 		float uc=Float.intBitsToFloat(datain);
-		u=new Point3D(ua, ub, uc);
+		u=new Vector3D(ua, ub, uc);
 		datain=(in[15] << 24) | ((in[14] & 0xff) << 16) | ((in[13] & 0xff) << 8) | (in[12] & 0xff);
 		uShift=Float.intBitsToFloat(datain);
 		datain=(in[19] << 24) | ((in[18] & 0xff) << 16) | ((in[17] & 0xff) << 8) | (in[16] & 0xff);
@@ -47,7 +47,7 @@ public class v38Texture {
 		float vb=Float.intBitsToFloat(datain);
 		datain=(in[27] << 24) | ((in[26] & 0xff) << 16) | ((in[25] & 0xff) << 8) | (in[24] & 0xff);
 		float vc=Float.intBitsToFloat(datain);
-		u=new Point3D(va, vb, vc);
+		u=new Vector3D(va, vb, vc);
 		datain=(in[31] << 24) | ((in[30] & 0xff) << 16) | ((in[29] & 0xff) << 8) | (in[28] & 0xff);
 		vShift=Float.intBitsToFloat(datain);
 		flags=(in[35] << 24) | ((in[34] & 0xff) << 16) | ((in[33] & 0xff) << 8) | (in[32] & 0xff);
@@ -66,11 +66,11 @@ public class v38Texture {
 	// METHODS
 	
 	// ACCESSORS/MUTATORS
-	public void setU(Point3D in) {
+	public void setU(Vector3D in) {
 		u=in;
 	}
 	
-	public Point3D getU() {
+	public Vector3D getU() {
 		return u;
 	}
 	
@@ -82,11 +82,11 @@ public class v38Texture {
 		return uShift;
 	}
 	
-	public void setV(Point3D in) {
+	public void setV(Vector3D in) {
 		v=in;
 	}
 	
-	public Point3D getV() {
+	public Vector3D getV() {
 		return v;
 	}
 	

@@ -62,7 +62,6 @@ public class Window extends JPanel implements ActionListener {
 	private static JLabel lbl_coef;
 	private static JScrollPane console_pane;
 	private static JCheckBox chk_planar;
-	private static JCheckBox chk_skipVertCheck;
 	private static JCheckBox chk_skipPlaneFlip;
 
 	private static JProgressBar progressBar;
@@ -110,7 +109,6 @@ public class Window extends JPanel implements ActionListener {
 		// Second row
 		
 		chk_planar = new JCheckBox("Planar Decompilation Only");
-		chk_planar.addActionListener(this);
 		
 		GridBagConstraints planarConstraints = new GridBagConstraints();
 		planarConstraints.fill = GridBagConstraints.NONE;
@@ -120,21 +118,11 @@ public class Window extends JPanel implements ActionListener {
 		planarConstraints.gridheight = 1;
 		pane.add(chk_planar, planarConstraints);
 		
-		chk_skipVertCheck = new JCheckBox("Skip Vertex Checking");
-		
-		GridBagConstraints vertCheckConstraints = new GridBagConstraints();
-		vertCheckConstraints.fill = GridBagConstraints.NONE;
-		vertCheckConstraints.gridx = 1;
-		vertCheckConstraints.gridy = 1;
-		vertCheckConstraints.gridwidth = 1;
-		vertCheckConstraints.gridheight = 1;
-		pane.add(chk_skipVertCheck, vertCheckConstraints);
-		
 		chk_skipPlaneFlip = new JCheckBox("Skip plane flip");
 		
 		GridBagConstraints SkipFlipConstraints = new GridBagConstraints();
 		SkipFlipConstraints.fill = GridBagConstraints.NONE;
-		SkipFlipConstraints.gridx = 2;
+		SkipFlipConstraints.gridx = 1;
 		SkipFlipConstraints.gridy = 1;
 		SkipFlipConstraints.gridwidth = 1;
 		SkipFlipConstraints.gridheight = 1;
@@ -237,15 +225,15 @@ public class Window extends JPanel implements ActionListener {
 					switch(reader.getVersion()) {
 						case 38:
 							progressBar.setMaximum(reader.BSP38.getBrushes().getNumElements()+reader.BSP38.getEntities().getNumElements());
-							decompiler = new Decompiler(reader.BSP38, !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
+							decompiler = new Decompiler(reader.BSP38, !chk_planar.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
 							break;
 						case 42:
 							progressBar.setMaximum(reader.BSP42.getBrushes().getNumElements()+reader.BSP42.getEntities().getNumElements());
-							decompiler = new Decompiler(reader.BSP42, !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
+							decompiler = new Decompiler(reader.BSP42, !chk_planar.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
 							break;
 						case 46:
 							progressBar.setMaximum(reader.BSP46.getBrushes().getNumElements()+reader.BSP46.getEntities().getNumElements());
-							decompiler = new Decompiler(reader.BSP46, !chk_planar.isSelected(), !chk_skipVertCheck.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
+							decompiler = new Decompiler(reader.BSP46, !chk_planar.isSelected(), !chk_skipPlaneFlip.isSelected(), Double.parseDouble(txt_coef.getText()));
 							break;
 					}
 					Thread decompilerworker = new Thread(decompiler);
@@ -258,16 +246,6 @@ public class Window extends JPanel implements ActionListener {
 				}
 			}
 			r.gc(); // Now the program has time to rest while the user does whatever. Collect garbage.
-		}
-		
-		// User clicks the "planar decompilation only" checkbox
-		if(action.getSource() == chk_planar) {
-			if(chk_planar.isSelected()) {
-				chk_skipVertCheck.setEnabled(false);
-				chk_skipVertCheck.setSelected(false);
-			} else {
-				chk_skipVertCheck.setEnabled(true);
-			}
 		}
 	}
 	

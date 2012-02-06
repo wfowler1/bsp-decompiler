@@ -9,18 +9,18 @@ public class v46Vertex {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
-	private Point3D vertex;
+	private Vector3D vertex;
 	private float surf_texCoordX;
 	private float surf_texCoordY;
 	private float lm_texCoordX;
 	private float lm_texCoordY;
-	private Point3D normal; // ???????????
+	private Vector3D normal; // ???????????
 	private byte[] color=new byte[4]; // RGBA
 	
 	// CONSTRUCTORS
 	
 	// This constructor takes all data in their proper data types
-	public v46Vertex(Point3D vertex, float surf_texCoordX, float surf_texCoordY, float lm_texCoordX, float lm_texCoordY, Point3D normal, byte[] color) {
+	public v46Vertex(Vector3D vertex, float surf_texCoordX, float surf_texCoordY, float lm_texCoordX, float lm_texCoordY, Vector3D normal, byte[] color) {
 		this.vertex=vertex;
 		this.surf_texCoordX=surf_texCoordX;
 		this.surf_texCoordY=surf_texCoordY;
@@ -52,11 +52,11 @@ public class v46Vertex {
 	
 	// ACCESSORS/MUTATORS
 	
-	public Point3D getVertex() {
+	public Vector3D getVertex() {
 		return vertex;
 	}
 	
-	public void setVertex(Point3D vertex) {
+	public void setVertex(Vector3D vertex) {
 		this.vertex=vertex;
 	}
 	
@@ -92,11 +92,11 @@ public class v46Vertex {
 		this.lm_texCoordY=lm_texCoordY;
 	}
 	
-	public Point3D getNormal() {
+	public Vector3D getNormal() {
 		return normal;
 	}
 	
-	public void setNormal(Point3D normal) {
+	public void setNormal(Vector3D normal) {
 		this.normal=normal;
 	}
 	

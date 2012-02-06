@@ -30,6 +30,11 @@ public class BSPPlane {
 		type=inType;
 	}
 	
+	public BSPPlane(double inA, double inB, double inC, double inDist, int inType) {
+		plane=new Plane(inA, inB, inC, inDist);
+		type=inType;
+	}
+	
 	public BSPPlane(float[] inNormal, float inDist, int inType) {
 		plane=new Plane(inNormal[A], inNormal[B], inNormal[C], inDist);
 		type=inType;
@@ -41,7 +46,7 @@ public class BSPPlane {
 	// Maybe there's some property of the runtime you can set to use little endian. Maybe
 	// Java is just retarded.
 	public BSPPlane(byte[] in) {
-		Point3D normal=DataReader.readPoint3F(in[0], in[1], in[2], in[3], in[4], in[5], in[6], in[7], in[8], in[9], in[10], in[11]);
+		Vector3D normal=DataReader.readPoint3F(in[0], in[1], in[2], in[3], in[4], in[5], in[6], in[7], in[8], in[9], in[10], in[11]);
 		float dist=DataReader.readFloat(in[12], in[13], in[14], in[15]);
 		plane=new Plane(normal, dist);
 		type=(in[19] << 24) | ((in[18] & 0xff) << 16) | ((in[17] & 0xff) << 8) | (in[16] & 0xff);
@@ -49,9 +54,9 @@ public class BSPPlane {
 	
 	// METHODS
 	
-	// +distance(Point3D)
+	// +distance(Vector3D)
 	// Gets signed distance from plane to point
-	public double distance(Point3D in) {
+	public double distance(Vector3D in) {
 		return (plane.getA()*in.getX() + plane.getB()*in.getY() + plane.getC()*in.getZ() - plane.getDist())/(Math.sqrt(Math.pow(plane.getA(),2) + Math.pow(plane.getB(),2) + Math.pow(plane.getC(),2)));
 	}
 	
@@ -62,7 +67,7 @@ public class BSPPlane {
 	// ACCESSORS/MUTATORS
 	
 	// returns the coordinates as a float3
-	public Point3D getNormal() {
+	public Vector3D getNormal() {
 		return plane.getNormal();
 	}
 	
@@ -78,8 +83,12 @@ public class BSPPlane {
 		return plane.getC();
 	}
 	
-	public float getDist() {
+	public double getDist() {
 		return plane.getDist();
+	}
+	
+	public float getDistF() {
+		return (float)plane.getDist();
 	}
 	
 	public int getType() {

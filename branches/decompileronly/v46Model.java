@@ -10,8 +10,8 @@ public class v46Model {
 	public final int Y=1;
 	public final int Z=2;
 	
-	private Point3D mins;
-	private Point3D maxs;
+	private Vector3D mins;
+	private Vector3D maxs;
 	private int face;
 	private int numFaces;
 	private int brush;
@@ -20,7 +20,7 @@ public class v46Model {
 	// CONSTRUCTORS
 	
 	// This constructor takes all data in their proper data types
-	public v46Model(Point3D inMins, Point3D inMaxs, int inFace, int inNumFaces, int inBrush, int inNumBrushes) {
+	public v46Model(Vector3D inMins, Vector3D inMaxs, int inFace, int inNumFaces, int inBrush, int inNumBrushes) {
 		mins=inMins;
 		maxs=inMaxs;
 		face=inFace;
@@ -39,14 +39,14 @@ public class v46Model {
 		point[Y]=Float.intBitsToFloat(myInt);
 		myInt=(in[11] << 24) | ((in[10] & 0xff) << 16) | ((in[9] & 0xff) << 8) | (in[8] & 0xff);
 		point[Z]=Float.intBitsToFloat(myInt);
-		mins=new Point3D(point[X], point[Y], point[Z]);
+		mins=new Vector3D(point[X], point[Y], point[Z]);
 		myInt=(in[15] << 24) | ((in[14] & 0xff) << 16) | ((in[13] & 0xff) << 8) | (in[12] & 0xff);
 		point[X]=Float.intBitsToFloat(myInt);
 		myInt=(in[19] << 24) | ((in[18] & 0xff) << 16) | ((in[17] & 0xff) << 8) | (in[16] & 0xff);
 		point[Y]=Float.intBitsToFloat(myInt);
 		myInt=(in[23] << 24) | ((in[22] & 0xff) << 16) | ((in[21] & 0xff) << 8) | (in[20] & 0xff);
 		point[Z]=Float.intBitsToFloat(myInt);
-		maxs=new Point3D(point[X], point[Y], point[Z]);
+		maxs=new Vector3D(point[X], point[Y], point[Z]);
 		face=(in[27] << 24) | ((in[26] & 0xff) << 16) | ((in[25] & 0xff) << 8) | (in[24] & 0xff);
 		numFaces=(in[31] << 24) | ((in[30] & 0xff) << 16) | ((in[29] & 0xff) << 8) | (in[28] & 0xff);
 		brush=(in[35] << 24) | ((in[34] & 0xff) << 16) | ((in[33] & 0xff) << 8) | (in[32] & 0xff);
@@ -56,19 +56,19 @@ public class v46Model {
 	// METHODS
 	
 	// ACCESSORS/MUTATORS
-	public void setMins(Point3D in) {
+	public void setMins(Vector3D in) {
 		mins=in;
 	}
 	
-	public Point3D getMins() {
+	public Vector3D getMins() {
 		return mins;
 	}
 	
-	public void setMaxs(Point3D in) {
+	public void setMaxs(Vector3D in) {
 		maxs=in;
 	}
 	
-	public Point3D getMaxs() {
+	public Vector3D getMaxs() {
 		return maxs;
 	}
 	

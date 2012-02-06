@@ -15,13 +15,11 @@ public class Decompiler implements Runnable {
 	public static final int Z = 2;
 	
 	private boolean vertexDecomp;
-	private boolean checkVerts;
 	private boolean correctPlaneFlip;
 	private double planePointCoef;
 	
 	private int numFlips=0;
 	private int numFlipBrshs=0;
-	private int vertexCorrections=0;
 	
 	private Entities mapFile; // Most MAP file formats (including GearCraft) are simply a bunch of nested entities
 	private int numBrshs;
@@ -40,34 +38,31 @@ public class Decompiler implements Runnable {
 	// CONSTRUCTORS
 	
 	// This constructor sets everything according to specified settings.
-	public Decompiler(v38BSP BSP38, boolean vertexDecomp, boolean checkVerts, boolean correctPlaneFlip, double planePointCoef) {
+	public Decompiler(v38BSP BSP38, boolean vertexDecomp, boolean correctPlaneFlip, double planePointCoef) {
 		// Set up global variables
 		this.BSP38=BSP38;
 		version=38;
 		this.vertexDecomp=vertexDecomp;
-		this.checkVerts=checkVerts;
 		this.correctPlaneFlip=correctPlaneFlip;
 		this.planePointCoef=planePointCoef;
 	}
 	
 	// This constructor sets everything according to specified settings.
-	public Decompiler(v42BSP BSP42, boolean vertexDecomp, boolean checkVerts, boolean correctPlaneFlip, double planePointCoef) {
+	public Decompiler(v42BSP BSP42, boolean vertexDecomp, boolean correctPlaneFlip, double planePointCoef) {
 		// Set up global variables
 		this.BSP42=BSP42;
 		version=42;
 		this.vertexDecomp=vertexDecomp;
-		this.checkVerts=checkVerts;
 		this.correctPlaneFlip=correctPlaneFlip;
 		this.planePointCoef=planePointCoef;
 	}
 	
 	// This constructor sets everything according to specified settings.
-	public Decompiler(v46BSP BSP46, boolean vertexDecomp, boolean checkVerts, boolean correctPlaneFlip, double planePointCoef) {
+	public Decompiler(v46BSP BSP46, boolean vertexDecomp, boolean correctPlaneFlip, double planePointCoef) {
 		// Set up global variables
 		this.BSP46=BSP46;
 		version=46;
 		this.vertexDecomp=vertexDecomp;
-		this.checkVerts=checkVerts;
 		this.correctPlaneFlip=correctPlaneFlip;
 		this.planePointCoef=planePointCoef;
 	}
@@ -151,45 +146,45 @@ public class Decompiler implements Runnable {
 				if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
 					Entity newOriginBrush=new Entity("{ // Brush "+numBrshs);
 					numBrshs++;
-					Point3D[][] planes=new Point3D[6][3]; // Six planes for a cube brush, three vertices for each plane
+					Vector3D[][] planes=new Vector3D[6][3]; // Six planes for a cube brush, three vertices for each plane
 					double[][] textureS=new double[6][3];
 					double[][] textureT=new double[6][3];
 					// The planes and their texture scales
 					// I got these from an origin brush created by Gearcraft. Don't worry where these numbers came from, they work.
 					// Top
-					planes[0][0]=new Point3D(-16+origin[0], 16+origin[1], 16+origin[2]);
-					planes[0][1]=new Point3D(16+origin[0], 16+origin[1], 16+origin[2]);
-					planes[0][2]=new Point3D(16+origin[0], -16+origin[1], 16+origin[2]);
+					planes[0][0]=new Vector3D(-16+origin[0], 16+origin[1], 16+origin[2]);
+					planes[0][1]=new Vector3D(16+origin[0], 16+origin[1], 16+origin[2]);
+					planes[0][2]=new Vector3D(16+origin[0], -16+origin[1], 16+origin[2]);
 					textureS[0][0]=1;
 					textureT[0][1]=-1;
 					// Bottom
-					planes[1][0]=new Point3D(-16+origin[0], -16+origin[1], -16+origin[2]);
-					planes[1][1]=new Point3D(16+origin[0], -16+origin[1], -16+origin[2]);
-					planes[1][2]=new Point3D(16+origin[0], 16+origin[1], -16+origin[2]);
+					planes[1][0]=new Vector3D(-16+origin[0], -16+origin[1], -16+origin[2]);
+					planes[1][1]=new Vector3D(16+origin[0], -16+origin[1], -16+origin[2]);
+					planes[1][2]=new Vector3D(16+origin[0], 16+origin[1], -16+origin[2]);
 					textureS[1][0]=1;
 					textureT[1][1]=-1;
 					// Left
-					planes[2][0]=new Point3D(-16+origin[0], 16+origin[1], 16+origin[2]);
-					planes[2][1]=new Point3D(-16+origin[0], -16+origin[1], 16+origin[2]);
-					planes[2][2]=new Point3D(-16+origin[0], -16+origin[1], -16+origin[2]);
+					planes[2][0]=new Vector3D(-16+origin[0], 16+origin[1], 16+origin[2]);
+					planes[2][1]=new Vector3D(-16+origin[0], -16+origin[1], 16+origin[2]);
+					planes[2][2]=new Vector3D(-16+origin[0], -16+origin[1], -16+origin[2]);
 					textureS[2][1]=1;
 					textureT[2][2]=-1;
 					// Right
-					planes[3][0]=new Point3D(16+origin[0], 16+origin[1], -16+origin[2]);
-					planes[3][1]=new Point3D(16+origin[0], -16+origin[1], -16+origin[2]);
-					planes[3][2]=new Point3D(16+origin[0], -16+origin[1], 16+origin[2]);
+					planes[3][0]=new Vector3D(16+origin[0], 16+origin[1], -16+origin[2]);
+					planes[3][1]=new Vector3D(16+origin[0], -16+origin[1], -16+origin[2]);
+					planes[3][2]=new Vector3D(16+origin[0], -16+origin[1], 16+origin[2]);
 					textureS[3][1]=1;
 					textureT[3][2]=-1;
 					// Near
-					planes[4][0]=new Point3D(16+origin[0], 16+origin[1], 16+origin[2]);
-					planes[4][1]=new Point3D(-16+origin[0], 16+origin[1], 16+origin[2]);
-					planes[4][2]=new Point3D(-16+origin[0], 16+origin[1], -16+origin[2]);
+					planes[4][0]=new Vector3D(16+origin[0], 16+origin[1], 16+origin[2]);
+					planes[4][1]=new Vector3D(-16+origin[0], 16+origin[1], 16+origin[2]);
+					planes[4][2]=new Vector3D(-16+origin[0], 16+origin[1], -16+origin[2]);
 					textureS[4][0]=1;
 					textureT[4][2]=-1;
 					// Far
-					planes[5][0]=new Point3D(16+origin[0], -16+origin[1], -16+origin[2]);
-					planes[5][1]=new Point3D(-16+origin[0], -16+origin[1], -16+origin[2]);
-					planes[5][2]=new Point3D(-16+origin[0], -16+origin[1], 16+origin[2]);
+					planes[5][0]=new Vector3D(16+origin[0], -16+origin[1], -16+origin[2]);
+					planes[5][1]=new Vector3D(-16+origin[0], -16+origin[1], -16+origin[2]);
+					planes[5][2]=new Vector3D(-16+origin[0], -16+origin[1], 16+origin[2]);
 					textureS[5][0]=1;
 					textureT[5][2]=-1;
 					
@@ -207,9 +202,6 @@ public class Decompiler implements Runnable {
 		}
 		Window.window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map...");
 		mapFile.save(BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map");
-		if(checkVerts) {
-			Window.window.println("Corrected order of "+vertexCorrections+" sets of vertices.");
-		}
 		if(correctPlaneFlip) {
 			Window.window.println("Flipped "+numFlips+" planes in "+numFlipBrshs+" brushes.");
 		}
@@ -229,7 +221,7 @@ public class Decompiler implements Runnable {
 		MAPBrush mapBrush = new MAPBrush(numBrshs);
 		int numRealFaces=0;
 		for(int l=0;l<numSides;l++) { // For each side of the brush
-			Point3D[] plane=new Point3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
+			Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
 			v42BrushSide currentSide=BSP42.getBrushSides().getBrushSide(firstSide+l);
 			v42Face currentFace=BSP42.getFaces().getFace(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
 			if(!BSP42.getTextures().getString(currentFace.getTexture()).equalsIgnoreCase("special/bevel")) { // If this face uses special/bevel, skip the face completely
@@ -238,37 +230,25 @@ public class Decompiler implements Runnable {
 				BSPPlane currentPlane=BSP42.getPlanes().getPlane(currentSide.getPlane());
 				boolean pointsWorked=false;
 				if(numVertices!=0 && vertexDecomp) { // If the face actually references a set of vertices
-					plane[0]=new Point3D(BSP42.getVertices().getVertex(firstVertex)); // Grab and store the first one
+					plane[0]=new Vector3D(BSP42.getVertices().getVertex(firstVertex)); // Grab and store the first one
 					int m=1;
 					for(m=1;m<numVertices;m++) { // For each point after the first one
-						plane[1]=new Point3D(BSP42.getVertices().getVertex(firstVertex+m));
+						plane[1]=new Vector3D(BSP42.getVertices().getVertex(firstVertex+m));
 						if(!plane[0].equals(plane[1])) { // Make sure the point isn't the same as the first one
 							break; // If it isn't the same, this point is good
 						}
 					}
 					for(m=m+1;m<numVertices;m++) { // For each point after the previous one used
-						plane[2]=new Point3D(BSP42.getVertices().getVertex(firstVertex+m));
+						plane[2]=new Vector3D(BSP42.getVertices().getVertex(firstVertex+m));
 						if(!plane[2].equals(plane[0]) && !plane[2].equals(plane[1])) { // Make sure no point is equal to the third one
-							if((crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || // Make sure all
-							   (crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getY()!=0) || // three points 
-							   (crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getZ()!=0)) { // are not collinear
+							if((Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || // Make sure all
+							   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getY()!=0) || // three points 
+							   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getZ()!=0)) { // are not collinear
 								numVertFacesThisBrsh++;
 								usedVerts[l]=true;
 								pointsWorked=true;
 								break;
 							}
-						}
-					}
-					if(pointsWorked && checkVerts) { // If the process above worked, check to make sure the normal generated from the
-					                                 // vertices is flipped the same as the one given by the plane. This is necessary
-					                                 // because I'm not always using the first three vertices.
-					                                 // However could cause problems with custom compiled maps, since they have wacky
-					                                 // plane flips.
-						Point3D vertCross = normal(plane[0].subtract(plane[2]), plane[0].subtract(plane[1]));
-						Point3D normalAdd = vertCross.add(new Point3D(currentPlane.getA(), currentPlane.getB(), currentPlane.getC()));
-						if(Math.sqrt(Math.pow(normalAdd.getX(), 2) + Math.pow(normalAdd.getY(), 2) + Math.pow(normalAdd.getZ(), 2)) < 1) {
-							plane=flipPlane(plane);
-							vertexCorrections++;
 						}
 					}
 				}
@@ -331,62 +311,62 @@ public class Decompiler implements Runnable {
 	                                                                       // cause any issues at all.
 	}
 		
-	public Point3D[] extrapPlanePoints(BSPPlane in) {
-		Point3D[] plane=new Point3D[3];
+	public Vector3D[] extrapPlanePoints(BSPPlane in) {
+		Vector3D[] plane=new Vector3D[3];
 		// Figure out if the plane is parallel to two of the axes. If so it can be reproduced easily
 		if(in.getB()==0 && in.getC()==0) { // parallel to plane YZ
-			plane[0]=new Point3D(in.getDist()/in.getA(), -planePointCoef, planePointCoef);
-			plane[1]=new Point3D(in.getDist()/in.getA(), 0, 0);
-			plane[2]=new Point3D(in.getDist()/in.getA(), planePointCoef, planePointCoef);
+			plane[0]=new Vector3D(in.getDist()/in.getA(), -planePointCoef, planePointCoef);
+			plane[1]=new Vector3D(in.getDist()/in.getA(), 0, 0);
+			plane[2]=new Vector3D(in.getDist()/in.getA(), planePointCoef, planePointCoef);
 			if(in.getA()>0) {
-				plane=flipPlane(plane);
+				plane=Plane.flip(plane);
 			}
 		} else {
 			if(in.getA()==0 && in.getC()==0) { // parallel to plane XZ
-				plane[0]=new Point3D(planePointCoef, in.getDist()/in.getB(), -planePointCoef);
-				plane[1]=new Point3D(0, in.getDist()/in.getB(), 0);
-				plane[2]=new Point3D(planePointCoef, in.getDist()/in.getB(), planePointCoef);
+				plane[0]=new Vector3D(planePointCoef, in.getDist()/in.getB(), -planePointCoef);
+				plane[1]=new Vector3D(0, in.getDist()/in.getB(), 0);
+				plane[2]=new Vector3D(planePointCoef, in.getDist()/in.getB(), planePointCoef);
 				if(in.getB()>0) {
-					plane=flipPlane(plane);
+					plane=Plane.flip(plane);
 				}
 			} else {
 				if(in.getA()==0 && in.getB()==0) { // parallel to plane XY
-					plane[0]=new Point3D(-planePointCoef, planePointCoef, in.getDist()/in.getC());
-					plane[1]=new Point3D(0, 0, in.getDist()/in.getC());
-					plane[2]=new Point3D(planePointCoef, planePointCoef, in.getDist()/in.getC());
+					plane[0]=new Vector3D(-planePointCoef, planePointCoef, in.getDist()/in.getC());
+					plane[1]=new Vector3D(0, 0, in.getDist()/in.getC());
+					plane[2]=new Vector3D(planePointCoef, planePointCoef, in.getDist()/in.getC());
 					if(in.getC()>0) {
-						plane=flipPlane(plane);
+						plane=Plane.flip(plane);
 					}
 				} else { // If you reach this point the plane is not parallel to any two-axis plane.
 					if(in.getA()==0) { // parallel to X axis
-						plane[0]=new Point3D(-planePointCoef, planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*(double)in.getB()-(double)in.getDist())/(double)in.getC());
-						plane[1]=new Point3D(0, 0, (double)in.getDist()/(double)in.getC());
-						plane[2]=new Point3D(planePointCoef, planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*(double)in.getB()-(double)in.getDist())/(double)in.getC());
+						plane[0]=new Vector3D(-planePointCoef, planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*(double)in.getB()-(double)in.getDist())/(double)in.getC());
+						plane[1]=new Vector3D(0, 0, (double)in.getDist()/(double)in.getC());
+						plane[2]=new Vector3D(planePointCoef, planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*(double)in.getB()-(double)in.getDist())/(double)in.getC());
 						if(in.getC()>0) {
-							plane=flipPlane(plane);
+							plane=Plane.flip(plane);
 						}
 					} else {
 						if(in.getB()==0) { // parallel to Y axis
-							plane[0]=new Point3D(-(planePointCoef*planePointCoef*(double)in.getC()-(double)in.getDist())/(double)in.getA(), -planePointCoef, planePointCoef*planePointCoef);
-							plane[1]=new Point3D((double)in.getDist()/(double)in.getA(), 0, 0);
-							plane[2]=new Point3D(-(planePointCoef*planePointCoef*(double)in.getC()-(double)in.getDist())/(double)in.getA(), planePointCoef, planePointCoef*planePointCoef);
+							plane[0]=new Vector3D(-(planePointCoef*planePointCoef*(double)in.getC()-(double)in.getDist())/(double)in.getA(), -planePointCoef, planePointCoef*planePointCoef);
+							plane[1]=new Vector3D((double)in.getDist()/(double)in.getA(), 0, 0);
+							plane[2]=new Vector3D(-(planePointCoef*planePointCoef*(double)in.getC()-(double)in.getDist())/(double)in.getA(), planePointCoef, planePointCoef*planePointCoef);
 							if(in.getA()>0) {
-								plane=flipPlane(plane);
+								plane=Plane.flip(plane);
 							}
 						} else {
 							if(in.getC()==0) { // parallel to Z axis
-								plane[0]=new Point3D(planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*(double)in.getA()-(double)in.getDist())/(double)in.getB(), -planePointCoef);
-								plane[1]=new Point3D(0, (double)in.getDist()/(double)in.getB(), 0);
-								plane[2]=new Point3D(planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*(double)in.getA()-(double)in.getDist())/(double)in.getB(), planePointCoef);
+								plane[0]=new Vector3D(planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*(double)in.getA()-(double)in.getDist())/(double)in.getB(), -planePointCoef);
+								plane[1]=new Vector3D(0, (double)in.getDist()/(double)in.getB(), 0);
+								plane[2]=new Vector3D(planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*(double)in.getA()-(double)in.getDist())/(double)in.getB(), planePointCoef);
 								if(in.getB()>0) {
-									plane=flipPlane(plane);
+									plane=Plane.flip(plane);
 								}
 							} else { // If you reach this point the plane is not parallel to any axis. Therefore, any two coordinates will give a third.
-								plane[0]=new Point3D(-planePointCoef, planePointCoef*planePointCoef, -(-planePointCoef*(double)in.getA()+planePointCoef*planePointCoef*(double)in.getB()-(double)in.getDist())/(double)in.getC());
-								plane[1]=new Point3D(0, 0, (double)in.getDist()/(double)in.getC());
-								plane[2]=new Point3D(planePointCoef, planePointCoef*planePointCoef, -(planePointCoef*(double)in.getA()+planePointCoef*planePointCoef*(double)in.getB()-(double)in.getDist())/(double)in.getC());
+								plane[0]=new Vector3D(-planePointCoef, planePointCoef*planePointCoef, -(-planePointCoef*(double)in.getA()+planePointCoef*planePointCoef*(double)in.getB()-(double)in.getDist())/(double)in.getC());
+								plane[1]=new Vector3D(0, 0, (double)in.getDist()/(double)in.getC());
+								plane[2]=new Vector3D(planePointCoef, planePointCoef*planePointCoef, -(planePointCoef*(double)in.getA()+planePointCoef*planePointCoef*(double)in.getB()-(double)in.getDist())/(double)in.getC());
 								if(in.getC()>0) {
-									plane=flipPlane(plane);
+									plane=Plane.flip(plane);
 								}
 							}
 						}
@@ -402,9 +382,9 @@ public class Decompiler implements Runnable {
 		boolean hadFlip=false;
 		// Make sure all planes are flipped properly
 		int goodSide = in.getGoodSide(); // The side which will be used to judge all other sides, defined by vertices
-		Point3D[] goodTriangle = in.getSide(goodSide).getTriangle(); // Get the corners
+		Vector3D[] goodTriangle = in.getSide(goodSide).getTriangle(); // Get the corners
 		// Find a point between all the corners of the side, but still on the side
-		Point3D center = new Point3D((goodTriangle[0].getX() + goodTriangle[1].getX() + goodTriangle[2].getX())/3, (goodTriangle[0].getY() + goodTriangle[1].getY() + goodTriangle[2].getY())/3, (goodTriangle[0].getZ() + goodTriangle[1].getZ() + goodTriangle[2].getZ())/3);
+		Vector3D center = new Vector3D((goodTriangle[0].getX() + goodTriangle[1].getX() + goodTriangle[2].getX())/3, (goodTriangle[0].getY() + goodTriangle[1].getY() + goodTriangle[2].getY())/3, (goodTriangle[0].getZ() + goodTriangle[1].getZ() + goodTriangle[2].getZ())/3);
 		for (int i=0; i<in.getNumSides(); i++) { // For each side
 			if(!in.sideIsGood(i)) { // If the side was not defined by vertices
 				if(in.getPlane(i).distance(center)>0) { // If the point is not on the right side of that plane
@@ -425,14 +405,14 @@ public class Decompiler implements Runnable {
 		/*
 		
 		// Compute corners
-		List<Point3D> Corners = new List<Point3D>();
+		List<Vector3D> Corners = new List<Vector3D>();
             #region " Collect Points "
             for (int iP0 = 0; iP0 < Planes.Count; iP0++)
                 for (int iP1 = iP0 + 1; iP1 < Planes.Count; iP1++)
                     for (int iP2 = iP1 + 1; iP2 < Planes.Count; iP2++)
                     {
-                        Point3D testpoint = StaticMethods.GetIntersection(Planes[iP0], Planes[iP1], Planes[iP2]);
-                        if (testpoint != Point3D.Undefined)
+                        Vector3D testpoint = StaticMethods.GetIntersection(Planes[iP0], Planes[iP1], Planes[iP2]);
+                        if (testpoint != Vector3D.Undefined)
                         {
                             bool IsCorner = true;
                             // Test for if point is behind or on all planes in brush.
@@ -442,7 +422,7 @@ public class Decompiler implements Runnable {
                                         IsCorner = false;
                             if (IsCorner)
                             {
-                                Point3D newpoint = new Point3D(Math.Round(testpoint.dX, 3), Math.Round(testpoint.dY, 3), Math.Round(testpoint.dZ, 3));
+                                Vector3D newpoint = new Vector3D(Math.Round(testpoint.dX, 3), Math.Round(testpoint.dY, 3), Math.Round(testpoint.dZ, 3));
                                 if (!Corners.Contains(newpoint))
                                     Corners.Add(newpoint);
                             }
@@ -450,34 +430,5 @@ public class Decompiler implements Runnable {
                     }
 
 		*/
-	}
-	
-	// -flipPlane(Point3D[])
-	// Takes a plane as an array of vertices and flips it over.
-	private Point3D[] flipPlane(Point3D[] in) {
-		return new Point3D[] {in[0], in[2], in[1]};
-	}
-	
-	// +dotProduct()
-	// Takes two Point objects which are read as vectors, then returns the dot product
-	public static double dotProduct(Point3D first, Point3D second) {
-		return (first.getX()*second.getX())+(first.getY()*second.getY())+(first.getZ()*second.getZ());
-	}
-	
-	// +crossProduct()
-	// Takes two Point objects which are read as vectors, then returns their cross product
-	public static Point3D crossProduct(Point3D first, Point3D second) {
-		return new Point3D((first.getY()*second.getZ())-(first.getZ()*second.getY()),
-		                   (first.getZ()*second.getX())-(first.getX()*second.getZ()),
-		                   (first.getX()*second.getY())-(first.getY()*second.getX()));
-	}
-	
-	// +normal()
-	// Takes two Point objects which are read as vectors, then returns their normalized cross product.
-	// "normalized" means the length of the cross will be 1.
-	public static Point3D normal(Point3D first, Point3D second) {
-		Point3D result = crossProduct(first, second);
-		double len = Math.sqrt((result.getX()*result.getX()) + (result.getY()*result.getY()) + (result.getZ()*result.getZ()));
-		return new Point3D(result.getX()/len, result.getY()/len, result.getZ()/len);
 	}
 }
