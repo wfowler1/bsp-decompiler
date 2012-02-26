@@ -2,7 +2,9 @@
 
 // Handles the actual decompilation.
 
-public class Decompiler implements Runnable {
+import java.util.Date;
+
+public class Decompiler {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
@@ -17,12 +19,16 @@ public class Decompiler implements Runnable {
 	private boolean vertexDecomp;
 	private boolean correctPlaneFlip;
 	private double planePointCoef;
+	private boolean toVMF;
+	private boolean calcVerts;
+	private boolean roundNums;
 	
 	private int numFlips=0;
 	private int numFlipBrshs=0;
 	
 	private Entities mapFile; // Most MAP file formats (including GearCraft) are simply a bunch of nested entities
 	private int numBrshs;
+	private int numIDs; // Everything in a VMF file has a unique ID. Just keep counting up
 	
 	// Declare all kinds of BSPs here, the one actually used will be determined by constructor
 	// private BSPv29n30
@@ -38,52 +44,64 @@ public class Decompiler implements Runnable {
 	// CONSTRUCTORS
 	
 	// This constructor sets everything according to specified settings.
-	public Decompiler(v38BSP BSP38, boolean vertexDecomp, boolean correctPlaneFlip, double planePointCoef) {
+	public Decompiler(v38BSP BSP38, boolean vertexDecomp, boolean correctPlaneFlip, boolean calcVerts, boolean roundNums, boolean toVMF, double planePointCoef) {
 		// Set up global variables
 		this.BSP38=BSP38;
 		version=38;
 		this.vertexDecomp=vertexDecomp;
 		this.correctPlaneFlip=correctPlaneFlip;
 		this.planePointCoef=planePointCoef;
+		this.toVMF=toVMF;
+		this.calcVerts=calcVerts;
+		this.roundNums=roundNums;
 	}
 	
 	// This constructor sets everything according to specified settings.
-	public Decompiler(v42BSP BSP42, boolean vertexDecomp, boolean correctPlaneFlip, double planePointCoef) {
+	public Decompiler(v42BSP BSP42, boolean vertexDecomp, boolean correctPlaneFlip, boolean calcVerts, boolean roundNums, boolean toVMF, double planePointCoef) {
 		// Set up global variables
 		this.BSP42=BSP42;
 		version=42;
 		this.vertexDecomp=vertexDecomp;
 		this.correctPlaneFlip=correctPlaneFlip;
 		this.planePointCoef=planePointCoef;
+		this.toVMF=toVMF;
+		this.calcVerts=calcVerts;
+		this.roundNums=roundNums;
 	}
 	
 	// This constructor sets everything according to specified settings.
-	public Decompiler(v46BSP BSP46, boolean vertexDecomp, boolean correctPlaneFlip, double planePointCoef) {
+	public Decompiler(v46BSP BSP46, boolean vertexDecomp, boolean correctPlaneFlip, boolean calcVerts, boolean roundNums, boolean toVMF, double planePointCoef) {
 		// Set up global variables
 		this.BSP46=BSP46;
 		version=46;
 		this.vertexDecomp=vertexDecomp;
 		this.correctPlaneFlip=correctPlaneFlip;
 		this.planePointCoef=planePointCoef;
+		this.toVMF=toVMF;
+		this.calcVerts=calcVerts;
+		this.roundNums=roundNums;
 	}
 	
 	// METHODS
 	
-	// +run()
-	// For the sake of multithreading, this method exists.
-	public void run() {
+	// +decompile()
+	// Starts the decompilation process. This is leftover from when multithreading
+	// was handled through the decompiler.
+	public void decompile() {
+		Date begin=new Date();
 		switch(version) {
 			case 38:
-				Window.window.println("Decompiling of Quake 2 map not yet written!");
+				Window.window.println("Decompilation of Quake 2 map not yet written!");
 				break;
 			case 42:
 				decompileBSP42();
 				break;
 			case 46:
-				Window.window.println("Decompiling of Quake 3 map not yet written!");
+				Window.window.println("Decompilation of Quake 3 map not yet written!");
 				break;
 		}
-		Window.btn_decomp.setEnabled(true); // Once the thread is finished running, reenable the Decompile button
+		Date end=new Date();
+		Window.window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms\n");
 	}
 	
 	// -decompileBSP42()
@@ -106,6 +124,9 @@ public class Decompiler implements Runnable {
 		// Then I need to go through each entity and see if it's brush-based.
 		// Worldspawn is brush-based as well as any entity with model *#.
 		for(int i=0;i<mapFile.getNumElements();i++) { // For each entity
+			if(toVMF) {
+				mapFile.getEntity(i).setAttribute("id", new Integer(++numIDs).toString());
+			}
 			int currentModel=-1;
 			numBrshs=0; // Reset the brush count for each entity
 			if(mapFile.getEntity(i).isBrushBased()) {
@@ -144,7 +165,8 @@ public class Decompiler implements Runnable {
 				// I need to undo that. For this I will create a 32x32 brush, centered at the point defined
 				// by the "origin" attribute.
 				if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
-					Entity newOriginBrush=new Entity("{ // Brush "+numBrshs);
+					MAPBrush newOriginBrush;
+					newOriginBrush=new MAPBrush(numBrshs, ++numIDs, i, new double[3], 0);
 					numBrshs++;
 					Vector3D[][] planes=new Vector3D[6][3]; // Six planes for a cube brush, three vertices for each plane
 					double[][] textureS=new double[6][3];
@@ -189,21 +211,53 @@ public class Decompiler implements Runnable {
 					textureT[5][2]=-1;
 					
 					for(int j=0;j<6;j++) {
-						MAPBrushSide currentEdge=new MAPBrushSide(planes[j], "special/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-						newOriginBrush.addAttribute(currentEdge.toString());
+						MAPBrushSide currentEdge;
+						if(toVMF) {
+							currentEdge=new MAPBrushSide(planes[j], "special/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+						} else {
+							currentEdge=new MAPBrushSide(planes[j], "special/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+						}
+						newOriginBrush.add(currentEdge);
 					}
-					newOriginBrush.addAttribute("}");
-					mapFile.getEntity(i).addAttribute(newOriginBrush.toString());
+					if(toVMF) {
+						if(roundNums) {
+							mapFile.getEntity(i).addAttributeInside(newOriginBrush.toRoundVMFBrush());
+						} else {
+							mapFile.getEntity(i).addAttributeInside(newOriginBrush.toVMFBrush());
+						}
+					} else {
+						if(roundNums) {
+							mapFile.getEntity(i).addAttributeInside(newOriginBrush.toRoundString());
+						} else {
+							mapFile.getEntity(i).addAttributeInside(newOriginBrush.toString());
+						}
+					}
 				}
 				mapFile.getEntity(i).deleteAttribute("origin");
 			}
 			numTotalItems++;
 			Window.setProgress(numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements());
+			if(toVMF) { // correct some entities to make source ports easier
+				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("light_spot")) {
+					 mapFile.getEntity(i).setAttribute("pitch", new Double(mapFile.getEntity(i).getAngles()[0]).toString());
+					 mapFile.getEntity(i).setAttribute("_inner_cone", mapFile.getEntity(i).getAttribute("_cone")); 
+					 mapFile.getEntity(i).setAttribute("_cone", mapFile.getEntity(i).getAttribute("_cone2"));
+					 mapFile.getEntity(i).deleteAttribute("_cone2");
+				}
+				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_wall")) {
+					mapFile.getEntity(i).setAttribute("classname", "func_detail");
+				}
+				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("item_generic")) {
+					mapFile.getEntity(i).setAttribute("classname", "prop_static");
+				}
+			}
 		}
-		Window.window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map...");
-		mapFile.save(BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map");
-		if(correctPlaneFlip) {
-			Window.window.println("Flipped "+numFlips+" planes in "+numFlipBrshs+" brushes.");
+		if(!toVMF) {
+			Window.window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map...");
+			mapFile.save(BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map");
+		} else {
+			Window.window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".vmf...");
+			mapFile.save(BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".vmf");
 		}
 		Window.window.println("Process completed!");
 	}
@@ -214,11 +268,8 @@ public class Decompiler implements Runnable {
 		double[] origin=mapFile.getEntity(currentEntity).getOrigin();
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
-		int numPlaneFacesThisBrsh=0;
-		int numVertFacesThisBrsh=0;
-		boolean[] usedVerts=new boolean[numSides]; // vertFaces[X] will be true if face X was defined by vertices
 		MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
-		MAPBrush mapBrush = new MAPBrush(numBrshs);
+		MAPBrush mapBrush = new MAPBrush(numBrshs, ++numIDs, currentEntity, origin, planePointCoef);
 		int numRealFaces=0;
 		for(int l=0;l<numSides;l++) { // For each side of the brush
 			Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
@@ -227,7 +278,7 @@ public class Decompiler implements Runnable {
 			if(!BSP42.getTextures().getString(currentFace.getTexture()).equalsIgnoreCase("special/bevel")) { // If this face uses special/bevel, skip the face completely
 				int firstVertex=currentFace.getVert();
 				int numVertices=currentFace.getNumVerts();
-				BSPPlane currentPlane=BSP42.getPlanes().getPlane(currentSide.getPlane());
+				Plane currentPlane=BSP42.getPlanes().getPlane(currentSide.getPlane()).getPlane();
 				boolean pointsWorked=false;
 				if(numVertices!=0 && vertexDecomp) { // If the face actually references a set of vertices
 					plane[0]=new Vector3D(BSP42.getVertices().getVertex(firstVertex)); // Grab and store the first one
@@ -244,8 +295,6 @@ public class Decompiler implements Runnable {
 							if((Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || // Make sure all
 							   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getY()!=0) || // three points 
 							   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getZ()!=0)) { // are not collinear
-								numVertFacesThisBrsh++;
-								usedVerts[l]=true;
 								pointsWorked=true;
 								break;
 							}
@@ -254,19 +303,34 @@ public class Decompiler implements Runnable {
 				}
 				if(numVertices==0 || !pointsWorked) { // Fallback to planar decompilation. Since there are no explicitly defined points anymore,
 					                                   // we must find them ourselves using the A, B, C and D values.
-					numPlaneFacesThisBrsh++;
-					plane=extrapPlanePoints(currentPlane);
+					plane=GenericMethods.extrapPlanePoints(currentPlane, planePointCoef);
 				}
-				plane[0].setX(plane[0].getX()+origin[X]);
-				plane[0].setY(plane[0].getY()+origin[Y]);
-				plane[0].setZ(plane[0].getZ()+origin[Z]);
-				plane[1].setX(plane[1].getX()+origin[X]);
-				plane[1].setY(plane[1].getY()+origin[Y]);
-				plane[1].setZ(plane[1].getZ()+origin[Z]);
-				plane[2].setX(plane[2].getX()+origin[X]);
-				plane[2].setY(plane[2].getY()+origin[Y]);
-				plane[2].setZ(plane[2].getZ()+origin[Z]);
 				String texture=BSP42.getTextures().getString(currentFace.getTexture());
+				if(toVMF) {
+					if(texture.equalsIgnoreCase("special/nodraw")) {
+						texture="tools/toolsnodraw";
+					} else {
+						if(texture.equalsIgnoreCase("special/clip")) {
+							texture="tools/toolsclip";
+						} else {
+							if(texture.equalsIgnoreCase("special/sky")) {
+								texture="tools/toolsskybox";
+							} else {
+								if(texture.equalsIgnoreCase("special/playertrigger")) {
+									texture="tools/toolstrigger";
+								} else {
+									if(texture.equalsIgnoreCase("special/playerclip")) {
+										texture="tools/toolsplayerclip";
+									} else {
+										if(texture.equalsIgnoreCase("special/npcclip")) {
+											texture="tools/toolsnpcclip";
+										}
+									}
+								}
+							}
+						}
+					}
+				}
 				double[] textureS=new double[3];
 				double[] textureT=new double[3];
 				v42TexMatrix currentTexMatrix=BSP42.getTextureMatrices().getTexMatrix(currentFace.getTexStyle());
@@ -292,143 +356,46 @@ public class Decompiler implements Runnable {
 				double lgtScale=16; // These values are impossible to get from a compiled map since they
 				double lgtRot=0;    // are used by RAD for generating lightmaps, then are discarded, I believe.
 				brushSides[l]=new MAPBrushSide(plane, texture, textureS, textureShiftS, textureT, textureShiftT,
-				                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
+				                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot, ++numIDs);
 				numRealFaces++;
 				if(brushSides[l]!=null) {
-					mapBrush.add(brushSides[l], usedVerts[l], currentPlane); // Add the MAPBrushSide to the current brush
-				}
-			}
-		}
-		
-		if(mapBrush.hasGoodSide() && correctPlaneFlip) {
-			mapBrush = correctPlanes(mapBrush);
-			mapBrush = calculateCorners(mapBrush);
-		}
-		
-		mapFile.getEntity(currentEntity).addAttribute(mapBrush.toString()); // This adds the brush we've been finding and creating to
-		                                                                    // the current entity as an attribute. The way I've coded
-		                                                                    // this whole program and the entities parser, this shouldn't
-	                                                                       // cause any issues at all.
-	}
-		
-	public Vector3D[] extrapPlanePoints(BSPPlane in) {
-		Vector3D[] plane=new Vector3D[3];
-		// Figure out if the plane is parallel to two of the axes. If so it can be reproduced easily
-		if(in.getB()==0 && in.getC()==0) { // parallel to plane YZ
-			plane[0]=new Vector3D(in.getDist()/in.getA(), -planePointCoef, planePointCoef);
-			plane[1]=new Vector3D(in.getDist()/in.getA(), 0, 0);
-			plane[2]=new Vector3D(in.getDist()/in.getA(), planePointCoef, planePointCoef);
-			if(in.getA()>0) {
-				plane=Plane.flip(plane);
-			}
-		} else {
-			if(in.getA()==0 && in.getC()==0) { // parallel to plane XZ
-				plane[0]=new Vector3D(planePointCoef, in.getDist()/in.getB(), -planePointCoef);
-				plane[1]=new Vector3D(0, in.getDist()/in.getB(), 0);
-				plane[2]=new Vector3D(planePointCoef, in.getDist()/in.getB(), planePointCoef);
-				if(in.getB()>0) {
-					plane=Plane.flip(plane);
-				}
-			} else {
-				if(in.getA()==0 && in.getB()==0) { // parallel to plane XY
-					plane[0]=new Vector3D(-planePointCoef, planePointCoef, in.getDist()/in.getC());
-					plane[1]=new Vector3D(0, 0, in.getDist()/in.getC());
-					plane[2]=new Vector3D(planePointCoef, planePointCoef, in.getDist()/in.getC());
-					if(in.getC()>0) {
-						plane=Plane.flip(plane);
-					}
-				} else { // If you reach this point the plane is not parallel to any two-axis plane.
-					if(in.getA()==0) { // parallel to X axis
-						plane[0]=new Vector3D(-planePointCoef, planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*(double)in.getB()-(double)in.getDist())/(double)in.getC());
-						plane[1]=new Vector3D(0, 0, (double)in.getDist()/(double)in.getC());
-						plane[2]=new Vector3D(planePointCoef, planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*(double)in.getB()-(double)in.getDist())/(double)in.getC());
-						if(in.getC()>0) {
-							plane=Plane.flip(plane);
-						}
+					if(pointsWorked) {
+						mapBrush.add(brushSides[l], plane, currentPlane, true); // Add the MAPBrushSide to the current brush
 					} else {
-						if(in.getB()==0) { // parallel to Y axis
-							plane[0]=new Vector3D(-(planePointCoef*planePointCoef*(double)in.getC()-(double)in.getDist())/(double)in.getA(), -planePointCoef, planePointCoef*planePointCoef);
-							plane[1]=new Vector3D((double)in.getDist()/(double)in.getA(), 0, 0);
-							plane[2]=new Vector3D(-(planePointCoef*planePointCoef*(double)in.getC()-(double)in.getDist())/(double)in.getA(), planePointCoef, planePointCoef*planePointCoef);
-							if(in.getA()>0) {
-								plane=Plane.flip(plane);
-							}
-						} else {
-							if(in.getC()==0) { // parallel to Z axis
-								plane[0]=new Vector3D(planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*(double)in.getA()-(double)in.getDist())/(double)in.getB(), -planePointCoef);
-								plane[1]=new Vector3D(0, (double)in.getDist()/(double)in.getB(), 0);
-								plane[2]=new Vector3D(planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*(double)in.getA()-(double)in.getDist())/(double)in.getB(), planePointCoef);
-								if(in.getB()>0) {
-									plane=Plane.flip(plane);
-								}
-							} else { // If you reach this point the plane is not parallel to any axis. Therefore, any two coordinates will give a third.
-								plane[0]=new Vector3D(-planePointCoef, planePointCoef*planePointCoef, -(-planePointCoef*(double)in.getA()+planePointCoef*planePointCoef*(double)in.getB()-(double)in.getDist())/(double)in.getC());
-								plane[1]=new Vector3D(0, 0, (double)in.getDist()/(double)in.getC());
-								plane[2]=new Vector3D(planePointCoef, planePointCoef*planePointCoef, -(planePointCoef*(double)in.getA()+planePointCoef*planePointCoef*(double)in.getB()-(double)in.getDist())/(double)in.getC());
-								if(in.getC()>0) {
-									plane=Plane.flip(plane);
-								}
-							}
-						}
+						mapBrush.add(brushSides[l], new Vector3D[0], currentPlane, false);
 					}
 				}
 			}
 		}
-		return plane;
-	}
-
-	
-	public MAPBrush correctPlanes(MAPBrush in) {
-		boolean hadFlip=false;
-		// Make sure all planes are flipped properly
-		int goodSide = in.getGoodSide(); // The side which will be used to judge all other sides, defined by vertices
-		Vector3D[] goodTriangle = in.getSide(goodSide).getTriangle(); // Get the corners
-		// Find a point between all the corners of the side, but still on the side
-		Vector3D center = new Vector3D((goodTriangle[0].getX() + goodTriangle[1].getX() + goodTriangle[2].getX())/3, (goodTriangle[0].getY() + goodTriangle[1].getY() + goodTriangle[2].getY())/3, (goodTriangle[0].getZ() + goodTriangle[1].getZ() + goodTriangle[2].getZ())/3);
-		for (int i=0; i<in.getNumSides(); i++) { // For each side
-			if(!in.sideIsGood(i)) { // If the side was not defined by vertices
-				if(in.getPlane(i).distance(center)>0) { // If the point is not on the right side of that plane
-					numFlips++;
-					hadFlip=true;
-					in.getSide(i).flipPlane(); // Flip the plane
-				}
+		
+		if(correctPlaneFlip) {
+			mapBrush.correctPlanes(); // If planar decompile, this will already calculate corners
+			if(calcVerts && vertexDecomp) { // So, only allow this if vertex decompile.
+				mapBrush.recalcCorners();
 			}
 		}
-		if(hadFlip) {
-			numFlipBrshs++;
+		
+		if(toVMF) {
+			if(roundNums) {
+				mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toRoundVMFBrush());
+			} else {
+				mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toVMFBrush()); // This adds the brush we've been finding and creating to
+			}                                                                              // the current entity as an attribute. The way I've coded
+		} else {                                                                          // this whole program and the entities parser, this shouldn't
+			if(roundNums) {                                                                // cause any issues at all.
+				mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toRoundString());
+			} else {
+				mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toString());
+			}
 		}
-		return in;
 	}
 	
-	public static MAPBrush calculateCorners(MAPBrush in) {
-		return in; // TODO
-		/*
-		
-		// Compute corners
-		List<Vector3D> Corners = new List<Vector3D>();
-            #region " Collect Points "
-            for (int iP0 = 0; iP0 < Planes.Count; iP0++)
-                for (int iP1 = iP0 + 1; iP1 < Planes.Count; iP1++)
-                    for (int iP2 = iP1 + 1; iP2 < Planes.Count; iP2++)
-                    {
-                        Vector3D testpoint = StaticMethods.GetIntersection(Planes[iP0], Planes[iP1], Planes[iP2]);
-                        if (testpoint != Vector3D.Undefined)
-                        {
-                            bool IsCorner = true;
-                            // Test for if point is behind or on all planes in brush.
-                            for (int i = 0; i < Planes.Count; i++)
-                                if (Planes[i] != Planes[iP0] && Planes[i] != Planes[iP1] && Planes[i] != Planes[iP2])
-                                    if (Planes[i].DistanceFrom(testpoint) < -0.001) // If point is on wrong side of plane (within error).
-                                        IsCorner = false;
-                            if (IsCorner)
-                            {
-                                Vector3D newpoint = new Vector3D(Math.Round(testpoint.dX, 3), Math.Round(testpoint.dY, 3), Math.Round(testpoint.dZ, 3));
-                                if (!Corners.Contains(newpoint))
-                                    Corners.Add(newpoint);
-                            }
-                        }
-                    }
-
-		*/
+	// Attempt to turn the Quake 3 BSP into a .MAP file
+	public void decompileBSP46() {
+		mapFile=new Entities(BSP46.getEntities());
+		int numTotalItems=0;
+		for(int i=0;i<mapFile.getNumElements();i++) { // For each entity	
+			
+		}
 	}
 }

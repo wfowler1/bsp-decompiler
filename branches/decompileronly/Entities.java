@@ -74,6 +74,12 @@ public class Entities {
 		populateEntityList(data);
 	}
 	
+	public Entities() {
+		length=0;
+		numEnts=0;
+		entities = new Entity[0];
+	}
+	
 	// METHODS
 	
 	// -populateEntityList()
@@ -100,14 +106,12 @@ public class Entities {
 				offset++;
 				currentChar=(char)data[offset];
 			}
-			offset++; // This will eat a 0x0A
-			currentChar=(char)data[offset]; // reads the first character after the 0x0A, which will be 
-			                                // a quote (though it doesn't matter what the hell it is)
 			do {
 				current+=currentChar+""; // adds characters to the current string
 				offset++;
 				currentChar=(char)data[offset];
 			} while(currentChar!='}'); // Read bytes until we find the end of the current entity structure
+			current+=currentChar+""; // adds the '}' to the current string
 			entities[i]=new Entity(current); // puts the resulting String into the constructor of the Entity class
 		}
 		Date end=new Date();
@@ -118,7 +122,7 @@ public class Entities {
 	// prints all parsed entities into the console
 	public void printEnts() {
 		for(int i=0;i<numEnts;i++) {
-			Window.window.print("{\n"+entities[i].toString()+"}");
+			Window.window.print(entities[i].toString()+"\n");
 		}
 	}
 	
@@ -131,29 +135,13 @@ public class Entities {
 	//   etc.0x0A
 	//   }
 	public void add(String in) {
-		Scanner reader=new Scanner(in);
-		reader.useDelimiter("");
-		char currentChar; // The current character being read in the String.
-		String current=""; // This will be the resulting entity, fed into the Entity class
-		currentChar=reader.next().charAt(0); // Stupid Scanner has no nextChar() method
-		while(currentChar!='{') { // Eat bytes until we find the beginning of an entity structure
-			currentChar=reader.next().charAt(0);
-		}
-		reader.next(); // This will eat a 0x0A
-		currentChar=reader.next().charAt(0); // reads the first character after the 0x0A, which will be 
-		                                     // a quote (though it doesn't matter what the hell it is)
-		do {
-			current+=currentChar+""; // adds characters to the current string
-			currentChar=reader.next().charAt(0);
-		} while(currentChar!='}'); // Read bytes until we find the end of the current entity structure
-		Entity newEnt=new Entity(current); // puts the resulting String into the constructor of the Entity class
+		Entity newEnt=new Entity(in); // puts the String into the constructor of the Entity class
 		add(newEnt);
-		reader.close();
 	}
 	
 	// +add(Entity)
 	// This is definitely the easiest to do. Adds an entity to the list
-	// which is already of type Entity. It can be assumes it's already
+	// which is already of type Entity. It can be assumed it's already
 	// been parsed and is valid the way it is.
 	public void add(Entity in) {
 		numEnts++;
@@ -228,7 +216,7 @@ public class Entities {
 	// it gets VERY slow, even if you concatenate them all before writing.
 	public void save(String path) {
 		File newFile;
-		if(path.substring(path.length()-4).equalsIgnoreCase(".map")) {
+		if(path.substring(path.length()-4).equalsIgnoreCase(".map") || path.substring(path.length()-4).equalsIgnoreCase(".vmf")) {
 			newFile=new File(path);
 		} else {
 			newFile=new File(path+"\\00 - Entities.txt");
@@ -245,24 +233,29 @@ public class Entities {
 			FileOutputStream entityWriter=new FileOutputStream(newFile);
 			for(int i=0;i<numEnts;i++) {
 				byte[] temp;
-				if(!path.substring(path.length()-4).equals(".map")) {
-					temp=new byte[2];
-					temp[0]=(byte)'{';
-					temp[1]=(byte)0x0A;
-				} else {
-					String tempString="{ // Entity "+i+"\n";
+				if(path.substring(path.length()-4).equals(".map")) {
+					String tempString="{ // Entity "+i+""+(char)0x0D+(char)0x0A;
 					temp=tempString.getBytes();
+				} else {
+					if(path.substring(path.length()-4).equals(".vmf")) {
+						if(entities[i].getAttribute("classname").equalsIgnoreCase("worldspawn")) {
+							String tempString="versioninfo"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A+"	\"editorversion\" \"400\""+(char)0x0D+(char)0x0A+"	\"editorbuild\" \"3325\""+(char)0x0D+(char)0x0A+"	\"mapversion\" \"0\""+(char)0x0D+(char)0x0A+"	\"formatversion\" \"100\""+(char)0x0D+(char)0x0A+"	\"prefab\" \"0\""+(char)0x0D+(char)0x0A+"}"+(char)0x0D+(char)0x0A+"";
+							tempString+="visgroups"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A+"}"+(char)0x0D+(char)0x0A+"";
+							tempString+="viewsettings"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A+"	\"bSnapToGrid\" \"1\""+(char)0x0D+(char)0x0A+"	\"bShowGrid\" \"1\""+(char)0x0D+(char)0x0A+"	\"bShowLogicalGrid\" \"0\""+(char)0x0D+(char)0x0A+"	\"nGridSpacing\" \"64\""+(char)0x0D+(char)0x0A+"	\"bShow3DGrid\" \"0\""+(char)0x0D+(char)0x0A+"}"+(char)0x0D+(char)0x0A+"";
+							tempString+="world"+(char)0x0D+(char)0x0A+"";
+							temp=tempString.getBytes();
+							entities[i].setAttribute("mapversion", "638");
+						} else {
+							String tempString="entity"+(char)0x0D+(char)0x0A+"";
+							temp=tempString.getBytes();
+						}
+						entityWriter.write(temp);
+					}
 				}
-				entityWriter.write(temp);
-				entityWriter.write(entities[i].toByteArray());
-				byte [] temp2=new byte[2];
-				temp2[0]=(byte)'}';
-				temp2[1]=(byte)0x0A;
-				entityWriter.write(temp2);
+				entityWriter.write(entities[i].toByteArray(path.substring(path.length()-4).equals(".vmf")));
 			}
-			if(!path.substring(path.length()-4).equals(".map")) {
-				byte[] temp=new byte[1];
-				temp[0]=(byte)0x00;
+			if(!(path.substring(path.length()-4).equalsIgnoreCase(".map") || path.substring(path.length()-4).equalsIgnoreCase(".vmf"))) {
+				byte[] temp= { (byte)0x00 };
 				entityWriter.write(temp); // The entities lump always ends with a 00 byte,
 				                          // otherwise the game engine could start reading into
 				                          // the next lump, looking for another entity. It's

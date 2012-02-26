@@ -3,7 +3,7 @@
 // This class holds data on ONE plane. It's only really useful when
 // used in an array along with many others. Each piece of data has
 // its own variable.
-
+// With help from Alex "UltimateSniper" Harrod
 public class Plane {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
@@ -19,8 +19,7 @@ public class Plane {
 	
 	// This one takes the components separate and in the correct data type
 	public Plane(float inA, float inB, float inC, float inDist) {
-		normal=new Vector3D(inA, inB, inC);
-		dist=(double)inDist;
+		new Plane((double)inA, (double)inB, (double)inC, (double)inDist);
 	}
 	
 	public Plane(double inA, double inB, double inC, double inDist) {
@@ -28,6 +27,26 @@ public class Plane {
 		dist=inDist;
 	}
 	
+	public Plane(Vector3D normal, double dist) {
+		normal=new Vector3D(normal);
+		this.dist=dist;
+	}
+	
+	public Plane(Plane in) {
+		normal = new Vector3D(in.getNormal());
+		dist = in.getDist();
+	}
+	// Takes 3 vertices, which define the plane.
+	public Plane(Vector3D a, Vector3D b, Vector3D c) {
+		normal = a.subtract(c).cross(a.subtract(b));
+		normal = normal.scale(1 / normal.getLength());
+		dist = a.dot(normal);
+	}
+	public Plane(Vector3D[] in) {
+		normal = in[A].subtract(in[C]).cross(in[A].subtract(in[B]));
+		normal = normal.scale(1 / normal.getLength());
+		dist = in[A].dot(normal);
+	}
 	public Plane(float[] inNormal, float inDist) {
 		normal=new Vector3D(inNormal[A], inNormal[B], inNormal[C]);
 		dist=(double)inDist;
@@ -36,18 +55,6 @@ public class Plane {
 	public Plane(Vector3D normal, float dist) {
 		this.normal=normal;
 		this.dist=(double)dist;
-	}
-	
-	public Plane(Vector3D normal, double dist) {
-		this.normal=normal;
-		this.dist=dist;
-	}
-	
-	// Takes 3 vertices, which define the plane.
-	public Plane(Vector3D a, Vector3D b, Vector3D c) {
-		normal = b.subtract(a).cross(c.subtract(a));
-		normal = normal.scale(1 / normal.getLength());
-		dist = a.dot(normal);
 	}
 	
 	// Takes an array of bytes (as if read directly from a file) and reads them directly into values.
@@ -69,13 +76,14 @@ public class Plane {
 		}
 	}
 	
-	// Takes a plane.
-	public Plane(Plane in) {
-		normal = new Vector3D(in.getNormal());
-		dist = in.getDist();
-	}
-	
 	// METHODS
+	
+	/// Returns:	Whether this plane is parallel to, faces the same direction, and has the same distance as, the given plane.
+	public boolean equals(Plane in) {
+		// Use Cross-Product; if 0, parallel. Must face same direction, have parallel normals, and identical distances.
+		Vector3D inNorm = in.getNormal();
+		return (normal.dot(inNorm) > 0 && normal.getY()*inNorm.getZ() == normal.getZ()*inNorm.getY() && normal.getX()*inNorm.getZ() == normal.getZ()*inNorm.getX() && normal.getX()*inNorm.getY() == normal.getY()*inNorm.getX() && dist == in.getDist());
+	}
 	
 	/// Returns:	Signed distance from this plane to given vertex.
 	public double distance(Vector3D to) {

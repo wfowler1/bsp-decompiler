@@ -1,4 +1,4 @@
-// BSPFileFilter class
+// LOGFileFilter class
 
 // Used by the GUI to add a file filter to the JFileChooser dialog box.
 // This is ridiculous, I shouldn't have to create a class for a file filter.
@@ -6,8 +6,8 @@
 import javax.swing.*;
 import java.io.File;
 
-public class BSPFileFilter extends javax.swing.filechooser.FileFilter {
-	private String description = "Binary Space Partition Map File (*.BSP)";
+public class LOGFileFilter extends javax.swing.filechooser.FileFilter {
+	private String description = "Log File (*.LOG)";
 
 	public boolean accept(File file) {
 		if (file.isDirectory()) {
@@ -15,15 +15,15 @@ public class BSPFileFilter extends javax.swing.filechooser.FileFilter {
 		} else {
 			if (file.isFile()) {
 				try { // Avoid StringIndexOutOfBoundsExceptions
-					if(file.getName().substring(file.getName().length()-4).equalsIgnoreCase(".BSP")) {
-						return true; // Return true if the last four characters in the filename are ".BSP", not case sensitive
+					if(file.getName().substring(file.getName().length()-4).equalsIgnoreCase(".LOG")) {
+						return true; // Return true if the last four characters in the filename are ".LOG", not case sensitive
 					}
 				} catch(java.lang.StringIndexOutOfBoundsException e) {
 					return false;
 				}
 			}
 		}
-		return false; // It's not a dir or a BSP file
+		return false; // It's not a dir or a LOG file
 	}
 
 	public String getDescription() {

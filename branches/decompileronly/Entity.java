@@ -47,6 +47,9 @@ public class Entity {
 				}
 			} catch(StringIndexOutOfBoundsException e) { // for cases where the whole String is shorter than
 				;                                         // the name of the attribute we're looking for. Do nothing.
+			} catch(java.lang.NullPointerException e ) {
+				System.out.println(toString());
+				throw new java.lang.NullPointerException();
 			}
 		}
 		if (found) {
@@ -83,10 +86,46 @@ public class Entity {
 		numAttributes++;
 	}
 	
+	// addAttributeInside(String)
+	// Does the same as above, but adds the attribute within the outermost pair
+	// of { } braces, if the entity has the braces as attributes
+	public void addAttributeInside(String in) {
+		String[] newList=new String[numAttributes+1];
+		int numopen=0;
+		boolean added=false;
+		for(int i=0;i<numAttributes;i++) { // copy the current attribute list
+			if(attributes[i].equals("{")) {
+				numopen++;
+			}
+			if(attributes[i].equals("}")) {
+				if(numopen==1) {
+					newList[i]=in;
+					added=true;
+				} else {
+					numopen--;
+				}
+			}
+			if(!added) {
+				newList[i]=attributes[i];
+			} else {
+				newList[i+1]=attributes[i];
+			}
+		}
+		attributes=newList;
+		numAttributes++;
+	}
+	
 	// addAttribute(String, String)
 	// Adds the specified attribute with the specified value to the list.
 	public void addAttribute(String attribute, String value) {
 		addAttribute("\""+attribute+"\" \""+value+"\"");
+	}
+	
+	// addAttributeInside(String, String)
+	// Adds the specified attribute with the specified value to the list, within the outermost
+	// set of { } braces.
+	public void addAttributeInside(String attribute, String value) {
+		addAttributeInside("\""+attribute+"\" \""+value+"\"");
 	}
 	
 	// +toByteArray()
@@ -100,21 +139,30 @@ public class Entity {
 	// This works much faster than toString, especially for entities with a LOT
 	// of data. All the String concatenation in toString was building up, with
 	// thousands of Strings to stick together and
-	public byte[] toByteArray() {
+	public byte[] toByteArray(boolean tabs) {
 		byte[] out;
 		int len=0;
 		// Get the lengths of all attributes together
 		for(int i=0;i<attributes.length;i++) {
-			len+=attributes[i].length()+1; // Gonna need a newline after each attribute or they'll get jumbled together
+			len+=attributes[i].length()+2; // Gonna need a newline after each attribute or they'll get jumbled together
+			if(!attributes[i].equals("{") && !attributes[i].equals("}") && tabs) {
+				len++; // For the tab
+			}
 		}
 		out=new byte[len];
 		int offset=0;
 		for(int i=0;i<attributes.length;i++) { // For each attribute
+			if(!attributes[i].equals("{") && !attributes[i].equals("}") && tabs) {
+				out[offset]=0x09;
+				offset++;
+			}
 			for(int j=0;j<attributes[i].length();j++) { // Then for each byte in the attribute
 				out[j+offset]=(byte)attributes[i].charAt(j); // add it to the output array
 			}
-			out[offset+attributes[i].length()]=(byte)0x0A;
+			out[offset+attributes[i].length()]=(byte)0x0D;
 			offset+=attributes[i].length()+1;
+			out[offset]=(byte)0x0A;
+			offset++;
 		}
 		return out;
 	}
@@ -129,10 +177,14 @@ public class Entity {
 	public String toString() {
 		String out="";
 		for(int i=0;i<attributes.length;i++) {
-			if(!(attributes[i].charAt(0)=='}')) {
-				out+=attributes[i]+"\n";
-			} else { // Character is '}'
-				out+=attributes[i];
+			try {
+				if(!(attributes[i].charAt(0)=='}')) {
+					out+=attributes[i]+""+(char)0x0D+(char)0x0A;
+				} else { // Character is '}'
+					out+=attributes[i];
+				}
+			} catch(java.lang.NullPointerException e) {
+				out+="null "+(char)0x0D+(char)0x0A;
 			}
 		}
 		return out;
@@ -157,7 +209,7 @@ public class Entity {
 	// This input String CAN include the { and } from the entity structure, in that it 
 	// won't cause any errors in the program. However if and when you want to write the
 	// entities back into a lump you must remember whether you included them or not. The
-	// behavior of the Lump00 class is not to include them.
+	// behavior of the Entities class is to include them.
 	public void setData(String in) {
 		Scanner reader=new Scanner(in);
 		reader.useDelimiter((char)0x0A+"");
@@ -202,6 +254,8 @@ public class Entity {
 				}
 			} catch(StringIndexOutOfBoundsException e) { // for cases where the whole String is shorter than
 				;                                         // the name of the attribute we're looking for. Do nothing.
+			} catch(java.lang.NullPointerException e) {
+				System.out.println(toString());
 			}
 		}
 		return output;
@@ -246,7 +300,7 @@ public class Entity {
 			}
 		}
 		if(!done) {
-			addAttribute(attribute, value);
+			addAttributeInside(attribute, value);
 		}
 	}
 	
@@ -259,6 +313,22 @@ public class Entity {
 		if(!getAttribute("origin").equals("")) {
 			String origin=getAttribute("origin");
 			Scanner numGetter=new Scanner(origin);
+			for(int i=0;i<3&&numGetter.hasNext();i++) {
+				output[i]=numGetter.nextDouble();
+			}
+		}
+		return output;
+	}
+	
+	// getAngles()
+	// Returns the three components of the entity's "angles" attribute as an array
+	// of three doubles. Since everything is a string anyway, I can be as precise
+	// as I want.
+	public double[] getAngles() {
+		double[] output=new double[3]; // initializes to {0,0,0}
+		if(!getAttribute("angles").equals("")) {
+			String angles=getAttribute("angles");
+			Scanner numGetter=new Scanner(angles);
 			for(int i=0;i<3&&numGetter.hasNext();i++) {
 				output[i]=numGetter.nextDouble();
 			}

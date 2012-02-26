@@ -91,6 +91,10 @@ public class BSPPlane {
 		return (float)plane.getDist();
 	}
 	
+	public Plane getPlane() {
+		return plane;
+	}
+	
 	public int getType() {
 		return type;
 	}

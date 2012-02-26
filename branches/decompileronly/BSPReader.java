@@ -84,7 +84,7 @@ public class BSPReader {
 						case 29: // Quake
 						case 30: // Half-life
 							Window.window.println("Sorry, no Quake/Half-life support (yet)!");
-							Window.btn_decomp.setEnabled(true);
+							Window.setDecompileButtonEnabled(true);
 							break;
 						case 38: // Quake 2
 							Window.window.println("BSP v38 found (Quake 2)");
@@ -359,15 +359,15 @@ public class BSPReader {
 							
 							BSP46.printBSPReport();
 							
-							Window.btn_decomp.setEnabled(true);
+							Window.setDecompileButtonEnabled(true);
 							break;
 						case 47: // RTC Wolfenstein, I believe it's almost identical to Q3
 							Window.window.println("Sorry, no Wolfenstein support (yet)!");
-							Window.btn_decomp.setEnabled(true);
+							Window.setDecompileButtonEnabled(true);
 							break;
 						default:
 							Window.window.println("I don't know what kind of BSP this is! Please post an issue on the bug tracker!");
-							Window.btn_decomp.setEnabled(true);
+							Window.setDecompileButtonEnabled(true);
 					}
 				}
 			}

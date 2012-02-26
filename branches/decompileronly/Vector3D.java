@@ -2,7 +2,8 @@
 
 // Holds a double3, for a point.
 // Incidentally, I'd LOVE to use 128-bit quads for this, but no such thing exists in Java.
-
+// Would take waaaayy too much time to process decimals...
+// With help from Alex "UltimateSniper" Harrod
 public class Vector3D {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
@@ -159,6 +160,32 @@ public class Vector3D {
 		return point[Z];
 	}
 	
+	// The getRounded accessors will round the doubles to a whole integer, if and only if
+	// they are within .01 of being a round integer. Otherwise these acts just like the others.
+	public double getRoundedX() {
+		if(Math.abs(point[X] - Math.round(point[X])) > 0.01) {
+			return point[X];
+		} else {
+			return (double)Math.round(point[X]);
+		}
+	}
+	
+	public double getRoundedY() {
+		if(Math.abs(point[Y] - Math.round(point[Y])) > 0.01) {
+			return point[Y];
+		} else {
+			return (double)Math.round(point[Y]);
+		}
+	}
+	
+	public double getRoundedZ() {
+		if((Math.abs(point[Z] - Math.round(point[Z])) > 0.01)) {
+			return point[Z];
+		} else {
+			return (double)Math.round(point[Z]);
+		}
+	}
+	
 	public float getXF() {
 		return (float)point[X];
 	}
@@ -175,6 +202,10 @@ public class Vector3D {
 		return point;
 	}
 	
+	public float[] getPointF() {
+		return new float[] { (float)point[0] , (float)point[1] , (float)point[2] };
+	}
+	
 	public void setX(double in) {
 		point[X]=in;
 	}
@@ -189,9 +220,7 @@ public class Vector3D {
 	
 	public void setPoint(double[] in) {
 		try {
-			point[X]=in[X];
-			point[Y]=in[Y];
-			point[Z]=in[Z];
+			point = new double[] { in[0] , in[1] , in[2] };
 		} catch(java.lang.ArrayIndexOutOfBoundsException e) {
 			;
 		}
