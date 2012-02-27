@@ -6,7 +6,7 @@ public class GenericMethods {
 	// Calculates 3 face corners, to be used to define the plane in ASCII format.
 	/// Author:		UltimateSniper
 	/// Returns:	List of normalised plane vertex triplets.
-	public static Vector3D[][] CalcPlanePoints(Plane[] planes) {
+	public static Vector3D[][] CalcPlanePoints(Plane[] planes, float pmprecision) {
 		Vector3D[][] out = new Vector3D[planes.length][];
 		// For each triplet of planes, find intersect point.
 		for (int iP1 = 0; iP1 < planes.length; iP1++) {
@@ -18,7 +18,7 @@ public class GenericMethods {
 						// If point is not null, test if point is behind/on all planes (if so, it is a corner).
 						for (int iTest = 0; iTest < planes.length; iTest++) {
 							if (!planes[iTest].getNormal().equals(planes[iP1].getNormal()) && !planes[iTest].getNormal().equals(planes[iP2].getNormal()) && !planes[iTest].getNormal().equals(planes[iP3].getNormal())) {
-								if (planes[iTest].distance(testV) > 0.01) {
+								if (planes[iTest].distance(testV) > pmprecision) {
 									isCorner = false;
 									break;
 								}
@@ -29,7 +29,7 @@ public class GenericMethods {
 							for (int iChk = 0; iChk < planes.length; iChk++) {
 								// If on this plane, and plane's vertex triplet missing min 1 point (and does not already have this point), add it.
 								double dist = planes[iChk].distance(testV);
-								if (dist < 0.01 && dist > -0.01) {
+								if (dist <= pmprecision && dist >= -pmprecision) {
 									// If first point on this plane, must create array.
 									if (out[iChk] == null) {
 										out[iChk] = new Vector3D[] { new Vector3D(testV) , null , null };
@@ -52,7 +52,7 @@ public class GenericMethods {
 												}
 												break;
 											// Else, if this list already has this point, skip out (to avoid doubling it).
-											} else if (out[iChk][iChk2].getX() < testV.getX() + 0.01 && out[iChk][iChk2].getX() > testV.getX() - 0.01 && out[iChk][iChk2].getY() < testV.getY() + 0.01 && out[iChk][iChk2].getY() > testV.getY() - 0.01 && out[iChk][iChk2].getZ() < testV.getZ() + 0.01 && out[iChk][iChk2].getZ() > testV.getZ() - 0.01) {
+											} else if (out[iChk][iChk2].getX() <= testV.getX() + pmprecision && out[iChk][iChk2].getX() >= testV.getX() - pmprecision && out[iChk][iChk2].getY() <= testV.getY() + pmprecision && out[iChk][iChk2].getY() >= testV.getY() - pmprecision && out[iChk][iChk2].getZ() <= testV.getZ() + pmprecision && out[iChk][iChk2].getZ() >= testV.getZ() - pmprecision) {
 												break;
 											}
 										}
@@ -71,42 +71,24 @@ public class GenericMethods {
 	// Use if brush has at least 1 triangle (this can be used as a point to normalise other planes).
 	/// Author:		UltimateSniper
 	/// Returns:	Complete list of normalised planes.
-	public static Plane[] SimpleCorrectPlanes(Plane[] allplanes, Vector3D[] triangle) {
+	public static Plane[] SimpleCorrectPlanes(Plane[] allplanes, Vector3D[] triangle, float pmprecision) {
 		// Find midpoint of triangle, and use that to normalise all other planes.
 		double[] normPoint = new double[] { (triangle[0].getX() + triangle[1].getX() + triangle[2].getX()) / 3.0 , (triangle[0].getY() + triangle[1].getY() + triangle[2].getY()) / 3.0 , (triangle[0].getZ() + triangle[1].getZ() + triangle[2].getZ()) / 3.0 };
 		for (int iPlane = 0; iPlane < allplanes.length; iPlane++) {
 			double dist = allplanes[iPlane].distance(normPoint);
-			if (dist > 0.01) {
+			if (dist > pmprecision) {
 				allplanes[iPlane].flip();
-			} else if (dist <= 0.01 && dist >= -0.01) {
+			} else if (dist <= pmprecision && dist >= -pmprecision) {
 				allplanes[iPlane] = new Plane(triangle[2], triangle[0], triangle[1]);
 			}
 		}
 		return allplanes;
 	}
 	
-	// Small generic class to check an array for a plane/vertex.
-	public static int indexOf(Plane[] haystack, Plane needle) {
-		for (int i = 0; i < haystack.length; i++) {
-			if (haystack[i].getNormal().equals(needle.getNormal()) && haystack[i].getDist() == needle.getDist()) {
-				return i;
-			}
-		}
-		return -1;
-	}
-	public static int indexOf(Vector3D[] haystack, Vector3D needle) {
-		for (int i = 0; i < haystack.length; i++) {
-			if (haystack[i].equals(needle)) {
-				return i;
-			}
-		}
-		return -1;
-	}
-	
 	// Use if brush has no triangles.
 	/// Author:		UltimateSniper
 	/// Returns:	Ordered list of normalised vertex triplets (ready to feed in to map).
-	public static Vector3D[][] AdvancedCorrectPlanes(Plane[] allplanes) throws java.lang.ArrayIndexOutOfBoundsException {
+	public static Vector3D[][] AdvancedCorrectPlanes(Plane[] allplanes, float pmprecision) throws java.lang.ArrayIndexOutOfBoundsException {
 		// Method:
 		//1. Collect all vertices created by plane intercepts.
 		//2. Create arrays of these vertices and inputted planes, to access planes via points they intersect and vice versa.
@@ -131,7 +113,7 @@ public class GenericMethods {
 					if (!testV.equals(Vector3D.undefined)) {
 						boolean hasVtx = false;
 						for (int iVtx = 0; iVtx < iallverts; iVtx++) {
-							if (allverts[iVtx].getX() + 0.01 > testV.getX() && allverts[iVtx].getX() - 0.01 < testV.getX() && allverts[iVtx].getY() + 0.01 > testV.getY() && allverts[iVtx].getY() - 0.01 < testV.getY() && allverts[iVtx].getZ() + 0.01 > testV.getZ() && allverts[iVtx].getZ() - 0.01 < testV.getZ()) {
+							if (allverts[iVtx].getX() + pmprecision > testV.getX() && allverts[iVtx].getX() - pmprecision < testV.getX() && allverts[iVtx].getY() + pmprecision > testV.getY() && allverts[iVtx].getY() - pmprecision < testV.getY() && allverts[iVtx].getZ() + pmprecision > testV.getZ() && allverts[iVtx].getZ() - pmprecision < testV.getZ()) {
 								hasVtx = true;
 								break;
 							}
@@ -155,10 +137,10 @@ public class GenericMethods {
 			byte[] PlaneSides = new byte[allplanes.length];
 			for (int iVP = 0; iVP < allplanes.length; iVP++) {
 				double dist = allplanes[iVP].distance(allverts[iV]);
-				if (dist < 0.01 && dist > -0.01) {
+				if (dist < pmprecision && dist > -pmprecision) {
 					PlaneSides[iVP] = 0;
 				} else {
-					PlaneSides[iVP] = ((dist >= 0.01) ? (byte)1 : (byte)-1);
+					PlaneSides[iVP] = ((dist >= pmprecision) ? (byte)1 : (byte)-1);
 				}
 			}
 			VertPlaneSides[iV] = PlaneSides;
@@ -508,3 +490,4 @@ public class GenericMethods {
 		return plane;
 	}
 }
+		

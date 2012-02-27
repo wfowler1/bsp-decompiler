@@ -67,6 +67,7 @@ public class Window extends JPanel implements ActionListener {
 	private static JRadioButton rad_MAP;
 	private static JButton btn_dumplog;
 	private static JProgressBar progressBar;
+	private static JProgressBar totalProgressBar;
 	
 	// Private variables for a Window object
 	private boolean vertexDecomp=true;
@@ -257,12 +258,25 @@ public class Window extends JPanel implements ActionListener {
 		barConstraints.fill = GridBagConstraints.NONE;
 		barConstraints.gridx = 1;
 		barConstraints.gridy = 5;
-		barConstraints.gridwidth = 3;
+		barConstraints.gridwidth = 2;
 		barConstraints.gridheight = 1;
 		pane.add(progressBar, barConstraints);
 		progressBar.setStringPainted(true);
 		progressBar.setValue(0);
 		progressBar.setString("0%");
+		
+		totalProgressBar = new JProgressBar(0, 1);
+		
+		GridBagConstraints totalBarConstraints = new GridBagConstraints();
+		totalBarConstraints.fill = GridBagConstraints.NONE;
+		totalBarConstraints.gridx = 0;
+		totalBarConstraints.gridy = 5;
+		totalBarConstraints.gridwidth = 1;
+		totalBarConstraints.gridheight = 1;
+		pane.add(totalProgressBar, totalBarConstraints);
+		totalProgressBar.setStringPainted(true);
+		totalProgressBar.setValue(0);
+		totalProgressBar.setString("Total: 0%");
 		
 		btn_dumplog = new JButton("Save log");
 		
@@ -445,6 +459,7 @@ public class Window extends JPanel implements ActionListener {
 			}
 		}
 		File[] BSPFiles=new File[numFiles];
+		setTotalProgress(0, BSPFiles.length);
 		for(int i=0;i<numFiles;i++) {
 			BSPFiles[i]=new File(fileArray[i]);
 		}
@@ -473,14 +488,26 @@ public class Window extends JPanel implements ActionListener {
 		}
 	}
 	
-	protected static void setProgress(int in, int max) {
+	protected static void setProgress(int in, int max, String map) {
 		if(progressBar!=null) {
 			progressBar.setMaximum(max);
 			progressBar.setValue(in);
 			if(in==max) {
 				progressBar.setString("Done!");
 			} else {
-				progressBar.setString((int)((in/(float)max)*100)+"%");
+				progressBar.setString(map+" "+(int)((in/(float)max)*100)+"%");
+			}
+		}
+	}
+	
+	protected static void setTotalProgress(int in, int max) {
+		if(totalProgressBar!=null) {
+			totalProgressBar.setMaximum(max);
+			totalProgressBar.setValue(in);
+			if(in==max) {
+				totalProgressBar.setString("Done!");
+			} else {
+				totalProgressBar.setString("Total: "+(int)((in/(float)max)*100)+"%");
 			}
 		}
 	}

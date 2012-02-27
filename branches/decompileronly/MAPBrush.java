@@ -16,6 +16,8 @@ public class MAPBrush {
 	private double[] origin;
 	private double planePointCoef;
 	int entnum;
+	
+	private static final float PRECISION=(float)0.01;
 		
 	private int brushNum; // Set this to which brush this is; not really 100% necessary either
 	
@@ -104,10 +106,16 @@ public class MAPBrush {
 	public void correctPlanes() {
 		if(hasGoodSide() && hasBadSide()) {
 			Vector3D[] goodSide=triangles[getATriangle()];
-			planes=GenericMethods.SimpleCorrectPlanes(planes, goodSide);
+			planes=GenericMethods.SimpleCorrectPlanes(planes, goodSide, PRECISION);
+			for(int i=0;i<sides.length;i++) {
+				if(!goodSides[i]) {
+					triangles[i]=GenericMethods.extrapPlanePoints(planes[i], planePointCoef);
+					sides[i].setPlane(triangles[i]);
+				}
+			}
 		} else {
 			if(hasBadSide()) {
-				triangles=GenericMethods.AdvancedCorrectPlanes(planes);
+				triangles=GenericMethods.AdvancedCorrectPlanes(planes, PRECISION);
 				if(triangles.length<sides.length) {
 					Window.window.println("Entity "+entnum+" Brush "+brushNum+" with "+planes.length+" planes produced "+triangles.length+" triangles!");
 					triangles=new Vector3D[sides.length][3];
@@ -127,7 +135,7 @@ public class MAPBrush {
 	// Only run this AFTER ensuring plane flips!
 	public void recalcCorners() {
 		if(hasGoodSide() && hasBadSide()) { // Need to check for both of these, otherwise advanced plane flip was run and corners are already known!
-			Vector3D[][] newTriangles=GenericMethods.CalcPlanePoints(planes); // Either that or every side was already defined by vertices.
+			Vector3D[][] newTriangles=GenericMethods.CalcPlanePoints(planes, PRECISION); // Either that or every side was already defined by vertices.
 			for(int i=0;i<triangles.length;i++) {
 				if(!goodSides[i]) {
 					triangles[i]=newTriangles[i];

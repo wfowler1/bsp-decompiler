@@ -54,17 +54,17 @@ public class DecompilerThread implements Runnable {
 					Decompiler decompiler=null;
 					switch(reader.getVersion()) {
 						case 38:
-							Window.setProgress(0, reader.BSP38.getBrushes().getNumElements()+reader.BSP38.getEntities().getNumElements());
+							Window.setProgress(0, reader.BSP38.getBrushes().getNumElements()+reader.BSP38.getEntities().getNumElements(), BSPs[i].getName());
 							decompiler = new Decompiler(reader.BSP38, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF, planePointCoef);
 							decompiler.decompile();
 							break;
 						case 42:
-							Window.setProgress(0, reader.BSP42.getBrushes().getNumElements()+reader.BSP42.getEntities().getNumElements());
+							Window.setProgress(0, reader.BSP42.getBrushes().getNumElements()+reader.BSP42.getEntities().getNumElements(), BSPs[i].getName());
 							decompiler = new Decompiler(reader.BSP42, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF, planePointCoef);
 							decompiler.decompile();
 							break;
 						case 46:
-							Window.setProgress(0, reader.BSP46.getBrushes().getNumElements()+reader.BSP46.getEntities().getNumElements());
+							Window.setProgress(0, reader.BSP46.getBrushes().getNumElements()+reader.BSP46.getEntities().getNumElements(), BSPs[i].getName());
 							decompiler = new Decompiler(reader.BSP46, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF, planePointCoef);
 							decompiler.decompile();
 							break;
@@ -75,6 +75,7 @@ public class DecompilerThread implements Runnable {
 					Window.setDecompileButtonEnabled(true);
 				}
 			}
+			Window.setTotalProgress(i+1, BSPs.length);
 		}
 		Window.setDecompileButtonEnabled(true); // Once the thread is finished running, reenable the Decompile button
 		r.gc(); // Now the program has time to rest while the user does whatever. Collect garbage.

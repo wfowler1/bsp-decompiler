@@ -154,7 +154,7 @@ public class Decompiler {
 								decompileBrush42(BSP42.getBrushes().getBrush(BSP42.getMarkBrushes().getInt(firstBrushIndex+k)), i); // Decompile the brush
 								numBrshs++;
 								numTotalItems++;
-								Window.setProgress(numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements());
+								Window.setProgress(numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements(), BSP42.getMapName());
 							}
 						}
 					}
@@ -213,7 +213,7 @@ public class Decompiler {
 					for(int j=0;j<6;j++) {
 						MAPBrushSide currentEdge;
 						if(toVMF) {
-							currentEdge=new MAPBrushSide(planes[j], "special/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+							currentEdge=new MAPBrushSide(planes[j], "tools/toolsorigin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
 						} else {
 							currentEdge=new MAPBrushSide(planes[j], "special/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
 						}
@@ -236,7 +236,7 @@ public class Decompiler {
 				mapFile.getEntity(i).deleteAttribute("origin");
 			}
 			numTotalItems++;
-			Window.setProgress(numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements());
+			Window.setProgress(numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements(), BSP42.getMapName());
 			if(toVMF) { // correct some entities to make source ports easier
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("light_spot")) {
 					 mapFile.getEntity(i).setAttribute("pitch", new Double(mapFile.getEntity(i).getAngles()[0]).toString());
@@ -316,7 +316,7 @@ public class Decompiler {
 							if(texture.equalsIgnoreCase("special/sky")) {
 								texture="tools/toolsskybox";
 							} else {
-								if(texture.equalsIgnoreCase("special/playertrigger")) {
+								if(texture.equalsIgnoreCase("special/trigger")) {
 									texture="tools/toolstrigger";
 								} else {
 									if(texture.equalsIgnoreCase("special/playerclip")) {
