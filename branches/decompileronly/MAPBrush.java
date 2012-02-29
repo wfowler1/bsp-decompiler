@@ -15,7 +15,8 @@ public class MAPBrush {
 	private int id;
 	private double[] origin;
 	private double planePointCoef;
-	int entnum;
+	private int entnum;
+	private boolean isDetailBrush;
 	
 	private static final float PRECISION=(float)0.01;
 		
@@ -47,7 +48,7 @@ public class MAPBrush {
 		this.id=id;
 	}
 	
-	public MAPBrush(int num, int id, int entnum, double[] origin, double planePointCoef) {
+	public MAPBrush(int num, int id, int entnum, double[] origin, double planePointCoef, boolean isDetailBrush) {
 		sides=new MAPBrushSide[0];
 		goodSides=new boolean[0];
 		planes=new Plane[0];
@@ -57,6 +58,7 @@ public class MAPBrush {
 		this.entnum=entnum;
 		this.origin=origin;
 		this.planePointCoef=planePointCoef;
+		this.isDetailBrush=isDetailBrush;
 	}
 	
 	// METHODS
@@ -148,6 +150,9 @@ public class MAPBrush {
 	public String toString() {
 		Vector3D originVector=new Vector3D(origin);
 		String out="{ // Brush "+brushNum+(char)0x0D+(char)0x0A;
+		if(isDetailBrush) {
+			out+="\"BRUSHFLAGS\" \"DETAIL\""+(char)0x0D+(char)0x0A;
+		}
 		for(int i=0;i<sides.length;i++) {
 			sides[i].shift(originVector);
 			out+=sides[i].toString()+(char)0x0D+(char)0x0A;
@@ -174,6 +179,9 @@ public class MAPBrush {
 	public String toRoundString() {
 		Vector3D originVector=new Vector3D(origin);
 		String out="{ // Brush "+brushNum+(char)0x0D+(char)0x0A;
+		if(isDetailBrush) {
+			out+="\"BRUSHFLAGS\" \"DETAIL\""+(char)0x0D+(char)0x0A;
+		}
 		for(int i=0;i<sides.length;i++) {
 			sides[i].shift(originVector);
 			out+=sides[i].toRoundString()+(char)0x0D+(char)0x0A;
@@ -240,5 +248,9 @@ public class MAPBrush {
 	
 	public boolean sideIsGood(int i) {
 		return goodSides[i];
+	}
+	
+	public boolean isDetailBrush() {
+		return isDetailBrush;
 	}
 }

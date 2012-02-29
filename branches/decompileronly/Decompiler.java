@@ -123,7 +123,7 @@ public class Decompiler {
 		int numTotalItems=0;
 		// Then I need to go through each entity and see if it's brush-based.
 		// Worldspawn is brush-based as well as any entity with model *#.
-		for(int i=0;i<mapFile.getNumElements();i++) { // For each entity
+		for(int i=0;i<BSP42.getEntities().getNumElements();i++) { // For each entity
 			if(toVMF) {
 				mapFile.getEntity(i).setAttribute("id", new Integer(++numIDs).toString());
 			}
@@ -142,6 +142,12 @@ public class Decompiler {
 				int firstLeaf=BSP42.getModels().getModel(currentModel).getLeaf();
 				int numLeaves=BSP42.getModels().getModel(currentModel).getNumLeafs();
 				boolean[] brushesUsed=new boolean[BSP42.getBrushes().getNumElements()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
+				boolean[] detailBrush=new boolean[BSP42.getBrushes().getNumElements()];
+				for(int j=0;j<BSP42.getBrushes().getNumElements();j++) {	// For every brush
+					if(BSP42.getBrushes().getBrush(j).getAttributes()[1]==0x02) { // This attribute seems to indicate no affect on vis
+						detailBrush[j]=true; // Flag the brush as detail
+					}
+				}
 				numBrshs=0;
 				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
 					v42Leaf currentLeaf=BSP42.getLeaves().getLeaf(j+firstLeaf);
@@ -151,7 +157,11 @@ public class Decompiler {
 						for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
 							if(!brushesUsed[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)]) { // If the current brush has NOT been used in this entity
 								brushesUsed[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)]=true;
-								decompileBrush42(BSP42.getBrushes().getBrush(BSP42.getMarkBrushes().getInt(firstBrushIndex+k)), i); // Decompile the brush
+								if(detailBrush[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)] && currentModel==0) {
+									decompileBrush42(BSP42.getBrushes().getBrush(BSP42.getMarkBrushes().getInt(firstBrushIndex+k)), i, true); // Decompile the brush, as not detail
+								} else {
+									decompileBrush42(BSP42.getBrushes().getBrush(BSP42.getMarkBrushes().getInt(firstBrushIndex+k)), i, false); // Decompile the brush, as detail
+								}
 								numBrshs++;
 								numTotalItems++;
 								Window.setProgress(numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements(), BSP42.getMapName());
@@ -166,7 +176,7 @@ public class Decompiler {
 				// by the "origin" attribute.
 				if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
 					MAPBrush newOriginBrush;
-					newOriginBrush=new MAPBrush(numBrshs, ++numIDs, i, new double[3], 0);
+					newOriginBrush=new MAPBrush(numBrshs, ++numIDs, i, new double[3], 0, false);
 					numBrshs++;
 					Vector3D[][] planes=new Vector3D[6][3]; // Six planes for a cube brush, three vertices for each plane
 					double[][] textureS=new double[6][3];
@@ -237,7 +247,7 @@ public class Decompiler {
 			}
 			numTotalItems++;
 			Window.setProgress(numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements(), BSP42.getMapName());
-			if(toVMF) { // correct some entities to make source ports easier
+			if(toVMF) { // correct some entities to make source ports easier, TODO add more
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("light_spot")) {
 					 mapFile.getEntity(i).setAttribute("pitch", new Double(mapFile.getEntity(i).getAngles()[0]).toString());
 					 mapFile.getEntity(i).setAttribute("_inner_cone", mapFile.getEntity(i).getAttribute("_cone")); 
@@ -262,14 +272,14 @@ public class Decompiler {
 		Window.window.println("Process completed!");
 	}
 	
-	// -decompileBrush42(Brush, int)
+	// -decompileBrush42(Brush, int, boolean)
 	// Decompiles the Brush and adds it to entitiy #currentEntity as .MAP data.
-	private void decompileBrush42(v42Brush brush, int currentEntity) {
+	private void decompileBrush42(v42Brush brush, int currentEntity, boolean isDetailBrush) {
 		double[] origin=mapFile.getEntity(currentEntity).getOrigin();
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
 		MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
-		MAPBrush mapBrush = new MAPBrush(numBrshs, ++numIDs, currentEntity, origin, planePointCoef);
+		MAPBrush mapBrush = new MAPBrush(numBrshs, ++numIDs, currentEntity, origin, planePointCoef, isDetailBrush);
 		int numRealFaces=0;
 		for(int l=0;l<numSides;l++) { // For each side of the brush
 			Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
@@ -375,14 +385,30 @@ public class Decompiler {
 			}
 		}
 		
+		// This adds the brush we've been finding and creating to
+		// the current entity as an attribute. The way I've coded
+		// this whole program and the entities parser, this shouldn't
+		// cause any issues at all.		
 		if(toVMF) {
-			if(roundNums) {
-				mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toRoundVMFBrush());
+			if(isDetailBrush) {
+				Entity newDetailEntity=new Entity("{"+(char)0x0A+"}");
+				if(roundNums) {
+					newDetailEntity.addAttributeInside(mapBrush.toRoundVMFBrush());
+				} else {
+					newDetailEntity.addAttributeInside(mapBrush.toVMFBrush());
+				}
+				newDetailEntity.setAttribute("id", new Integer(++numIDs).toString());
+				newDetailEntity.setAttribute("classname", "func_detail");
+				mapFile.add(newDetailEntity);
 			} else {
-				mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toVMFBrush()); // This adds the brush we've been finding and creating to
-			}                                                                              // the current entity as an attribute. The way I've coded
-		} else {                                                                          // this whole program and the entities parser, this shouldn't
-			if(roundNums) {                                                                // cause any issues at all.
+				if(roundNums) {
+					mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toRoundVMFBrush());
+				} else {
+					mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toVMFBrush());
+				}
+			}
+		} else {
+			if(roundNums) {
 				mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toRoundString());
 			} else {
 				mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toString());

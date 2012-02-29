@@ -252,7 +252,7 @@ public class Entities {
 						entityWriter.write(temp);
 					}
 				}
-				entityWriter.write(entities[i].toByteArray(path.substring(path.length()-4).equals(".vmf")));
+				entityWriter.write(entities[i].toByteArray(path.substring(path.length()-4).equals(".vmf"), i));
 			}
 			if(!(path.substring(path.length()-4).equalsIgnoreCase(".map") || path.substring(path.length()-4).equalsIgnoreCase(".vmf"))) {
 				byte[] temp= { (byte)0x00 };

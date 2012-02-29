@@ -139,7 +139,7 @@ public class Entity {
 	// This works much faster than toString, especially for entities with a LOT
 	// of data. All the String concatenation in toString was building up, with
 	// thousands of Strings to stick together and
-	public byte[] toByteArray(boolean tabs) {
+	public byte[] toByteArray(boolean tabs, int entNum) {
 		byte[] out;
 		int len=0;
 		// Get the lengths of all attributes together
@@ -147,6 +147,11 @@ public class Entity {
 			len+=attributes[i].length()+2; // Gonna need a newline after each attribute or they'll get jumbled together
 			if(!attributes[i].equals("{") && !attributes[i].equals("}") && tabs) {
 				len++; // For the tab
+			} else {
+				if(attributes[i].equals("{") && !tabs) {
+					String temp=" // Entity "+entNum;
+					len+=temp.length();
+				}
 			}
 		}
 		out=new byte[len];
@@ -155,6 +160,10 @@ public class Entity {
 			if(!attributes[i].equals("{") && !attributes[i].equals("}") && tabs) {
 				out[offset]=0x09;
 				offset++;
+			} else {
+				if(attributes[i].equals("{") && !tabs) {
+					attributes[i]="{ // Entity "+entNum;
+				}
 			}
 			for(int j=0;j<attributes[i].length();j++) { // Then for each byte in the attribute
 				out[j+offset]=(byte)attributes[i].charAt(j); // add it to the output array

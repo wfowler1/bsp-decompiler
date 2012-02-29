@@ -67,7 +67,6 @@ public class GenericMethods {
 		return out;
 	}
 	
-	
 	// Use if brush has at least 1 triangle (this can be used as a point to normalise other planes).
 	/// Author:		UltimateSniper
 	/// Returns:	Complete list of normalised planes.
@@ -78,8 +77,10 @@ public class GenericMethods {
 			double dist = allplanes[iPlane].distance(normPoint);
 			if (dist > pmprecision) {
 				allplanes[iPlane].flip();
-			} else if (dist <= pmprecision && dist >= -pmprecision) {
-				allplanes[iPlane] = new Plane(triangle[2], triangle[0], triangle[1]);
+			} else {
+				if (dist <= pmprecision && dist >= -pmprecision) {
+					allplanes[iPlane] = new Plane(triangle[2], triangle[0], triangle[1]);
+				}
 			}
 		}
 		return allplanes;
