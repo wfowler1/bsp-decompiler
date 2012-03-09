@@ -159,7 +159,7 @@ public class Window extends JPanel implements ActionListener {
 		chk_calcVerts.addActionListener(this);
 		
 		chk_roundNums = new JCheckBox("Snap to coordinates");
-		chk_roundNums.setToolTipText("Uses whole numbers for results within .01 of a whole number, compensating for computer inaccuracies. May fix small fissures in brushwork, but may also cause them.");
+		chk_roundNums.setToolTipText("Snaps all vertices to nearest whole number, many times compensating for computer inaccuracies. May fix small fissures in brushwork, but may also cause problems.");
 		
 		GridBagConstraints RoundNumConstraints = new GridBagConstraints();
 		RoundNumConstraints.fill = GridBagConstraints.NONE;
@@ -294,9 +294,9 @@ public class Window extends JPanel implements ActionListener {
 	public Window(String[] args) {
 		System.out.println("BSP Decompiler by 005"); // This stuff only shows if run from console or cmd
 		System.out.println("With special help from Alex \"UltimateSniper\" Herrod\n");
-		String out=args[0];
+		String out="";
 		
-		for(int i=1;i<args.length;i++) {
+		for(int i=0;i<args.length;i++) {
 			try {
 				if(args[i].equalsIgnoreCase("-coef")) {
 					planePointCoef=Double.parseDouble(args[++i]);
@@ -333,7 +333,11 @@ public class Window extends JPanel implements ActionListener {
 			if(args[i].equalsIgnoreCase("-toMAP")) {
 				toVMF=false;
 			} else {
-				out+=","+args[i];
+				if(!out.equals("")) {
+					out+=","+args[i];
+				} else {
+					out=args[i];
+				}
 			}
 		}
 		startDecompilerThread(out);

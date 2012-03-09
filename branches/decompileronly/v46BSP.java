@@ -77,6 +77,19 @@ public class v46BSP {
 		return filepath;
 	}
 	
+	public String getMapName() {
+		int i;
+		for(i=0;i<filepath.length();i++) {
+			if(filepath.charAt(filepath.length()-1-i)=='\\') {
+				break;
+			}
+			if(filepath.charAt(filepath.length()-1-i)=='/') {
+				break;
+			}
+		}
+		return filepath.substring(filepath.length()-i,filepath.length());
+	}
+	
 	public String getFolder() {
 		int i;
 		for(i=0;i<filepath.length();i++) {

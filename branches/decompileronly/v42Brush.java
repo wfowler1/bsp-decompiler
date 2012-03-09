@@ -34,7 +34,7 @@ public class v42Brush {
 			attributes[2]=inAttributes[2];
 			attributes[3]=inAttributes[3];
 		} catch(java.lang.ArrayIndexOutOfBoundsException e) {
-			; // Meh, there are worse crimes
+			; // Meh, there are worse crimes. Leave them at 0
 		}
 		firstSide=inFirstSide;
 		numSides=inNumSides;

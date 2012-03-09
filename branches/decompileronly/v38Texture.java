@@ -47,7 +47,7 @@ public class v38Texture {
 		float vb=Float.intBitsToFloat(datain);
 		datain=(in[27] << 24) | ((in[26] & 0xff) << 16) | ((in[25] & 0xff) << 8) | (in[24] & 0xff);
 		float vc=Float.intBitsToFloat(datain);
-		u=new Vector3D(va, vb, vc);
+		v=new Vector3D(va, vb, vc);
 		datain=(in[31] << 24) | ((in[30] & 0xff) << 16) | ((in[29] & 0xff) << 8) | (in[28] & 0xff);
 		vShift=Float.intBitsToFloat(datain);
 		flags=(in[35] << 24) | ((in[34] & 0xff) << 16) | ((in[33] & 0xff) << 8) | (in[32] & 0xff);

@@ -146,6 +146,15 @@ public class Vector3D {
 		return Float.toString((float)point[0]) + " , " + Float.toString((float)point[1]) + " , " + Float.toString((float)point[2]);
 	}
 	
+	// Modifies this vector to have length 1, with same direction
+	public void normalize() {
+		double length=getLength();
+		Vector3D newVector=scale(1/length);
+		point[X]=newVector.getX();
+		point[Y]=newVector.getY();
+		point[Z]=newVector.getZ();
+	}
+	
 	// ACCESSORS/MUTATORS
 	
 	public double getX() {
@@ -163,7 +172,7 @@ public class Vector3D {
 	// The getRounded accessors will round the doubles to a whole integer, if and only if
 	// they are within .01 of being a round integer. Otherwise these acts just like the others.
 	public double getRoundedX() {
-		if(Math.abs(point[X] - Math.round(point[X])) > 0.01) {
+		if(Math.abs(point[X] - Math.round(point[X])) > 0.5) {
 			return point[X];
 		} else {
 			return (double)Math.round(point[X]);
@@ -171,7 +180,7 @@ public class Vector3D {
 	}
 	
 	public double getRoundedY() {
-		if(Math.abs(point[Y] - Math.round(point[Y])) > 0.01) {
+		if(Math.abs(point[Y] - Math.round(point[Y])) > 0.5) {
 			return point[Y];
 		} else {
 			return (double)Math.round(point[Y]);
@@ -179,7 +188,7 @@ public class Vector3D {
 	}
 	
 	public double getRoundedZ() {
-		if((Math.abs(point[Z] - Math.round(point[Z])) > 0.01)) {
+		if((Math.abs(point[Z] - Math.round(point[Z])) > 0.5)) {
 			return point[Z];
 		} else {
 			return (double)Math.round(point[Z]);

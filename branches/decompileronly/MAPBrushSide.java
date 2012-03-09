@@ -6,9 +6,9 @@ public class MAPBrushSide {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	private Vector3D[] plane; // Plane defined as three points
 	private String texture;
-	private double[] textureS;
+	private Vector3D textureS;
 	private double textureShiftS;
-	private double[] textureT;
+	private Vector3D textureT;
 	private double textureShiftT;
 	private float texRot=0;
 	private double texScaleX;
@@ -29,9 +29,9 @@ public class MAPBrushSide {
 	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot, int id) {
 		plane=inPlane;
 		texture=inTexture;
-		textureS=inTextureS;
+		textureS=new Vector3D(inTextureS);
 		textureShiftS=inTextureShiftS;
-		textureT=inTextureT;
+		textureT=new Vector3D(inTextureT);
 		textureShiftT=inTextureShiftT;
 		texRot=inTexRot;
 		texScaleX=inTexScaleX;
@@ -55,8 +55,8 @@ public class MAPBrushSide {
 			       "( "+plane[1].getX()+" "+plane[1].getY()+" "+plane[1].getZ()+" ) "+
 			       "( "+plane[2].getX()+" "+plane[2].getY()+" "+plane[2].getZ()+" ) "+
 			       texture + 
-			       " [ "+textureS[X]+" "+textureS[Y]+" "+textureS[Z]+" "+textureShiftS+" ]"+
-			       " [ "+textureT[X]+" "+textureT[Y]+" "+textureT[Z]+" "+textureShiftT+" ] "+
+			       " [ "+textureS.getX()+" "+textureS.getY()+" "+textureS.getZ()+" "+textureShiftS+" ]"+
+			       " [ "+textureT.getX()+" "+textureT.getY()+" "+textureT.getZ()+" "+textureShiftT+" ] "+
 			       texRot+" "+texScaleX+" "+texScaleY+" "+flags+" "+
 			       material +
 			       " [ "+lgtScale+" "+lgtRot+" ]";
@@ -76,8 +76,8 @@ public class MAPBrushSide {
 			out+="("+plane[1].getX()+" "+plane[1].getY()+" "+plane[1].getZ()+") ";
 			out+="("+plane[2].getX()+" "+plane[2].getY()+" "+plane[2].getZ()+")\""+(char)0x0D+(char)0x0A;
 			out+="			\"material\" \"" + texture + "\""+(char)0x0D+(char)0x0A;
-			out+="			\"uaxis\" \"["+textureS[X]+" "+textureS[Y]+" "+textureS[Z]+" "+textureShiftS+"] "+texScaleX+"\""+(char)0x0D+(char)0x0A;
-			out+="			\"vaxis\" \"["+textureT[X]+" "+textureT[Y]+" "+textureT[Z]+" "+textureShiftT+"] "+texScaleY+"\""+(char)0x0D+(char)0x0A;
+			out+="			\"uaxis\" \"["+textureS.getX()+" "+textureS.getY()+" "+textureS.getZ()+" "+textureShiftS+"] "+texScaleX+"\""+(char)0x0D+(char)0x0A;
+			out+="			\"vaxis\" \"["+textureT.getX()+" "+textureT.getY()+" "+textureT.getZ()+" "+textureShiftT+"] "+texScaleY+"\""+(char)0x0D+(char)0x0A;
 			out+="			\"rotation\" \""+texRot+"\""+(char)0x0D+(char)0x0A;
 			out+="			\"lightmapscale\" \""+lgtScale+"\""+(char)0x0D+(char)0x0A;
 			out+="			\"smoothing_groups\" \"0\""+(char)0x0D+(char)0x0A+"		}";
@@ -96,8 +96,8 @@ public class MAPBrushSide {
 			       "( "+plane[1].getRoundedX()+" "+plane[1].getRoundedY()+" "+plane[1].getRoundedZ()+" ) "+
 			       "( "+plane[2].getRoundedX()+" "+plane[2].getRoundedY()+" "+plane[2].getRoundedZ()+" ) "+
 			       texture + 
-			       " [ "+textureS[X]+" "+textureS[Y]+" "+textureS[Z]+" "+textureShiftS+" ]"+
-			       " [ "+textureT[X]+" "+textureT[Y]+" "+textureT[Z]+" "+textureShiftT+" ] "+
+			       " [ "+textureS.getRoundedX()+" "+textureS.getRoundedY()+" "+textureS.getRoundedZ()+" "+textureShiftS+" ]"+
+			       " [ "+textureT.getRoundedX()+" "+textureT.getRoundedY()+" "+textureT.getRoundedZ()+" "+textureShiftT+" ] "+
 			       texRot+" "+texScaleX+" "+texScaleY+" "+flags+" "+
 			       material +
 			       " [ "+lgtScale+" "+lgtRot+" ]";
@@ -117,8 +117,8 @@ public class MAPBrushSide {
 			out+="("+plane[1].getRoundedX()+" "+plane[1].getRoundedY()+" "+plane[1].getRoundedZ()+") ";
 			out+="("+plane[2].getRoundedX()+" "+plane[2].getRoundedY()+" "+plane[2].getRoundedZ()+")\""+(char)0x0D+(char)0x0A;
 			out+="			\"material\" \"" + texture + "\""+(char)0x0D+(char)0x0A;
-			out+="			\"uaxis\" \"["+textureS[X]+" "+textureS[Y]+" "+textureS[Z]+" "+textureShiftS+"] "+texScaleX+"\""+(char)0x0D+(char)0x0A;
-			out+="			\"vaxis\" \"["+textureT[X]+" "+textureT[Y]+" "+textureT[Z]+" "+textureShiftT+"] "+texScaleY+"\""+(char)0x0D+(char)0x0A;
+			out+="			\"uaxis\" \"["+textureS.getRoundedX()+" "+textureS.getRoundedY()+" "+textureS.getRoundedZ()+" "+textureShiftS+"] "+texScaleX+"\""+(char)0x0D+(char)0x0A;
+			out+="			\"vaxis\" \"["+textureT.getRoundedX()+" "+textureT.getRoundedY()+" "+textureT.getRoundedZ()+" "+textureShiftT+"] "+texScaleY+"\""+(char)0x0D+(char)0x0A;
 			out+="			\"rotation\" \""+texRot+"\""+(char)0x0D+(char)0x0A;
 			out+="			\"lightmapscale\" \""+lgtScale+"\""+(char)0x0D+(char)0x0A;
 			out+="			\"smoothing_groups\" \"0\""+(char)0x0D+(char)0x0A+"		}";
@@ -166,5 +166,5 @@ public class MAPBrushSide {
 		} catch(java.lang.ArrayIndexOutOfBoundsException e) {
 			System.out.println("Warning: Plane defined by less than three points!");
 		}
-	}
+	} 
 }

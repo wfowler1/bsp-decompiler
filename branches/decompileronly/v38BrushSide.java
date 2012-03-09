@@ -7,18 +7,18 @@ public class v38BrushSide {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private short plane;
-	private short texture;
+	private short texInfo;
 	
 	// CONSTRUCTORS
 	
-	public v38BrushSide(short inPlane, short inTexture) {
+	public v38BrushSide(short inPlane, short inTexInfo) {
 		plane=inPlane;
-		texture=inTexture;
+		texInfo=inTexInfo;
 	}
 	
 	public v38BrushSide(byte[] in) {
 		plane=(short)((in[1] << 8) | (in[0] & 0xff));
-		texture=(short)((in[3] << 8) | (in[2] & 0xff));
+		texInfo=(short)((in[3] << 8) | (in[2] & 0xff));
 	}
 	
 	// METHODS
@@ -33,11 +33,11 @@ public class v38BrushSide {
 		plane=in;
 	}
 	
-	public short getTexture() {
-		return texture;
+	public short getTexInfo() {
+		return texInfo;
 	}
 	
-	public void setTexture(short in) {
-		texture=in;
+	public void setTexInfo(short in) {
+		texInfo=in;
 	}
 }
