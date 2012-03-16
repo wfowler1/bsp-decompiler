@@ -169,32 +169,6 @@ public class Vector3D {
 		return point[Z];
 	}
 	
-	// The getRounded accessors will round the doubles to a whole integer, if and only if
-	// they are within .01 of being a round integer. Otherwise these acts just like the others.
-	public double getRoundedX() {
-		if(Math.abs(point[X] - Math.round(point[X])) > 0.5) {
-			return point[X];
-		} else {
-			return (double)Math.round(point[X]);
-		}
-	}
-	
-	public double getRoundedY() {
-		if(Math.abs(point[Y] - Math.round(point[Y])) > 0.5) {
-			return point[Y];
-		} else {
-			return (double)Math.round(point[Y]);
-		}
-	}
-	
-	public double getRoundedZ() {
-		if((Math.abs(point[Z] - Math.round(point[Z])) > 0.5)) {
-			return point[Z];
-		} else {
-			return (double)Math.round(point[Z]);
-		}
-	}
-	
 	public float getXF() {
 		return (float)point[X];
 	}

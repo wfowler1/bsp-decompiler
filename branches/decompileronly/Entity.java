@@ -273,23 +273,25 @@ public class Entity {
 	// +getModelNumber()
 	// If there's a model number in the attributes list, this method fetches it
 	// and returns it. If there is no model defined, or it's not a numerical 
-	// value, then -1 is returned.
+	// value, then -1 is returned. If it's the worldspawn then a 0 is returned.
 	public int getModelNumber() {
-		int number=-1;
-		for(int i=0;i<numAttributes;i++) {
-			try {
-				if(attributes[i].substring(0,7).compareToIgnoreCase("\"model\"")==0) {
-					// This substring skips the "model" "* and gets to the number
-					number=Integer.parseInt(attributes[i].substring(10,attributes[i].length()-1));
-					break;
+		if(getAttribute("classname").equalsIgnoreCase("worldspawn")) {
+			return 0;
+		} else {
+			for(int i=0;i<numAttributes;i++) {
+				try {
+					if(attributes[i].substring(0,7).compareToIgnoreCase("\"model\"")==0) {
+						// This substring skips the "model" "* and gets to the number
+						return Integer.parseInt(attributes[i].substring(10,attributes[i].length()-1));
+					}
+				} catch(StringIndexOutOfBoundsException e) { // substring(0,7) was longer than the String
+					;
+				} catch(NumberFormatException e) { // The model wasn't a number
+					break; // It's (hopefully) not going to have any other models defined
 				}
-			} catch(StringIndexOutOfBoundsException e) { // substring(0,7) was longer than the String
-				;
-			} catch(NumberFormatException e) { // The model wasn't a number
-				;
 			}
 		}
-		return number;
+		return -1;
 	}
 	
 	// setAttribute()

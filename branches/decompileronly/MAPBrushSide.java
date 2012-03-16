@@ -1,6 +1,8 @@
 // MAPBrushSide class
 // Holds all the data for a brush side in the format for a .MAP file version 510.
 
+import java.text.DecimalFormat;
+
 public class MAPBrushSide {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
@@ -23,6 +25,9 @@ public class MAPBrushSide {
 	public static final int X=0;
 	public static final int Y=1;
 	public static final int Z=2;
+	
+	DecimalFormat fmt = new DecimalFormat("0.000000");
+	DecimalFormat fmtScales = new DecimalFormat("0.####");
 	
 	// CONSTRUCTORS
 	public MAPBrushSide(Vector3D[] inPlane, String inTexture, double[] inTextureS, double inTextureShiftS, double[] inTextureT, double inTextureShiftT, float inTexRot,
@@ -92,15 +97,15 @@ public class MAPBrushSide {
 	// Same as toString but rounds numbers within .01 of a whole number to that whole number
 	public String toRoundString() {
 		try {
-			return "( "+plane[0].getRoundedX()+" "+plane[0].getRoundedY()+" "+plane[0].getRoundedZ()+" ) "+
-			       "( "+plane[1].getRoundedX()+" "+plane[1].getRoundedY()+" "+plane[1].getRoundedZ()+" ) "+
-			       "( "+plane[2].getRoundedX()+" "+plane[2].getRoundedY()+" "+plane[2].getRoundedZ()+" ) "+
+			return "( "+fmt.format((double)Math.round(plane[0].getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(plane[0].getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(plane[0].getZ()*1000000.0)/1000000.0)+" ) "+
+			       "( "+fmt.format((double)Math.round(plane[1].getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(plane[1].getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(plane[1].getZ()*1000000.0)/1000000.0)+" ) "+
+			       "( "+fmt.format((double)Math.round(plane[2].getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(plane[2].getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(plane[2].getZ()*1000000.0)/1000000.0)+" ) "+
 			       texture + 
-			       " [ "+textureS.getRoundedX()+" "+textureS.getRoundedY()+" "+textureS.getRoundedZ()+" "+textureShiftS+" ]"+
-			       " [ "+textureT.getRoundedX()+" "+textureT.getRoundedY()+" "+textureT.getRoundedZ()+" "+textureShiftT+" ] "+
-			       texRot+" "+texScaleX+" "+texScaleY+" "+flags+" "+
+			       " [ "+fmt.format((double)Math.round(textureS.getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureS.getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureS.getZ()*1000000.0)/1000000.0)+" "+Math.round(textureShiftS)+" ]"+
+			       " [ "+fmt.format((double)Math.round(textureT.getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureT.getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureT.getZ()*1000000.0)/1000000.0)+" "+Math.round(textureShiftT)+" ] "+
+			       fmtScales.format((double)Math.round(texRot*10000.0)/10000.0)+" "+fmtScales.format((double)Math.round(texScaleX*10000.0)/10000.0)+" "+fmtScales.format((double)Math.round(texScaleY*10000.0)/10000.0)+" "+flags+" "+
 			       material +
-			       " [ "+lgtScale+" "+lgtRot+" ]";
+			       " [ "+fmtScales.format((double)Math.round(lgtScale*1000000.0)/1000000.0)+" "+fmtScales.format((double)Math.round(lgtRot*1000000.0)/1000000.0)+" ]";
 		} catch(java.lang.NullPointerException e) {
 			Window.window.println("Side with bad data! Not exported!");
 			return null;
@@ -113,14 +118,14 @@ public class MAPBrushSide {
 		try {
 			String out="		side"+(char)0x0D+(char)0x0A+"		{"+(char)0x0D+(char)0x0A;
 			out+="			\"id\" \""+id+"\""+(char)0x0D+(char)0x0A;
-			out+="			\"plane\" \"("+plane[0].getRoundedX()+" "+plane[0].getRoundedY()+" "+plane[0].getRoundedZ()+") ";
-			out+="("+plane[1].getRoundedX()+" "+plane[1].getRoundedY()+" "+plane[1].getRoundedZ()+") ";
-			out+="("+plane[2].getRoundedX()+" "+plane[2].getRoundedY()+" "+plane[2].getRoundedZ()+")\""+(char)0x0D+(char)0x0A;
+			out+="			\"plane\" \"("+fmt.format((double)Math.round(plane[0].getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(plane[0].getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(plane[0].getZ()*1000000.0)/1000000.0)+") ";
+			out+="("+fmt.format((double)Math.round(plane[1].getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(plane[1].getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(plane[1].getZ()*1000000.0)/1000000.0)+") ";
+			out+="("+fmt.format((double)Math.round(plane[2].getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(plane[2].getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(plane[2].getZ()*1000000.0)/1000000.0)+")\""+(char)0x0D+(char)0x0A;
 			out+="			\"material\" \"" + texture + "\""+(char)0x0D+(char)0x0A;
-			out+="			\"uaxis\" \"["+textureS.getRoundedX()+" "+textureS.getRoundedY()+" "+textureS.getRoundedZ()+" "+textureShiftS+"] "+texScaleX+"\""+(char)0x0D+(char)0x0A;
-			out+="			\"vaxis\" \"["+textureT.getRoundedX()+" "+textureT.getRoundedY()+" "+textureT.getRoundedZ()+" "+textureShiftT+"] "+texScaleY+"\""+(char)0x0D+(char)0x0A;
-			out+="			\"rotation\" \""+texRot+"\""+(char)0x0D+(char)0x0A;
-			out+="			\"lightmapscale\" \""+lgtScale+"\""+(char)0x0D+(char)0x0A;
+			out+="			\"uaxis\" \"["+fmt.format((double)Math.round(textureS.getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureS.getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureS.getZ()*1000000.0)/1000000.0)+" "+Math.round(textureShiftS)+"] "+fmtScales.format((double)Math.round(texScaleX*10000.0)/10000.0)+"\""+(char)0x0D+(char)0x0A;
+			out+="			\"vaxis\" \"["+fmt.format((double)Math.round(textureT.getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureT.getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureT.getZ()*1000000.0)/1000000.0)+" "+Math.round(textureShiftT)+"] "+fmtScales.format((double)Math.round(texScaleY*10000.0)/10000.0)+"\""+(char)0x0D+(char)0x0A;
+			out+="			\"rotation\" \""+fmtScales.format((double)Math.round(texRot*10000.0)/10000.0)+"\""+(char)0x0D+(char)0x0A;
+			out+="			\"lightmapscale\" \""+fmtScales.format((double)Math.round(lgtScale*10000.0)/10000.0)+"\""+(char)0x0D+(char)0x0A;
 			out+="			\"smoothing_groups\" \"0\""+(char)0x0D+(char)0x0A+"		}";
 			return out;
 		} catch(java.lang.NullPointerException e) {

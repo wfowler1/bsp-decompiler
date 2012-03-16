@@ -18,6 +18,8 @@ public class Window extends JPanel implements ActionListener {
 	protected static Window window;
 	private static BSPFileFilter BSPFilter = new BSPFileFilter();
 	private static LOGFileFilter LOGFilter = new LOGFileFilter();
+	
+	private static JFrame frame;
 
 	// main method
 	// Creates an Object of this class and launches the GUI. Entry point to the whole program.
@@ -30,14 +32,14 @@ public class Window extends JPanel implements ActionListener {
 				;
 			}
 			
-			JFrame frame = new JFrame("BSP Decompiler by 005");
+			frame = new JFrame("BSP Decompiler by 005");
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	
 			window = new Window(frame.getContentPane());
 			
 			frame.setIconImage(new ImageIcon("icon32x32.PNG").getImage());
 	
-			frame.setPreferredSize(new Dimension(600, 420));
+			frame.setPreferredSize(new Dimension(620, 450));
 	
 			frame.pack();
 			frame.setResizable(false);
@@ -133,7 +135,7 @@ public class Window extends JPanel implements ActionListener {
 		chk_planar.addActionListener(this);
 		
 		chk_skipPlaneFlip = new JCheckBox("Skip plane flip");
-		chk_skipPlaneFlip.setToolTipText("Don't make sure brush planes are facing the right direction. Not recommended.");
+		chk_skipPlaneFlip.setToolTipText("Don't make sure brush planes are facing the right direction. Speeds up decompilation in some cases, but may cause problems.");
 		
 		GridBagConstraints SkipFlipConstraints = new GridBagConstraints();
 		SkipFlipConstraints.fill = GridBagConstraints.NONE;
@@ -158,8 +160,8 @@ public class Window extends JPanel implements ActionListener {
 		
 		chk_calcVerts.addActionListener(this);
 		
-		chk_roundNums = new JCheckBox("Snap to coordinates");
-		chk_roundNums.setToolTipText("Snaps all vertices to nearest whole number, many times compensating for computer inaccuracies. May fix small fissures in brushwork, but may also cause problems.");
+		chk_roundNums = new JCheckBox("Round decimals");
+		chk_roundNums.setToolTipText("Rounds all vertices to six decimals and texture scales to four. Might make map editors (namely GearCraft) happier.");
 		
 		GridBagConstraints RoundNumConstraints = new GridBagConstraints();
 		RoundNumConstraints.fill = GridBagConstraints.NONE;
@@ -309,13 +311,13 @@ public class Window extends JPanel implements ActionListener {
 			if(args[i].equalsIgnoreCase("-c")) {
 				calcVerts=true;
 			}
-			if(args[i].equalsIgnoreCase("-i")) {
+			if(args[i].equalsIgnoreCase("-s")) {
 				roundNums=true;
 			}
 			if(args[i].equalsIgnoreCase("-p")) {
 				vertexDecomp=false;
 			}
-			if(args[i].equalsIgnoreCase("-s")) {
+			if(args[i].equalsIgnoreCase("-f")) {
 				correctPlaneFlip=false;
 			}
 			if(args[i].equalsIgnoreCase("-?")) {
@@ -324,9 +326,9 @@ public class Window extends JPanel implements ActionListener {
 				System.out.println("Options:");
 				System.out.println("-toMAP: Decompile to Gearcraft MAP instead of Hammer 4.1 VMF format");
 				System.out.println("-c: Calculate Brush Corners. Automatically set if -p without -s");
-				System.out.println("-i: Snap to coordinates");
+				System.out.println("-s: Snap to coordinates");
 				System.out.println("-p: Planar Decompilation Only");
-				System.out.println("-s: Skip plane flip");
+				System.out.println("-f: Skip plane flip");
 				System.out.println("-coef #: Plane point coefficient (default 100)");
 				System.out.println("-?: Show this help text");
 			}
@@ -382,7 +384,7 @@ public class Window extends JPanel implements ActionListener {
 		// User clicks the "Save log" button
 		if(action.getSource() == btn_dumplog) {
 			file_saver = new JFileChooser();
-			file_saver.setSelectedFile(new File("console "+new Date().toGMTString()+".log"));
+			file_saver.setSelectedFile(new File("DecompilerConsole.log"));
 			file_saver.addChoosableFileFilter(LOGFilter);
 			file_saver.setMultiSelectionEnabled(false);
 			// file_selector.setIconImage(new ImageIcon("folder32x32.PNG").getImage());

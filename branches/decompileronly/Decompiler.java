@@ -136,18 +136,28 @@ public class Decompiler {
 		// Then I need to go through each entity and see if it's brush-based.
 		// Worldspawn is brush-based as well as any entity with model *#.
 		for(int i=0;i<BSP42.getEntities().getNumElements();i++) { // For each entity
-			if(toVMF) {
+			if(toVMF) { // correct some entities to make source ports easier, TODO add more
 				mapFile.getEntity(i).setAttribute("id", new Integer(++numIDs).toString());
-			}
-			int currentModel=-1;
-			numBrshs=0; // Reset the brush count for each entity
-			if(mapFile.getEntity(i).isBrushBased()) {
-				currentModel=BSP42.getEntities().getEntity(i).getModelNumber();
-			} else {
+				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("light_spot")) {
+					 mapFile.getEntity(i).setAttribute("pitch", new Double(mapFile.getEntity(i).getAngles()[0]).toString());
+					 mapFile.getEntity(i).setAttribute("_inner_cone", mapFile.getEntity(i).getAttribute("_cone")); 
+					 mapFile.getEntity(i).setAttribute("_cone", mapFile.getEntity(i).getAttribute("_cone2"));
+					 mapFile.getEntity(i).deleteAttribute("_cone2");
+				}
+				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_wall")) {
+					mapFile.getEntity(i).setAttribute("classname", "func_detail");
+				}
+				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("item_generic")) {
+					mapFile.getEntity(i).setAttribute("classname", "prop_static");
+				}
+			} else { // Gearcraft needs a couple things, too. These things usually make it into the compiled map, but just in case.
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("worldspawn")) {
-					currentModel=0; // If the entity is worldspawn, we're dealing with model 0, which is the world.
+					mapFile.getEntity(i).setAttribute("mapversion", "510"); // Otherwise Gearcraft cries.
 				}
 			}
+			numBrshs=0; // Reset the brush count for each entity
+			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
+			int currentModel=mapFile.getEntity(i).getModelNumber();
 			
 			if(currentModel!=-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
 				double[] origin=mapFile.getEntity(i).getOrigin();
@@ -187,20 +197,6 @@ public class Decompiler {
 			}
 			numTotalItems++;
 			Window.setProgress(numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements(), BSP42.getMapName());
-			if(toVMF) { // correct some entities to make source ports easier, TODO add more
-				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("light_spot")) {
-					 mapFile.getEntity(i).setAttribute("pitch", new Double(mapFile.getEntity(i).getAngles()[0]).toString());
-					 mapFile.getEntity(i).setAttribute("_inner_cone", mapFile.getEntity(i).getAttribute("_cone")); 
-					 mapFile.getEntity(i).setAttribute("_cone", mapFile.getEntity(i).getAttribute("_cone2"));
-					 mapFile.getEntity(i).deleteAttribute("_cone2");
-				}
-				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_wall")) {
-					mapFile.getEntity(i).setAttribute("classname", "func_detail");
-				}
-				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("item_generic")) {
-					mapFile.getEntity(i).setAttribute("classname", "prop_static");
-				}
-			}
 		}
 		if(!toVMF) {
 			Window.window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map...");
@@ -225,7 +221,8 @@ public class Decompiler {
 			Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
 			v42BrushSide currentSide=BSP42.getBrushSides().getBrushSide(firstSide+l);
 			v42Face currentFace=BSP42.getFaces().getFace(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
-			if(!BSP42.getTextures().getString(currentFace.getTexture()).equalsIgnoreCase("special/bevel")) { // If this face uses special/bevel, skip the face completely
+			String texture=BSP42.getTextures().getString(currentFace.getTexture());
+			if(currentFace.getType()!=800) { // These surfaceflags (512 + 256 + 32) are set only by the compiler, on faces that need to be thrown out.
 				int firstVertex=currentFace.getVert();
 				int numVertices=currentFace.getNumVerts();
 				Plane currentPlane=BSP42.getPlanes().getPlane(currentSide.getPlane()).getPlane();
@@ -255,7 +252,6 @@ public class Decompiler {
 					                                   // we must find them ourselves using the A, B, C and D values.
 					plane=GenericMethods.extrapPlanePoints(currentPlane, planePointCoef);
 				}
-				String texture=BSP42.getTextures().getString(currentFace.getTexture());
 				if(toVMF) {
 					if(texture.equalsIgnoreCase("special/nodraw")) {
 						texture="tools/toolsnodraw";
@@ -302,7 +298,13 @@ public class Decompiler {
 				double textureShiftT=(double)currentTexMatrix.getVShift()-originShiftT;
 				float texRot=0; // In compiled maps this is calculated into the U and V axes, so set it to 0 until I can figure out a good way to determine a better value.
 				int flags=currentFace.getType(); // This is actually a set of flags. Whatever.
-				String material=BSP42.getMaterials().getString(currentFace.getMaterial());
+				String material;
+				try {
+					material=BSP42.getMaterials().getString(currentFace.getMaterial());
+				} catch(java.lang.ArrayIndexOutOfBoundsException e) { // In case the BSP has some strange error making it reference nonexistant materials
+					Window.window.println("WARNING: Map referenced nonexistant material #"+currentFace.getMaterial()+", using wld_lightmap instead!");
+					material="wld_lightmap";
+				}
 				double lgtScale=16; // These values are impossible to get from a compiled map since they
 				double lgtRot=0;    // are used by RAD for generating lightmaps, then are discarded, I believe.
 				brushSides[l]=new MAPBrushSide(plane, texture, textureS, textureShiftS, textureT, textureShiftT,
@@ -376,16 +378,9 @@ public class Decompiler {
 			if(toVMF) {
 				mapFile.getEntity(i).setAttribute("id", new Integer(++numIDs).toString());
 			}
-			int currentModel=-1;
 			numBrshs=0; // Reset the brush count for each entity
-			if(mapFile.getEntity(i).isBrushBased()) {
-				currentModel=BSP46.getEntities().getEntity(i).getModelNumber();
-			} else {
-				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("worldspawn")) {
-					currentModel=0; // If the entity is worldspawn, we're dealing with model 0, which is the world.
-					mapFile.getEntity(i).setAttribute("mapversion", "510"); // Otherwise Gearcraft cries.
-				}
-			}
+			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
+			int currentModel=mapFile.getEntity(i).getModelNumber();
 			
 			if(currentModel!=-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
 				double[] origin=mapFile.getEntity(i).getOrigin();
@@ -582,69 +577,96 @@ public class Decompiler {
 		mapFile=new Entities(BSP38.getEntities());
 		int numTotalItems=0;
 		numBrshs=0;
-		// Then make a list of detail brushes (does Quake 3 use details, and how?)
-		for(int i=0;i<BSP38.getBrushes().getNumElements();i++) {	// For every brush
-			// TODO: Figure out how to find detail brushes from a Quake 2 map, if possible
-			/*if(BSP38.getBrushes().getBrush(i).getAttributes()[1]==0x02) {
-				detailBrush[i]=true; // Flag the brush as detail
-			}*/
-		}
+		int[] brushModel=new int[BSP38.getBrushes().getNumElements()];
+		int lastModelNum=0; // Keep track of what the last determined model was. Brushes are referenced in order of
+		                    // their model, so the current one will never be in a model before the previous. However
+		                    // to do things this way, there may be NO false positives among the world brushes.
+		int startBrush=1; // We can assume brush 0 will always be world...
 		// Then I need to go through each entity and see if it's brush-based.
-		// Worldspawn is brush-based as well as is any entity with model *#.
-		for(int i=0;i<BSP38.getEntities().getNumElements();i++) { // For each entity
-			if(toVMF) {
-				mapFile.getEntity(i).setAttribute("id", new Integer(++numIDs).toString());
+		// If it is then I need to look at the faces of the model. If the face info matches
+		// up with enough of a brush's info then it's safe to assume the brush is part of that
+		// entity.
+		for(int i=1;i<BSP38.getEntities().getNumElements();i++) {
+			if(mapFile.getEntity(i).getModelNumber()>-1) {
+				v38Model currentModel=BSP38.getModels().getModel(mapFile.getEntity(i).getModelNumber());
+				int[] numTexturesMatched=new int[BSP38.getBrushes().getNumElements()]; // For each brush, keep track of how many of this model's faces match its sides
+				int[] numPlanesMatched=new int[BSP38.getBrushes().getNumElements()]; // For each brush, keep track of how many of this model's faces match its sides
+				int firstFace=currentModel.getFace();
+				int numFaces=currentModel.getNumFaces();
+				for(int j=0;j<numFaces;j++) { // for each face in this model
+					v38Face currentFace=BSP38.getFaces().getFace(firstFace+j);
+					for(int k=startBrush;k<BSP38.getBrushes().getNumElements();k++) { // Check each brush
+						Brush currentBrush=BSP38.getBrushes().getBrush(k);
+						for(int l=0;l<currentBrush.getNumSides();l++) { // For each side of this brush
+							v38BrushSide currentSide=BSP38.getBrushSides().getBrushSide(currentBrush.getFirstSide()+l);
+							if(currentSide.getPlane() == currentFace.getPlane()) { // If the info matches up
+								numPlanesMatched[k]++; // Count it as a matched side
+							}
+							if(currentSide.getTexInfo() == currentFace.getTexInfo()) { // If the info matches up
+								numTexturesMatched[k]++; // Count it as a matched side
+							}
+						}
+						if(numPlanesMatched[k]>=currentBrush.getNumSides()*0.25 && numPlanesMatched[k]>=2) {
+						// This is a sort of "tolerance" for how many faces must match before the brush is added to the entity.
+						// Range: 0 (non-inclusive) to 1 (inclusive) (0% to 100%)
+						// If set to 0, every brush will be added to an entity!
+						// Set lower to try to get more brushes into an entity (if they got placed in world instead)
+						// Set higher to reduce the chance of false positives
+							if(numTexturesMatched[k]>=currentBrush.getNumSides()*0.25 && numTexturesMatched[k]>=1) {
+								if(lastModelNum<mapFile.getEntity(i).getModelNumber()) { // If this is another model we're dealing with
+									for(int l=0;l<mapFile.getEntity(i).getModelNumber()-lastModelNum-1;l++) { // If there's a jump of more than one model
+										brushModel[k-l]=mapFile.getEntity(i).getModelNumber()-l;
+									}
+									lastModelNum=mapFile.getEntity(i).getModelNumber();
+								}
+								brushModel[k]=mapFile.getEntity(i).getModelNumber();
+								startBrush=k+1; // Remember the last brush of this model
+							}
+						} else { // If it failed the last test, it may still be part of an entity.
+							brushModel[k]=lastModelNum; // This will be the model number of the previous brush. This method isn't failproof, but it'll
+							                            // work better than nothing.
+						}
+					}
+				}
 			}
-			int currentModel=-1;
-			numBrshs=0; // Reset the brush count for each entity
-			if(mapFile.getEntity(i).isBrushBased()) {
-				currentModel=BSP38.getEntities().getEntity(i).getModelNumber();
-			} else {
+		}
+		// Print out some debug info, delete this
+		for(int i=0;i<BSP38.getBrushes().getNumElements();i++) {
+			Window.window.println("Brush "+i+" thought to be part of model "+brushModel[i]);
+		}
+		for(int i=0;i<BSP38.getEntities().getNumElements();i++) { // For each entity
+			if(toVMF) { // correct some entities to make source ports easier, TODO
+				mapFile.getEntity(i).setAttribute("id", new Integer(++numIDs).toString());
+			} else { // Gearcraft also requires some changes, do those here
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("worldspawn")) {
-					currentModel=0; // If the entity is worldspawn, we're dealing with model 0, which is the world.
 					mapFile.getEntity(i).setAttribute("mapversion", "510"); // Otherwise Gearcraft cries.
 				}
 			}
+			numBrshs=0; // Reset the brush count for each entity
+			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
+			int currentModel=mapFile.getEntity(i).getModelNumber();
 			
 			if(currentModel!=-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
 				double[] origin=mapFile.getEntity(i).getOrigin();
-				/*int firstBrush=BSP38.getModels().getModel(currentModel).getBrush(); // TODO: Quake 2 BSPs don't reference the brushes lump
-				int numBrushes=BSP38.getModels().getModel(currentModel).getNumBrushes(); // directly from models. Find a way to figure out what
-				boolean[] detailBrush=new boolean[BSP46.getBrushes().getNumElements()]; // faces go with what model.
-				numBrshs=0;
-				for(int j=0;j<numBrushes;j++) { // For each brush referenced
-					if(detailBrush[firstBrush+j] && currentModel==0) {
-						decompileBrush46(BSP46.getBrushes().getBrush(firstBrush+j), i, true); // Decompile the brush, as not detail
-					} else {
-						decompileBrush46(BSP46.getBrushes().getBrush(firstBrush+j), i, false); // Decompile the brush, as detail
+				for(int j=0;j<BSP38.getBrushes().getNumElements();j++) { // For each brush
+					if(brushModel[j]==currentModel) { // If it was determined that this brush goes with the current model
+						decompileBrush38(BSP38.getBrushes().getBrush(j), i); // Decompile the brush
+						numBrshs++;
+						numTotalItems++; // The brush
+						Window.setProgress(numTotalItems, BSP38.getBrushes().getNumElements()+BSP38.getEntities().getNumElements(), BSP38.getMapName());
 					}
-					numBrshs++;
-					numTotalItems++;
-					Window.setProgress(numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().getNumElements(), BSP46.getMapName());
-				}*/
+				}
 				mapFile.getEntity(i).deleteAttribute("model");
 				// Recreate origin brushes for entities that need them
 				// These are discarded on compile and replaced with an "origin" attribute in the entity.
 				// I need to undo that. For this I will create a 32x32 brush, centered at the point defined
 				// by the "origin" attribute.
-				// TODO: Does Quake 3 do this as well?
 				if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
 					addOriginBrush(i, origin);
 				}
 				mapFile.getEntity(i).deleteAttribute("origin");
 			}
-			numTotalItems++;
-			Window.setProgress(numTotalItems, BSP38.getBrushes().getNumElements()+BSP38.getEntities().getNumElements(), BSP38.getMapName());
-			if(toVMF) { // correct some entities to make source ports easier, TODO
-				
-			}
-		}
-		// Dump all brushes to world, TODO: Find SOME way to make sure these get into the right entity!!!!!
-		for(int i=0;i<BSP38.getBrushes().getNumElements();i++) {	// For every brush
-			// For now I'm decompiling all brushes here. Need to figure out how to match a brush to its entity
-			decompileBrush38(BSP38.getBrushes().getBrush(i), 0, false);
-			numTotalItems++;
-			numBrshs++;
+			numTotalItems++; // This entity
 			Window.setProgress(numTotalItems, BSP38.getBrushes().getNumElements()+BSP38.getEntities().getNumElements(), BSP38.getMapName());
 		}
 		if(!toVMF) {
@@ -659,131 +681,127 @@ public class Decompiler {
 	
 	// -decompileBrush38(Brush, int, boolean)
 	// Decompiles the Brush and adds it to entitiy #currentEntity as .MAP data.
-	private void decompileBrush38(Brush brush, int currentEntity, boolean isDetailBrush) {
+	private void decompileBrush38(Brush brush, int currentEntity) {
 		double[] origin=mapFile.getEntity(currentEntity).getOrigin();
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
 		MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
-		MAPBrush mapBrush = new MAPBrush(numBrshs, ++numIDs, currentEntity, origin, planePointCoef, isDetailBrush);
-		for(int l=0;l<numSides;l++) { // For each side of the brush 
+		MAPBrush mapBrush = new MAPBrush(numBrshs, ++numIDs, currentEntity, origin, planePointCoef, false);
+		for(int l=0;l<numSides;l++) { // For each side of the brush
 			Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
 			v38BrushSide currentSide=BSP38.getBrushSides().getBrushSide(firstSide+l);
 			Plane currentPlane=BSP38.getPlanes().getPlane(currentSide.getPlane()).getPlane(); // To find those three points, I must extrapolate from planes until I find a way to associate faces with brushes
 			v38Texture currentTexture;
-			if(currentSide.getTexInfo()>-1) {
-				currentTexture=BSP38.getTextures().getTexture(currentSide.getTexInfo());
-			} else {
-				currentTexture=createPerpTexture38(currentPlane); // Create a texture plane perpendicular to current plane's normal
-			}
-			//int firstVertex=currentFace.getVert();
-			//int numVertices=currentFace.getNumVerts();
-			// boolean pointsWorked=false; // Need to figure out how to get faces from brush sides, then use vertices
-			/*if(numVertices!=0 && vertexDecomp) { // If the face actually references a set of vertices
-				plane[0]=new Vector3D(BSP42.getVertices().getVertex(firstVertex)); // Grab and store the first one
-				int m=1;
-				for(m=1;m<numVertices;m++) { // For each point after the first one
-					plane[1]=new Vector3D(BSP42.getVertices().getVertex(firstVertex+m));
-					if(!plane[0].equals(plane[1])) { // Make sure the point isn't the same as the first one
-						break; // If it isn't the same, this point is good
-					}
-				}
-				for(m=m+1;m<numVertices;m++) { // For each point after the previous one used
-					plane[2]=new Vector3D(BSP42.getVertices().getVertex(firstVertex+m));
-					if(!plane[2].equals(plane[0]) && !plane[2].equals(plane[1])) { // Make sure no point is equal to the third one
-						if((Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || // Make sure all
-						   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getY()!=0) || // three points 
-						   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getZ()!=0)) { // are not collinear
-								pointsWorked=true;
-							break;
-						}
-					}
-				}
-			}*/
-			//if(numVertices==0 || !pointsWorked) { // Fallback to planar decompilation. Since there are no explicitly defined points anymore,
-				                                   // we must find them ourselves using the A, B, C and D values.
-				plane=GenericMethods.extrapPlanePoints(currentPlane, planePointCoef);
-			//}
-			String texture=currentTexture.getTexture();
-			if(toVMF) { // TODO Figure out what Q2's special/tools textures are
-				if(texture.substring(texture.length()-5).equalsIgnoreCase("/hint")) {
-					texture="tools/toolshint";
-				} else {
-					if(texture.substring(texture.length()-5).equalsIgnoreCase("/skip")) {
-						texture="tools/toolsskip";
-					} else {
-						if(texture.equalsIgnoreCase("special/clip")) {
-							texture="tools/toolsclip";
-						}/* else {
-							if(texture.equalsIgnoreCase("special/trigger")) {
-								texture="tools/toolstrigger";
-							} else {
-								if(texture.equalsIgnoreCase("special/playerclip")) {
-									texture="tools/toolsplayerclip";
-								} else {
-									if(texture.equalsIgnoreCase("special/npcclip")) {
-										texture="tools/toolsnpcclip";
-									}
-								}
-							}
-						}*/
-					}
-				}
-			} else {
-				if(texture.substring(texture.length()-5).equalsIgnoreCase("/hint")) {
-					texture="special/hint";
-				} else {
-					if(texture.substring(texture.length()-5).equalsIgnoreCase("/skip")) {
-						texture="special/skip";
-					}/* else {
-						if(texture.equalsIgnoreCase("special/sky")) {
-							texture="tools/toolsskybox";
-						} else {
-							if(texture.equalsIgnoreCase("special/trigger")) {
-								texture="tools/toolstrigger";
-							} else {
-								if(texture.equalsIgnoreCase("special/playerclip")) {
-									texture="tools/toolsplayerclip";
-								} else {
-									if(texture.equalsIgnoreCase("special/npcclip")) {
-										texture="tools/toolsnpcclip";
-									}
-								}
-							}
-						}
-					}*/
+			boolean isDuplicate=false;
+			for(int i=l+1;i<numSides;i++) { // For each subsequent side of the brush
+				if(currentPlane.equals(BSP38.getPlanes().getPlane(BSP38.getBrushSides().getBrushSide(firstSide+i).getPlane()))) {
+					Window.window.println("Duplicate planes, sides "+l+" and "+i);
 				}
 			}
-			double[] textureS=new double[3];
-			double[] textureT=new double[3];
-			// Get the lengths of the axis vectors
-			double UAxisLength=Math.sqrt(Math.pow((double)currentTexture.getU().getX(),2)+Math.pow((double)currentTexture.getU().getY(),2)+Math.pow((double)currentTexture.getU().getZ(),2));
-			double VAxisLength=Math.sqrt(Math.pow((double)currentTexture.getV().getX(),2)+Math.pow((double)currentTexture.getV().getY(),2)+Math.pow((double)currentTexture.getV().getZ(),2));
-			// In compiled maps, shorter vectors=longer textures and vice versa. This will convert their lengths back to 1. We'll use the actual scale values for length.
-			double texScaleS=(1/UAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
-			double texScaleT=(1/VAxisLength);
-			textureS[0]=((double)currentTexture.getU().getX()/UAxisLength);
-			textureS[1]=((double)currentTexture.getU().getY()/UAxisLength);
-			textureS[2]=((double)currentTexture.getU().getZ()/UAxisLength);
-			double originShiftS=(((double)currentTexture.getU().getX()/UAxisLength)*origin[X]+((double)currentTexture.getU().getY()/UAxisLength)*origin[Y]+((double)currentTexture.getU().getZ()/UAxisLength)*origin[Z])/texScaleS;
-			double textureShiftS=(double)currentTexture.getUShift()-originShiftS;
-			textureT[0]=((double)currentTexture.getV().getX()/VAxisLength);
-			textureT[1]=((double)currentTexture.getV().getY()/VAxisLength);
-			textureT[2]=((double)currentTexture.getV().getZ()/VAxisLength);
-			double originShiftT=(((double)currentTexture.getV().getX()/VAxisLength)*origin[X]+((double)currentTexture.getV().getY()/VAxisLength)*origin[Y]+((double)currentTexture.getV().getZ()/VAxisLength)*origin[Z])/texScaleT;
-			double textureShiftT=(double)currentTexture.getVShift()-originShiftT;
-			float texRot=0; // In compiled maps this is calculated into the U and V axes, so set it to 0 until I can figure out a good way to determine a better value.
-			int flags=0; // Set this to 0 until we can somehow associate faces with brushes
-			String material="wld_lightmap"; // Since materials are a NightFire only thing, set this to a good default
-			double lgtScale=16; // These values are impossible to get from a compiled map since they
-			double lgtRot=0;    // are used by RAD for generating lightmaps, then are discarded, I believe.
-			brushSides[l]=new MAPBrushSide(plane, texture, textureS, textureShiftS, textureT, textureShiftT,
-			                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot, ++numIDs);
-			if(brushSides[l]!=null) {
-				/*if(pointsWorked) {
-					mapBrush.add(brushSides[l], plane, currentPlane, true); // Add the MAPBrushSide to the current brush
-				} else {*/
-					mapBrush.add(brushSides[l], new Vector3D[0], currentPlane, false);
+			if(!isDuplicate) {
+				if(currentSide.getTexInfo()>-1) {
+					currentTexture=BSP38.getTextures().getTexture(currentSide.getTexInfo());
+				} else {
+					currentTexture=createPerpTexture38(currentPlane); // Create a texture plane perpendicular to current plane's normal
+				}
+				//int firstVertex=currentFace.getVert();
+				//int numVertices=currentFace.getNumVerts();
+				// boolean pointsWorked=false; // Need to figure out how to get faces from brush sides, then use vertices
+				/*if(numVertices!=0 && vertexDecomp) { // If the face actually references a set of vertices
+					plane[0]=new Vector3D(BSP42.getVertices().getVertex(firstVertex)); // Grab and store the first one
+					int m=1;
+					for(m=1;m<numVertices;m++) { // For each point after the first one
+						plane[1]=new Vector3D(BSP42.getVertices().getVertex(firstVertex+m));
+						if(!plane[0].equals(plane[1])) { // Make sure the point isn't the same as the first one
+							break; // If it isn't the same, this point is good
+						}
+					}
+					for(m=m+1;m<numVertices;m++) { // For each point after the previous one used
+						plane[2]=new Vector3D(BSP42.getVertices().getVertex(firstVertex+m));
+						if(!plane[2].equals(plane[0]) && !plane[2].equals(plane[1])) { // Make sure no point is equal to the third one
+							if((Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || // Make sure all
+							   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getY()!=0) || // three points 
+							   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getZ()!=0)) { // are not collinear
+									pointsWorked=true;
+								break;
+							}
+						}
+					}
+				}*/
+				//if(numVertices==0 || !pointsWorked) { // Fallback to planar decompilation. Since there are no explicitly defined points anymore,
+					                                   // we must find them ourselves using the A, B, C and D values.
+					plane=GenericMethods.extrapPlanePoints(currentPlane, planePointCoef);
 				//}
+				String texture=currentTexture.getTexture();
+				if(toVMF) { // TODO more to do here
+					if(texture.equalsIgnoreCase("special/clip")) {
+						texture="tools/toolsclip";
+					} else {
+						try {
+							if(texture.substring(texture.length()-5).equalsIgnoreCase("/hint")) {
+								texture="tools/toolshint";
+							} else {
+								if(texture.substring(texture.length()-5).equalsIgnoreCase("/skip")) {
+									texture="tools/toolsskip";
+								} else {
+									if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
+										texture="tools/toolstrigger";
+									}
+								}
+							}
+						} catch(StringIndexOutOfBoundsException e) {
+							;
+						}
+					}
+				} else {
+					try {
+						if(texture.substring(texture.length()-5).equalsIgnoreCase("/hint")) {
+							texture="special/hint";
+						} else {
+							if(texture.substring(texture.length()-5).equalsIgnoreCase("/skip")) {
+								texture="special/skip";
+							} else {
+								if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
+									texture="special/trigger";
+								}
+							}
+						}
+					} catch(StringIndexOutOfBoundsException e) {
+						;
+					}
+				}
+				double[] textureS=new double[3];
+				double[] textureT=new double[3];
+				// Get the lengths of the axis vectors
+				double UAxisLength=Math.sqrt(Math.pow((double)currentTexture.getU().getX(),2)+Math.pow((double)currentTexture.getU().getY(),2)+Math.pow((double)currentTexture.getU().getZ(),2));
+				double VAxisLength=Math.sqrt(Math.pow((double)currentTexture.getV().getX(),2)+Math.pow((double)currentTexture.getV().getY(),2)+Math.pow((double)currentTexture.getV().getZ(),2));
+				// In compiled maps, shorter vectors=longer textures and vice versa. This will convert their lengths back to 1. We'll use the actual scale values for length.
+				double texScaleS=(1/UAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
+				double texScaleT=(1/VAxisLength);
+				textureS[0]=((double)currentTexture.getU().getX()/UAxisLength);
+				textureS[1]=((double)currentTexture.getU().getY()/UAxisLength);
+				textureS[2]=((double)currentTexture.getU().getZ()/UAxisLength);
+				double originShiftS=(((double)currentTexture.getU().getX()/UAxisLength)*origin[X]+((double)currentTexture.getU().getY()/UAxisLength)*origin[Y]+((double)currentTexture.getU().getZ()/UAxisLength)*origin[Z])/texScaleS;
+				double textureShiftS=(double)currentTexture.getUShift()-originShiftS;
+				textureT[0]=((double)currentTexture.getV().getX()/VAxisLength);
+				textureT[1]=((double)currentTexture.getV().getY()/VAxisLength);
+				textureT[2]=((double)currentTexture.getV().getZ()/VAxisLength);
+				double originShiftT=(((double)currentTexture.getV().getX()/VAxisLength)*origin[X]+((double)currentTexture.getV().getY()/VAxisLength)*origin[Y]+((double)currentTexture.getV().getZ()/VAxisLength)*origin[Z])/texScaleT;
+				double textureShiftT=(double)currentTexture.getVShift()-originShiftT;
+				float texRot=0; // In compiled maps this is calculated into the U and V axes, so set it to 0 until I can figure out a good way to determine a better value.
+				int flags=0; // Set this to 0 until we can somehow associate faces with brushes
+				String material="wld_lightmap"; // Since materials are a NightFire only thing, set this to a good default
+				double lgtScale=16; // These values are impossible to get from a compiled map since they
+				double lgtRot=0;    // are used by RAD for generating lightmaps, then are discarded, I believe.
+				brushSides[l]=new MAPBrushSide(plane, texture, textureS, textureShiftS, textureT, textureShiftT,
+				                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot, ++numIDs);
+				if(brushSides[l]!=null) {
+					/*if(pointsWorked) {
+						mapBrush.add(brushSides[l], plane, currentPlane, true); // Add the MAPBrushSide to the current brush
+					} else {*/
+						mapBrush.add(brushSides[l], new Vector3D[0], currentPlane, false);
+					//}
+				}
 			}
 		}
 		
@@ -799,22 +817,10 @@ public class Decompiler {
 		// this whole program and the entities parser, this shouldn't
 		// cause any issues at all.		
 		if(toVMF) {
-			if(isDetailBrush) {
-				Entity newDetailEntity=new Entity("{"+(char)0x0A+"}");
-				if(roundNums) {
-					newDetailEntity.addAttributeInside(mapBrush.toRoundVMFBrush());
-				} else {
-					newDetailEntity.addAttributeInside(mapBrush.toVMFBrush());
-				}
-				newDetailEntity.setAttribute("id", new Integer(++numIDs).toString());
-				newDetailEntity.setAttribute("classname", "func_detail");
-				mapFile.add(newDetailEntity);
+			if(roundNums) {
+				mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toRoundVMFBrush());
 			} else {
-				if(roundNums) {
-					mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toRoundVMFBrush());
-				} else {
-					mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toVMFBrush());
-				}
+				mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toVMFBrush());
 			}
 		} else {
 			if(roundNums) {
@@ -921,12 +927,6 @@ public class Decompiler {
 		U.normalize();
 		V.normalize();
 		v38Texture currentTexture= new v38Texture(U, 0, V, 0, 0, 0, "special/clip", 0);
-		if(currentTexture.getU()==null) {
-			Window.window.println("U axis is null for some reason! in method");
-		}
-		if(currentTexture.getV()==null) {
-			Window.window.println("V axis is null for some reason! in method");
-		}
 		return currentTexture;
 	}
 }
