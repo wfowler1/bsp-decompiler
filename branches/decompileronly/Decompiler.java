@@ -630,10 +630,6 @@ public class Decompiler {
 				}
 			}
 		}
-		// Print out some debug info, delete this
-		for(int i=0;i<BSP38.getBrushes().getNumElements();i++) {
-			Window.window.println("Brush "+i+" thought to be part of model "+brushModel[i]);
-		}
 		for(int i=0;i<BSP38.getEntities().getNumElements();i++) { // For each entity
 			if(toVMF) { // correct some entities to make source ports easier, TODO
 				mapFile.getEntity(i).setAttribute("id", new Integer(++numIDs).toString());
@@ -829,26 +825,7 @@ public class Decompiler {
 				mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toString());
 			}
 		}
-	} 
-
-	/* for testing/research purposes only
-	public void decompileBSP38() {
-		int[] texturesused = new int[BSP38.getTextures().getNumElements()];
-		int[] texturesusedinbrshs = new int[BSP38.getTextures().getNumElements()];
-		for(int i=0;i<BSP38.getFaces().getNumElements(); i++) {
-			texturesused[BSP38.getFaces().getFace(i).getTexInfo()]++;
-		}
-		for(int i=0;i<BSP38.getBrushSides().getNumElements(); i++) {
-			if(BSP38.getBrushSides().getBrushSide(i).getTexInfo()>-1) {
-				texturesusedinbrshs[BSP38.getBrushSides().getBrushSide(i).getTexInfo()]++;
-			}
-		}
-		for(int i=0;i<BSP38.getTextures().getNumElements(); i++) {
-			if(texturesused[i]>0 || texturesusedinbrshs[i]>0) {
-				Window.window.print("Texinfo "+i+" used in "+texturesused[i]+" faces and "+texturesusedinbrshs[i]+" brush sides\n");
-			}
-		}
-	}*/
+	}
 	
 	public void addOriginBrush(int ent, double[] origin) {
 		MAPBrush newOriginBrush;
