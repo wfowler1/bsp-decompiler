@@ -118,8 +118,8 @@ public class MAPBrush {
 		} else {
 			if(hasBadSide()) {
 				triangles=GenericMethods.AdvancedCorrectPlanes(planes, PRECISION);
-				if(triangles.length<sides.length) {
-					Window.window.println("Entity "+entnum+" Brush "+brushNum+" with "+planes.length+" planes produced "+triangles.length+" triangles!");
+				if(triangles.length!=sides.length) {
+					Window.window.println("WARNING: Produced "+triangles.length+" triangles from Entity "+entnum+" Brush "+brushNum+"! Expected "+planes.length+"!");
 					triangles=new Vector3D[sides.length][3];
 					for(int i=0;i<sides.length;i++) {
 						triangles[i]=GenericMethods.extrapPlanePoints(planes[i], planePointCoef);
@@ -140,8 +140,12 @@ public class MAPBrush {
 			Vector3D[][] newTriangles=GenericMethods.CalcPlanePoints(planes, PRECISION); // Either that or every side was already defined by vertices.
 			for(int i=0;i<triangles.length;i++) {
 				if(!goodSides[i]) {
-					triangles[i]=newTriangles[i];
-					sides[i].setPlane(triangles[i]);
+					try {
+						triangles[i]=newTriangles[i];
+						sides[i].setPlane(triangles[i]);
+					} catch(java.lang.NullPointerException e) {
+						Window.window.println("WARNING: Recalculating brush corners failed on Entity "+entnum+" Brush "+brushNum+" Side "+i+"!");
+					}
 				}
 			}
 		}
@@ -252,5 +256,9 @@ public class MAPBrush {
 	
 	public boolean isDetailBrush() {
 		return isDetailBrush;
+	}
+	
+	public void setDetail(boolean in) {
+		isDetailBrush=in;
 	}
 }

@@ -43,10 +43,12 @@ public class DecompilerThread implements Runnable {
 		for(int i=0;i<BSPs.length;i++) {
 			if(!BSPs[i].exists()) {
 				Window.window.println("File \""+BSPs[i].getAbsolutePath()+"\" not found!");
+				Window.setAbortButtonEnabled(false);
 				System.out.println("Run with -? switch for command line help"); // Will only print to console or cmd!
 			} else {
 				Window.setConsoleEnabled(false);
 				Window.setDecompileButtonEnabled(false);
+				Window.setAbortButtonEnabled(true);
 				try {
 					Window.window.println("Opening file "+BSPs[i].getAbsolutePath());
 					BSPReader reader = new BSPReader(BSPs[i].getAbsolutePath());
@@ -73,11 +75,13 @@ public class DecompilerThread implements Runnable {
 					Window.window.println("\nException caught: "+e+"\nPlease let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/list");
 					Window.setConsoleEnabled(true);
 					Window.setDecompileButtonEnabled(true);
+					Window.setAbortButtonEnabled(false);
 				}
 			}
 			Window.setTotalProgress(i+1, BSPs.length);
 		}
 		Window.setDecompileButtonEnabled(true); // Once the thread is finished running, reenable the Decompile button
+		Window.setAbortButtonEnabled(false);
 		r.gc(); // Now the program has time to rest while the user does whatever. Collect garbage.
 		if(BSPs.length>1) {
 			Date end=new Date();

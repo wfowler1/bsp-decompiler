@@ -139,16 +139,57 @@ public class Decompiler {
 			if(toVMF) { // correct some entities to make source ports easier, TODO add more
 				mapFile.getEntity(i).setAttribute("id", new Integer(++numIDs).toString());
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("light_spot")) {
-					 mapFile.getEntity(i).setAttribute("pitch", new Double(mapFile.getEntity(i).getAngles()[0]).toString());
-					 mapFile.getEntity(i).setAttribute("_inner_cone", mapFile.getEntity(i).getAttribute("_cone")); 
-					 mapFile.getEntity(i).setAttribute("_cone", mapFile.getEntity(i).getAttribute("_cone2"));
-					 mapFile.getEntity(i).deleteAttribute("_cone2");
+					mapFile.getEntity(i).setAttribute("pitch", new Double(mapFile.getEntity(i).getAngles()[0]).toString());
+					mapFile.getEntity(i).renameAttribute("_cone", "_inner_cone"); 
+					mapFile.getEntity(i).renameAttribute("_cone2", "_cone");
+					try {
+						if(Double.parseDouble(mapFile.getEntity(i).getAttribute("_cone"))>90.0) {
+							mapFile.getEntity(i).setAttribute("_cone", "90");
+						} else {
+							if(Double.parseDouble(mapFile.getEntity(i).getAttribute("_cone"))<0.0) {
+								mapFile.getEntity(i).setAttribute("_cone", "0");
+							}
+						}
+						if(Double.parseDouble(mapFile.getEntity(i).getAttribute("_cone2"))>90.0) {
+							mapFile.getEntity(i).setAttribute("_cone2", "90");
+						} else {
+							if(Double.parseDouble(mapFile.getEntity(i).getAttribute("_cone2"))<0.0) {
+								mapFile.getEntity(i).setAttribute("_cone2", "0");
+							}
+						}
+					} catch(java.lang.NumberFormatException e) {
+						;
+					}
 				}
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_wall")) {
-					mapFile.getEntity(i).setAttribute("classname", "func_detail");
+					if(mapFile.getEntity(i).getAttribute("rendermode").equals("0")) {
+						mapFile.getEntity(i).setAttribute("classname", "func_detail");
+						mapFile.getEntity(i).deleteAttribute("rendermode");
+					} else {
+						mapFile.getEntity(i).setAttribute("classname", "func_brush");
+					}
 				}
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("item_generic")) {
-					mapFile.getEntity(i).setAttribute("classname", "prop_static");
+					mapFile.getEntity(i).setAttribute("classname", "prop_dynamic");
+					mapFile.getEntity(i).setAttribute("solid", "0");
+					mapFile.getEntity(i).deleteAttribute("effects");
+					mapFile.getEntity(i).deleteAttribute("fixedlight");
+				}
+				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("env_glow")) {
+					mapFile.getEntity(i).setAttribute("classname", "env_sprite");
+				}
+				if(!mapFile.getEntity(i).getAttribute("body").equalsIgnoreCase("")) {
+					mapFile.getEntity(i).renameAttribute("body", "SetBodyGroup");
+				}
+				if(mapFile.getEntity(i).getAttribute("rendercolor").equals("0 0 0")) {
+					mapFile.getEntity(i).setAttribute("rendercolor", "255 255 255");
+				}
+				try {
+					if(mapFile.getEntity(i).getAttribute("model").substring(mapFile.getEntity(i).getAttribute("model").length()-4).equalsIgnoreCase(".spz")) {
+						mapFile.getEntity(i).setAttribute("model", mapFile.getEntity(i).getAttribute("model").substring(0, mapFile.getEntity(i).getAttribute("model").length()-4)+".spr");
+					}
+				} catch(java.lang.StringIndexOutOfBoundsException e) {
+					;
 				}
 			} else { // Gearcraft needs a couple things, too. These things usually make it into the compiled map, but just in case.
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("worldspawn")) {
@@ -217,12 +258,16 @@ public class Decompiler {
 		MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
 		MAPBrush mapBrush = new MAPBrush(numBrshs, ++numIDs, currentEntity, origin, planePointCoef, isDetailBrush);
 		int numRealFaces=0;
+		boolean containsNonClipSide=false;
 		for(int l=0;l<numSides;l++) { // For each side of the brush
 			Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
 			v42BrushSide currentSide=BSP42.getBrushSides().getBrushSide(firstSide+l);
 			v42Face currentFace=BSP42.getFaces().getFace(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
 			String texture=BSP42.getTextures().getString(currentFace.getTexture());
 			if(currentFace.getType()!=800) { // These surfaceflags (512 + 256 + 32) are set only by the compiler, on faces that need to be thrown out.
+				if(!texture.equalsIgnoreCase("special/clip") && !texture.equalsIgnoreCase("special/playerclip") && !texture.equalsIgnoreCase("special/enemyclip")) {
+					containsNonClipSide=true;
+				}
 				int firstVertex=currentFace.getVert();
 				int numVertices=currentFace.getNumVerts();
 				Plane currentPlane=BSP42.getPlanes().getPlane(currentSide.getPlane()).getPlane();
@@ -268,7 +313,7 @@ public class Decompiler {
 									if(texture.equalsIgnoreCase("special/playerclip")) {
 										texture="tools/toolsplayerclip";
 									} else {
-										if(texture.equalsIgnoreCase("special/npcclip")) {
+										if(texture.equalsIgnoreCase("special/npcclip") || texture.equalsIgnoreCase("special/enemyclip")) {
 											texture="tools/toolsnpcclip";
 										}
 									}
@@ -332,7 +377,7 @@ public class Decompiler {
 		// this whole program and the entities parser, this shouldn't
 		// cause any issues at all.		
 		if(toVMF) {
-			if(isDetailBrush) {
+			if(isDetailBrush && containsNonClipSide) {
 				Entity newDetailEntity=new Entity("{"+(char)0x0A+"}");
 				if(roundNums) {
 					newDetailEntity.addAttributeInside(mapBrush.toRoundVMFBrush());

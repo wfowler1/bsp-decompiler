@@ -34,6 +34,22 @@ public class Entity {
 	
 	// METHODS
 	
+	// renameAttribute(String, String)
+	// Renames the specified attribute to the second String.
+	public void renameAttribute(String attribute, String to) {
+		for(int i=0;i<numAttributes;i++) {
+			try {
+				if(attributes[i].substring(0,attribute.length()+2).compareToIgnoreCase("\""+attribute+"\"")==0) {
+					String value=getAttribute(attribute);
+					attributes[i]="\""+to+"\" \""+value+"\"";
+					break; // If the attribute is found, break the loop. The attribute should only exist once.
+				}
+			} catch(StringIndexOutOfBoundsException e) { // for cases where the whole String is shorter than
+				;                                         // the name of the attribute we're looking for. Do nothing.
+			}
+		}
+	}
+	
 	// deleteAttribute(String)
 	// Deletes the specified attribute from the attributes list. If it wasn't found it does nothing.
 	public void deleteAttribute(String attribute) {
@@ -48,8 +64,7 @@ public class Entity {
 			} catch(StringIndexOutOfBoundsException e) { // for cases where the whole String is shorter than
 				;                                         // the name of the attribute we're looking for. Do nothing.
 			} catch(java.lang.NullPointerException e ) {
-				System.out.println(toString());
-				throw new java.lang.NullPointerException();
+				break;
 			}
 		}
 		if (found) {
@@ -247,7 +262,7 @@ public class Entity {
 	
 	// +getAttribute(String)
 	// Takes in an attribute as a String and returns the value of that attribute,
-	// if it exists. If not, return null. I used to have an exception for this,
+	// if it exists. If not, return empty String. I used to have an exception for this,
 	// but always catching it was a pain in the ass. So instead, if the attribute
 	// doesn't exist, just return an empty String. I don't think I've ever seen
 	// an empty string used as a value in a map before, and either way the setAttribute
@@ -264,7 +279,7 @@ public class Entity {
 			} catch(StringIndexOutOfBoundsException e) { // for cases where the whole String is shorter than
 				;                                         // the name of the attribute we're looking for. Do nothing.
 			} catch(java.lang.NullPointerException e) {
-				System.out.println(toString());
+				break;
 			}
 		}
 		return output;

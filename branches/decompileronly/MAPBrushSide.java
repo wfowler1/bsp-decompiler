@@ -32,6 +32,9 @@ public class MAPBrushSide {
 	// CONSTRUCTORS
 	public MAPBrushSide(Vector3D[] inPlane, String inTexture, double[] inTextureS, double inTextureShiftS, double[] inTextureT, double inTextureShiftT, float inTexRot,
 	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot, int id) {
+	//	plane[0]=inPlane[0];
+	//	plane[1]=inPlane[1];
+	//	plane[2]=inPlane[2];
 		plane=inPlane;
 		texture=inTexture;
 		textureS=new Vector3D(inTextureS);
@@ -164,12 +167,8 @@ public class MAPBrushSide {
 	}
 	
 	public void setPlane(Vector3D[] in) {
-		try {
-			plane[0]=in[0];
-			plane[1]=in[1];
-			plane[2]=in[2];
-		} catch(java.lang.ArrayIndexOutOfBoundsException e) {
-			System.out.println("Warning: Plane defined by less than three points!");
-		}
-	} 
+		plane[0]=in[0];
+		plane[1]=in[1];
+		plane[2]=in[2];
+	}
 }

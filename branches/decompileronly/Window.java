@@ -20,6 +20,19 @@ public class Window extends JPanel implements ActionListener {
 	private static LOGFileFilter LOGFilter = new LOGFileFilter();
 	
 	private static JFrame frame;
+	private static JMenuBar menuBar;
+	
+	private static JMenu fileMenu;
+	private static JMenuItem openItem;
+	private static JMenuItem openDecompItem;
+	private static JMenuItem exitItem;
+	
+	private static JMenu optionsMenu;
+	private static JMenuItem replaceEntitiesItem;
+	private static JMenuItem replaceTexturesItem;
+	
+	private static Thread[] decompilerworkers;
+	private static Runnable runMe;
 
 	// main method
 	// Creates an Object of this class and launches the GUI. Entry point to the whole program.
@@ -33,17 +46,8 @@ public class Window extends JPanel implements ActionListener {
 			}
 			
 			frame = new JFrame("BSP Decompiler by 005");
-			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	
 			window = new Window(frame.getContentPane());
-			
-			frame.setIconImage(new ImageIcon("icon32x32.PNG").getImage());
-	
-			frame.setPreferredSize(new Dimension(620, 450));
-	
-			frame.pack();
-			frame.setResizable(false);
-			frame.setVisible(true);
 		} else {
 			window = new Window(args);
 		}
@@ -55,6 +59,7 @@ public class Window extends JPanel implements ActionListener {
 	private static JFileChooser file_saver;
 	private static JButton btn_open;
 	private static JButton btn_decomp;
+	private static JButton btn_abort;
 	private static JTextField txt_file;
 	private static JTextField txt_coef;
 	private static JTextArea consolebox;
@@ -81,6 +86,48 @@ public class Window extends JPanel implements ActionListener {
 
 	// This constructor configures and displays the GUI
 	public Window(Container pane) {
+		// Set up most of the window's properties, since we definitely have a window
+		// Good thing frame is a global object
+		frame.setIconImage(new ImageIcon("icon32x32.PNG").getImage());
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		frame.setPreferredSize(new Dimension(640, 440));
+
+		frame.pack();
+		frame.setResizable(true);
+		frame.setVisible(true);			
+		
+		
+		
+		/// Menu Bar
+		menuBar = new JMenuBar();
+		fileMenu = new JMenu("File");
+		menuBar.add(fileMenu);
+		//optionsMenu = new JMenu("Options");
+		//menuBar.add(optionsMenu);
+		
+		// File menu
+		openItem = new JMenuItem("Open");
+		fileMenu.add(openItem);
+		openItem.addActionListener(this);
+		openDecompItem = new JMenuItem("Open and decompile");
+		fileMenu.add(openDecompItem);
+		openDecompItem.addActionListener(this);
+		exitItem = new JMenuItem("Exit");
+		fileMenu.add(exitItem);
+		exitItem.addActionListener(this);
+		
+		// Options menu
+		//replaceEntitiesItem = new JMenuItem("Entity replacements...");
+		//optionsMenu.add(replaceEntitiesItem);
+		//replaceTexturesItem = new JMenuItem("Texture replacements...");
+		//optionsMenu.add(replaceTexturesItem);
+		
+		frame.setJMenuBar(menuBar);
+		
+		
+		
+		/// Window contents
 		pane.setLayout(new GridBagLayout());
 		
 		// First row
@@ -107,17 +154,30 @@ public class Window extends JPanel implements ActionListener {
 		
 		btn_open.addActionListener(this);
 		
-		btn_decomp = new JButton("Decompile BSP");
+		btn_decomp = new JButton("Decompile");
 		
 		GridBagConstraints decompConstraints = new GridBagConstraints();
 		decompConstraints.fill = GridBagConstraints.BOTH;
 		decompConstraints.gridx = 3;
 		decompConstraints.gridy = 0;
-		decompConstraints.gridwidth = 2;
+		decompConstraints.gridwidth = 1;
 		decompConstraints.gridheight = 1;
 		pane.add(btn_decomp, decompConstraints);
 		
 		btn_decomp.addActionListener(this);
+		
+		btn_abort = new JButton("Abort");
+		
+		GridBagConstraints abortionConstraints = new GridBagConstraints();
+		abortionConstraints.fill = GridBagConstraints.BOTH;
+		abortionConstraints.gridx = 4;
+		abortionConstraints.gridy = 0;
+		abortionConstraints.gridwidth = 1;
+		abortionConstraints.gridheight = 1;
+		pane.add(btn_abort, abortionConstraints);
+		
+		btn_abort.setEnabled(false);
+		btn_abort.addActionListener(this);
 		
 		// Second row
 		
@@ -239,7 +299,7 @@ public class Window extends JPanel implements ActionListener {
 		
 		// Fifth row
 		
-		consolebox = new JTextArea(15, 70);
+		consolebox = new JTextArea(15, 75);
 		
 		console_pane = new JScrollPane(consolebox);
 		console_pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -349,8 +409,9 @@ public class Window extends JPanel implements ActionListener {
 	// Any time something happens on the GUI, this is called. However we're only
 	// going to perform actions when certain things are clicked. The rest are discarded.
 	public void actionPerformed(ActionEvent action) {
+		// TODO: Clean this up, perhaps use a switch instead
 		// User clicks the "open" button
-		if (action.getSource() == btn_open) {
+		if (action.getSource() == btn_open || action.getSource() == openItem) {
 			if(!txt_file.getText().equals("")) {
 				file_selector = new JFileChooser(txt_file.getText());
 			} else {
@@ -371,6 +432,33 @@ public class Window extends JPanel implements ActionListener {
 			}
 		}
 		
+		if (action.getSource() == openDecompItem) {
+			if(!txt_file.getText().equals("")) {
+				file_selector = new JFileChooser(txt_file.getText());
+			} else {
+				file_selector = new JFileChooser("/"); // TODO: set to current folder
+			}
+			file_selector.addChoosableFileFilter(BSPFilter);
+			file_selector.setMultiSelectionEnabled(true);
+			// file_selector.setIconImage(new ImageIcon("folder32x32.PNG").getImage());
+			int returnVal = file_selector.showOpenDialog(this);
+			
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				File[] file = file_selector.getSelectedFiles();
+				String out=file[0].getAbsolutePath();
+				for(int i=1;i<file.length;i++) {
+					out+=","+file[i].getAbsolutePath();
+				}
+				txt_file.setText(out);
+			}
+			try {
+				planePointCoef=Double.parseDouble(txt_coef.getText());
+			} catch(java.lang.NumberFormatException e) {
+				;
+			}
+			startDecompilerThread(txt_file.getText());
+		}
+		
 		// User clicks the "decompile" button
 		if(action.getSource() == btn_decomp) {
 			try {
@@ -379,6 +467,11 @@ public class Window extends JPanel implements ActionListener {
 				;
 			}
 			startDecompilerThread(txt_file.getText());
+		}
+		
+		// User clicks the "abort" button
+		if(action.getSource() == btn_abort) {
+			stopDecompilerThread();
 		}
 		
 		// User clicks the "Save log" button
@@ -442,6 +535,14 @@ public class Window extends JPanel implements ActionListener {
 				calcVerts=true;
 			}
 		}
+		
+		if(action.getSource() == exitItem) {
+			//if(decompilerworkers[0]!=null) {
+			//	add some warning dialog here?
+			//} else {
+				System.exit(0);
+			//}
+		}
 	}
 	
 	private void startDecompilerThread(String fileList) {
@@ -469,12 +570,20 @@ public class Window extends JPanel implements ActionListener {
 		for(int i=0;i<numFiles;i++) {
 			BSPFiles[i]=new File(fileArray[i]);
 		}
-		Runnable decompiler=new DecompilerThread(BSPFiles, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF, planePointCoef);
-		Thread decompilerworker = new Thread(decompiler);
-		decompilerworker.setName("Decompiler");
-		decompilerworker.start();
+		decompilerworkers=new Thread[1];
+		runMe=new DecompilerThread(BSPFiles, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF, planePointCoef);
+		decompilerworkers[0] = new Thread(runMe);
+		decompilerworkers[0].setName("Decompiler");
+		decompilerworkers[0].start();
 	}
 	
+	private void stopDecompilerThread() {
+		decompilerworkers[0].stop();       // The Java API lists this method of stopping a thread as deprecated. However, for the
+		println("Aborted by user.\n"); // purposes of this program, the reasons for deprecation do not apply. The main problems
+		btn_decomp.setEnabled(true);   // are the security and values of variables shared between threads, but I only ever run
+		btn_abort.setEnabled(false);   // at most two threads at once, the GUI and the Decompiler, and they never share
+	}                                 // information. However, it may be a good idea to use a more "correct" implementation. More info:
+	                                  // http://docs.oracle.com/javase/6/docs/technotes/guides/concurrency/threadPrimitiveDeprecation.html
 	protected static void print(String out) {
 		if(consolebox!=null) {
 			consolebox.append(out);
@@ -484,8 +593,7 @@ public class Window extends JPanel implements ActionListener {
 	}
 	
 	protected static void println(String out) {
-		print(out);
-		print("\n");
+		print(out+"\n");
 	}
 	
 	protected static void clearConsole() {
@@ -527,6 +635,12 @@ public class Window extends JPanel implements ActionListener {
 	protected static void setDecompileButtonEnabled(boolean in) {
 		if(btn_decomp!=null) {
 			btn_decomp.setEnabled(in);
+		}
+	}
+	
+	protected static void setAbortButtonEnabled(boolean in) {
+		if(btn_abort!=null) {
+			btn_abort.setEnabled(in);
 		}
 	}
 }
