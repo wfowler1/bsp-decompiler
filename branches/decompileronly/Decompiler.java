@@ -25,6 +25,7 @@ public class Decompiler {
 	
 	private int numFlips=0;
 	private int numFlipBrshs=0;
+	private int jobnum;
 	
 	private Entities mapFile; // Most MAP file formats (including GearCraft) are simply a bunch of nested entities
 	private int numBrshs;
@@ -44,7 +45,7 @@ public class Decompiler {
 	// CONSTRUCTORS
 	
 	// This constructor sets everything according to specified settings.
-	public Decompiler(v38BSP BSP38, boolean vertexDecomp, boolean correctPlaneFlip, boolean calcVerts, boolean roundNums, boolean toVMF, double planePointCoef) {
+	public Decompiler(v38BSP BSP38, boolean vertexDecomp, boolean correctPlaneFlip, boolean calcVerts, boolean roundNums, boolean toVMF, double planePointCoef, int jobnum) {
 		// Set up global variables
 		this.BSP38=BSP38;
 		version=38;
@@ -54,10 +55,11 @@ public class Decompiler {
 		this.toVMF=toVMF;
 		this.calcVerts=calcVerts;
 		this.roundNums=roundNums;
+		this.jobnum=jobnum;
 	}
 	
 	// This constructor sets everything according to specified settings.
-	public Decompiler(v42BSP BSP42, boolean vertexDecomp, boolean correctPlaneFlip, boolean calcVerts, boolean roundNums, boolean toVMF, double planePointCoef) {
+	public Decompiler(v42BSP BSP42, boolean vertexDecomp, boolean correctPlaneFlip, boolean calcVerts, boolean roundNums, boolean toVMF, double planePointCoef, int jobnum) {
 		// Set up global variables
 		this.BSP42=BSP42;
 		version=42;
@@ -67,10 +69,11 @@ public class Decompiler {
 		this.toVMF=toVMF;
 		this.calcVerts=calcVerts;
 		this.roundNums=roundNums;
+		this.jobnum=jobnum;
 	}
 	
 	// This constructor sets everything according to specified settings.
-	public Decompiler(v46BSP BSP46, boolean vertexDecomp, boolean correctPlaneFlip, boolean calcVerts, boolean roundNums, boolean toVMF, double planePointCoef) {
+	public Decompiler(v46BSP BSP46, boolean vertexDecomp, boolean correctPlaneFlip, boolean calcVerts, boolean roundNums, boolean toVMF, double planePointCoef, int jobnum) {
 		// Set up global variables
 		this.BSP46=BSP46;
 		version=46;
@@ -80,6 +83,7 @@ public class Decompiler {
 		this.toVMF=toVMF;
 		this.calcVerts=calcVerts;
 		this.roundNums=roundNums;
+		this.jobnum=jobnum;
 	}
 	
 	// METHODS
@@ -167,7 +171,25 @@ public class Decompiler {
 						mapFile.getEntity(i).deleteAttribute("rendermode");
 					} else {
 						mapFile.getEntity(i).setAttribute("classname", "func_brush");
+						mapFile.getEntity(i).setAttribute("Solidity", "2");
 					}
+				}
+				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_wall_toggle")) {
+					mapFile.getEntity(i).setAttribute("classname", "func_brush");
+					mapFile.getEntity(i).setAttribute("Solidity", "0");
+					try {
+						if((Double.parseDouble(mapFile.getEntity(i).getAttribute("spawnflags")))/2.0 == Double.parseDouble(mapFile.getEntity(i).getAttribute("spawnflags"))) {
+							mapFile.getEntity(i).setAttribute("StartDisabled", "1"); // If spawnflags is an odd number, the start disabled flag is set.
+						} else {
+							mapFile.getEntity(i).setAttribute("StartDisabled", "0");
+						}
+					} catch(java.lang.NumberFormatException e) {
+						mapFile.getEntity(i).setAttribute("StartDisabled", "0");
+					}
+				}
+				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_illusionary")) {
+					mapFile.getEntity(i).setAttribute("classname", "func_brush");
+					mapFile.getEntity(i).setAttribute("Solidity", "1");
 				}
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("item_generic")) {
 					mapFile.getEntity(i).setAttribute("classname", "prop_dynamic");
@@ -221,24 +243,28 @@ public class Decompiler {
 								}
 								numBrshs++;
 								numTotalItems++;
-								Window.setProgress(numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements(), BSP42.getMapName());
+								Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements(), "Decompiling...");
 							}
 						}
 					}
 				}
 				mapFile.getEntity(i).deleteAttribute("model");
-				// Recreate origin brushes for entities that need them
+				// Recreate origin brushes for entities that need them, only for GearCraft though.
 				// These are discarded on compile and replaced with an "origin" attribute in the entity.
 				// I need to undo that. For this I will create a 32x32 brush, centered at the point defined
-				// by the "origin" attribute.
-				if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
-					addOriginBrush(i, origin);
+				// by the "origin" attribute. Hammer keeps the "origin" attribute and uses it directly
+				// instead, so we'll keep it in a VMF.
+				if(!toVMF) {
+					if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
+						addOriginBrush(i, origin);
+					}
+					mapFile.getEntity(i).deleteAttribute("origin");
 				}
-				mapFile.getEntity(i).deleteAttribute("origin");
 			}
 			numTotalItems++;
-			Window.setProgress(numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements(), BSP42.getMapName());
+			Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements(), "Decompiling...");
 		}
+		Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements(), "Saving...");
 		if(!toVMF) {
 			Window.window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map...");
 			mapFile.save(BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map");
@@ -441,7 +467,7 @@ public class Decompiler {
 					}
 					numBrshs++;
 					numTotalItems++;
-					Window.setProgress(numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().getNumElements(), BSP46.getMapName());
+					Window.setProgress(jobnum, numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().getNumElements(), "Decompiling...");
 				}
 				mapFile.getEntity(i).deleteAttribute("model");
 				// Recreate origin brushes for entities that need them
@@ -455,11 +481,12 @@ public class Decompiler {
 				mapFile.getEntity(i).deleteAttribute("origin");
 			}
 			numTotalItems++;
-			Window.setProgress(numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().getNumElements(), BSP46.getMapName());
+			Window.setProgress(jobnum, numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().getNumElements(), "Decompiling...");
 			if(toVMF) { // correct some entities to make source ports easier, TODO
 				
 			}
-		}
+		} 
+		Window.setProgress(jobnum, numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().getNumElements(), "Saving..."); 
 		if(!toVMF) {
 			Window.window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+".map...");
 			mapFile.save(BSP46.getPath().substring(0, BSP46.getPath().length()-4)+".map");
@@ -694,7 +721,7 @@ public class Decompiler {
 						decompileBrush38(BSP38.getBrushes().getBrush(j), i); // Decompile the brush
 						numBrshs++;
 						numTotalItems++; // The brush
-						Window.setProgress(numTotalItems, BSP38.getBrushes().getNumElements()+BSP38.getEntities().getNumElements(), BSP38.getMapName());
+						Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().getNumElements()+BSP38.getEntities().getNumElements(), "Decompiling...");
 					}
 				}
 				mapFile.getEntity(i).deleteAttribute("model");
@@ -708,8 +735,9 @@ public class Decompiler {
 				mapFile.getEntity(i).deleteAttribute("origin");
 			}
 			numTotalItems++; // This entity
-			Window.setProgress(numTotalItems, BSP38.getBrushes().getNumElements()+BSP38.getEntities().getNumElements(), BSP38.getMapName());
+			Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().getNumElements()+BSP38.getEntities().getNumElements(), "Decompiling...");
 		}
+		Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().getNumElements()+BSP38.getEntities().getNumElements(), "Saving...");
 		if(!toVMF) {
 			Window.window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+".map...");
 			mapFile.save(BSP38.getPath().substring(0, BSP38.getPath().length()-4)+".map");

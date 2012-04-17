@@ -171,10 +171,12 @@ public class MAPBrush {
 		for(int i=0;i<sides.length;i++) {
 			try {
 				sides[i].shift(originVector);
-				out+=sides[i].toVMFSide()+(char)0x0D+(char)0x0A;
-			} catch(java.lang.NullPointerException e) { // If the object was never created, because the face was special/bevel
-				; // Do nothing, but this should never happen anyway
+			} catch(java.lang.NullPointerException e) {
+				Window.window.println("WARNING: Entity "+entnum+" Brush "+brushNum+" Side "+i+" missing plane info! Had to regenerate!");
+				sides[i].setPlane(GenericMethods.extrapPlanePoints(planes[i], planePointCoef));
+				sides[i].shift(originVector);
 			}
+			out+=sides[i].toVMFSide()+(char)0x0D+(char)0x0A;
 		}
 		out+="	}";
 		return out;
@@ -187,7 +189,13 @@ public class MAPBrush {
 			out+="\"BRUSHFLAGS\" \"DETAIL\""+(char)0x0D+(char)0x0A;
 		}
 		for(int i=0;i<sides.length;i++) {
-			sides[i].shift(originVector);
+			try {
+				sides[i].shift(originVector);
+			} catch(java.lang.NullPointerException e) {
+				Window.window.println("WARNING: Entity "+entnum+" Brush "+brushNum+" Side "+i+" missing plane info! Had to regenerate!");
+				sides[i].setPlane(GenericMethods.extrapPlanePoints(planes[i], planePointCoef));
+				sides[i].shift(originVector);
+			}
 			out+=sides[i].toRoundString()+(char)0x0D+(char)0x0A;
 		}
 		out+="}";

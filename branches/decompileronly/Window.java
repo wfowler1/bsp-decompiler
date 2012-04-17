@@ -14,6 +14,15 @@ import java.io.FileOutputStream;
 import java.util.Date;
 
 public class Window extends JPanel implements ActionListener {
+	
+	private static Runtime r = Runtime.getRuntime(); // Get a runtime object. This is for calling
+	                                                 // Java's garbage collector and does not need
+	                                                 // to be ported. I try not to leave memory leaks
+	                                                 // but since Java has no way explicitly reallocate
+	                                                 // unused memory I have to tell it when a good
+	                                                 // time is to run the garbage collector, by
+	                                                 // calling gc(). Also, it is used to execute EXEs
+	                                                 // from within the program by calling .exec(path).
 
 	protected static Window window;
 	private static BSPFileFilter BSPFilter = new BSPFileFilter();
@@ -23,21 +32,27 @@ public class Window extends JPanel implements ActionListener {
 	private static JMenuBar menuBar;
 	
 	private static JMenu fileMenu;
-	private static JMenuItem openItem;
-	private static JMenuItem openDecompItem;
+	private static JMenuItem decompVMFItem;
+	private static JMenuItem decompMAPItem;
 	private static JMenuItem exitItem;
 	
 	private static JMenu optionsMenu;
 	private static JMenuItem replaceEntitiesItem;
 	private static JMenuItem replaceTexturesItem;
 	
-	private static Thread[] decompilerworkers;
+	private static File[] jobs=new File[0];
+	private static boolean[] toVMF;
+	private static int[] threadNum;
 	private static Runnable runMe;
+	private static Thread[] decompilerworkers=null;
+	private static int numThreads;
+	
+	private static String lastUsedFolder;
 
 	// main method
 	// Creates an Object of this class and launches the GUI. Entry point to the whole program.
 	public static void main(String[] args) {
-		if(args.length==0) {
+		//if(args.length==0) {
 			UIManager myUI=new UIManager();
 			try {
 				myUI.setLookAndFeel(myUI.getSystemLookAndFeelClassName());
@@ -48,41 +63,42 @@ public class Window extends JPanel implements ActionListener {
 			frame = new JFrame("BSP Decompiler by 005");
 	
 			window = new Window(frame.getContentPane());
-		} else {
-			window = new Window(args);
-		}
-		window.print("Got a bug to report? Want to see something added?\nCreate an issue report at\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/list\n\n");
+		//} else {
+		//	window = new Window(args);
+		//}
+		window.print("Got a bug to report? Want to see something added?\nCreate an issue report at\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/entry\n\n");
 	}
 
 	// All GUI components get initialized here
 	private static JFileChooser file_selector;
 	private static JFileChooser file_saver;
-	private static JButton btn_open;
-	private static JButton btn_decomp;
-	private static JButton btn_abort;
-	private static JTextField txt_file;
+	private static JButton[] btn_abort;
 	private static JTextField txt_coef;
+	private static JTextField txt_threads;
 	private static JTextArea consolebox;
-	private static JLabel lbl_spacer;
 	private static JLabel lbl_coef;
+	private static JLabel lbl_threads;
+	private static JSplitPane consoleTableSplitter;
 	private static JScrollPane console_pane;
-	private static JCheckBox chk_planar;
-	private static JCheckBox chk_skipPlaneFlip;
-	private static JCheckBox chk_calcVerts;
-	private static JCheckBox chk_roundNums;
-	private static JRadioButton rad_VMF;
-	private static JRadioButton rad_MAP;
+	private static JScrollPane table_pane;
+	private static JCheckBoxMenuItem chk_planarItem;
+	private static JCheckBoxMenuItem chk_skipPlaneFlipItem;
+	private static JCheckBoxMenuItem chk_calcVertsItem;
+	private static JCheckBoxMenuItem chk_roundNumsItem;
 	private static JButton btn_dumplog;
-	private static JProgressBar progressBar;
+	private static JProgressBar[] progressBar;
 	private static JProgressBar totalProgressBar;
+	private static JPanel pnl_jobs;
+	private static JLabel lbl_spacer;
 	
 	// Private variables for a Window object
 	private boolean vertexDecomp=true;
 	private boolean correctPlaneFlip=true;
 	private double planePointCoef=100;
-	private boolean toVMF=true;
-	private boolean calcVerts=false;
-	private boolean roundNums=false;
+	private boolean calcVerts=true;
+	private boolean roundNums=true;
+	private static int numJobs;
+	private static volatile int nextJob=0;
 
 	// This constructor configures and displays the GUI
 	public Window(Container pane) {
@@ -91,10 +107,10 @@ public class Window extends JPanel implements ActionListener {
 		frame.setIconImage(new ImageIcon("icon32x32.PNG").getImage());
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		frame.setPreferredSize(new Dimension(640, 440));
+		frame.setPreferredSize(new Dimension(640, 480));
 
 		frame.pack();
-		frame.setResizable(true);
+		frame.setResizable(false);
 		frame.setVisible(true);			
 		
 		
@@ -103,16 +119,17 @@ public class Window extends JPanel implements ActionListener {
 		menuBar = new JMenuBar();
 		fileMenu = new JMenu("File");
 		menuBar.add(fileMenu);
-		//optionsMenu = new JMenu("Options");
-		//menuBar.add(optionsMenu);
+		optionsMenu = new JMenu("Options");
+		menuBar.add(optionsMenu);
 		
 		// File menu
-		openItem = new JMenuItem("Open");
-		fileMenu.add(openItem);
-		openItem.addActionListener(this);
-		openDecompItem = new JMenuItem("Open and decompile");
-		fileMenu.add(openDecompItem);
-		openDecompItem.addActionListener(this);
+		decompVMFItem = new JMenuItem("Decompile to VMF");
+		fileMenu.add(decompVMFItem);
+		decompVMFItem.addActionListener(this);
+		decompMAPItem = new JMenuItem("Decompile to MAP");
+		fileMenu.add(decompMAPItem);
+		decompMAPItem.addActionListener(this);
+		fileMenu.addSeparator();
 		exitItem = new JMenuItem("Exit");
 		fileMenu.add(exitItem);
 		exitItem.addActionListener(this);
@@ -122,6 +139,25 @@ public class Window extends JPanel implements ActionListener {
 		//optionsMenu.add(replaceEntitiesItem);
 		//replaceTexturesItem = new JMenuItem("Texture replacements...");
 		//optionsMenu.add(replaceTexturesItem);
+		//optionsMenu.addSeparator();
+		chk_planarItem = new JCheckBoxMenuItem("Planar decompilation only");
+		chk_planarItem.setToolTipText("Don't use vertices to aid decompilation. May result in longer decompilations, but may solve problems.");
+		optionsMenu.add(chk_planarItem);
+		chk_planarItem.addActionListener(this);
+		chk_skipPlaneFlipItem = new JCheckBoxMenuItem("Skip plane flip");
+		chk_skipPlaneFlipItem.setToolTipText("Don't make sure brush planes are facing the right direction. Speeds up decompilation in some cases, but may cause problems.");
+		optionsMenu.add(chk_skipPlaneFlipItem);
+		chk_skipPlaneFlipItem.addActionListener(this);
+		chk_calcVertsItem = new JCheckBoxMenuItem("Calculate brush corners");
+		chk_calcVertsItem.setToolTipText("Calculate every brush's corners. May solve problems arising from decompilation of faces with no vertex information.");
+		chk_calcVertsItem.setSelected(true);
+		optionsMenu.add(chk_calcVertsItem);
+		chk_calcVertsItem.addActionListener(this);
+		chk_roundNumsItem = new JCheckBoxMenuItem("Gearcraft-style decimals");
+		chk_roundNumsItem.setToolTipText("Rounds all vertices to six decimals and texture scales to four. Might make map editors (namely GearCraft) happier.");
+		chk_roundNumsItem.setSelected(true);
+		optionsMenu.add(chk_roundNumsItem);
+		chk_roundNumsItem.addActionListener(this);
 		
 		frame.setJMenuBar(menuBar);
 		
@@ -132,115 +168,12 @@ public class Window extends JPanel implements ActionListener {
 		
 		// First row
 		
-		txt_file = new JTextField(40);
-		
-		GridBagConstraints fileConstraints = new GridBagConstraints();
-		fileConstraints.fill = GridBagConstraints.NONE;
-		fileConstraints.gridx = 0;
-		fileConstraints.gridy = 0;
-		fileConstraints.gridwidth = 2;
-		fileConstraints.gridheight = 1;
-		pane.add(txt_file, fileConstraints);
-		
-		btn_open = new JButton("Browse");
-		
-		GridBagConstraints openConstraints = new GridBagConstraints();
-		openConstraints.fill = GridBagConstraints.NONE;
-		openConstraints.gridx = 2;
-		openConstraints.gridy = 0;
-		openConstraints.gridwidth = 1;
-		openConstraints.gridheight = 1;
-		pane.add(btn_open, openConstraints);
-		
-		btn_open.addActionListener(this);
-		
-		btn_decomp = new JButton("Decompile");
-		
-		GridBagConstraints decompConstraints = new GridBagConstraints();
-		decompConstraints.fill = GridBagConstraints.BOTH;
-		decompConstraints.gridx = 3;
-		decompConstraints.gridy = 0;
-		decompConstraints.gridwidth = 1;
-		decompConstraints.gridheight = 1;
-		pane.add(btn_decomp, decompConstraints);
-		
-		btn_decomp.addActionListener(this);
-		
-		btn_abort = new JButton("Abort");
-		
-		GridBagConstraints abortionConstraints = new GridBagConstraints();
-		abortionConstraints.fill = GridBagConstraints.BOTH;
-		abortionConstraints.gridx = 4;
-		abortionConstraints.gridy = 0;
-		abortionConstraints.gridwidth = 1;
-		abortionConstraints.gridheight = 1;
-		pane.add(btn_abort, abortionConstraints);
-		
-		btn_abort.setEnabled(false);
-		btn_abort.addActionListener(this);
-		
-		// Second row
-		
-		chk_planar = new JCheckBox("Planar Decompilation Only");
-		chk_planar.setToolTipText("Don't use vertices to aid decompilation. May result in longer decompilations, but may solve problems.");
-		
-		GridBagConstraints planarConstraints = new GridBagConstraints();
-		planarConstraints.fill = GridBagConstraints.NONE;
-		planarConstraints.gridx = 0;
-		planarConstraints.gridy = 1;
-		planarConstraints.gridwidth = 1;
-		planarConstraints.gridheight = 1;
-		pane.add(chk_planar, planarConstraints);
-		
-		chk_planar.addActionListener(this);
-		
-		chk_skipPlaneFlip = new JCheckBox("Skip plane flip");
-		chk_skipPlaneFlip.setToolTipText("Don't make sure brush planes are facing the right direction. Speeds up decompilation in some cases, but may cause problems.");
-		
-		GridBagConstraints SkipFlipConstraints = new GridBagConstraints();
-		SkipFlipConstraints.fill = GridBagConstraints.NONE;
-		SkipFlipConstraints.gridx = 1;
-		SkipFlipConstraints.gridy = 1;
-		SkipFlipConstraints.gridwidth = 1;
-		SkipFlipConstraints.gridheight = 1;
-		pane.add(chk_skipPlaneFlip, SkipFlipConstraints);
-		
-		chk_skipPlaneFlip.addActionListener(this);
-		
-		chk_calcVerts = new JCheckBox("Calculate Brush Corners");
-		chk_calcVerts.setToolTipText("Calculate every brush's corners. May solve problems arising from decompilation of faces with no vertex information.");
-		
-		GridBagConstraints CalcVertConstraints = new GridBagConstraints();
-		CalcVertConstraints.fill = GridBagConstraints.NONE;
-		CalcVertConstraints.gridx = 2;
-		CalcVertConstraints.gridy = 1;
-		CalcVertConstraints.gridwidth = 1;
-		CalcVertConstraints.gridheight = 1;
-		pane.add(chk_calcVerts, CalcVertConstraints);
-		
-		chk_calcVerts.addActionListener(this);
-		
-		chk_roundNums = new JCheckBox("Round decimals");
-		chk_roundNums.setToolTipText("Rounds all vertices to six decimals and texture scales to four. Might make map editors (namely GearCraft) happier.");
-		
-		GridBagConstraints RoundNumConstraints = new GridBagConstraints();
-		RoundNumConstraints.fill = GridBagConstraints.NONE;
-		RoundNumConstraints.gridx = 3;
-		RoundNumConstraints.gridy = 1;
-		RoundNumConstraints.gridwidth = 2;
-		RoundNumConstraints.gridheight = 1;
-		pane.add(chk_roundNums, RoundNumConstraints);
-		
-		chk_roundNums.addActionListener(this);
-		
-		// Third row
-		
 		lbl_coef = new JLabel("Plane points coefficient: ");
 		
 		GridBagConstraints coeflblConstraints = new GridBagConstraints();
 		coeflblConstraints.fill = GridBagConstraints.NONE;
 		coeflblConstraints.gridx = 0;
-		coeflblConstraints.gridy = 2;
+		coeflblConstraints.gridy = 0;
 		coeflblConstraints.gridwidth = 1;
 		coeflblConstraints.gridheight = 1;
 		pane.add(lbl_coef, coeflblConstraints);
@@ -251,88 +184,116 @@ public class Window extends JPanel implements ActionListener {
 		GridBagConstraints coefConstraints = new GridBagConstraints();
 		coefConstraints.fill = GridBagConstraints.NONE;
 		coefConstraints.gridx = 1;
-		coefConstraints.gridy = 2;
+		coefConstraints.gridy = 0;
 		coefConstraints.gridwidth = 1;
 		coefConstraints.gridheight = 1;
 		pane.add(txt_coef, coefConstraints);
 		
-		rad_VMF = new JRadioButton("VMF");
-		rad_VMF.setSelected(true);
+		lbl_spacer = new JLabel("                                                   ");
 		
-		GridBagConstraints VMFConstraints = new GridBagConstraints();
-		VMFConstraints.fill = GridBagConstraints.NONE;
-		VMFConstraints.gridx = 3;
-		VMFConstraints.gridy = 2;
-		VMFConstraints.gridwidth = 1;
-		VMFConstraints.gridheight = 1;
-		pane.add(rad_VMF, VMFConstraints);
+		GridBagConstraints spacelblConstraints = new GridBagConstraints();
+		spacelblConstraints.fill = GridBagConstraints.NONE;
+		spacelblConstraints.gridx = 2;
+		spacelblConstraints.gridy = 0;
+		spacelblConstraints.gridwidth = 1;
+		spacelblConstraints.gridheight = 1;
+		pane.add(lbl_spacer, spacelblConstraints);
 		
-		rad_VMF.addActionListener(this);
+		lbl_threads = new JLabel("Max concurrent decompiles: ");
 		
-		rad_MAP = new JRadioButton("MAP");
+		GridBagConstraints threadlblConstraints = new GridBagConstraints();
+		threadlblConstraints.fill = GridBagConstraints.NONE;
+		threadlblConstraints.gridx = 3;
+		threadlblConstraints.gridy = 0;
+		threadlblConstraints.gridwidth = 1;
+		threadlblConstraints.gridheight = 1;
+		pane.add(lbl_threads, threadlblConstraints);
 		
-		GridBagConstraints MAPConstraints = new GridBagConstraints();
-		MAPConstraints.fill = GridBagConstraints.NONE;
-		MAPConstraints.gridx = 4;
-		MAPConstraints.gridy = 2;
-		MAPConstraints.gridwidth = 1;
-		MAPConstraints.gridheight = 1;
-		pane.add(rad_MAP, MAPConstraints);
+		txt_threads = new JTextField(5);
+		txt_threads.setText("1");
 		
-		rad_MAP.addActionListener(this);
+		GridBagConstraints threadConstraints = new GridBagConstraints();
+		threadConstraints.fill = GridBagConstraints.NONE;
+		threadConstraints.gridx = 4;
+		threadConstraints.gridy = 0;
+		threadConstraints.gridwidth = 1;
+		threadConstraints.gridheight = 1;
+		pane.add(txt_threads, threadConstraints);
 		
-		ButtonGroup mapType = new ButtonGroup();
-		mapType.add(rad_VMF);
-		mapType.add(rad_MAP);
-		
-		// Fourth row
-		
-		lbl_spacer = new JLabel(" ");
-		
-		GridBagConstraints spacerConstraints = new GridBagConstraints();
-		spacerConstraints.fill = GridBagConstraints.NONE;
-		spacerConstraints.gridx = 0;
-		spacerConstraints.gridy = 3;
-		spacerConstraints.gridwidth = 5;
-		spacerConstraints.gridheight = 1;
-		pane.add(lbl_spacer, spacerConstraints);
-		
-		// Fifth row
+		// Second row
 		
 		consolebox = new JTextArea(15, 75);
 		
 		console_pane = new JScrollPane(consolebox);
 		console_pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		
+		pnl_jobs = new JPanel(new GridBagLayout());
+		
+		// Set up the initial jobs pane right here
+		JLabel lbl_jobno = new JLabel("Job no.");
+		lbl_jobno.setPreferredSize(new Dimension(40, 12));
+		GridBagConstraints jobNoConstraints = new GridBagConstraints();
+		jobNoConstraints.fill = GridBagConstraints.NONE;
+		jobNoConstraints.gridx = 0;
+		jobNoConstraints.gridy = 0;
+		jobNoConstraints.gridwidth = 1;
+		jobNoConstraints.gridheight = 1;
+		pnl_jobs.add(lbl_jobno, jobNoConstraints);
+		
+		JLabel lbl_mapName = new JLabel("Map name");
+		lbl_mapName.setPreferredSize(new Dimension(330, 12));
+		GridBagConstraints mapNameConstraints = new GridBagConstraints();
+		mapNameConstraints.fill = GridBagConstraints.NONE;
+		mapNameConstraints.gridx = 1;
+		mapNameConstraints.gridy = 0;
+		mapNameConstraints.gridwidth = 1;
+		mapNameConstraints.gridheight = 1;
+		pnl_jobs.add(lbl_mapName, mapNameConstraints);
+		
+		JLabel lbl_progress = new JLabel("Status");
+		lbl_progress.setPreferredSize(new Dimension(150, 12));
+		GridBagConstraints progressConstraints = new GridBagConstraints();
+		progressConstraints.fill = GridBagConstraints.NONE;
+		progressConstraints.gridx = 2;
+		progressConstraints.gridy = 0;
+		progressConstraints.gridwidth = 1;
+		progressConstraints.gridheight = 1;
+		pnl_jobs.add(lbl_progress, progressConstraints);
+		
+		JLabel lbl_abort = new JLabel("Abort");
+		lbl_abort.setPreferredSize(new Dimension(50, 12));
+		GridBagConstraints abortlabelConstraints = new GridBagConstraints();
+		abortlabelConstraints.fill = GridBagConstraints.NONE;
+		abortlabelConstraints.gridx = 3;
+		abortlabelConstraints.gridy = 0;
+		abortlabelConstraints.gridwidth = 1;
+		abortlabelConstraints.gridheight = 1;
+		pnl_jobs.add(lbl_abort, abortlabelConstraints);
+		
+		table_pane = new JScrollPane(pnl_jobs);
+		table_pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		
+		consoleTableSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, console_pane, table_pane);
+		consoleTableSplitter.setPreferredSize(new Dimension(620, 380));
+		consoleTableSplitter.setOneTouchExpandable(true);
+		consoleTableSplitter.setDividerLocation(190);
+		
 		GridBagConstraints consoleConstraints = new GridBagConstraints();
 		consoleConstraints.fill = GridBagConstraints.NONE;
 		consoleConstraints.gridx = 0;
-		consoleConstraints.gridy = 4;
+		consoleConstraints.gridy = 1;
 		consoleConstraints.gridwidth = 5;
 		consoleConstraints.gridheight = 1;
-		pane.add(console_pane, consoleConstraints);
+		pane.add(consoleTableSplitter, consoleConstraints);
 		
-		// Sixth row
-		
-		progressBar = new JProgressBar(0, 1);
-		
-		GridBagConstraints barConstraints = new GridBagConstraints();
-		barConstraints.fill = GridBagConstraints.NONE;
-		barConstraints.gridx = 1;
-		barConstraints.gridy = 5;
-		barConstraints.gridwidth = 2;
-		barConstraints.gridheight = 1;
-		pane.add(progressBar, barConstraints);
-		progressBar.setStringPainted(true);
-		progressBar.setValue(0);
-		progressBar.setString("0%");
+		// Third row
 		
 		totalProgressBar = new JProgressBar(0, 1);
 		
 		GridBagConstraints totalBarConstraints = new GridBagConstraints();
 		totalBarConstraints.fill = GridBagConstraints.NONE;
 		totalBarConstraints.gridx = 0;
-		totalBarConstraints.gridy = 5;
+		totalBarConstraints.gridy = 2;
 		totalBarConstraints.gridwidth = 1;
 		totalBarConstraints.gridheight = 1;
 		pane.add(totalProgressBar, totalBarConstraints);
@@ -345,12 +306,13 @@ public class Window extends JPanel implements ActionListener {
 		GridBagConstraints dumpConstraints = new GridBagConstraints();
 		dumpConstraints.fill = GridBagConstraints.NONE;
 		dumpConstraints.gridx = 4;
-		dumpConstraints.gridy = 5;
+		dumpConstraints.gridy = 2;
 		dumpConstraints.gridwidth = 1;
 		dumpConstraints.gridheight = 1;
 		pane.add(btn_dumplog, dumpConstraints);
 		
 		btn_dumplog.addActionListener(this);
+		
 	} // constructor
 	
 	public Window(String[] args) {
@@ -393,7 +355,7 @@ public class Window extends JPanel implements ActionListener {
 				System.out.println("-?: Show this help text");
 			}
 			if(args[i].equalsIgnoreCase("-toMAP")) {
-				toVMF=false;
+			//	toVMF=false;
 			} else {
 				if(!out.equals("")) {
 					out+=","+args[i];
@@ -402,76 +364,56 @@ public class Window extends JPanel implements ActionListener {
 				}
 			}
 		}
-		startDecompilerThread(out);
+		//startDecompilerThread(out);
 	}
 
 	// actionPerformed(ActionEvent)
 	// Any time something happens on the GUI, this is called. However we're only
 	// going to perform actions when certain things are clicked. The rest are discarded.
 	public void actionPerformed(ActionEvent action) {
+		if(action.getActionCommand().substring(0,6).equals("Abort ")) {
+			int cancelJob=new Integer(action.getActionCommand().substring(6));
+			stopDecompilerThread(cancelJob);
+		}
+		
 		// TODO: Clean this up, perhaps use a switch instead
 		// User clicks the "open" button
-		if (action.getSource() == btn_open || action.getSource() == openItem) {
-			if(!txt_file.getText().equals("")) {
-				file_selector = new JFileChooser(txt_file.getText());
-			} else {
+		if (action.getSource() == decompMAPItem || action.getSource() == decompVMFItem) {
+			if(lastUsedFolder==null) {
 				file_selector = new JFileChooser("/"); // TODO: set to current folder
+			} else {
+				file_selector = new JFileChooser(lastUsedFolder);
 			}
 			file_selector.addChoosableFileFilter(BSPFilter);
 			file_selector.setMultiSelectionEnabled(true);
-			// file_selector.setIconImage(new ImageIcon("folder32x32.PNG").getImage());
 			int returnVal = file_selector.showOpenDialog(this);
 			
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				File[] file = file_selector.getSelectedFiles();
-				String out=file[0].getAbsolutePath();
-				for(int i=1;i<file.length;i++) {
-					out+=","+file[i].getAbsolutePath();
+				File[] files = file_selector.getSelectedFiles();
+				for(int i=0;i<files.length;i++) {
+					if(!files[i].exists() || files[i].isDirectory()) {
+						files[i]=null; // Set any invalid files to null entries; this is easy to check later
+					}
 				}
-				txt_file.setText(out);
-			}
-		}
-		
-		if (action.getSource() == openDecompItem) {
-			if(!txt_file.getText().equals("")) {
-				file_selector = new JFileChooser(txt_file.getText());
-			} else {
-				file_selector = new JFileChooser("/"); // TODO: set to current folder
-			}
-			file_selector.addChoosableFileFilter(BSPFilter);
-			file_selector.setMultiSelectionEnabled(true);
-			// file_selector.setIconImage(new ImageIcon("folder32x32.PNG").getImage());
-			int returnVal = file_selector.showOpenDialog(this);
-			
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				File[] file = file_selector.getSelectedFiles();
-				String out=file[0].getAbsolutePath();
-				for(int i=1;i<file.length;i++) {
-					out+=","+file[i].getAbsolutePath();
+				try {
+					numThreads=new Integer(txt_threads.getText());
+					if(numThreads<1) {
+						throw new NumberFormatException();
+					}
+				} catch(NumberFormatException e) {
+					numThreads=1;
 				}
-				txt_file.setText(out);
+				txt_threads.setEnabled(false);
+				if(decompilerworkers==null) {
+					decompilerworkers=new Thread[numThreads];
+				}
+				lastUsedFolder=files[0].getParent();
+				if(action.getSource() == decompVMFItem) {
+					addJobs(files, true);
+				} else { // There's only one other possibility :P
+					addJobs(files, false);
+				}
 			}
-			try {
-				planePointCoef=Double.parseDouble(txt_coef.getText());
-			} catch(java.lang.NumberFormatException e) {
-				;
-			}
-			startDecompilerThread(txt_file.getText());
-		}
-		
-		// User clicks the "decompile" button
-		if(action.getSource() == btn_decomp) {
-			try {
-				planePointCoef=Double.parseDouble(txt_coef.getText());
-			} catch(java.lang.NumberFormatException e) {
-				;
-			}
-			startDecompilerThread(txt_file.getText());
-		}
-		
-		// User clicks the "abort" button
-		if(action.getSource() == btn_abort) {
-			stopDecompilerThread();
 		}
 		
 		// User clicks the "Save log" button
@@ -508,30 +450,26 @@ public class Window extends JPanel implements ActionListener {
 			}
 		}
 		
-		if(action.getSource() == chk_planar) {
-			vertexDecomp=!chk_planar.isSelected();
+		if(action.getSource() == chk_planarItem) {
+			vertexDecomp=!chk_planarItem.isSelected();
 		}
 		
-		if(action.getSource() == chk_skipPlaneFlip) {
-			correctPlaneFlip=!chk_skipPlaneFlip.isSelected();
+		if(action.getSource() == chk_skipPlaneFlipItem) {
+			correctPlaneFlip=!chk_skipPlaneFlipItem.isSelected();
 		}
 		
-		if(action.getSource() == chk_calcVerts) {
-			calcVerts=chk_calcVerts.isSelected();
+		if(action.getSource() == chk_calcVertsItem) {
+			calcVerts=chk_calcVertsItem.isSelected();
 		}
 		
-		if(action.getSource() == chk_roundNums) {
-			roundNums=chk_roundNums.isSelected();
+		if(action.getSource() == chk_roundNumsItem) {
+			roundNums=chk_roundNumsItem.isSelected();
 		}
 		
-		if(action.getSource() == rad_VMF || action.getSource() == rad_MAP) {
-			toVMF=rad_VMF.isSelected();
-		}
-		
-		if(action.getSource() == chk_planar || action.getSource() == chk_skipPlaneFlip) {
-			chk_calcVerts.setEnabled(!(chk_planar.isSelected() && !chk_skipPlaneFlip.isSelected()));
-			if(chk_planar.isSelected() && !chk_skipPlaneFlip.isSelected()) {
-				chk_calcVerts.setSelected(true);
+		if(action.getSource() == chk_planarItem || action.getSource() == chk_skipPlaneFlipItem) {
+			chk_calcVertsItem.setEnabled(!(chk_planarItem.isSelected() && !chk_skipPlaneFlipItem.isSelected()));
+			if(chk_planarItem.isSelected() && !chk_skipPlaneFlipItem.isSelected()) {
+				chk_calcVertsItem.setSelected(true);
 				calcVerts=true;
 			}
 		}
@@ -545,45 +483,20 @@ public class Window extends JPanel implements ActionListener {
 		}
 	}
 	
-	private void startDecompilerThread(String fileList) {
-		clearConsole();
-		int numFiles=1;
-		for(int i=0;i<fileList.length();i++) {
-			if(fileList.charAt(i)==',') {
-				numFiles++;
-			}
-		}
-		String[] fileArray=new String[numFiles];
-		for(int i=0;i<numFiles;i++) {
-			fileArray[i]="";
-		}
-		int currentFile=0;
-		for(int i=0;i<fileList.length();i++) {
-			if(fileList.charAt(i)==',') {
-				currentFile++;
-			} else {
-				fileArray[currentFile]+=fileList.charAt(i);
-			}
-		}
-		File[] BSPFiles=new File[numFiles];
-		setTotalProgress(0, BSPFiles.length);
-		for(int i=0;i<numFiles;i++) {
-			BSPFiles[i]=new File(fileArray[i]);
-		}
-		decompilerworkers=new Thread[1];
-		runMe=new DecompilerThread(BSPFiles, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF, planePointCoef);
-		decompilerworkers[0] = new Thread(runMe);
-		decompilerworkers[0].setName("Decompiler");
-		decompilerworkers[0].start();
+	private void stopDecompilerThread(int job) {
+		int currentThread=threadNum[job-1];
+		if(currentThread>-1) {
+			decompilerworkers[currentThread].stop(); // The Java API lists this method of stopping a thread as deprecated.
+			startNextJob(true, currentThread);       // For the purposes of this program, I'm not sure it's an issue though.
+		}                                           // More info: http://docs.oracle.com/javase/6/docs/technotes/guides/concurrency/threadPrimitiveDeprecation.html
+		println("Job number "+job+" aborted by user.");               
+		jobs[job-1]=null;
+		btn_abort[job-1].setEnabled(false);
+		btn_abort[job-1].setText("Aborted!");
+		progressBar[job-1].setIndeterminate(false);
+		progressBar[job-1].setString("Aborted!");
 	}
 	
-	private void stopDecompilerThread() {
-		decompilerworkers[0].stop();       // The Java API lists this method of stopping a thread as deprecated. However, for the
-		println("Aborted by user.\n"); // purposes of this program, the reasons for deprecation do not apply. The main problems
-		btn_decomp.setEnabled(true);   // are the security and values of variables shared between threads, but I only ever run
-		btn_abort.setEnabled(false);   // at most two threads at once, the GUI and the Decompiler, and they never share
-	}                                 // information. However, it may be a good idea to use a more "correct" implementation. More info:
-	                                  // http://docs.oracle.com/javase/6/docs/technotes/guides/concurrency/threadPrimitiveDeprecation.html
 	protected static void print(String out) {
 		if(consolebox!=null) {
 			consolebox.append(out);
@@ -602,14 +515,14 @@ public class Window extends JPanel implements ActionListener {
 		}
 	}
 	
-	protected static void setProgress(int in, int max, String map) {
-		if(progressBar!=null) {
-			progressBar.setMaximum(max);
-			progressBar.setValue(in);
-			if(in==max) {
-				progressBar.setString("Done!");
+	protected static void setProgress(int jobmod, int in, int max, String status) {
+		if(progressBar[jobmod]!=null) {
+			progressBar[jobmod].setMaximum(max);
+			progressBar[jobmod].setValue(in);
+			if((int)((in/(float)max)*100)==100 || (int)((in/(float)max)*100)==0) {
+				progressBar[jobmod].setString(status);
 			} else {
-				progressBar.setString(map+" "+(int)((in/(float)max)*100)+"%");
+				progressBar[jobmod].setString(status+" "+(int)((in/(float)max)*100)+"%");
 			}
 		}
 	}
@@ -632,15 +545,152 @@ public class Window extends JPanel implements ActionListener {
 		}
 	}
 	
-	protected static void setDecompileButtonEnabled(boolean in) {
-		if(btn_decomp!=null) {
-			btn_decomp.setEnabled(in);
+	protected static void setAbortButtonEnabled(int jobmod, boolean in) {
+		if(btn_abort[jobmod]!=null) {
+			btn_abort[jobmod].setEnabled(in);
 		}
 	}
 	
-	protected static void setAbortButtonEnabled(boolean in) {
-		if(btn_abort!=null) {
-			btn_abort.setEnabled(in);
+	private void addJobs(File[] newJobs, boolean VMFDecompile) {
+		int realNewJobs=0;
+		for(int i=0;i<newJobs.length;i++) {
+			if(newJobs[i]!=null) {
+				realNewJobs++;
+				File[] newList = new File[jobs.length+1];
+				boolean[] newToVMF = new boolean[jobs.length+1];
+				int[] newThreadNo=new int[jobs.length+1];
+				for(int j=0;j<jobs.length;j++) {
+					newList[j]=jobs[j];
+					newToVMF[j]=toVMF[j];
+					newThreadNo[j]=threadNum[j];
+				}
+				newList[jobs.length]=newJobs[i];
+				newToVMF[jobs.length]=VMFDecompile;
+				newThreadNo[jobs.length]=-1;
+				jobs=newList;
+				toVMF=newToVMF;
+				threadNum=newThreadNo;
+				
+				// Add another row to the jobs pane
+				JLabel lbl_jobno = new JLabel(++numJobs+"");
+				lbl_jobno.setPreferredSize(new Dimension(40, 12));
+				GridBagConstraints jobNoConstraints = new GridBagConstraints();
+				jobNoConstraints.fill = GridBagConstraints.NONE;
+				jobNoConstraints.gridx = 0;
+				jobNoConstraints.gridy = numJobs;
+				jobNoConstraints.gridwidth = 1;
+				jobNoConstraints.gridheight = 1;
+				pnl_jobs.add(lbl_jobno, jobNoConstraints);
+				
+				JLabel lbl_mapName = new JLabel(newJobs[i].getName());
+				lbl_mapName.setPreferredSize(new Dimension(330, 12));
+				GridBagConstraints mapNameConstraints = new GridBagConstraints();
+				mapNameConstraints.fill = GridBagConstraints.NONE;
+				mapNameConstraints.gridx = 1;
+				mapNameConstraints.gridy = numJobs;
+				mapNameConstraints.gridwidth = 1;
+				mapNameConstraints.gridheight = 1;
+				pnl_jobs.add(lbl_mapName, mapNameConstraints);
+				
+				JProgressBar[] newBars=new JProgressBar[numJobs];
+				for(int j=0;j<numJobs-1;j++) {
+					newBars[j]=progressBar[j];
+				}
+				newBars[numJobs-1]=new JProgressBar(0, 1);
+				progressBar=newBars;
+				progressBar[numJobs-1].setString("Queued");
+				progressBar[numJobs-1].setStringPainted(true);
+				progressBar[numJobs-1].setValue(0);
+				progressBar[numJobs-1].setIndeterminate(true);
+				GridBagConstraints progressConstraints = new GridBagConstraints();
+				progressConstraints.fill = GridBagConstraints.NONE;
+				progressConstraints.gridx = 2;
+				progressConstraints.gridy = numJobs;
+				progressConstraints.gridwidth = 1;
+				progressConstraints.gridheight = 1;
+				pnl_jobs.add(progressBar[numJobs-1], progressConstraints);
+				
+				JButton[] newButtons=new JButton[numJobs];
+				for(int j=0;j<numJobs-1;j++) {
+					newButtons[j]=btn_abort[j];
+				}
+				newButtons[numJobs-1]=new JButton("Abort "+numJobs);
+				btn_abort=newButtons;
+				GridBagConstraints abortbuttonConstraints = new GridBagConstraints();
+				abortbuttonConstraints.fill = GridBagConstraints.NONE;
+				abortbuttonConstraints.gridx = 3;
+				abortbuttonConstraints.gridy = numJobs;
+				abortbuttonConstraints.gridwidth = 1;
+				abortbuttonConstraints.gridheight = 1;
+				pnl_jobs.add(btn_abort[numJobs-1], abortbuttonConstraints);
+				btn_abort[numJobs-1].addActionListener(this);
+
+				startNextJob(false, -1);
+			}
+		}
+		println("Added "+realNewJobs+" new jobs to queue");
+		table_pane.updateUI(); // If you don't do this, none of the changes are reflected
+		                       // in the UI, I don't know why, or how this fixes it, or
+		                       // if this is even the correct way to do this. But it works.
+	}
+	
+	// This method actually starts a thread for the specified job
+	private void startDecompilerThread(int newThread, int jobNum) {
+		File job=jobs[jobNum];
+		// I'd really like to use Thread.join() or something here, but the stupid thread never dies.
+		// But if somethingFinished is true, then one of the threads is telling us it's finished anyway.
+		runMe=new DecompilerThread(job, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF[jobNum], planePointCoef, jobNum, newThread);
+		decompilerworkers[newThread] = new Thread(runMe);
+		decompilerworkers[newThread].setName("Decompiler "+newThread+" job "+jobNum);
+		decompilerworkers[newThread].start();
+		threadNum[jobNum]=newThread;
+		println("Started job #"+jobNum);
+		progressBar[jobNum].setIndeterminate(false);
+	}
+		
+	// This method queues up the next job and makes sure to run a thread
+	protected void startNextJob(boolean somethingFinished, int threadFinished) {
+		System.out.println("Increasing nextJob "+nextJob+" to "+(nextJob+1));
+		int myJob=nextJob++; // Increment this right away, then use myJob. For thread safety, in case two threads are using this method at once.
+		// This isn't a perfect, or ideal solution, and it's not 100% failproof. But it is much safer.
+		setTotalProgress(myJob, numJobs);
+		if(myJob==0) {
+			clearConsole();
+		}
+		if(myJob<numJobs) {
+			//if(myJob>0) { // Stranger things have happened...
+				if(jobs[myJob]==null) { // If this job was aborted
+					startNextJob(somethingFinished, threadFinished); // Try the next one. If it was also aborted this will recurse until either we get to a job or finish
+				} else {
+					if(somethingFinished) {
+						startDecompilerThread(threadFinished, myJob);
+					} else {
+						for(int i=0;i<numThreads;i++) {
+							try {
+								if(!decompilerworkers[i].isAlive()) {
+									startDecompilerThread(i, myJob);
+									break;
+								}
+							} catch(java.lang.NullPointerException e) {
+								startDecompilerThread(i, myJob);
+								break;
+							}
+							if(i+1==numThreads) {
+								System.out.println("Decreasing nextJob "+nextJob+" to "+(nextJob-1));
+								// If we reach this point the thread hasn't been started yet
+								nextJob--; // If the thread can't start (yet), undo the changes to nextJob and stop.
+								// This is one of the caveats of this way of doing things. If the thread can't start you
+								// need to undo this. Luckily, I believe the only time we'll run into this case is when
+								// a job is added when decompiles are already running.
+							}
+						}
+					}
+				}
+			//}
+		} else {
+			System.out.println("Decreasing nextJob "+nextJob+" to "+(nextJob-1));
+			nextJob--;
+			r.gc(); // Now the program has time to rest while the user does whatever. Collect garbage.
 		}
 	}
 }
