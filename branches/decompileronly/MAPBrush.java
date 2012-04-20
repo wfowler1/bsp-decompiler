@@ -172,7 +172,7 @@ public class MAPBrush {
 			try {
 				sides[i].shift(originVector);
 			} catch(java.lang.NullPointerException e) {
-				Window.window.println("WARNING: Entity "+entnum+" Brush "+brushNum+" Side "+i+" missing plane info! Had to regenerate!");
+				Window.window.println("WARNING: Entity "+entnum+" Brush "+brushNum+" Side "+i+" missing plane points! Had to regenerate!");
 				sides[i].setPlane(GenericMethods.extrapPlanePoints(planes[i], planePointCoef));
 				sides[i].shift(originVector);
 			}

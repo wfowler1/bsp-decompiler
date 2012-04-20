@@ -13,7 +13,8 @@ public class v38Model {
 	private Vector3D mins;
 	private Vector3D maxs;
 	private Vector3D origin;
-	private int head;
+	private int head; // Rather than an index/length pair, this just uses an index which
+	                  // references a node. Every child of that node is part of this model.
 	private int face;
 	private int numFaces;
 	

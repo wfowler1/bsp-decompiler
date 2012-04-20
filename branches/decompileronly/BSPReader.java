@@ -112,7 +112,14 @@ public class BSPReader {
 							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
 							BSP38.setVertices(readLump(offset, length));
 							
-							offsetReader.skip(16); // Do not need offset/length for lumps 3 and 4
+							offsetReader.skip(8); // Do not need offset/length for lump 3
+							
+							// Lump 04
+							offsetReader.read(read); // Read 4 bytes
+							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							offsetReader.read(read); // Read 4 more bytes
+							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							BSP38.setNodes(readLump(offset, length));
 							
 							// Lump 05
 							offsetReader.read(read); // Read 4 bytes

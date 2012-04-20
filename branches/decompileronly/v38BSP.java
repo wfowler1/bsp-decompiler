@@ -17,6 +17,7 @@ public class v38BSP {
 	private BSPPlanes planes;
 	private v38Textures textures;
 	private Vertices vertices;
+	private v38Nodes nodes;
 	private v38Faces faces;
 	private v38Leaves leaves;
 	private ShortList markbrushes;
@@ -52,6 +53,11 @@ public class v38BSP {
 			Window.window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.getNumElements()+" items");
 		} catch(java.lang.NullPointerException e) {
 			Window.window.println("Vertices not yet parsed!");
+		}
+		try {
+			Window.window.println("Nodes lump: "+nodes.getLength()+" bytes, "+nodes.getNumElements()+" items");
+		} catch(java.lang.NullPointerException e) {
+			Window.window.println("Nodes not yet parsed!");
 		}
 		try {
 			Window.window.println("Faces lump: "+faces.getLength()+" bytes, "+faces.getNumElements()+" items");
@@ -94,6 +100,67 @@ public class v38BSP {
 			Window.window.println("Brush sides not yet parsed!");
 		}
 	}
+	
+	// +getLeavesInModel(int)
+	// Returns an array of v38Leaf containing all the leaves referenced from
+	// this model's head node. This array cannot be referenced by index numbers
+	// from other lumps, but if simply iterating through, getting information
+	// it'll be just fine.
+	public v38Leaf[] getLeavesInModel(int model) {
+		return getLeavesInNode(models.getModel(model).getHead());
+	}
+	
+	// +getLeavesInNode(int)
+	// Returns an array of v38Leaf containing all the leaves referenced from
+	// this node. Since nodes reference other nodes, this may recurse quite
+	// some ways. Eventually every node will boil down to a set of leaves,
+	// which is what this method returns.
+	
+	// This is an iterative preorder traversal algorithm modified from the Wikipedia page at:
+	// http://en.wikipedia.org/wiki/Tree_traversal#Iterative_Traversal
+	// I needed an iterative algorithm because recursive ones commonly gave stack overflows.
+	public v38Leaf[] getLeavesInNode(int head) {
+		v38Node headNode;
+		v38Leaf[] nodeLeaves=new v38Leaf[0];
+		try {
+			headNode=nodes.getNode(head);
+		} catch(java.lang.ArrayIndexOutOfBoundsException e) {
+			return nodeLeaves;
+		}
+		v38NodeStack nodestack = new v38NodeStack();
+		nodestack.push(headNode);
+ 
+		v38Node currentNode;
+
+		while (!nodestack.isEmpty()) {
+			currentNode = nodestack.pop();
+			int right = currentNode.getChild2();
+			if (right >= 0) {
+				nodestack.push(nodes.getNode(right));
+			} else {
+				v38Leaf[] newList=new v38Leaf[nodeLeaves.length+1];
+				for(int i=0;i<nodeLeaves.length;i++) {
+					newList[i]=nodeLeaves[i];
+				}
+				newList[nodeLeaves.length]=leaves.getLeaf((right*(-1))-1); // Quake 2 subtracts 1 from the index
+				nodeLeaves=newList;
+			}
+			int left = currentNode.getChild1();
+			if (left >= 0) {
+				nodestack.push(nodes.getNode(left));
+			} else {
+				v38Leaf[] newList=new v38Leaf[nodeLeaves.length+1];
+				for(int i=0;i<nodeLeaves.length;i++) {
+					newList[i]=nodeLeaves[i];
+				}
+				newList[nodeLeaves.length]=leaves.getLeaf((left*(-1))-1); // Quake 2 subtracts 1 from the index
+				nodeLeaves=newList;
+			}
+		}
+		return nodeLeaves;
+	}
+	
+	
 	
 	// ACCESSORS/MUTATORS
 	
@@ -157,6 +224,14 @@ public class v38BSP {
 	
 	public Vertices getVertices() {
 		return vertices;
+	}
+	
+	public void setNodes(byte[] data) {
+		nodes=new v38Nodes(data);
+	}
+	
+	public v38Nodes getNodes() {
+		return nodes;
 	}
 	
 	public void setFaces(byte[] data) {

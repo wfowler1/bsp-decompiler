@@ -95,9 +95,8 @@ public class Decompiler {
 		Date begin=new Date();
 		switch(version) {
 			case 38:
-				Window.window.println("Decompilation of Quake 2 map is a work in progress! Expect inaccuracies!");
 				if(vertexDecomp) {
-					Window.window.println("Decompilation using vertices not written yet, falling back to planar.");
+					Window.window.println("Quake 2 Decompilation using vertices not possible (yet). Using planes instead!");
 				}
 				decompileBSP38();
 				break;
@@ -296,7 +295,13 @@ public class Decompiler {
 				}
 				int firstVertex=currentFace.getVert();
 				int numVertices=currentFace.getNumVerts();
-				Plane currentPlane=BSP42.getPlanes().getPlane(currentSide.getPlane()).getPlane();
+				Plane currentPlane;
+				try {
+					currentPlane=BSP42.getPlanes().getPlane(currentSide.getPlane()).getPlane();
+				} catch(java.lang.ArrayIndexOutOfBoundsException e) {
+					Window.window.println("WARNING: BSP has error, references nonexistant plane "+currentSide.getPlane()+", bad side "+(l)+" of brush "+numBrshs+" Entity "+currentEntity);
+					currentPlane=new Plane((double)1, (double)0, (double)0, (double)0);
+				}
 				boolean pointsWorked=false;
 				if(numVertices!=0 && vertexDecomp) { // If the face actually references a set of vertices
 					plane[0]=new Vector3D(BSP42.getVertices().getVertex(firstVertex)); // Grab and store the first one
@@ -648,60 +653,6 @@ public class Decompiler {
 		// could be saved back into the BSP and really mess some stuff up.
 		mapFile=new Entities(BSP38.getEntities());
 		int numTotalItems=0;
-		numBrshs=0;
-		int[] brushModel=new int[BSP38.getBrushes().getNumElements()];
-		int lastModelNum=0; // Keep track of what the last determined model was. Brushes are referenced in order of
-		                    // their model, so the current one will never be in a model before the previous. However
-		                    // to do things this way, there may be NO false positives among the world brushes.
-		int startBrush=1; // We can assume brush 0 will always be world...
-		// Then I need to go through each entity and see if it's brush-based.
-		// If it is then I need to look at the faces of the model. If the face info matches
-		// up with enough of a brush's info then it's safe to assume the brush is part of that
-		// entity.
-		for(int i=1;i<BSP38.getEntities().getNumElements();i++) {
-			if(mapFile.getEntity(i).getModelNumber()>-1) {
-				v38Model currentModel=BSP38.getModels().getModel(mapFile.getEntity(i).getModelNumber());
-				int[] numTexturesMatched=new int[BSP38.getBrushes().getNumElements()]; // For each brush, keep track of how many of this model's faces match its sides
-				int[] numPlanesMatched=new int[BSP38.getBrushes().getNumElements()]; // For each brush, keep track of how many of this model's faces match its sides
-				int firstFace=currentModel.getFace();
-				int numFaces=currentModel.getNumFaces();
-				for(int j=0;j<numFaces;j++) { // for each face in this model
-					v38Face currentFace=BSP38.getFaces().getFace(firstFace+j);
-					for(int k=startBrush;k<BSP38.getBrushes().getNumElements();k++) { // Check each brush
-						Brush currentBrush=BSP38.getBrushes().getBrush(k);
-						for(int l=0;l<currentBrush.getNumSides();l++) { // For each side of this brush
-							v38BrushSide currentSide=BSP38.getBrushSides().getBrushSide(currentBrush.getFirstSide()+l);
-							if(currentSide.getPlane() == currentFace.getPlane()) { // If the info matches up
-								numPlanesMatched[k]++; // Count it as a matched side
-							}
-							if(currentSide.getTexInfo() == currentFace.getTexInfo()) { // If the info matches up
-								numTexturesMatched[k]++; // Count it as a matched side
-							}
-						}
-						if(numPlanesMatched[k]>=currentBrush.getNumSides()*0.25 && numPlanesMatched[k]>=2) {
-						// This is a sort of "tolerance" for how many faces must match before the brush is added to the entity.
-						// Range: 0 (non-inclusive) to 1 (inclusive) (0% to 100%)
-						// If set to 0, every brush will be added to an entity!
-						// Set lower to try to get more brushes into an entity (if they got placed in world instead)
-						// Set higher to reduce the chance of false positives
-							if(numTexturesMatched[k]>=currentBrush.getNumSides()*0.25 && numTexturesMatched[k]>=1) {
-								if(lastModelNum<mapFile.getEntity(i).getModelNumber()) { // If this is another model we're dealing with
-									for(int l=0;l<mapFile.getEntity(i).getModelNumber()-lastModelNum-1;l++) { // If there's a jump of more than one model
-										brushModel[k-l]=mapFile.getEntity(i).getModelNumber()-l;
-									}
-									lastModelNum=mapFile.getEntity(i).getModelNumber();
-								}
-								brushModel[k]=mapFile.getEntity(i).getModelNumber();
-								startBrush=k+1; // Remember the last brush of this model
-							}
-						} else { // If it failed the last test, it may still be part of an entity.
-							brushModel[k]=lastModelNum; // This will be the model number of the previous brush. This method isn't failproof, but it'll
-							                            // work better than nothing.
-						}
-					}
-				}
-			}
-		}
 		for(int i=0;i<BSP38.getEntities().getNumElements();i++) { // For each entity
 			if(toVMF) { // correct some entities to make source ports easier, TODO
 				mapFile.getEntity(i).setAttribute("id", new Integer(++numIDs).toString());
@@ -710,29 +661,44 @@ public class Decompiler {
 					mapFile.getEntity(i).setAttribute("mapversion", "510"); // Otherwise Gearcraft cries.
 				}
 			}
-			numBrshs=0; // Reset the brush count for each entity
 			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
 			int currentModel=mapFile.getEntity(i).getModelNumber();
 			
 			if(currentModel!=-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
 				double[] origin=mapFile.getEntity(i).getOrigin();
-				for(int j=0;j<BSP38.getBrushes().getNumElements();j++) { // For each brush
-					if(brushModel[j]==currentModel) { // If it was determined that this brush goes with the current model
-						decompileBrush38(BSP38.getBrushes().getBrush(j), i); // Decompile the brush
-						numBrshs++;
-						numTotalItems++; // The brush
-						Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().getNumElements()+BSP38.getEntities().getNumElements(), "Decompiling...");
+				int firstLeaf=BSP38.getModels().getModel(currentModel).getHead();
+				v38Leaf[] leaves=BSP38.getLeavesInModel(currentModel);
+				int numLeaves=leaves.length;
+				boolean[] brushesUsed=new boolean[BSP38.getBrushes().getNumElements()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
+				numBrshs=0; // Reset the brush count for each entity
+				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
+					v38Leaf currentLeaf=leaves[j];
+					short firstBrushIndex=currentLeaf.getFirstMarkBrush();
+					short numBrushIndices=currentLeaf.getNumMarkBrushes();
+					if(numBrushIndices>0) { // A lot of leaves reference no brushes. If this is one, this iteration of the j loop is finished
+						for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
+							if(!brushesUsed[BSP38.getMarkBrushes().getShort(firstBrushIndex+k)]) { // If the current brush has NOT been used in this entity
+								brushesUsed[BSP38.getMarkBrushes().getShort(firstBrushIndex+k)]=true;
+								decompileBrush38(BSP38.getBrushes().getBrush(BSP38.getMarkBrushes().getShort(firstBrushIndex+k)), i); // Decompile the brush
+								numBrshs++;
+								numTotalItems++;
+								Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().getNumElements()+BSP38.getEntities().getNumElements(), "Decompiling...");
+							}
+						}
 					}
 				}
 				mapFile.getEntity(i).deleteAttribute("model");
-				// Recreate origin brushes for entities that need them
+				// Recreate origin brushes for entities that need them, only for GearCraft though.
 				// These are discarded on compile and replaced with an "origin" attribute in the entity.
 				// I need to undo that. For this I will create a 32x32 brush, centered at the point defined
-				// by the "origin" attribute.
-				if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
-					addOriginBrush(i, origin);
+				// by the "origin" attribute. Hammer keeps the "origin" attribute and uses it directly
+				// instead, so we'll keep it in a VMF.
+				if(!toVMF) {
+					if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
+						addOriginBrush(i, origin);
+					}
+					mapFile.getEntity(i).deleteAttribute("origin");
 				}
-				mapFile.getEntity(i).deleteAttribute("origin");
 			}
 			numTotalItems++; // This entity
 			Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().getNumElements()+BSP38.getEntities().getNumElements(), "Decompiling...");
@@ -747,7 +713,7 @@ public class Decompiler {
 		}
 		Window.window.println("Process completed!");
 	}
-	
+
 	// -decompileBrush38(Brush, int, boolean)
 	// Decompiles the Brush and adds it to entitiy #currentEntity as .MAP data.
 	private void decompileBrush38(Brush brush, int currentEntity) {

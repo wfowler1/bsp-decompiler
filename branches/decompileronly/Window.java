@@ -14,7 +14,7 @@ import java.io.FileOutputStream;
 import java.util.Date;
 
 public class Window extends JPanel implements ActionListener {
-	
+
 	private static Runtime r = Runtime.getRuntime(); // Get a runtime object. This is for calling
 	                                                 // Java's garbage collector and does not need
 	                                                 // to be ported. I try not to leave memory leaks
@@ -27,26 +27,26 @@ public class Window extends JPanel implements ActionListener {
 	protected static Window window;
 	private static BSPFileFilter BSPFilter = new BSPFileFilter();
 	private static LOGFileFilter LOGFilter = new LOGFileFilter();
-	
+
 	private static JFrame frame;
 	private static JMenuBar menuBar;
-	
+
 	private static JMenu fileMenu;
 	private static JMenuItem decompVMFItem;
 	private static JMenuItem decompMAPItem;
 	private static JMenuItem exitItem;
-	
+
 	private static JMenu optionsMenu;
 	private static JMenuItem replaceEntitiesItem;
 	private static JMenuItem replaceTexturesItem;
-	
+
 	private static File[] jobs=new File[0];
 	private static boolean[] toVMF;
 	private static int[] threadNum;
 	private static Runnable runMe;
 	private static Thread[] decompilerworkers=null;
 	private static int numThreads;
-	
+
 	private static String lastUsedFolder;
 
 	// main method
@@ -403,7 +403,6 @@ public class Window extends JPanel implements ActionListener {
 				} catch(NumberFormatException e) {
 					numThreads=1;
 				}
-				txt_threads.setEnabled(false);
 				if(decompilerworkers==null) {
 					decompilerworkers=new Thread[numThreads];
 				}
@@ -489,7 +488,7 @@ public class Window extends JPanel implements ActionListener {
 			decompilerworkers[currentThread].stop(); // The Java API lists this method of stopping a thread as deprecated.
 			startNextJob(true, currentThread);       // For the purposes of this program, I'm not sure it's an issue though.
 		}                                           // More info: http://docs.oracle.com/javase/6/docs/technotes/guides/concurrency/threadPrimitiveDeprecation.html
-		println("Job number "+job+" aborted by user.");               
+		println("Job number "+(job+1)+" aborted by user.");               
 		jobs[job-1]=null;
 		btn_abort[job-1].setEnabled(false);
 		btn_abort[job-1].setText("Aborted!");
@@ -549,6 +548,14 @@ public class Window extends JPanel implements ActionListener {
 		if(btn_abort[jobmod]!=null) {
 			btn_abort[jobmod].setEnabled(in);
 		}
+	}
+	
+	protected static void setOptionsEnabled(boolean in) {
+		txt_threads.setEnabled(in);
+		chk_planarItem.setEnabled(in);
+		chk_skipPlaneFlipItem.setEnabled(in);
+		chk_calcVertsItem.setEnabled(in);
+		chk_roundNumsItem.setEnabled(in);
 	}
 	
 	private void addJobs(File[] newJobs, boolean VMFDecompile) {
@@ -642,15 +649,15 @@ public class Window extends JPanel implements ActionListener {
 		runMe=new DecompilerThread(job, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF[jobNum], planePointCoef, jobNum, newThread);
 		decompilerworkers[newThread] = new Thread(runMe);
 		decompilerworkers[newThread].setName("Decompiler "+newThread+" job "+jobNum);
+		decompilerworkers[newThread].setPriority(Thread.MIN_PRIORITY);
 		decompilerworkers[newThread].start();
 		threadNum[jobNum]=newThread;
-		println("Started job #"+jobNum);
+		println("Started job #"+(jobNum+1));
 		progressBar[jobNum].setIndeterminate(false);
 	}
 		
 	// This method queues up the next job and makes sure to run a thread
 	protected void startNextJob(boolean somethingFinished, int threadFinished) {
-		System.out.println("Increasing nextJob "+nextJob+" to "+(nextJob+1));
 		int myJob=nextJob++; // Increment this right away, then use myJob. For thread safety, in case two threads are using this method at once.
 		// This isn't a perfect, or ideal solution, and it's not 100% failproof. But it is much safer.
 		setTotalProgress(myJob, numJobs);
@@ -664,19 +671,21 @@ public class Window extends JPanel implements ActionListener {
 				} else {
 					if(somethingFinished) {
 						startDecompilerThread(threadFinished, myJob);
+						setOptionsEnabled(false);
 					} else {
 						for(int i=0;i<numThreads;i++) {
 							try {
 								if(!decompilerworkers[i].isAlive()) {
 									startDecompilerThread(i, myJob);
+									setOptionsEnabled(false);
 									break;
 								}
 							} catch(java.lang.NullPointerException e) {
 								startDecompilerThread(i, myJob);
+								setOptionsEnabled(false);
 								break;
 							}
 							if(i+1==numThreads) {
-								System.out.println("Decreasing nextJob "+nextJob+" to "+(nextJob-1));
 								// If we reach this point the thread hasn't been started yet
 								nextJob--; // If the thread can't start (yet), undo the changes to nextJob and stop.
 								// This is one of the caveats of this way of doing things. If the thread can't start you
@@ -688,7 +697,7 @@ public class Window extends JPanel implements ActionListener {
 				}
 			//}
 		} else {
-			System.out.println("Decreasing nextJob "+nextJob+" to "+(nextJob-1));
+			setOptionsEnabled(true); // Even if this is called when one thread is finished, if another is starting it doesn't matter
 			nextJob--;
 			r.gc(); // Now the program has time to rest while the user does whatever. Collect garbage.
 		}
