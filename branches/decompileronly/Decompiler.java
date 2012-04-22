@@ -3,6 +3,7 @@
 // Handles the actual decompilation.
 
 import java.util.Date;
+import java.util.Scanner;
 
 public class Decompiler {
 
@@ -15,6 +16,13 @@ public class Decompiler {
 	public static final int X = 0;
 	public static final int Y = 1;
 	public static final int Z = 2;
+	
+	// These are lowercase so as not to conflict with A B and C
+	// Light entity attributes; red, green, blue, strength (can't use i for intensity :P)
+	public static final int r = 0;
+	public static final int g = 1;
+	public static final int b = 2;
+	public static final int s = 3;
 	
 	private boolean vertexDecomp;
 	private boolean correctPlaneFlip;
@@ -540,9 +548,9 @@ public class Decompiler {
 				}
 			}
 			if(numVertices==0 || !pointsWorked) { // Fallback to planar decompilation. Since there are no explicitly defined points anymore,
-				                                   // we must find them ourselves using the A, B, C and D values.
+				                                   // we must find them ourselves using the A, B, C and D values.*/
 				plane=GenericMethods.extrapPlanePoints(currentPlane, planePointCoef);
-			}*/
+			//}
 			String texture=BSP46.getTextures().getTexture(currentSide.getTexture()).getTexture();
 			/*if(toVMF) { // Figure out what Q3's trigger textures are
 				if(texture.equalsIgnoreCase("special/nodraw")) {
@@ -652,6 +660,7 @@ public class Decompiler {
 		// necessary because if I just modified the current entity list then it
 		// could be saved back into the BSP and really mess some stuff up.
 		mapFile=new Entities(BSP38.getEntities());
+		//int numAreaPortals=0;
 		int numTotalItems=0;
 		for(int i=0;i<BSP38.getEntities().getNumElements();i++) { // For each entity
 			if(toVMF) { // correct some entities to make source ports easier, TODO
@@ -659,6 +668,35 @@ public class Decompiler {
 			} else { // Gearcraft also requires some changes, do those here
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("worldspawn")) {
 					mapFile.getEntity(i).setAttribute("mapversion", "510"); // Otherwise Gearcraft cries.
+				}
+				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("info_player_deathmatch")) {
+					double[] origin=mapFile.getEntity(i).getOrigin();
+					mapFile.getEntity(i).setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+12));
+				}
+				/*if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_areaportal")) {
+					numAreaPortals++;
+				}*/
+				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("light")) {
+					String color=mapFile.getEntity(i).getAttribute("_color");
+					String intensity=mapFile.getEntity(i).getAttribute("light");
+					Scanner colorScanner=new Scanner(color);
+					double[] lightNumbers=new double[4];
+					for(int j=0;j<3 && colorScanner.hasNext();j++) {
+						try {
+							lightNumbers[j]=Double.parseDouble(colorScanner.next());
+							lightNumbers[j]*=255; // Quake 2's numbers are from 0 to 1, Nightfire are from 0 to 255
+						} catch(java.lang.NumberFormatException e) {
+							;
+						}
+					}
+					try {
+						lightNumbers[s]=Double.parseDouble(intensity);
+					} catch(java.lang.NumberFormatException e) {
+						;
+					}
+					mapFile.getEntity(i).deleteAttribute("_color");
+					mapFile.getEntity(i).deleteAttribute("light");
+					mapFile.getEntity(i).setAttribute("_light", lightNumbers[r]+" "+lightNumbers[g]+" "+lightNumbers[b]+" "+lightNumbers[s]);
 				}
 			}
 			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
@@ -703,6 +741,7 @@ public class Decompiler {
 			numTotalItems++; // This entity
 			Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().getNumElements()+BSP38.getEntities().getNumElements(), "Decompiling...");
 		}
+		//System.out.println(BSP38.getMapName()+" Num areaportals "+numAreaPortals+" area portals lump length "+BSP38.getAreaPortals().getLength());
 		Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().getNumElements()+BSP38.getEntities().getNumElements(), "Saving...");
 		if(!toVMF) {
 			Window.window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+".map...");
@@ -769,35 +808,55 @@ public class Decompiler {
 				//}
 				String texture=currentTexture.getTexture();
 				if(toVMF) { // TODO more to do here
-					if(texture.equalsIgnoreCase("special/clip")) {
-						texture="tools/toolsclip";
-					} else {
-						try {
-							if(texture.substring(texture.length()-5).equalsIgnoreCase("/hint")) {
-								texture="tools/toolshint";
+					try {
+						if(texture.substring(texture.length()-5).equalsIgnoreCase("/hint")) {
+							texture="tools/toolshint";
+						} else {
+							if(texture.substring(texture.length()-5).equalsIgnoreCase("/skip")) {
+								texture="tools/toolsskip";
 							} else {
-								if(texture.substring(texture.length()-5).equalsIgnoreCase("/skip")) {
-									texture="tools/toolsskip";
+								if(texture.substring(texture.length()-5).equalsIgnoreCase("/clip")) {
+									texture="tools/toolsclip";
 								} else {
 									if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
 										texture="tools/toolstrigger";
+									} else {
+										if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky1")) {
+											texture="tools/toolsskybox";
+										} else {
+											if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky2")) {
+												texture="tools/toolsskybox";
+											}
+										}
 									}
 								}
 							}
-						} catch(StringIndexOutOfBoundsException e) {
-							;
 						}
+					} catch(StringIndexOutOfBoundsException e) {
+						;
 					}
 				} else {
 					try {
 						if(texture.substring(texture.length()-5).equalsIgnoreCase("/hint")) {
-							texture="special/hint";
-						} else {
+							texture="special/hint"; // Hint was not used the same way in Quake 2 as other games.
+						} else {                   // For example, a Hint brush CAN be used for a trigger in Q2 and is used as such a lot.
 							if(texture.substring(texture.length()-5).equalsIgnoreCase("/skip")) {
 								texture="special/skip";
 							} else {
-								if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
-									texture="special/trigger";
+								if(texture.substring(texture.length()-5).equalsIgnoreCase("/clip")) {
+									texture="special/clip";
+								} else {
+									if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
+										texture="special/trigger";
+									} else {
+										if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky1")) {
+											texture="special/sky";
+										} else {
+											if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky2")) {
+												texture="special/sky";
+											}
+										}
+									}
 								}
 							}
 						}

@@ -380,7 +380,12 @@ public class Window extends JPanel implements ActionListener {
 		// User clicks the "open" button
 		if (action.getSource() == decompMAPItem || action.getSource() == decompVMFItem) {
 			if(lastUsedFolder==null) {
-				file_selector = new JFileChooser("/"); // TODO: set to current folder
+				try {
+					File dir = new File (".");
+					file_selector = new JFileChooser(dir.getCanonicalPath());
+				} catch(java.io.IOException e) {
+					file_selector = new JFileChooser("/");
+				}
 			} else {
 				file_selector = new JFileChooser(lastUsedFolder);
 			}
@@ -480,6 +485,21 @@ public class Window extends JPanel implements ActionListener {
 				System.exit(0);
 			//}
 		}
+	}
+	
+	// This method actually starts a thread for the specified job
+	private void startDecompilerThread(int newThread, int jobNum) {
+		File job=jobs[jobNum];
+		// I'd really like to use Thread.join() or something here, but the stupid thread never dies.
+		// But if somethingFinished is true, then one of the threads is telling us it's finished anyway.
+		runMe=new DecompilerThread(job, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF[jobNum], planePointCoef, jobNum, newThread);
+		decompilerworkers[newThread] = new Thread(runMe);
+		decompilerworkers[newThread].setName("Decompiler "+newThread+" job "+jobNum);
+		decompilerworkers[newThread].setPriority(Thread.MIN_PRIORITY);
+		decompilerworkers[newThread].start();
+		threadNum[jobNum]=newThread;
+		println("Started job #"+(jobNum+1));
+		progressBar[jobNum].setIndeterminate(false);
 	}
 	
 	private void stopDecompilerThread(int job) {
@@ -639,21 +659,6 @@ public class Window extends JPanel implements ActionListener {
 		table_pane.updateUI(); // If you don't do this, none of the changes are reflected
 		                       // in the UI, I don't know why, or how this fixes it, or
 		                       // if this is even the correct way to do this. But it works.
-	}
-	
-	// This method actually starts a thread for the specified job
-	private void startDecompilerThread(int newThread, int jobNum) {
-		File job=jobs[jobNum];
-		// I'd really like to use Thread.join() or something here, but the stupid thread never dies.
-		// But if somethingFinished is true, then one of the threads is telling us it's finished anyway.
-		runMe=new DecompilerThread(job, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF[jobNum], planePointCoef, jobNum, newThread);
-		decompilerworkers[newThread] = new Thread(runMe);
-		decompilerworkers[newThread].setName("Decompiler "+newThread+" job "+jobNum);
-		decompilerworkers[newThread].setPriority(Thread.MIN_PRIORITY);
-		decompilerworkers[newThread].start();
-		threadNum[jobNum]=newThread;
-		println("Started job #"+(jobNum+1));
-		progressBar[jobNum].setIndeterminate(false);
 	}
 		
 	// This method queues up the next job and makes sure to run a thread

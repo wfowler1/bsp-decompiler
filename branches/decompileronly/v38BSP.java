@@ -26,6 +26,7 @@ public class v38BSP {
 	private v38Models models;
 	private Brushes brushes;
 	private v38BrushSides brushSides;
+	//private IntList areaPortals;
 	
 	// CONSTRUCTORS
 	// This accepts a folder path and looks for the BSP there.
@@ -99,6 +100,11 @@ public class v38BSP {
 		} catch(java.lang.NullPointerException e) {
 			Window.window.println("Brush sides not yet parsed!");
 		}
+		/*try {
+			Window.window.println("Area Portals lump: "+areaPortals.getLength()+" bytes, "+areaPortals.getNumElements()+" items");
+		} catch(java.lang.NullPointerException e) {
+			Window.window.println("Area Portals not yet parsed!");
+		}*/
 	}
 	
 	// +getLeavesInModel(int)
@@ -297,4 +303,12 @@ public class v38BSP {
 	public v38BrushSides getBrushSides() {
 		return brushSides;
 	}
+	
+	/*public void setAreaPortals(byte[] data) {
+		areaPortals=new IntList(data);
+	}
+	
+	public IntList getAreaPortals() {
+		return areaPortals;
+	}*/
 }

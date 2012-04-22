@@ -187,6 +187,15 @@ public class BSPReader {
 							offsetReader.read(read); // Read 4 more bytes
 							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
 							BSP38.setBrushSides(readLump(offset, length));
+							/*
+							offsetReader.skip(16); // Do not need offset/length for lumps 16 or 17
+							
+							// Lump 18
+							offsetReader.read(read); // Read 4 bytes
+							offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							offsetReader.read(read); // Read 4 more bytes
+							length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+							BSP38.setAreaPortals(readLump(offset, length));*/
 							
 							offsetReader.close();
 							
