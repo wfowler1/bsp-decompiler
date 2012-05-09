@@ -41,6 +41,7 @@ public class Window extends JPanel implements ActionListener {
 	private static JMenuItem replaceTexturesItem;
 
 	private static File[] jobs=new File[0];
+	private static DoomMap[] doomJobs=new DoomMap[0];
 	private static boolean[] toVMF;
 	private static int[] threadNum;
 	private static Runnable runMe;
@@ -241,7 +242,7 @@ public class Window extends JPanel implements ActionListener {
 		pnl_jobs.add(lbl_jobno, jobNoConstraints);
 		
 		JLabel lbl_mapName = new JLabel("Map name");
-		lbl_mapName.setPreferredSize(new Dimension(330, 12));
+		lbl_mapName.setPreferredSize(new Dimension(325, 12));
 		GridBagConstraints mapNameConstraints = new GridBagConstraints();
 		mapNameConstraints.fill = GridBagConstraints.NONE;
 		mapNameConstraints.gridx = 1;
@@ -410,12 +411,16 @@ public class Window extends JPanel implements ActionListener {
 				}
 				if(decompilerworkers==null) {
 					decompilerworkers=new Thread[numThreads];
+				} else {
+					if(decompilerworkers.length!=numThreads) {
+						decompilerworkers=new Thread[numThreads];
+					}
 				}
-				lastUsedFolder=files[0].getParent();
+				lastUsedFolder=files[files.length-1].getParent();
 				if(action.getSource() == decompVMFItem) {
-					addJobs(files, true);
+					addJobs(files, new DoomMap[files.length], true);
 				} else { // There's only one other possibility :P
-					addJobs(files, false);
+					addJobs(files, new DoomMap[files.length], false);
 				}
 			}
 		}
@@ -492,7 +497,11 @@ public class Window extends JPanel implements ActionListener {
 		File job=jobs[jobNum];
 		// I'd really like to use Thread.join() or something here, but the stupid thread never dies.
 		// But if somethingFinished is true, then one of the threads is telling us it's finished anyway.
-		runMe=new DecompilerThread(job, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF[jobNum], planePointCoef, jobNum, newThread);
+		if(doomJobs[jobNum]!=null) {
+			runMe=new DecompilerThread(doomJobs[jobNum], toVMF[jobNum], roundNums, jobNum, newThread);
+		} else {
+			runMe=new DecompilerThread(job, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF[jobNum], planePointCoef, jobNum, newThread);
+		}
 		decompilerworkers[newThread] = new Thread(runMe);
 		decompilerworkers[newThread].setName("Decompiler "+newThread+" job "+jobNum);
 		decompilerworkers[newThread].setPriority(Thread.MIN_PRIORITY);
@@ -578,87 +587,101 @@ public class Window extends JPanel implements ActionListener {
 		chk_roundNumsItem.setEnabled(in);
 	}
 	
-	private void addJobs(File[] newJobs, boolean VMFDecompile) {
-		int realNewJobs=0;
-		for(int i=0;i<newJobs.length;i++) {
-			if(newJobs[i]!=null) {
-				realNewJobs++;
-				File[] newList = new File[jobs.length+1];
-				boolean[] newToVMF = new boolean[jobs.length+1];
-				int[] newThreadNo=new int[jobs.length+1];
-				for(int j=0;j<jobs.length;j++) {
-					newList[j]=jobs[j];
-					newToVMF[j]=toVMF[j];
-					newThreadNo[j]=threadNum[j];
-				}
-				newList[jobs.length]=newJobs[i];
-				newToVMF[jobs.length]=VMFDecompile;
-				newThreadNo[jobs.length]=-1;
-				jobs=newList;
-				toVMF=newToVMF;
-				threadNum=newThreadNo;
-				
-				// Add another row to the jobs pane
-				JLabel lbl_jobno = new JLabel(++numJobs+"");
-				lbl_jobno.setPreferredSize(new Dimension(40, 12));
-				GridBagConstraints jobNoConstraints = new GridBagConstraints();
-				jobNoConstraints.fill = GridBagConstraints.NONE;
-				jobNoConstraints.gridx = 0;
-				jobNoConstraints.gridy = numJobs;
-				jobNoConstraints.gridwidth = 1;
-				jobNoConstraints.gridheight = 1;
-				pnl_jobs.add(lbl_jobno, jobNoConstraints);
-				
-				JLabel lbl_mapName = new JLabel(newJobs[i].getName());
-				lbl_mapName.setPreferredSize(new Dimension(330, 12));
-				GridBagConstraints mapNameConstraints = new GridBagConstraints();
-				mapNameConstraints.fill = GridBagConstraints.NONE;
-				mapNameConstraints.gridx = 1;
-				mapNameConstraints.gridy = numJobs;
-				mapNameConstraints.gridwidth = 1;
-				mapNameConstraints.gridheight = 1;
-				pnl_jobs.add(lbl_mapName, mapNameConstraints);
-				
-				JProgressBar[] newBars=new JProgressBar[numJobs];
-				for(int j=0;j<numJobs-1;j++) {
-					newBars[j]=progressBar[j];
-				}
-				newBars[numJobs-1]=new JProgressBar(0, 1);
-				progressBar=newBars;
-				progressBar[numJobs-1].setString("Queued");
-				progressBar[numJobs-1].setStringPainted(true);
-				progressBar[numJobs-1].setValue(0);
-				progressBar[numJobs-1].setIndeterminate(true);
-				GridBagConstraints progressConstraints = new GridBagConstraints();
-				progressConstraints.fill = GridBagConstraints.NONE;
-				progressConstraints.gridx = 2;
-				progressConstraints.gridy = numJobs;
-				progressConstraints.gridwidth = 1;
-				progressConstraints.gridheight = 1;
-				pnl_jobs.add(progressBar[numJobs-1], progressConstraints);
-				
-				JButton[] newButtons=new JButton[numJobs];
-				for(int j=0;j<numJobs-1;j++) {
-					newButtons[j]=btn_abort[j];
-				}
-				newButtons[numJobs-1]=new JButton("Abort "+numJobs);
-				btn_abort=newButtons;
-				GridBagConstraints abortbuttonConstraints = new GridBagConstraints();
-				abortbuttonConstraints.fill = GridBagConstraints.NONE;
-				abortbuttonConstraints.gridx = 3;
-				abortbuttonConstraints.gridy = numJobs;
-				abortbuttonConstraints.gridwidth = 1;
-				abortbuttonConstraints.gridheight = 1;
-				pnl_jobs.add(btn_abort[numJobs-1], abortbuttonConstraints);
-				btn_abort[numJobs-1].addActionListener(this);
-
-				startNextJob(false, -1);
+	protected void addJob(File newJob, DoomMap newDoomJob, boolean VMFDecompile) {
+		if(newJob!=null || newDoomJob!=null) {
+			File[] newList = new File[jobs.length+1];
+			DoomMap[] newDoomList = new DoomMap[jobs.length+1];
+			boolean[] newToVMF = new boolean[jobs.length+1];
+			int[] newThreadNo=new int[jobs.length+1];
+			for(int j=0;j<jobs.length;j++) {
+				newList[j]=jobs[j];
+				newDoomList[j]=doomJobs[j];
+				newToVMF[j]=toVMF[j];
+				newThreadNo[j]=threadNum[j];
 			}
+			newList[jobs.length]=newJob;
+			newDoomList[jobs.length]=newDoomJob;
+			newToVMF[jobs.length]=VMFDecompile;
+			newThreadNo[jobs.length]=-1;
+			jobs=newList;
+			doomJobs=newDoomList;
+			toVMF=newToVMF;
+			threadNum=newThreadNo;
+			
+			// Add another row to the jobs pane
+			JLabel lbl_jobno = new JLabel(++numJobs+"");
+			lbl_jobno.setPreferredSize(new Dimension(40, 12));
+			GridBagConstraints jobNoConstraints = new GridBagConstraints();
+			jobNoConstraints.fill = GridBagConstraints.NONE;
+			jobNoConstraints.gridx = 0;
+			jobNoConstraints.gridy = numJobs;
+			jobNoConstraints.gridwidth = 1;
+			jobNoConstraints.gridheight = 1;
+			pnl_jobs.add(lbl_jobno, jobNoConstraints);
+			
+			JLabel lbl_mapName;
+			if(newDoomJob!=null) { // If this isn't null it's a DoomMap
+				lbl_mapName = new JLabel(newDoomJob.getWadName()+"\\"+newDoomJob.getMapName());
+			} else {
+				lbl_mapName = new JLabel(newJob.getName());
+			}
+			lbl_mapName.setPreferredSize(new Dimension(325, 12));
+			GridBagConstraints mapNameConstraints = new GridBagConstraints();
+			mapNameConstraints.fill = GridBagConstraints.NONE;
+			mapNameConstraints.gridx = 1;
+			mapNameConstraints.gridy = numJobs;
+			mapNameConstraints.gridwidth = 1;
+			mapNameConstraints.gridheight = 1;
+			pnl_jobs.add(lbl_mapName, mapNameConstraints);
+			
+			JProgressBar[] newBars=new JProgressBar[numJobs];
+			for(int j=0;j<numJobs-1;j++) {
+				newBars[j]=progressBar[j];
+			}
+			newBars[numJobs-1]=new JProgressBar(0, 1);
+			progressBar=newBars;
+			progressBar[numJobs-1].setString("Queued");
+			progressBar[numJobs-1].setStringPainted(true);
+			progressBar[numJobs-1].setValue(0);
+			progressBar[numJobs-1].setIndeterminate(true);
+			GridBagConstraints progressConstraints = new GridBagConstraints();
+			progressConstraints.fill = GridBagConstraints.NONE;
+			progressConstraints.gridx = 2;
+			progressConstraints.gridy = numJobs;
+			progressConstraints.gridwidth = 1;
+			progressConstraints.gridheight = 1;
+			pnl_jobs.add(progressBar[numJobs-1], progressConstraints);
+			
+			JButton[] newButtons=new JButton[numJobs];
+			for(int j=0;j<numJobs-1;j++) {
+				newButtons[j]=btn_abort[j];
+			}
+			newButtons[numJobs-1]=new JButton("Abort "+numJobs);
+			btn_abort=newButtons;
+			GridBagConstraints abortbuttonConstraints = new GridBagConstraints();
+			abortbuttonConstraints.fill = GridBagConstraints.NONE;
+			abortbuttonConstraints.gridx = 3;
+			abortbuttonConstraints.gridy = numJobs;
+			abortbuttonConstraints.gridwidth = 1;
+			abortbuttonConstraints.gridheight = 1;
+			pnl_jobs.add(btn_abort[numJobs-1], abortbuttonConstraints);
+			btn_abort[numJobs-1].addActionListener(this);
+			startNextJob(false, -1);
 		}
-		println("Added "+realNewJobs+" new jobs to queue");
 		table_pane.updateUI(); // If you don't do this, none of the changes are reflected
 		                       // in the UI, I don't know why, or how this fixes it, or
 		                       // if this is even the correct way to do this. But it works.
+	}
+	
+	protected void addJobs(File[] newJobs, DoomMap[] newDoomJobs, boolean VMFDecompile) {
+		int realNewJobs=0;
+		for(int i=0;i<newJobs.length;i++) {
+			if(newJobs[i]!=null || newDoomJobs[i]!=null) {
+				realNewJobs++;
+				addJob(newJobs[i], newDoomJobs[i], VMFDecompile);
+			}
+		}
+		println("Added "+realNewJobs+" new jobs to queue");
 	}
 		
 	// This method queues up the next job and makes sure to run a thread
@@ -670,8 +693,8 @@ public class Window extends JPanel implements ActionListener {
 			clearConsole();
 		}
 		if(myJob<numJobs) {
-			//if(myJob>0) { // Stranger things have happened...
-				if(jobs[myJob]==null) { // If this job was aborted
+			if(jobs[myJob]==null) { // If this job was aborted, and/or doesn't exist
+				if(doomJobs[myJob]==null) { // And it's not a Doom map
 					startNextJob(somethingFinished, threadFinished); // Try the next one. If it was also aborted this will recurse until either we get to a job or finish
 				} else {
 					if(somethingFinished) {
@@ -691,16 +714,38 @@ public class Window extends JPanel implements ActionListener {
 								break;
 							}
 							if(i+1==numThreads) {
-								// If we reach this point the thread hasn't been started yet
-								nextJob--; // If the thread can't start (yet), undo the changes to nextJob and stop.
-								// This is one of the caveats of this way of doing things. If the thread can't start you
-								// need to undo this. Luckily, I believe the only time we'll run into this case is when
-								// a job is added when decompiles are already running.
+								nextJob--;
 							}
 						}
 					}
 				}
-			//}
+			} else {
+				if(somethingFinished) {
+					startDecompilerThread(threadFinished, myJob);
+					setOptionsEnabled(false);
+				} else {
+					for(int i=0;i<numThreads;i++) {
+						try {
+							if(!decompilerworkers[i].isAlive()) {
+								startDecompilerThread(i, myJob);
+								setOptionsEnabled(false);
+								break;
+							}
+						} catch(java.lang.NullPointerException e) {
+							startDecompilerThread(i, myJob);
+							setOptionsEnabled(false);
+							break;
+						}
+						if(i+1==numThreads) {
+							// If we reach this point the thread hasn't been started yet
+							nextJob--; // If the thread can't start (yet), undo the changes to nextJob and stop.
+							// This is one of the caveats of this way of doing things. If the thread can't start you
+							// need to undo this. Luckily, I believe the only time we'll run into this case is when
+							// a job is added when decompiles are already running.
+						}
+					}
+				}
+			}
 		} else {
 			setOptionsEnabled(true); // Even if this is called when one thread is finished, if another is starting it doesn't matter
 			nextJob--;

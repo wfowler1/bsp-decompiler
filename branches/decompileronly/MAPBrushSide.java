@@ -162,6 +162,10 @@ public class MAPBrushSide {
 		plane=triangle;
 	}
 	
+	public String getTexture() {
+		return texture;
+	}
+	
 	public Vector3D[] getPlane() {
 		return plane;
 	}

@@ -166,8 +166,6 @@ public class v38BSP {
 		return nodeLeaves;
 	}
 	
-	
-	
 	// ACCESSORS/MUTATORS
 	
 	public String getPath() {

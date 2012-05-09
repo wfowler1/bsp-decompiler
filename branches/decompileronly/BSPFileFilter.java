@@ -7,7 +7,7 @@ import javax.swing.*;
 import java.io.File;
 
 public class BSPFileFilter extends javax.swing.filechooser.FileFilter {
-	private String description = "Binary Space Partition Map File (*.BSP)";
+	private String description = "Binary Space Partition Map File (*.BSP, *.WAD)";
 
 	public boolean accept(File file) {
 		if (file.isDirectory()) {
@@ -15,7 +15,7 @@ public class BSPFileFilter extends javax.swing.filechooser.FileFilter {
 		} else {
 			if (file.isFile()) {
 				try { // Avoid StringIndexOutOfBoundsExceptions
-					if(file.getName().substring(file.getName().length()-4).equalsIgnoreCase(".BSP")) {
+					if(file.getName().substring(file.getName().length()-4).equalsIgnoreCase(".BSP") || file.getName().substring(file.getName().length()-4).equalsIgnoreCase(".WAD")) {
 						return true; // Return true if the last four characters in the filename are ".BSP", not case sensitive
 					}
 				} catch(java.lang.StringIndexOutOfBoundsException e) {

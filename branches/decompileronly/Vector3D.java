@@ -59,6 +59,13 @@ public class Vector3D {
 		}
 	}
 	
+	// Takes two shorts, and assumes they are X and Y.
+	public Vector3D(short x, short y) {
+		point[X]=(double)x;
+		point[Y]=(double)y;
+		point[Z]=0.0;
+	}
+	
 	// METHODS
 	
 	// Operators
@@ -77,14 +84,15 @@ public class Vector3D {
 		return new Vector3D(-point[0], -point[1], -point[2]);
 	}
 	
-	/// Returns:	Vector3D of the components of this vertex, multiplied by the scalar value.
-	public Vector3D scale(double scalar) {
-		return new Vector3D(point[0]*scalar, point[1]*scalar, point[2]*scalar);
-	}
-	
 	/// Returns:	Whether or not the vertex is identical to this one.
 	public boolean equals(Vector3D in) {
 		return (point[0] == in.getX() && point[1] == in.getY() && point[2] == in.getZ());
+	}
+	
+	// Scalar product
+	/// Returns:	Vector3D of the components of this vertex, multiplied by the scalar value.
+	public Vector3D scale(double scalar) {
+		return new Vector3D(point[0]*scalar, point[1]*scalar, point[2]*scalar);
 	}
 	
 	// Vector Products

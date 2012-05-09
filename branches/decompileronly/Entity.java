@@ -32,6 +32,15 @@ public class Entity {
 		setData(me);
 	}
 	
+	// Allows creation of an entity with one initial attribute set ("classname" recommended)
+	public Entity(String attribute, String data) {
+		numAttributes=3;
+		attributes=new String[3];
+		attributes[0]="{";
+		attributes[1]="\""+attribute+"\" \""+data+"\"";
+		attributes[2]="}";
+	}
+	
 	// METHODS
 	
 	// renameAttribute(String, String)

@@ -222,6 +222,10 @@ public class Entities {
 			newFile=new File(path+"\\00 - Entities.txt");
 		}
 		try {
+			File absolutepath=new File(newFile.getParent()+"\\");
+			if(!absolutepath.exists()) {
+				absolutepath.mkdir();
+			}
 			if(!newFile.exists()) {
 				newFile.createNewFile();
 			} else {

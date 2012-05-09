@@ -8,6 +8,7 @@ import java.util.Date;
 public class DecompilerThread implements Runnable {
 	
 	private File BSP;
+	private DoomMap doomMap;
 	private boolean vertexDecomp;
 	private boolean correctPlaneFlip;
 	private double planePointCoef;
@@ -30,30 +31,44 @@ public class DecompilerThread implements Runnable {
 		this.threadnum=threadnum;
 	}
 	
+	public DecompilerThread(DoomMap doomMap, boolean toVMF, boolean roundNums, int jobNum, int threadNum) {
+		this.doomMap=doomMap;
+		this.toVMF=toVMF;
+		this.threadnum=threadNum;
+		this.jobnum=jobNum;
+		this.roundNums=roundNums;
+	}
+	
 	public void run() {
 		Window.setConsoleEnabled(false);
 		try {
-			Window.window.println("Opening file "+BSP.getAbsolutePath());
-			Window.setProgress(jobnum, 0, 1, "Reading...");
-			BSPReader reader = new BSPReader(BSP.getAbsolutePath());
-			reader.readBSP();
 			Decompiler decompiler=null;
-			switch(reader.getVersion()) {
-				case 38:
-					Window.setProgress(jobnum, 0, reader.BSP38.getBrushes().getNumElements()+reader.BSP38.getEntities().getNumElements(), "Decompiling...");
-					decompiler = new Decompiler(reader.BSP38, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF, planePointCoef, jobnum);
-					decompiler.decompile();
-					break;
-				case 42:
-					Window.setProgress(jobnum, 0, reader.BSP42.getBrushes().getNumElements()+reader.BSP42.getEntities().getNumElements(), "Decompiling...");
-					decompiler = new Decompiler(reader.BSP42, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF, planePointCoef, jobnum);
-					decompiler.decompile();
-					break;
-				case 46:
-					Window.setProgress(jobnum, 0, reader.BSP46.getBrushes().getNumElements()+reader.BSP46.getEntities().getNumElements(), "Decompiling...");
-					decompiler = new Decompiler(reader.BSP46, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF, planePointCoef, jobnum);
-					decompiler.decompile();
-					break;
+			if(doomMap!=null) { // If this is a Doom map extracted from a WAD
+				Window.setProgress(jobnum, 0, doomMap.getSubSectors().getNumElements(), "Decompiling...");
+				decompiler = new Decompiler(doomMap, roundNums, toVMF, jobnum);
+				decompiler.decompile();
+			} else {
+				Window.window.println("Opening file "+BSP.getAbsolutePath());
+				Window.setProgress(jobnum, 0, 1, "Reading...");
+				BSPReader reader = new BSPReader(BSP, toVMF);
+				reader.readBSP();
+				switch(reader.getVersion()) {
+					case 38:
+						Window.setProgress(jobnum, 0, reader.BSP38.getBrushes().getNumElements()+reader.BSP38.getEntities().getNumElements(), "Decompiling...");
+						decompiler = new Decompiler(reader.BSP38, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF, planePointCoef, jobnum);
+						decompiler.decompile();
+						break;
+					case 42:
+						Window.setProgress(jobnum, 0, reader.BSP42.getBrushes().getNumElements()+reader.BSP42.getEntities().getNumElements(), "Decompiling...");
+						decompiler = new Decompiler(reader.BSP42, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF, planePointCoef, jobnum);
+						decompiler.decompile();
+						break;
+					case 46:
+						Window.setProgress(jobnum, 0, reader.BSP46.getBrushes().getNumElements()+reader.BSP46.getEntities().getNumElements(), "Decompiling...");
+						decompiler = new Decompiler(reader.BSP46, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF, planePointCoef, jobnum);
+						decompiler.decompile();
+						break;
+				}
 			}
 			Window.setProgress(jobnum, 1, 1, "Done!");
 		} catch (java.lang.Exception e) {

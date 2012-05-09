@@ -20,6 +20,10 @@ public class BSPReader {
 	private boolean source=false;
 	private boolean mohaa=false;
 	
+	private boolean wad=false;
+	
+	private boolean toVMF;
+	
 	public final int OFFSET=0;
 	public final int LENGTH=1;
 	
@@ -27,6 +31,7 @@ public class BSPReader {
 	
 	// Declare all kinds of BSPs here, the one actually used will be determined by constructor
 	// protected BSPv29n30
+	protected DoomMap[] doomMaps;
 	protected v38BSP BSP38;
 	protected v42BSP BSP42;
 	protected v46BSP BSP46;
@@ -53,7 +58,20 @@ public class BSPReader {
 	}
 	
 	public BSPReader(File in) {
-		BSP=in; // The read String points directly to the BSP file.
+		BSP=in;
+		if(!BSP.exists()) {
+			Window.window.println("Unable to open source BSP file, please ensure the BSP exists.");
+		} else {
+			folder=BSP.getParent(); // The read string minus the .BSP is the lumps folder
+			if(folder==null) {
+				folder="";
+			}
+		}
+	}
+	
+	public BSPReader(File in, boolean toVMF) {
+		BSP=in;
+		this.toVMF=toVMF;
 		if(!BSP.exists()) {
 			Window.window.println("Unable to open source BSP file, please ensure the BSP exists.");
 		} else {
@@ -68,7 +86,7 @@ public class BSPReader {
 	
 	public void readBSP() {
 		try {
-			// Don't forget, Java uses BIG ENDIAN BYTE ORDER, so all numbers have to be read and written backwards. // Quake
+			// Don't forget, Java uses BIG ENDIAN BYTE ORDER, so all numbers have to be read and written backwards.
 			int version=getVersion();
 			if(mohaa) {
 				Window.window.println("Sorry, no MOHAA support (yet)!");
@@ -81,6 +99,127 @@ public class BSPReader {
 					int offset;
 					int length;
 					switch(version) {
+						case 1: // WAD file
+							Window.window.println("WAD file found");
+							offsetReader = new FileInputStream(BSP);
+							offsetReader.skip(4); // Skip the file header, putting the reader into the length and offset of the directory
+							
+							doomMaps=new DoomMap[0];
+							
+							// Find the directory
+							offsetReader.read(read); // Read 4 bytes
+							int numLumps=DataReader.readInt(read[0], read[1], read[2], read[3]);
+							offsetReader.read(read); // Read 4 more bytes
+							int directoryOffset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+							
+							FileInputStream directoryReader = new FileInputStream(BSP);
+							directoryReader.skip(directoryOffset);
+							
+							byte[] readDirectory=new byte[16];
+							
+							// Read through the directory to find maps
+							for(int i=0;i<numLumps;i++) {
+								directoryReader.read(readDirectory);
+								offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+								length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+								String lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+								if( length==0 && ( lumpName.substring(0,3).equalsIgnoreCase("MAP") || ( lumpName.charAt(0)=='E' && lumpName.charAt(2)=='M' ) ) ) {
+									String mapName=lumpName.substring(0,5); // Map names are always ExMy or MAPxx. Never more than five chars.
+									Window.window.println("Map: "+mapName);
+									// All of this code updates the maplist with a new entry
+									DoomMap[] newList=new DoomMap[doomMaps.length+1];
+									for(int j=0;j<doomMaps.length;j++) {
+										newList[j] = doomMaps[j];
+									}
+									newList[doomMaps.length]=new DoomMap(BSP.getPath(), mapName);
+									doomMaps=newList;
+									
+									FileInputStream lumpReader = new FileInputStream(BSP);
+									lumpReader.skip(directoryOffset+((i+1)*16));
+									
+									lumpReader.read(readDirectory);
+									
+									offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+									length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+									lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+									if(lumpName.substring(0,6).equalsIgnoreCase("THINGS")) {
+										doomMaps[doomMaps.length-1].setThings(readLump(offset, length));
+									}
+									
+									lumpReader.read(readDirectory);
+									
+									offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+									length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+									lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+									if(lumpName.equalsIgnoreCase("LINEDEFS")) {
+										doomMaps[doomMaps.length-1].setLinedefs(readLump(offset, length));
+									}
+									
+									lumpReader.read(readDirectory);
+									
+									offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+									length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+									lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+									if(lumpName.equalsIgnoreCase("SIDEDEFS")) {
+										doomMaps[doomMaps.length-1].setSidedefs(readLump(offset, length));
+									}
+									
+									lumpReader.read(readDirectory);
+									
+									offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+									length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+									lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+									if(lumpName.equalsIgnoreCase("VERTEXES")) {
+										doomMaps[doomMaps.length-1].setVertices(readLump(offset, length));
+									}
+									
+									lumpReader.read(readDirectory);
+									
+									offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+									length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+									lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+									if(lumpName.substring(0,4).equalsIgnoreCase("SEGS")) {
+										doomMaps[doomMaps.length-1].setSegments(readLump(offset, length));
+									}
+									
+									lumpReader.read(readDirectory);
+									
+									offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+									length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+									lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+									if(lumpName.equalsIgnoreCase("SSECTORS")) {
+										doomMaps[doomMaps.length-1].setSubSectors(readLump(offset, length));
+									}
+									
+									lumpReader.read(readDirectory);
+									
+									offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+									length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+									lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+									if(lumpName.substring(0,5).equalsIgnoreCase("NODES")) {
+										doomMaps[doomMaps.length-1].setNodes(readLump(offset, length));
+									}
+									
+									lumpReader.read(readDirectory);
+									
+									offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+									length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+									lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+									if(lumpName.substring(0,7).equalsIgnoreCase("SECTORS")) {
+										doomMaps[doomMaps.length-1].setSectors(readLump(offset, length));
+									}
+							
+									lumpReader.close();
+							
+									doomMaps[doomMaps.length-1].printBSPReport();
+									
+									Window.window.addJob(null, doomMaps[doomMaps.length-1], toVMF);
+								}
+							}
+							
+							directoryReader.close();
+							offsetReader.close();
+						break;
 						case 29: // Quake
 						case 30: // Half-life
 							Window.window.println("Sorry, no Quake/Half-life support (yet)!");
@@ -201,9 +340,6 @@ public class BSPReader {
 							
 							BSP38.printBSPReport();
 							break;
-						/*case 41: // JBN Beta
-							numLumps=16; //??????
-							break;*/
 						case 42: // JBN
 							Window.window.println("BSP v42 found (Nightfire)");
 							offsetReader = new FileInputStream(BSP);
@@ -305,7 +441,7 @@ public class BSPReader {
 							BSP42.printBSPReport();
 							break;
 						case 46: // Quake 3/close derivative
-							Window.window.println("BSP v46 found (Quake 3)");
+							Window.window.println("BSP v46 found (id Tech 3)");
 							offsetReader = new FileInputStream(BSP);
 							BSP46 = new v46BSP(BSP.getPath());
 							offsetReader.skip(8); // Skip the file header, putting the reader into the offset/length pairs
@@ -429,7 +565,12 @@ public class BSPReader {
 							versionNumberReader.read(read);
 							version=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
 						} else {
-							version=in;
+							if(in == 1145132873 || in == 1145132880) { // "IWAD" or "PWAD"
+								wad=true;
+								version=1;
+							} else {
+								version=in;
+							}
 						}
 					}
 				}
