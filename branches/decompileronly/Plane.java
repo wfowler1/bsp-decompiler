@@ -82,7 +82,7 @@ public class Plane {
 	public boolean equals(Plane in) {
 		// Use Cross-Product; if 0, parallel. Must face same direction, have parallel normals, and identical distances.
 		Vector3D inNorm = in.getNormal();
-		return (normal.dot(inNorm) > 0 && normal.getY()*inNorm.getZ() == normal.getZ()*inNorm.getY() && normal.getX()*inNorm.getZ() == normal.getZ()*inNorm.getX() && normal.getX()*inNorm.getY() == normal.getY()*inNorm.getX() && dist == in.getDist());
+		return (normal.dot(inNorm) > 0 && Math.abs((normal.getY()*inNorm.getZ()) - (normal.getZ()*inNorm.getY())) < 0.01 && Math.abs((normal.getX()*inNorm.getZ()) - (normal.getZ()*inNorm.getX())) < 0.01 && Math.abs((normal.getX()*inNorm.getY()) - (normal.getY()*inNorm.getX())) < 0.01 && Math.abs(dist - in.getDist()) < 0.01);
 	}
 	
 	/// Returns:	Signed distance from this plane to given vertex.

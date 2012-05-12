@@ -307,7 +307,7 @@ public class Decompiler {
 		int numRealFaces=0;
 		boolean containsNonClipSide=false;
 		for(int l=0;l<numSides;l++) { // For each side of the brush
-			Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
+			Vector3D[] triangle=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
 			v42BrushSide currentSide=BSP42.getBrushSides().getBrushSide(firstSide+l);
 			v42Face currentFace=BSP42.getFaces().getFace(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
 			String texture=BSP42.getTextures().getString(currentFace.getTexture());
@@ -326,20 +326,20 @@ public class Decompiler {
 				}
 				boolean pointsWorked=false;
 				if(numVertices!=0 && vertexDecomp) { // If the face actually references a set of vertices
-					plane[0]=new Vector3D(BSP42.getVertices().getVertex(firstVertex)); // Grab and store the first one
+					triangle[0]=new Vector3D(BSP42.getVertices().getVertex(firstVertex)); // Grab and store the first one
 					int m=1;
 					for(m=1;m<numVertices;m++) { // For each point after the first one
-						plane[1]=new Vector3D(BSP42.getVertices().getVertex(firstVertex+m));
-						if(!plane[0].equals(plane[1])) { // Make sure the point isn't the same as the first one
+						triangle[1]=new Vector3D(BSP42.getVertices().getVertex(firstVertex+m));
+						if(!triangle[0].equals(triangle[1])) { // Make sure the point isn't the same as the first one
 							break; // If it isn't the same, this point is good
 						}
 					}
 					for(m=m+1;m<numVertices;m++) { // For each point after the previous one used
-						plane[2]=new Vector3D(BSP42.getVertices().getVertex(firstVertex+m));
-						if(!plane[2].equals(plane[0]) && !plane[2].equals(plane[1])) { // Make sure no point is equal to the third one
-							if((Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || // Make sure all
-							   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getY()!=0) || // three points 
-							   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getZ()!=0)) { // are not collinear
+						triangle[2]=new Vector3D(BSP42.getVertices().getVertex(firstVertex+m));
+						if(!triangle[2].equals(triangle[0]) && !triangle[2].equals(triangle[1])) { // Make sure no point is equal to the third one
+							if((Vector3D.crossProduct(triangle[0].subtract(triangle[1]), triangle[0].subtract(triangle[2])).getX()!=0) || // Make sure all
+							   (Vector3D.crossProduct(triangle[0].subtract(triangle[1]), triangle[0].subtract(triangle[2])).getY()!=0) || // three points 
+							   (Vector3D.crossProduct(triangle[0].subtract(triangle[1]), triangle[0].subtract(triangle[2])).getZ()!=0)) { // are not collinear
 								pointsWorked=true;
 								break;
 							}
@@ -348,7 +348,7 @@ public class Decompiler {
 				}
 				if(numVertices==0 || !pointsWorked) { // Fallback to planar decompilation. Since there are no explicitly defined points anymore,
 					                                   // we must find them ourselves using the A, B, C and D values.
-					plane=GenericMethods.extrapPlanePoints(currentPlane, planePointCoef);
+					triangle=new Vector3D[0];
 				}
 				if(toVMF) {
 					if(texture.equalsIgnoreCase("special/nodraw")) {
@@ -405,12 +405,17 @@ public class Decompiler {
 				}
 				double lgtScale=16; // These values are impossible to get from a compiled map since they
 				double lgtRot=0;    // are used by RAD for generating lightmaps, then are discarded, I believe.
-				brushSides[l]=new MAPBrushSide(plane, texture, textureS, textureShiftS, textureT, textureShiftT,
-				                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot, ++numIDs);
+				if(triangle.length==0) {
+					brushSides[l]=new MAPBrushSide(currentPlane, texture, textureS, textureShiftS, textureT, textureShiftT,
+					                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot, ++numIDs);
+				} else {
+					brushSides[l]=new MAPBrushSide(triangle, texture, textureS, textureShiftS, textureT, textureShiftT,
+					                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot, ++numIDs);
+				}
 				numRealFaces++;
 				if(brushSides[l]!=null) {
 					if(pointsWorked) {
-						mapBrush.add(brushSides[l], plane, currentPlane, true); // Add the MAPBrushSide to the current brush
+						mapBrush.add(brushSides[l], triangle, currentPlane, true); // Add the MAPBrushSide to the current brush
 					} else {
 						mapBrush.add(brushSides[l], new Vector3D[0], currentPlane, false);
 					}
@@ -1404,6 +1409,9 @@ public class Decompiler {
 				midBrush.add(mid);
 				floorBrush.add(low);
 			}
+			cielingBrush=GenericMethods.cullUnusedPlanes(cielingBrush, (float)0.01);
+			midBrush=GenericMethods.cullUnusedPlanes(midBrush, (float)0.01);
+			floorBrush=GenericMethods.cullUnusedPlanes(floorBrush, (float)0.01);
 			if(toVMF) {
 				if(roundNums) {
 					world.addAttributeInside(floorBrush.toRoundVMFBrush());

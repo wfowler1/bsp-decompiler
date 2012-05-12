@@ -64,41 +64,82 @@ public class MAPBrush {
 	// METHODS
 	
 	public void add(MAPBrushSide in, Vector3D[] triangle, Plane plane, boolean pointsWorked) {
-		MAPBrushSide[] newList=new MAPBrushSide[sides.length+1];
-		boolean[] newGoodSides=new boolean[sides.length+1];
-		Plane[] newPlaneList=new Plane[sides.length+1];
-		Vector3D[][] newTriangles=new Vector3D[sides.length+1][];
+		boolean duplicate=false;
 		for(int i=0;i<sides.length;i++) {
-			newList[i]=sides[i];
-			newGoodSides[i]=goodSides[i];
-			newPlaneList[i]=planes[i];
-			newTriangles[i]=triangles[i];
+			if(in.getPlane().equals(sides[i].getPlane())) {
+				duplicate=true;
+				break;
+			}
 		}
-		newList[sides.length] = in;
-		newGoodSides[goodSides.length]=pointsWorked;
-		newPlaneList[planes.length] = plane;
-		newTriangles[sides.length] = triangle;
-		sides=newList;
-		planes=newPlaneList;
-		triangles=newTriangles;
-		goodSides=newGoodSides;
+		if(!duplicate) {
+			MAPBrushSide[] newList=new MAPBrushSide[sides.length+1];
+			boolean[] newGoodSides=new boolean[sides.length+1];
+			Plane[] newPlaneList=new Plane[sides.length+1];
+			Vector3D[][] newTriangles=new Vector3D[sides.length+1][];
+			for(int i=0;i<sides.length;i++) {
+				newList[i]=sides[i];
+				newGoodSides[i]=goodSides[i];
+				newPlaneList[i]=planes[i];
+				newTriangles[i]=triangles[i];
+			}
+			newList[sides.length] = in;
+			newGoodSides[goodSides.length]=pointsWorked;
+			newPlaneList[planes.length] = plane;
+			newTriangles[sides.length] = triangle;
+			sides=newList;
+			planes=newPlaneList;
+			triangles=newTriangles;
+			goodSides=newGoodSides;
+		}
 	}
 	
 	public void add(MAPBrushSide in) {
-		MAPBrushSide[] newList=new MAPBrushSide[sides.length+1];
-		Plane[] newPlaneList=new Plane[sides.length+1];
-		Vector3D[][] newTriangles=new Vector3D[sides.length+1][];
-		boolean[] newGoodSides=new boolean[sides.length+1];
+		boolean duplicate=false;
 		for(int i=0;i<sides.length;i++) {
+			if(in.getPlane().equals(sides[i].getPlane())) {
+				duplicate=true;
+				break;
+			}
+		}
+		if(!duplicate) {
+			MAPBrushSide[] newList=new MAPBrushSide[sides.length+1];
+			Plane[] newPlaneList=new Plane[sides.length+1];
+			Vector3D[][] newTriangles=new Vector3D[sides.length+1][];
+			boolean[] newGoodSides=new boolean[sides.length+1];
+			for(int i=0;i<sides.length;i++) {
+				newList[i]=sides[i];
+				newPlaneList[i]=planes[i];
+				newTriangles[i]=triangles[i];
+				newGoodSides[i]=goodSides[i];
+			}
+			newGoodSides[goodSides.length]=false;
+			newList[sides.length] = in;
+			newPlaneList[planes.length] = new Plane(in.getPlane());
+			newTriangles[sides.length] = in.getTriangle();
+			sides=newList;
+			planes=newPlaneList;
+			triangles=newTriangles;
+			goodSides=newGoodSides;
+		}
+	}
+	
+	public void delete(int side) {
+		MAPBrushSide[] newList=new MAPBrushSide[sides.length-1];
+		Plane[] newPlaneList=new Plane[sides.length-1];
+		Vector3D[][] newTriangles=new Vector3D[sides.length-1][];
+		boolean[] newGoodSides=new boolean[sides.length-1];
+		for(int i=0;i<side;i++) {
 			newList[i]=sides[i];
 			newPlaneList[i]=planes[i];
 			newTriangles[i]=triangles[i];
 			newGoodSides[i]=goodSides[i];
 		}
-		newGoodSides[goodSides.length]=false;
-		newList[sides.length] = in;
-		newPlaneList[planes.length] = new Plane(in.getPlane());
-		newTriangles[sides.length] = in.getPlane();
+		for(int i=side+1;i<sides.length;i++) {
+			newList[i-1]=sides[i];
+			newPlaneList[i-1]=planes[i];
+			newTriangles[i-1]=triangles[i];
+			newGoodSides[i-1]=goodSides[i];
+		}
 		sides=newList;
 		planes=newPlaneList;
 		triangles=newTriangles;
@@ -112,7 +153,7 @@ public class MAPBrush {
 			for(int i=0;i<sides.length;i++) {
 				if(!goodSides[i]) {
 					triangles[i]=GenericMethods.extrapPlanePoints(planes[i], planePointCoef);
-					sides[i].setPlane(triangles[i]);
+					sides[i].setTriangle(triangles[i]);
 				}
 			}
 		} else {
@@ -123,11 +164,11 @@ public class MAPBrush {
 					triangles=new Vector3D[sides.length][3];
 					for(int i=0;i<sides.length;i++) {
 						triangles[i]=GenericMethods.extrapPlanePoints(planes[i], planePointCoef);
-						sides[i].setPlane(triangles[i]);
+						sides[i].setTriangle(triangles[i]);
 					}
 				} else {
 					for(int i=0;i<sides.length;i++) {
-						sides[i].setPlane(triangles[i]);
+						sides[i].setTriangle(triangles[i]);
 					}
 				}
 			}
@@ -142,7 +183,7 @@ public class MAPBrush {
 				if(!goodSides[i]) {
 					try {
 						triangles[i]=newTriangles[i];
-						sides[i].setPlane(triangles[i]);
+						sides[i].setTriangle(triangles[i]);
 					} catch(java.lang.NullPointerException e) {
 						Window.window.println("WARNING: Recalculating brush corners failed on Entity "+entnum+" Brush "+brushNum+" Side "+i+"!");
 					}
@@ -173,7 +214,7 @@ public class MAPBrush {
 				sides[i].shift(originVector);
 			} catch(java.lang.NullPointerException e) {
 				Window.window.println("WARNING: Entity "+entnum+" Brush "+brushNum+" Side "+i+" missing plane points! Had to regenerate!");
-				sides[i].setPlane(GenericMethods.extrapPlanePoints(planes[i], planePointCoef));
+				sides[i].setTriangle(GenericMethods.extrapPlanePoints(planes[i], planePointCoef));
 				sides[i].shift(originVector);
 			}
 			out+=sides[i].toVMFSide()+(char)0x0D+(char)0x0A;
@@ -193,7 +234,7 @@ public class MAPBrush {
 				sides[i].shift(originVector);
 			} catch(java.lang.NullPointerException e) {
 				Window.window.println("WARNING: Entity "+entnum+" Brush "+brushNum+" Side "+i+" missing plane info! Had to regenerate!");
-				sides[i].setPlane(GenericMethods.extrapPlanePoints(planes[i], planePointCoef));
+				sides[i].setTriangle(GenericMethods.extrapPlanePoints(planes[i], planePointCoef));
 				sides[i].shift(originVector);
 			}
 			out+=sides[i].toRoundString()+(char)0x0D+(char)0x0A;
@@ -243,6 +284,14 @@ public class MAPBrush {
 	
 	public Plane getPlane(int i) {
 		return planes[i];
+	}
+	
+	public Plane[] getPlanes() {
+		Plane[] planes=new Plane[sides.length];
+		for(int i=0;i<sides.length;i++) {
+			planes[i]=sides[i].getPlane();
+		}
+		return planes;
 	}
 	
 	public int getATriangle() {

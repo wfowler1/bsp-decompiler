@@ -424,6 +424,60 @@ public class GenericMethods {
 		}
 		return output;
 	}
+	
+	// Some algorithms might produce planes which are correctly normalized, but
+	// some don't actually contribute to the solid (such as those solids created
+	// by iterating through a binary tree, and keeping track of all node subdivisions).
+	public static MAPBrush cullUnusedPlanes(MAPBrush in, float precision) {
+		Plane[] thePlanes=in.getPlanes();
+		
+		// Step 1: Get all available vertices
+		double numVerts = 4;
+		// Iterative nCr algorithm; thanks to the code above
+		for(int i=thePlanes.length;i>4;i--) {
+			numVerts *= (double)i/(double)(i-3);
+		}
+		Vector3D[] theVerts = new Vector3D[(int)Math.round(numVerts)];
+		int index=0;
+		for(int i=0;i<thePlanes.length-2;i++) {
+			for(int j=i+1;j<thePlanes.length-1;j++) {
+				for(int k=j+1;k<thePlanes.length;k++) {
+					theVerts[index++]=thePlanes[i].trisect(thePlanes[j], thePlanes[k]);
+				}
+			}
+		}
+	
+		// Step 2: Throw out all vertices on the wrong side of any plane, since they're
+		// all facing the "right" way.
+		for(int i=0;i<theVerts.length;i++) {
+			for(int j=0;j<thePlanes.length;j++) {
+				if(thePlanes[j].distance(theVerts[i]) > precision) {
+					theVerts[i]=Vector3D.undefined;
+					break; //break the inner loop, let the outer loop iterate
+				}
+			}
+		}
+		
+		// Step 3: Only keep sides which have three or more vertices defined
+		int side=0;
+		for(int i=0;i<thePlanes.length;i++) {
+			int numMatches=0;
+			for(int j=0;j<theVerts.length;j++) {
+				if(Math.abs(thePlanes[i].distance(theVerts[j])) < precision) {
+					numMatches++;
+				}
+				if(numMatches>=3) {
+					break;
+				}
+			}
+			if(numMatches<3) {
+				in.delete(side); // Delete this side from the brush
+				side--;
+			}
+			side++;
+		}
+		return in;
+	}
 
 	public static Vector3D[] extrapPlanePoints(Plane in, double planePointCoef) {
 		Vector3D[] plane=new Vector3D[3];
