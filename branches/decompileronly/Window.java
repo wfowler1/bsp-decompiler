@@ -223,10 +223,12 @@ public class Window extends JPanel implements ActionListener {
 		
 		// Second row
 		
-		consolebox = new JTextArea(15, 75);
+		consolebox = new JTextArea();
+		consolebox.setEditable(false);
+		consolebox.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 		
 		console_pane = new JScrollPane(consolebox);
-		console_pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		console_pane.setBackground(new Color(255,255,255));
 		
 		pnl_jobs = new JPanel(new GridBagLayout());
 		
@@ -272,7 +274,6 @@ public class Window extends JPanel implements ActionListener {
 		pnl_jobs.add(lbl_abort, abortlabelConstraints);
 		
 		table_pane = new JScrollPane(pnl_jobs);
-		table_pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		
 		consoleTableSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, console_pane, table_pane);
 		consoleTableSplitter.setPreferredSize(new Dimension(620, 380));
@@ -528,6 +529,7 @@ public class Window extends JPanel implements ActionListener {
 	protected static void print(String out) {
 		if(consolebox!=null) {
 			consolebox.append(out);
+			consolebox.setCaretPosition(consolebox.getText().length());
 		} else {
 			System.out.print(out);
 		}
@@ -564,12 +566,6 @@ public class Window extends JPanel implements ActionListener {
 			} else {
 				totalProgressBar.setString("Total: "+(int)((in/(float)max)*100)+"%");
 			}
-		}
-	}
-	
-	protected static void setConsoleEnabled(boolean in) {
-		if(consolebox!=null) {
-			consolebox.setEnabled(in);
 		}
 	}
 	
