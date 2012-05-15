@@ -40,7 +40,6 @@ public class DecompilerThread implements Runnable {
 	}
 	
 	public void run() {
-		Window.setConsoleEnabled(false);
 		try {
 			Decompiler decompiler=null;
 			if(doomMap!=null) { // If this is a Doom map extracted from a WAD
@@ -72,7 +71,7 @@ public class DecompilerThread implements Runnable {
 			}
 			Window.setProgress(jobnum, 1, 1, "Done!");
 		} catch (java.lang.Exception e) {
-			Window.window.println("\nException caught: "+e+"\nPlease let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/entry");
+			Window.window.println("\nException caught in job "+jobnum+": "+e+"\nPlease let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/entry");
 			Window.setProgress(jobnum, 0, 1, "ERROR! See log!");
 		}
 		Window.setAbortButtonEnabled(jobnum, false);
