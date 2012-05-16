@@ -37,7 +37,6 @@ public class Decompiler {
 	
 	private Entities mapFile; // Most MAP file formats (including GearCraft) are simply a bunch of nested entities
 	private int numBrshs;
-	private int numIDs; // Everything in a VMF file has a unique ID. Just keep counting up
 	
 	// Declare all kinds of BSPs here, the one actually used will be determined by constructor
 	private DoomMap doomMap;
@@ -162,7 +161,6 @@ public class Decompiler {
 		// Worldspawn is brush-based as well as any entity with model *#.
 		for(int i=0;i<BSP42.getEntities().getNumElements();i++) { // For each entity
 			if(toVMF) { // correct some entities to make source ports easier, TODO add more
-				mapFile.getEntity(i).setAttribute("id", new Integer(++numIDs).toString());
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("light_spot")) {
 					mapFile.getEntity(i).setAttribute("pitch", new Double(mapFile.getEntity(i).getAngles()[0]).toString());
 					mapFile.getEntity(i).renameAttribute("_cone", "_inner_cone"); 
@@ -286,12 +284,14 @@ public class Decompiler {
 			Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements(), "Decompiling...");
 		}
 		Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements(), "Saving...");
-		if(!toVMF) {
-			Window.window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map...");
-			mapFile.save(BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map");
-		} else {
+		if(toVMF) {
 			Window.window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".vmf...");
-			mapFile.save(BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".vmf");
+			VMFWriter VMFMaker=new VMFWriter(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4), roundNums);
+			VMFMaker.write();
+		} else {
+			Window.window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map...");
+			MAP510Writer MAPMaker=new MAP510Writer(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4), roundNums);
+			MAPMaker.write();
 		}
 		Window.window.println("Process completed!");
 	}
@@ -303,7 +303,7 @@ public class Decompiler {
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
 		MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
-		MAPBrush mapBrush = new MAPBrush(numBrshs, ++numIDs, currentEntity, origin, planePointCoef, isDetailBrush);
+		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, origin, planePointCoef, isDetailBrush);
 		int numRealFaces=0;
 		boolean containsNonClipSide=false;
 		for(int l=0;l<numSides;l++) { // For each side of the brush
@@ -407,10 +407,10 @@ public class Decompiler {
 				double lgtRot=0;    // are used by RAD for generating lightmaps, then are discarded, I believe.
 				if(triangle.length==0) {
 					brushSides[l]=new MAPBrushSide(currentPlane, texture, textureS, textureShiftS, textureT, textureShiftT,
-					                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot, ++numIDs);
+					                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
 				} else {
 					brushSides[l]=new MAPBrushSide(triangle, texture, textureS, textureShiftS, textureT, textureShiftT,
-					                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot, ++numIDs);
+					                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
 				}
 				numRealFaces++;
 				if(brushSides[l]!=null) {
@@ -433,31 +433,13 @@ public class Decompiler {
 		// This adds the brush we've been finding and creating to
 		// the current entity as an attribute. The way I've coded
 		// this whole program and the entities parser, this shouldn't
-		// cause any issues at all.		
-		if(toVMF) {
-			if(isDetailBrush && containsNonClipSide) {
-				Entity newDetailEntity=new Entity("{"+(char)0x0A+"}");
-				newDetailEntity.setAttribute("id", new Integer(++numIDs).toString());
-				newDetailEntity.setAttribute("classname", "func_detail");
-				if(roundNums) {
-					newDetailEntity.addAttributeInside(mapBrush.toRoundVMFBrush());
-				} else {
-					newDetailEntity.addAttributeInside(mapBrush.toVMFBrush());
-				}
-				mapFile.add(newDetailEntity);
-			} else {
-				if(roundNums) {
-					mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toRoundVMFBrush());
-				} else {
-					mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toVMFBrush());
-				}
-			}
+		// cause any issues at all.
+		if(toVMF && isDetailBrush && containsNonClipSide) {
+			Entity newDetailEntity=new Entity("classname", "func_detail");
+			newDetailEntity.addBrush(mapBrush);
+			mapFile.add(newDetailEntity);
 		} else {
-			if(roundNums) {
-				mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toRoundString());
-			} else {
-				mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toString());
-			}
+			mapFile.getEntity(currentEntity).addBrush(mapBrush);
 		}
 	}
 	
@@ -479,7 +461,7 @@ public class Decompiler {
 		// Worldspawn is brush-based as well as any entity with model *#.
 		for(int i=0;i<BSP46.getEntities().getNumElements();i++) { // For each entity
 			if(toVMF) {
-				mapFile.getEntity(i).setAttribute("id", new Integer(++numIDs).toString());
+				;
 			}
 			numBrshs=0; // Reset the brush count for each entity
 			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
@@ -519,12 +501,14 @@ public class Decompiler {
 			}
 		} 
 		Window.setProgress(jobnum, numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().getNumElements(), "Saving..."); 
-		if(!toVMF) {
-			Window.window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+".map...");
-			mapFile.save(BSP46.getPath().substring(0, BSP46.getPath().length()-4)+".map");
-		} else {
+		if(toVMF) {
 			Window.window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+".vmf...");
-			mapFile.save(BSP46.getPath().substring(0, BSP46.getPath().length()-4)+".vmf");
+			VMFWriter VMFMaker=new VMFWriter(mapFile, BSP46.getPath().substring(0, BSP46.getPath().length()-4), roundNums);
+			VMFMaker.write();
+		} else {
+			Window.window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+".map...");
+			MAP510Writer MAPMaker=new MAP510Writer(mapFile, BSP46.getPath().substring(0, BSP46.getPath().length()-4), roundNums);
+			MAPMaker.write();
 		}
 		Window.window.println("Process completed!");
 	}
@@ -536,7 +520,7 @@ public class Decompiler {
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
 		MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
-		MAPBrush mapBrush = new MAPBrush(numBrshs, ++numIDs, currentEntity, origin, planePointCoef, isDetailBrush);
+		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, origin, planePointCoef, isDetailBrush);
 		for(int l=0;l<numSides;l++) { // For each side of the brush 
 			Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
 			v46BrushSide currentSide=BSP46.getBrushSides().getBrushSide(firstSide+l);
@@ -624,7 +608,7 @@ public class Decompiler {
 			double lgtScale=16; // These values are impossible to get from a compiled map since they
 			double lgtRot=0;    // are used by RAD for generating lightmaps, then are discarded, I believe.
 			brushSides[l]=new MAPBrushSide(plane, texture, textureS, textureShiftS, textureT, textureShiftT,
-			                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot, ++numIDs);
+			                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
 			numRealFaces++;
 			if(brushSides[l]!=null) {
 				if(pointsWorked) {
@@ -645,31 +629,13 @@ public class Decompiler {
 		// This adds the brush we've been finding and creating to
 		// the current entity as an attribute. The way I've coded
 		// this whole program and the entities parser, this shouldn't
-		// cause any issues at all.		
-		if(toVMF) {
-			if(isDetailBrush) {
-				Entity newDetailEntity=new Entity("{"+(char)0x0A+"}");
-				if(roundNums) {
-					newDetailEntity.addAttributeInside(mapBrush.toRoundVMFBrush());
-				} else {
-					newDetailEntity.addAttributeInside(mapBrush.toVMFBrush());
-				}
-				newDetailEntity.setAttribute("id", new Integer(++numIDs).toString());
-				newDetailEntity.setAttribute("classname", "func_detail");
-				mapFile.add(newDetailEntity);
-			} else {
-				if(roundNums) {
-					mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toRoundVMFBrush());
-				} else {
-					mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toVMFBrush());
-				}
-			}
+		// cause any issues at all.
+		if(toVMF && isDetailBrush) {
+			Entity newDetailEntity=new Entity("classname", "func_detail");
+			newDetailEntity.addBrush(mapBrush);
+			mapFile.add(newDetailEntity);
 		} else {
-			if(roundNums) {
-				mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toRoundString());
-			} else {
-				mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toString());
-			}
+			mapFile.getEntity(currentEntity).addBrush(mapBrush);
 		}
 	}
 	
@@ -683,7 +649,7 @@ public class Decompiler {
 		int numTotalItems=0;
 		for(int i=0;i<BSP38.getEntities().getNumElements();i++) { // For each entity
 			if(toVMF) { // correct some entities to make source ports easier, TODO
-				mapFile.getEntity(i).setAttribute("id", new Integer(++numIDs).toString());
+				;
 			} else { // Gearcraft also requires some changes, do those here
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("worldspawn")) {
 					mapFile.getEntity(i).setAttribute("mapversion", "510"); // Otherwise Gearcraft cries.
@@ -770,12 +736,14 @@ public class Decompiler {
 		}
 		//System.out.println(BSP38.getMapName()+" Num areaportals "+numAreaPortals+" area portals lump length "+BSP38.getAreaPortals().getLength());
 		Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().getNumElements()+BSP38.getEntities().getNumElements(), "Saving...");
-		if(!toVMF) {
-			Window.window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+".map...");
-			mapFile.save(BSP38.getPath().substring(0, BSP38.getPath().length()-4)+".map");
-		} else {
+		if(toVMF) {
 			Window.window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+".vmf...");
-			mapFile.save(BSP38.getPath().substring(0, BSP38.getPath().length()-4)+".vmf");
+			VMFWriter VMFMaker=new VMFWriter(mapFile, BSP38.getPath().substring(0, BSP38.getPath().length()-4), roundNums);
+			VMFMaker.write();
+		} else {
+			Window.window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+".map...");
+			MAP510Writer MAPMaker=new MAP510Writer(mapFile, BSP38.getPath().substring(0, BSP38.getPath().length()-4), roundNums);
+			MAPMaker.write();
 		}
 		Window.window.println("Process completed!");
 	}
@@ -788,7 +756,7 @@ public class Decompiler {
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
 		MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
-		MAPBrush mapBrush = new MAPBrush(numBrshs, ++numIDs, currentEntity, origin, planePointCoef, false);
+		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, origin, planePointCoef, false);
 		for(int l=0;l<numSides;l++) { // For each side of the brush
 			Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
 			v38BrushSide currentSide=BSP38.getBrushSides().getBrushSide(firstSide+l);
@@ -936,7 +904,7 @@ public class Decompiler {
 				double lgtScale=16; // These values are impossible to get from a compiled map since they
 				double lgtRot=0;    // are used by RAD for generating lightmaps, then are discarded, I believe.
 				brushSides[l]=new MAPBrushSide(plane, texture, textureS, textureShiftS, textureT, textureShiftT,
-				                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot, ++numIDs);
+				                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
 				if(brushSides[l]!=null) {
 					/*if(pointsWorked) {
 						mapBrush.add(brushSides[l], plane, currentPlane, true); // Add the MAPBrushSide to the current brush
@@ -966,35 +934,10 @@ public class Decompiler {
 			newWaterEntity.setAttribute("wait", "4");
 			newWaterEntity.setAttribute("skin", "-3");
 			newWaterEntity.setAttribute("WaveHeight", "3.2");
-			if(toVMF) {
-				newWaterEntity.setAttribute("id", new Integer(++numIDs).toString());
-				if(roundNums) {
-					newWaterEntity.addAttributeInside(mapBrush.toRoundVMFBrush());
-				} else {
-					newWaterEntity.addAttributeInside(mapBrush.toVMFBrush());
-				}
-			} else {
-				if(roundNums) {
-					newWaterEntity.addAttributeInside(mapBrush.toRoundString());
-				} else {
-					newWaterEntity.addAttributeInside(mapBrush.toString());
-				}
-			}
+			newWaterEntity.addBrush(mapBrush);
 			mapFile.add(newWaterEntity);
 		} else {
-			if(toVMF) {
-				if(roundNums) {
-					mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toRoundVMFBrush());
-				} else {
-					mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toVMFBrush());
-				}
-			} else {
-				if(roundNums) {
-					mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toRoundString());
-				} else {
-					mapFile.getEntity(currentEntity).addAttributeInside(mapBrush.toString());
-				}
-			}
+			mapFile.getEntity(currentEntity).addBrush(mapBrush);
 		}
 	}
 	
@@ -1069,9 +1012,9 @@ public class Decompiler {
 		outsideLeftTexT[2]=-1;
 		MAPBrushSide outsideLeft;
 		if(toVMF) {
-			outsideLeft=new MAPBrushSide(outsideLeftPlane, "tools/toolsnodraw", outsideLeftTexS, 0, outsideLeftTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+			outsideLeft=new MAPBrushSide(outsideLeftPlane, "tools/toolsnodraw", outsideLeftTexS, 0, outsideLeftTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 		} else {
-			outsideLeft=new MAPBrushSide(outsideLeftPlane, "special/nodraw", outsideLeftTexS, 0, outsideLeftTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+			outsideLeft=new MAPBrushSide(outsideLeftPlane, "special/nodraw", outsideLeftTexS, 0, outsideLeftTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 		}
 		// Right
 		Vector3D[] outsideRightPlane=new Vector3D[3];
@@ -1084,9 +1027,9 @@ public class Decompiler {
 		outsideRightTexT[2]=-1;
 		MAPBrushSide outsideRight;
 		if(toVMF) {
-			outsideRight=new MAPBrushSide(outsideRightPlane, "tools/toolsnodraw", outsideRightTexS, 0, outsideRightTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+			outsideRight=new MAPBrushSide(outsideRightPlane, "tools/toolsnodraw", outsideRightTexS, 0, outsideRightTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 		} else {
-			outsideRight=new MAPBrushSide(outsideRightPlane, "special/nodraw", outsideRightTexS, 0, outsideRightTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+			outsideRight=new MAPBrushSide(outsideRightPlane, "special/nodraw", outsideRightTexS, 0, outsideRightTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 		}
 		// Near
 		Vector3D[] outsideNearPlane=new Vector3D[3];
@@ -1099,9 +1042,9 @@ public class Decompiler {
 		outsideNearTexT[2]=-1;
 		MAPBrushSide outsideNear;
 		if(toVMF) {
-			outsideNear=new MAPBrushSide(outsideNearPlane, "tools/toolsnodraw", outsideNearTexS, 0, outsideNearTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+			outsideNear=new MAPBrushSide(outsideNearPlane, "tools/toolsnodraw", outsideNearTexS, 0, outsideNearTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 		} else {
-			outsideNear=new MAPBrushSide(outsideNearPlane, "special/nodraw", outsideNearTexS, 0, outsideNearTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+			outsideNear=new MAPBrushSide(outsideNearPlane, "special/nodraw", outsideNearTexS, 0, outsideNearTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 		}
 		// Far
 		Vector3D[] outsideFarPlane=new Vector3D[3];
@@ -1114,9 +1057,9 @@ public class Decompiler {
 		outsideFarTexT[2]=-1;
 		MAPBrushSide outsideFar;
 		if(toVMF) {
-			outsideFar=new MAPBrushSide(outsideFarPlane, "tools/toolsnodraw", outsideFarTexS, 0, outsideFarTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+			outsideFar=new MAPBrushSide(outsideFarPlane, "tools/toolsnodraw", outsideFarTexS, 0, outsideFarTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 		} else {
-			outsideFar=new MAPBrushSide(outsideFarPlane, "special/nodraw", outsideFarTexS, 0, outsideFarTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+			outsideFar=new MAPBrushSide(outsideFarPlane, "special/nodraw", outsideFarTexS, 0, outsideFarTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 		}
 		
 		// I need to analyze the binary tree and get more information, particularly the
@@ -1242,9 +1185,9 @@ public class Decompiler {
 			
 			// Third, create a few brushes out of the geometry.
 			double[] origin=new double[3];
-			MAPBrush cielingBrush=new MAPBrush(numBrshs++, ++numIDs, 0, origin, planePointCoef, false);
-			MAPBrush floorBrush=new MAPBrush(numBrshs++, ++numIDs, 0, origin, planePointCoef, false);
-			MAPBrush midBrush=new MAPBrush(numBrshs++, ++numIDs, 0, origin, planePointCoef, false);
+			MAPBrush cielingBrush=new MAPBrush(numBrshs++, 0, origin, planePointCoef, false);
+			MAPBrush floorBrush=new MAPBrush(numBrshs++, 0, origin, planePointCoef, false);
+			MAPBrush midBrush=new MAPBrush(numBrshs++, 0, origin, planePointCoef, false);
 			DSector currentSector=doomMap.getSectors().getSector(subsectorSectors[i]);
 			
 			Vector3D[] roofPlane=new Vector3D[3];
@@ -1255,7 +1198,7 @@ public class Decompiler {
 			roofPlane[2]=new Vector3D(1, 0, ZMax);
 			roofTexS[0]=1;
 			roofTexT[1]=-1;
-			MAPBrushSide roof=new MAPBrushSide(roofPlane, doomMap.getWadName()+"/"+currentSector.getCielingTexture(), roofTexS, 0, roofTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+			MAPBrushSide roof=new MAPBrushSide(roofPlane, doomMap.getWadName()+"/"+currentSector.getCielingTexture(), roofTexS, 0, roofTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 			
 			Vector3D[] cileingPlane=new Vector3D[3];
 			double[] cileingTexS=new double[3];
@@ -1265,7 +1208,7 @@ public class Decompiler {
 			cileingPlane[2]=new Vector3D(1, 1, currentSector.getCielingHeight());
 			cileingTexS[0]=1;
 			cileingTexT[1]=-1;
-			MAPBrushSide cieling=new MAPBrushSide(cileingPlane, doomMap.getWadName()+"/"+currentSector.getCielingTexture(), cileingTexS, 0, cileingTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+			MAPBrushSide cieling=new MAPBrushSide(cileingPlane, doomMap.getWadName()+"/"+currentSector.getCielingTexture(), cileingTexS, 0, cileingTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 			
 			Vector3D[] floorPlane=new Vector3D[3];
 			double[] floorTexS=new double[3];
@@ -1275,7 +1218,7 @@ public class Decompiler {
 			floorPlane[2]=new Vector3D(1, 0, currentSector.getFloorHeight());
 			floorTexS[0]=1;
 			floorTexT[1]=-1;
-			MAPBrushSide floor=new MAPBrushSide(floorPlane, doomMap.getWadName()+"/"+currentSector.getFloorTexture(), floorTexS, 0, floorTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+			MAPBrushSide floor=new MAPBrushSide(floorPlane, doomMap.getWadName()+"/"+currentSector.getFloorTexture(), floorTexS, 0, floorTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 
 			Vector3D[] foundationPlane=new Vector3D[3];
 			double[] foundationTexS=new double[3];
@@ -1285,7 +1228,7 @@ public class Decompiler {
 			foundationPlane[2]=new Vector3D(1, 1, ZMin);
 			foundationTexS[0]=1;
 			foundationTexT[1]=-1;
-			MAPBrushSide foundation=new MAPBrushSide(foundationPlane, doomMap.getWadName()+"/"+currentSector.getFloorTexture(), foundationTexS, 0, foundationTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+			MAPBrushSide foundation=new MAPBrushSide(foundationPlane, doomMap.getWadName()+"/"+currentSector.getFloorTexture(), foundationTexS, 0, foundationTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 			
 			cielingBrush.add(cieling);
 			cielingBrush.add(roof);
@@ -1332,9 +1275,9 @@ public class Decompiler {
 				texT[0]=0;
 				texT[1]=0;
 				texT[2]=1;
-				MAPBrushSide low=new MAPBrushSide(plane, lowerWallTextures[subsectorSidedefs[i][0]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
-				MAPBrushSide high=new MAPBrushSide(plane, higherWallTextures[subsectorSidedefs[i][0]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
-				MAPBrushSide mid=new MAPBrushSide(plane, midWallTextures[subsectorSidedefs[i][0]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+				MAPBrushSide low=new MAPBrushSide(plane, lowerWallTextures[subsectorSidedefs[i][0]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+				MAPBrushSide high=new MAPBrushSide(plane, higherWallTextures[subsectorSidedefs[i][0]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+				MAPBrushSide mid=new MAPBrushSide(plane, midWallTextures[subsectorSidedefs[i][0]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				
 				cielingBrush.add(high);
 				midBrush.add(mid);
@@ -1364,8 +1307,8 @@ public class Decompiler {
 				texT[0]=0;
 				texT[1]=0;
 				texT[2]=1;
-				MAPBrushSide low=new MAPBrushSide(plane, lowerWallTextures[subsectorSidedefs[i][j]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
-				MAPBrushSide high=new MAPBrushSide(plane, higherWallTextures[subsectorSidedefs[i][j]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+				MAPBrushSide low=new MAPBrushSide(plane, lowerWallTextures[subsectorSidedefs[i][j]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+				MAPBrushSide high=new MAPBrushSide(plane, higherWallTextures[subsectorSidedefs[i][j]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				MAPBrushSide mid;
 				
 				if(currentLinedef.isOneSided()) {
@@ -1386,23 +1329,14 @@ public class Decompiler {
 							}
 						}
 					}
+					world.addBrush(outsideBrush);
 					if(toVMF) {
-						if(roundNums) {
-							world.addAttributeInside(outsideBrush.toRoundVMFBrush());
-						} else {
-							world.addAttributeInside(outsideBrush.toVMFBrush());
-						}
-						mid=new MAPBrushSide(plane, "tools/toolsnodraw", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+						mid=new MAPBrushSide(plane, "tools/toolsnodraw", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 					} else {
-						if(roundNums) {
-							world.addAttributeInside(outsideBrush.toRoundString());
-						} else {
-							world.addAttributeInside(outsideBrush.toString());
-						}
-						mid=new MAPBrushSide(plane, "special/nodraw", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+						mid=new MAPBrushSide(plane, "special/nodraw", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 					}
 				} else {
-					mid=new MAPBrushSide(plane, midWallTextures[subsectorSidedefs[i][j]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+					mid=new MAPBrushSide(plane, midWallTextures[subsectorSidedefs[i][j]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				}
 				
 				cielingBrush.add(high);
@@ -1412,23 +1346,8 @@ public class Decompiler {
 			cielingBrush=GenericMethods.cullUnusedPlanes(cielingBrush, (float)0.01);
 			midBrush=GenericMethods.cullUnusedPlanes(midBrush, (float)0.01);
 			floorBrush=GenericMethods.cullUnusedPlanes(floorBrush, (float)0.01);
-			if(toVMF) {
-				if(roundNums) {
-					world.addAttributeInside(floorBrush.toRoundVMFBrush());
-					world.addAttributeInside(cielingBrush.toRoundVMFBrush());
-				} else {
-					world.addAttributeInside(floorBrush.toVMFBrush());
-					world.addAttributeInside(cielingBrush.toVMFBrush());
-				}
-			} else {
-				if(roundNums) {
-					world.addAttributeInside(floorBrush.toRoundString());
-					world.addAttributeInside(cielingBrush.toRoundString());
-				} else {
-					world.addAttributeInside(floorBrush.toString());
-					world.addAttributeInside(cielingBrush.toString());
-				}
-			}
+			world.addBrush(floorBrush);
+			world.addBrush(cielingBrush);
 			boolean containsMiddle=false; // Need to figure out how to determine this. As it is, no middle sides will come out.
 			if(containsMiddle && currentSector.getCielingHeight() > currentSector.getFloorHeight()) {
 				Entity middleEnt=new Entity("classname", "func_illusionary");
@@ -1440,7 +1359,7 @@ public class Decompiler {
 				topPlane[2]=new Vector3D(1, 0, currentSector.getCielingHeight());
 				topTexS[0]=1;
 				topTexT[1]=-1;
-				MAPBrushSide top=new MAPBrushSide(topPlane, doomMap.getWadName()+"/"+currentSector.getFloorTexture(), topTexS, 0, topTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+				MAPBrushSide top=new MAPBrushSide(topPlane, doomMap.getWadName()+"/"+currentSector.getFloorTexture(), topTexS, 0, topTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 	
 				Vector3D[] bottomPlane=new Vector3D[3];
 				double[] bottomTexS=new double[3];
@@ -1450,7 +1369,7 @@ public class Decompiler {
 				bottomPlane[2]=new Vector3D(1, 1, currentSector.getFloorHeight());
 				bottomTexS[0]=1;
 				bottomTexT[1]=-1;
-				MAPBrushSide bottom=new MAPBrushSide(bottomPlane, doomMap.getWadName()+"/"+currentSector.getFloorTexture(), bottomTexS, 0, bottomTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+				MAPBrushSide bottom=new MAPBrushSide(bottomPlane, doomMap.getWadName()+"/"+currentSector.getFloorTexture(), bottomTexS, 0, bottomTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 
 				midBrush.add(top);
 				midBrush.add(bottom);
@@ -1459,36 +1378,26 @@ public class Decompiler {
 				midBrush.add(outsideNear);
 				midBrush.add(outsideFar);
 				
-				if(toVMF) {
-					if(roundNums) {
-						middleEnt.addAttributeInside(midBrush.toRoundVMFBrush());
-					} else {
-						middleEnt.addAttributeInside(midBrush.toVMFBrush());
-					}
-				} else {
-					if(roundNums) {
-						middleEnt.addAttributeInside(midBrush.toRoundString());
-					} else {
-						middleEnt.addAttributeInside(midBrush.toString());
-					}
-				}
+				middleEnt.addBrush(midBrush);
 				mapFile.add(middleEnt);
 			}
 			Window.setProgress(jobnum, i+1, doomMap.getSubSectors().getNumElements(), "Decompiling...");
 		}
 		
 		Window.setProgress(jobnum, 1, 1, "Saving...");
-		if(!toVMF) {
-			Window.window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".map...");
-			mapFile.save(doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".map");
-		} else {
+		if(toVMF) {
 			Window.window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".vmf...");
-			mapFile.save(doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".vmf");
+			VMFWriter VMFMaker=new VMFWriter(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName(), roundNums);
+			VMFMaker.write();
+		} else {
+			Window.window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".map...");
+			MAP510Writer MAPMaker=new MAP510Writer(mapFile, doomMap.getPath().substring(0, doomMap.getPath().length()-4), roundNums);
+			MAPMaker.write();
 		}
 	}
 	
 	public void addOriginBrush(int ent, double[] origin) {
-		MAPBrush newOriginBrush=new MAPBrush(numBrshs++, ++numIDs, ent, new double[3], 0, false);
+		MAPBrush newOriginBrush=new MAPBrush(numBrshs++, ent, new double[3], 0, false);
 		Vector3D[][] planes=new Vector3D[6][3]; // Six planes for a cube brush, three vertices for each plane
 		double[][] textureS=new double[6][3];
 		double[][] textureT=new double[6][3];
@@ -1534,25 +1443,13 @@ public class Decompiler {
 		for(int j=0;j<6;j++) {
 			MAPBrushSide currentEdge;
 			if(toVMF) {
-				currentEdge=new MAPBrushSide(planes[j], "tools/toolsorigin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+				currentEdge=new MAPBrushSide(planes[j], "tools/toolsorigin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 			} else {
-				currentEdge=new MAPBrushSide(planes[j], "special/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+				currentEdge=new MAPBrushSide(planes[j], "special/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 			}
 			newOriginBrush.add(currentEdge);
 		}
-		if(toVMF) {
-			if(roundNums) {
-				mapFile.getEntity(ent).addAttributeInside(newOriginBrush.toRoundVMFBrush());
-			} else {
-				mapFile.getEntity(ent).addAttributeInside(newOriginBrush.toVMFBrush());
-			}
-		} else {
-			if(roundNums) {
-				mapFile.getEntity(ent).addAttributeInside(newOriginBrush.toRoundString());
-			} else {
-				mapFile.getEntity(ent).addAttributeInside(newOriginBrush.toString());
-			}
-		}
+		mapFile.getEntity(ent).addBrush(newOriginBrush);
 	}
 	
 	// createFaceBrush(String, Vector3D, Vector3D)
@@ -1562,7 +1459,7 @@ public class Decompiler {
 	// all I need right now.
 	public MAPBrush createFaceBrush(String texture, Vector3D mins, Vector3D maxs) {
 		double[] origin=new double[3];
-		MAPBrush newBrush = new MAPBrush(numBrshs++, ++numIDs, 0, origin, planePointCoef, false);
+		MAPBrush newBrush = new MAPBrush(numBrshs++, 0, origin, planePointCoef, false);
 		numBrshs++;
 		Vector3D[][] planes=new Vector3D[6][3]; // Six planes for a cube brush, three vertices for each plane
 		double[][] texS=new double[6][3];
@@ -1617,10 +1514,15 @@ public class Decompiler {
 		texS[5][1]=texS[0][0];
 		texT[5][2]=1;
 
-		MAPBrushSide front=new MAPBrushSide(planes[0], texture, texS[0], 0, texT[0], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0, ++numIDs);
+		MAPBrushSide front=new MAPBrushSide(planes[0], texture, texS[0], 0, texT[0], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 		newBrush.add(front);
 		for(int i=1;i<6;i++) {
-			MAPBrushSide currentEdge=new MAPBrushSide(planes[i], "special/nodraw", texS[i], 0, texT[i], 0, 0, 1, 1, 32, "wld_lightmap", 16, 0, ++numIDs);
+			MAPBrushSide currentEdge;
+			if(toVMF) {
+				currentEdge=new MAPBrushSide(planes[i], "tools/toolsnodraw", texS[i], 0, texT[i], 0, 0, 1, 1, 32, "wld_lightmap", 16, 0);
+			} else {
+				currentEdge=new MAPBrushSide(planes[i], "special/nodraw", texS[i], 0, texT[i], 0, 0, 1, 1, 32, "wld_lightmap", 16, 0);
+			}
 			newBrush.add(currentEdge);
 		}
 		

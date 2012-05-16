@@ -21,8 +21,6 @@ public class MAPBrushSide {
 	private double lgtScale;
 	private double lgtRot;
 	
-	private int id;
-	
 	public static final int X=0;
 	public static final int Y=1;
 	public static final int Z=2;
@@ -32,7 +30,7 @@ public class MAPBrushSide {
 	
 	// CONSTRUCTORS
 	public MAPBrushSide(Vector3D[] inTriangle, String inTexture, double[] inTextureS, double inTextureShiftS, double[] inTextureT, double inTextureShiftT, float inTexRot,
-	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot, int id) {
+	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot) {
 	//	triangle[0]=inTriangle[0];
 	//	triangle[1]=inTriangle[1];
 	//	triangle[2]=inTriangle[2];
@@ -50,11 +48,10 @@ public class MAPBrushSide {
 		material=inMaterial;
 		lgtScale=inLgtScale;
 		lgtRot=inLgtRot;
-		this.id=id;
 	}
 	
 	public MAPBrushSide(Plane plane, Vector3D[] inTriangle, String inTexture, double[] inTextureS, double inTextureShiftS, double[] inTextureT, double inTextureShiftT, float inTexRot,
-	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot, int id) {
+	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot) {
 	//	triangle[0]=inTriangle[0];
 	//	triangle[1]=inTriangle[1];
 	//	triangle[2]=inTriangle[2];
@@ -72,11 +69,10 @@ public class MAPBrushSide {
 		material=inMaterial;
 		lgtScale=inLgtScale;
 		lgtRot=inLgtRot;
-		this.id=id;
 	}
 
 	public MAPBrushSide(Plane plane, String inTexture, double[] inTextureS, double inTextureShiftS, double[] inTextureT, double inTextureShiftT, float inTexRot,
-	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot, int id) {
+	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot) {
 		this.plane=plane;
 		triangle=GenericMethods.extrapPlanePoints(plane, 100);
 		texture=inTexture;
@@ -91,7 +87,6 @@ public class MAPBrushSide {
 		material=inMaterial;
 		lgtScale=inLgtScale;
 		lgtRot=inLgtRot;
-		this.id=id;
 	}
 
 	// METHODS
@@ -117,69 +112,6 @@ public class MAPBrushSide {
 		}
 	}
 	
-	// toVMFSide()
-	// Returns the brush side exactly as it would look in a .VMF file.
-	public String toVMFSide() {
-		try {
-			String out="		side"+(char)0x0D+(char)0x0A+"		{"+(char)0x0D+(char)0x0A;
-			out+="			\"id\" \""+id+"\""+(char)0x0D+(char)0x0A;
-			out+="			\"plane\" \"("+triangle[0].getX()+" "+triangle[0].getY()+" "+triangle[0].getZ()+") ";
-			out+="("+triangle[1].getX()+" "+triangle[1].getY()+" "+triangle[1].getZ()+") ";
-			out+="("+triangle[2].getX()+" "+triangle[2].getY()+" "+triangle[2].getZ()+")\""+(char)0x0D+(char)0x0A;
-			out+="			\"material\" \"" + texture + "\""+(char)0x0D+(char)0x0A;
-			out+="			\"uaxis\" \"["+textureS.getX()+" "+textureS.getY()+" "+textureS.getZ()+" "+textureShiftS+"] "+texScaleX+"\""+(char)0x0D+(char)0x0A;
-			out+="			\"vaxis\" \"["+textureT.getX()+" "+textureT.getY()+" "+textureT.getZ()+" "+textureShiftT+"] "+texScaleY+"\""+(char)0x0D+(char)0x0A;
-			out+="			\"rotation\" \""+texRot+"\""+(char)0x0D+(char)0x0A;
-			out+="			\"lightmapscale\" \""+lgtScale+"\""+(char)0x0D+(char)0x0A;
-			out+="			\"smoothing_groups\" \"0\""+(char)0x0D+(char)0x0A+"		}";
-			return out;
-		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Side with bad data! Not exported!");
-			return null;
-		}
-	}
-	
-	// toRoundString()
-	// Same as toString but rounds numbers within .01 of a whole number to that whole number
-	public String toRoundString() {
-		try {
-			return "( "+fmt.format((double)Math.round(triangle[0].getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[0].getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[0].getZ()*1000000.0)/1000000.0)+" ) "+
-			       "( "+fmt.format((double)Math.round(triangle[1].getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[1].getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[1].getZ()*1000000.0)/1000000.0)+" ) "+
-			       "( "+fmt.format((double)Math.round(triangle[2].getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[2].getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[2].getZ()*1000000.0)/1000000.0)+" ) "+
-			       texture + 
-			       " [ "+fmt.format((double)Math.round(textureS.getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureS.getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureS.getZ()*1000000.0)/1000000.0)+" "+Math.round(textureShiftS)+" ]"+
-			       " [ "+fmt.format((double)Math.round(textureT.getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureT.getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureT.getZ()*1000000.0)/1000000.0)+" "+Math.round(textureShiftT)+" ] "+
-			       fmtScales.format((double)Math.round(texRot*10000.0)/10000.0)+" "+fmtScales.format((double)Math.round(texScaleX*10000.0)/10000.0)+" "+fmtScales.format((double)Math.round(texScaleY*10000.0)/10000.0)+" "+flags+" "+
-			       material +
-			       " [ "+fmtScales.format((double)Math.round(lgtScale*1000000.0)/1000000.0)+" "+fmtScales.format((double)Math.round(lgtRot*1000000.0)/1000000.0)+" ]";
-		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Side with bad data! Not exported!");
-			return null;
-		}
-	}
-	
-	// toRoundVMFSide()
-	// Same as toVMFSide but rounds numbers within .01 of a whole number to that whole number
-	public String toRoundVMFSide() {
-		try {
-			String out="		side"+(char)0x0D+(char)0x0A+"		{"+(char)0x0D+(char)0x0A;
-			out+="			\"id\" \""+id+"\""+(char)0x0D+(char)0x0A;
-			out+="			\"plane\" \"("+fmt.format((double)Math.round(triangle[0].getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[0].getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[0].getZ()*1000000.0)/1000000.0)+") ";
-			out+="("+fmt.format((double)Math.round(triangle[1].getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[1].getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[1].getZ()*1000000.0)/1000000.0)+") ";
-			out+="("+fmt.format((double)Math.round(triangle[2].getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[2].getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[2].getZ()*1000000.0)/1000000.0)+")\""+(char)0x0D+(char)0x0A;
-			out+="			\"material\" \"" + texture + "\""+(char)0x0D+(char)0x0A;
-			out+="			\"uaxis\" \"["+fmt.format((double)Math.round(textureS.getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureS.getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureS.getZ()*1000000.0)/1000000.0)+" "+Math.round(textureShiftS)+"] "+fmtScales.format((double)Math.round(texScaleX*10000.0)/10000.0)+"\""+(char)0x0D+(char)0x0A;
-			out+="			\"vaxis\" \"["+fmt.format((double)Math.round(textureT.getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureT.getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureT.getZ()*1000000.0)/1000000.0)+" "+Math.round(textureShiftT)+"] "+fmtScales.format((double)Math.round(texScaleY*10000.0)/10000.0)+"\""+(char)0x0D+(char)0x0A;
-			out+="			\"rotation\" \""+fmtScales.format((double)Math.round(texRot*10000.0)/10000.0)+"\""+(char)0x0D+(char)0x0A;
-			out+="			\"lightmapscale\" \""+fmtScales.format((double)Math.round(lgtScale*10000.0)/10000.0)+"\""+(char)0x0D+(char)0x0A;
-			out+="			\"smoothing_groups\" \"0\""+(char)0x0D+(char)0x0A+"		}";
-			return out;
-		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Side with bad data! Not exported!");
-			return null;
-		}
-	}
-	
 	// flipPlane()
 	// Negate the plane
 	public void flipPlane() {
@@ -195,24 +127,70 @@ public class MAPBrushSide {
 		triangle[0]=triangle[0].add(shift);
 		triangle[1]=triangle[1].add(shift);
 		triangle[2]=triangle[2].add(shift);
+		plane=new Plane(triangle);
 	}
 	
 	// ACCESSORS/MUTATORS
+	public void setTriangle(Vector3D[] in) {
+		triangle[0]=in[0];
+		triangle[1]=in[1];
+		triangle[2]=in[2];
+		plane=new Plane(triangle);
+	}
+	
+	public double getLgtScale() {
+		return lgtScale;
+	}
+	
+	public double getLgtRot() {
+		return lgtRot;
+	}
+	
+	public String getMaterial() {
+		return material;
+	}
+	
+	public int getFlags() {
+		return flags;
+	}
+	
+	public double getTexScaleX() {
+		return texScaleX;
+	}
+	
+	public double getTexScaleY() {
+		return texScaleY;
+	}
+	
+	public double getTextureShiftS() {
+		return textureShiftS;
+	}
+	
+	public double getTextureShiftT() {
+		return textureShiftT;
+	}
+	
 	public Vector3D[] getTriangle() {
 		return triangle;
+	}
+	
+	public Plane getPlane() {
+		return plane;
 	}
 	
 	public String getTexture() {
 		return texture;
 	}
 	
-	public void setTriangle(Vector3D[] in) {
-		triangle[0]=in[0];
-		triangle[1]=in[1];
-		triangle[2]=in[2];
+	public Vector3D getTextureS() {
+		return textureS;
 	}
 	
-	public Plane getPlane() {
-		return plane;
+	public Vector3D getTextureT() {
+		return textureT;
+	}
+	
+	public float getTexRot() {
+		return texRot;
 	}
 }

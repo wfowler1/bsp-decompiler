@@ -67,7 +67,7 @@ public class Window extends JPanel implements ActionListener {
 		//} else {
 		//	window = new Window(args);
 		//}
-		window.print("Got a bug to report? Want to see something added?\nCreate an issue report at\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/entry\n\n");
+		window.print("Got a bug to report? Want to see something added?"+(char)0x0D+(char)0x0A+"Create an issue report at"+(char)0x0D+(char)0x0A+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry"+(char)0x0D+(char)0x0A+(char)0x0D+(char)0x0A);
 	}
 
 	// All GUI components get initialized here
@@ -151,11 +151,11 @@ public class Window extends JPanel implements ActionListener {
 		chk_skipPlaneFlipItem.addActionListener(this);
 		chk_calcVertsItem = new JCheckBoxMenuItem("Calculate brush corners");
 		chk_calcVertsItem.setToolTipText("Calculate every brush's corners. May solve problems arising from decompilation of faces with no vertex information.");
-		chk_calcVertsItem.setSelected(true);
+		chk_calcVertsItem.setSelected(false);
 		optionsMenu.add(chk_calcVertsItem);
 		chk_calcVertsItem.addActionListener(this);
-		chk_roundNumsItem = new JCheckBoxMenuItem("Gearcraft-style decimals");
-		chk_roundNumsItem.setToolTipText("Rounds all vertices to six decimals and texture scales to four. Might make map editors (namely GearCraft) happier.");
+		chk_roundNumsItem = new JCheckBoxMenuItem("Editor-style decimals");
+		chk_roundNumsItem.setToolTipText("Rounds all decimals to the same precision as each map editor uses for its map format. Might make editors happier.");
 		chk_roundNumsItem.setSelected(true);
 		optionsMenu.add(chk_roundNumsItem);
 		chk_roundNumsItem.addActionListener(this);
@@ -454,7 +454,7 @@ public class Window extends JPanel implements ActionListener {
 						logWriter.close();
 						Window.window.println("Log file saved!");
 					} catch(java.io.IOException e) {
-						Window.window.println("Unable to create file "+logfile.getAbsolutePath()+"\nEnsure the filesystem is not read only!");
+						Window.window.println("Unable to create file "+logfile.getAbsolutePath()+(char)0x0D+(char)0x0A+"Ensure the filesystem is not read only!");
 					}
 				}
 			}
@@ -528,15 +528,23 @@ public class Window extends JPanel implements ActionListener {
 	
 	protected static void print(String out) {
 		if(consolebox!=null) {
+			int start,end;
+			start=consolebox.getSelectionStart();
+			end=consolebox.getSelectionEnd();
 			consolebox.append(out);
-			consolebox.setCaretPosition(consolebox.getText().length());
+			if(start==end) {
+				consolebox.setCaretPosition(consolebox.getText().length());
+			} else { // In case user is highlighting something while adding text
+				consolebox.setSelectionStart(start);
+				consolebox.setSelectionEnd(end);
+			}
 		} else {
 			System.out.print(out);
 		}
 	}
 	
 	protected static void println(String out) {
-		print(out+"\n");
+		print(out+(char)0x0D+(char)0x0A);
 	}
 	
 	protected static void clearConsole() {

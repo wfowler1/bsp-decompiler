@@ -32,9 +32,9 @@ public class Entities {
 			entities = new Entity[numEnts];
 			populateEntityList(data);
 		} catch(java.io.FileNotFoundException e) {
-			Window.window.println("ERROR: File "+dataFile+" not found!");
+			Window.window.println("ERROR: File "+dataFile.getPath()+" not found!");
 		} catch(java.io.IOException e) {
-			Window.window.println("ERROR: File "+dataFile+" could not be read, ensure the file is not open in another program");
+			Window.window.println("ERROR: File "+dataFile.getPath()+" could not be read, ensure the file is not open in another program");
 		}
 	}
 	
@@ -51,9 +51,9 @@ public class Entities {
 			entities = new Entity[numEnts];
 			populateEntityList(data);
 		} catch(java.io.FileNotFoundException e) {
-			Window.window.println("ERROR: File "+dataFile+" not found!");
+			Window.window.println("ERROR: File "+dataFile.getPath()+" not found!");
 		} catch(java.io.IOException e) {
-			Window.window.println("ERROR: File "+dataFile+" could not be read, ensure the file is not open in another program");
+			Window.window.println("ERROR: File "+dataFile.getPath()+" could not be read, ensure the file is not open in another program");
 		}
 	}
 	
@@ -116,14 +116,6 @@ public class Entities {
 		}
 		Date end=new Date();
 		Window.window.println(end.getTime()-begin.getTime()+"ms");
-	}
-	
-	// +printEnts()
-	// prints all parsed entities into the console
-	public void printEnts() {
-		for(int i=0;i<numEnts;i++) {
-			Window.window.print(entities[i].toString()+"\n");
-		}
 	}
 	
 	// +add(String)
@@ -207,75 +199,6 @@ public class Entities {
 			}
 		}
 		return indices;
-	}
-	
-	// Save(String)
-	// Saves the lump to the specified path.
-	// Handling file I/O with Strings is generally a bad idea. If you have maybe a couple hundred
-	// Strings to write then it'll probably be okay, but when you have on the order of 10,000 Strings
-	// it gets VERY slow, even if you concatenate them all before writing.
-	public void save(String path) {
-		File newFile;
-		if(path.substring(path.length()-4).equalsIgnoreCase(".map") || path.substring(path.length()-4).equalsIgnoreCase(".vmf")) {
-			newFile=new File(path);
-		} else {
-			newFile=new File(path+"\\00 - Entities.txt");
-		}
-		try {
-			File absolutepath=new File(newFile.getParent()+"\\");
-			if(!absolutepath.exists()) {
-				absolutepath.mkdir();
-			}
-			if(!newFile.exists()) {
-				newFile.createNewFile();
-			} else {
-				newFile.delete();
-				newFile.createNewFile();
-			}
-			
-			// PrintWriter entityWriter=new PrintWriter(newFile);
-			FileOutputStream entityWriter=new FileOutputStream(newFile);
-			for(int i=0;i<numEnts;i++) {
-				byte[] temp;
-				if(path.substring(path.length()-4).equals(".map")) {
-					String tempString="{ // Entity "+i+""+(char)0x0D+(char)0x0A;
-					temp=tempString.getBytes();
-				} else {
-					if(path.substring(path.length()-4).equals(".vmf")) {
-						if(entities[i].getAttribute("classname").equalsIgnoreCase("worldspawn")) {
-							String tempString="versioninfo"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A+"	\"editorversion\" \"400\""+(char)0x0D+(char)0x0A+"	\"editorbuild\" \"3325\""+(char)0x0D+(char)0x0A+"	\"mapversion\" \"0\""+(char)0x0D+(char)0x0A+"	\"formatversion\" \"100\""+(char)0x0D+(char)0x0A+"	\"prefab\" \"0\""+(char)0x0D+(char)0x0A+"}"+(char)0x0D+(char)0x0A+"";
-							tempString+="visgroups"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A+"}"+(char)0x0D+(char)0x0A+"";
-							tempString+="viewsettings"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A+"	\"bSnapToGrid\" \"1\""+(char)0x0D+(char)0x0A+"	\"bShowGrid\" \"1\""+(char)0x0D+(char)0x0A+"	\"bShowLogicalGrid\" \"0\""+(char)0x0D+(char)0x0A+"	\"nGridSpacing\" \"64\""+(char)0x0D+(char)0x0A+"	\"bShow3DGrid\" \"0\""+(char)0x0D+(char)0x0A+"}"+(char)0x0D+(char)0x0A+"";
-							tempString+="world"+(char)0x0D+(char)0x0A+"";
-							temp=tempString.getBytes();
-							entities[i].setAttribute("mapversion", "638");
-						} else {
-							String tempString="entity"+(char)0x0D+(char)0x0A+"";
-							temp=tempString.getBytes();
-						}
-						entityWriter.write(temp);
-					}
-				}
-				entityWriter.write(entities[i].toByteArray(path.substring(path.length()-4).equals(".vmf"), i));
-			}
-			if(!(path.substring(path.length()-4).equalsIgnoreCase(".map") || path.substring(path.length()-4).equalsIgnoreCase(".vmf"))) {
-				byte[] temp= { (byte)0x00 };
-				entityWriter.write(temp); // The entities lump always ends with a 00 byte,
-				                          // otherwise the game engine could start reading into
-				                          // the next lump, looking for another entity. It's
-				                          // kind of stupid that way, since lump sizes are
-				                          // clearly defined in the BSP header.
-			}
-			entityWriter.close();
-		} catch(java.io.IOException e) {
-			Window.window.println("ERROR: Could not save "+newFile+", ensure the file is not open in another program and the path "+path+" exists");
-		}
-	}
-	
-	// save()
-	// Saves the lump, overwriting the one data was read from
-	public void save() {
-		save(dataFile.getParent());
 	}
 	
 	// ACCESSORS/MUTATORS

@@ -12,7 +12,6 @@ public class MAPBrush {
 	                        // info AFTER the MAPBrushSide object has been created. Like when fixing the plane direction.
 	private Vector3D[][] triangles; // This will be the index of a side which is already defined by a triangle from vertices.
 	                        // Every side will have this. However, only sides defined by triangles will have data
-	private int id;
 	private double[] origin;
 	private double planePointCoef;
 	private int entnum;
@@ -39,22 +38,12 @@ public class MAPBrush {
 		brushNum=num;
 	}
 	
-	public MAPBrush(int num, int id) {
+	public MAPBrush(int num, int entnum, double[] origin, double planePointCoef, boolean isDetailBrush) {
 		sides=new MAPBrushSide[0];
 		goodSides=new boolean[0];
 		planes=new Plane[0];
 		triangles=new Vector3D[0][];
 		brushNum=num;
-		this.id=id;
-	}
-	
-	public MAPBrush(int num, int id, int entnum, double[] origin, double planePointCoef, boolean isDetailBrush) {
-		sides=new MAPBrushSide[0];
-		goodSides=new boolean[0];
-		planes=new Plane[0];
-		triangles=new Vector3D[0][];
-		brushNum=num;
-		this.id=id;
 		this.entnum=entnum;
 		this.origin=origin;
 		this.planePointCoef=planePointCoef;
@@ -72,6 +61,7 @@ public class MAPBrush {
 			}
 		}
 		if(!duplicate) {
+			Vector3D originVector=new Vector3D(origin);
 			MAPBrushSide[] newList=new MAPBrushSide[sides.length+1];
 			boolean[] newGoodSides=new boolean[sides.length+1];
 			Plane[] newPlaneList=new Plane[sides.length+1];
@@ -83,6 +73,7 @@ public class MAPBrush {
 				newTriangles[i]=triangles[i];
 			}
 			newList[sides.length] = in;
+			newList[sides.length].shift(originVector);
 			newGoodSides[goodSides.length]=pointsWorked;
 			newPlaneList[planes.length] = plane;
 			newTriangles[sides.length] = triangle;
@@ -102,6 +93,7 @@ public class MAPBrush {
 			}
 		}
 		if(!duplicate) {
+			Vector3D originVector=new Vector3D(origin);
 			MAPBrushSide[] newList=new MAPBrushSide[sides.length+1];
 			Plane[] newPlaneList=new Plane[sides.length+1];
 			Vector3D[][] newTriangles=new Vector3D[sides.length+1][];
@@ -114,6 +106,7 @@ public class MAPBrush {
 			}
 			newGoodSides[goodSides.length]=false;
 			newList[sides.length] = in;
+			newList[sides.length].shift(originVector);
 			newPlaneList[planes.length] = new Plane(in.getPlane());
 			newTriangles[sides.length] = in.getTriangle();
 			sides=newList;
@@ -193,68 +186,14 @@ public class MAPBrush {
 	}
 	
 	public String toString() {
-		Vector3D originVector=new Vector3D(origin);
 		String out="{ // Brush "+brushNum+(char)0x0D+(char)0x0A;
 		if(isDetailBrush) {
 			out+="\"BRUSHFLAGS\" \"DETAIL\""+(char)0x0D+(char)0x0A;
 		}
 		for(int i=0;i<sides.length;i++) {
-			sides[i].shift(originVector);
 			out+=sides[i].toString()+(char)0x0D+(char)0x0A;
 		}
 		out+="}";
-		return out;
-	}
-
-	public String toVMFBrush() {
-		Vector3D originVector=new Vector3D(origin);
-		String out="solid"+(char)0x0D+(char)0x0A+"	{"+(char)0x0D+(char)0x0A+"		\"id\" \""+id+"\""+(char)0x0D+(char)0x0A;
-		for(int i=0;i<sides.length;i++) {
-			try {
-				sides[i].shift(originVector);
-			} catch(java.lang.NullPointerException e) {
-				Window.window.println("WARNING: Entity "+entnum+" Brush "+brushNum+" Side "+i+" missing plane points! Had to regenerate!");
-				sides[i].setTriangle(GenericMethods.extrapPlanePoints(planes[i], planePointCoef));
-				sides[i].shift(originVector);
-			}
-			out+=sides[i].toVMFSide()+(char)0x0D+(char)0x0A;
-		}
-		out+="	}";
-		return out;
-	}
-	
-	public String toRoundString() {
-		Vector3D originVector=new Vector3D(origin);
-		String out="{ // Brush "+brushNum+(char)0x0D+(char)0x0A;
-		if(isDetailBrush) {
-			out+="\"BRUSHFLAGS\" \"DETAIL\""+(char)0x0D+(char)0x0A;
-		}
-		for(int i=0;i<sides.length;i++) {
-			try {
-				sides[i].shift(originVector);
-			} catch(java.lang.NullPointerException e) {
-				Window.window.println("WARNING: Entity "+entnum+" Brush "+brushNum+" Side "+i+" missing plane info! Had to regenerate!");
-				sides[i].setTriangle(GenericMethods.extrapPlanePoints(planes[i], planePointCoef));
-				sides[i].shift(originVector);
-			}
-			out+=sides[i].toRoundString()+(char)0x0D+(char)0x0A;
-		}
-		out+="}";
-		return out;
-	}
-
-	public String toRoundVMFBrush() {
-		Vector3D originVector=new Vector3D(origin);
-		String out="solid"+(char)0x0D+(char)0x0A+"	{"+(char)0x0D+(char)0x0A+"		\"id\" \""+id+"\""+(char)0x0D+(char)0x0A;
-		for(int i=0;i<sides.length;i++) {
-			try {
-				sides[i].shift(originVector);
-				out+=sides[i].toRoundVMFSide()+(char)0x0D+(char)0x0A;
-			} catch(java.lang.NullPointerException e) { // If the object was never created, because the face was special/bevel
-				; // Do nothing, but this should never happen anyway
-			}
-		}
-		out+="	}";
 		return out;
 	}
 	

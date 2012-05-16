@@ -7,6 +7,9 @@
 // A small note, I was tempted to use an Attribute class and just
 // make an array of that, but that's breaking it down too far.
 
+// I've also added the ability to add MAPBrush objects to the entity,
+// to be processed later on.
+
 import java.util.Scanner; // Perfect for String handling
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -17,6 +20,7 @@ public class Entity {
 	
 	private String[] attributes;
 	private int numAttributes=0;
+	private MAPBrush[] brushes=new MAPBrush[0];
 	
 	// CONSTRUCTORS
 	
@@ -152,52 +156,16 @@ public class Entity {
 		addAttributeInside("\""+attribute+"\" \""+value+"\"");
 	}
 	
-	// +toByteArray()
-	// Returns the entity as an array of bytes. This could be faster than just
-	// concatenating all the damn Strings, it depends on how the String class
-	// handles the getBytes() conversion. Judging by how much faster my code
-	// is than the stupid DataOutputStream, it won't be great. I might have
-	// to look at the code in the String class and try to think of a better
-	// way than what they have there.
-	//
-	// This works much faster than toString, especially for entities with a LOT
-	// of data. All the String concatenation in toString was building up, with
-	// thousands of Strings to stick together and
-	public byte[] toByteArray(boolean tabs, int entNum) {
-		byte[] out;
-		int len=0;
-		// Get the lengths of all attributes together
-		for(int i=0;i<attributes.length;i++) {
-			len+=attributes[i].length()+2; // Gonna need a newline after each attribute or they'll get jumbled together
-			if(!attributes[i].equals("{") && !attributes[i].equals("}") && tabs) {
-				len++; // For the tab
-			} else {
-				if(attributes[i].equals("{") && !tabs) {
-					String temp=" // Entity "+entNum;
-					len+=temp.length();
-				}
-			}
+	// addBrush(MAPBrush)
+	// Adds the brush to the entity as a "tie". Most of these brushes will be in a worldspawn
+	// entity, but it is also used for brush based entities.
+	public void addBrush(MAPBrush in) {
+		MAPBrush[] newList=new MAPBrush[brushes.length+1];
+		for(int i=0;i<brushes.length;i++) {
+			newList[i]=brushes[i];
 		}
-		out=new byte[len];
-		int offset=0;
-		for(int i=0;i<attributes.length;i++) { // For each attribute
-			if(!attributes[i].equals("{") && !attributes[i].equals("}") && tabs) {
-				out[offset]=0x09;
-				offset++;
-			} else {
-				if(attributes[i].equals("{") && !tabs) {
-					attributes[i]="{ // Entity "+entNum;
-				}
-			}
-			for(int j=0;j<attributes[i].length();j++) { // Then for each byte in the attribute
-				out[j+offset]=(byte)attributes[i].charAt(j); // add it to the output array
-			}
-			out[offset+attributes[i].length()]=(byte)0x0D;
-			offset+=attributes[i].length()+1;
-			out[offset]=(byte)0x0A;
-			offset++;
-		}
-		return out;
+		newList[newList.length-1]=in;
+		brushes=newList;
 	}
 
 	// +toString()
@@ -214,7 +182,12 @@ public class Entity {
 				if(!(attributes[i].charAt(0)=='}')) {
 					out+=attributes[i]+""+(char)0x0D+(char)0x0A;
 				} else { // Character is '}'
-					out+=attributes[i];
+					// At this point we need to add any brushes to the entity. This method
+					// outputs the brush String in Gearcraft standards.
+					for(int j=0;j<brushes.length;j++) {
+						out+=brushes[j].toString()+""+(char)0x0D+(char)0x0A;
+					}
+					out+=attributes[i]; // This will be the ending }
 				}
 			} catch(java.lang.NullPointerException e) {
 				out+="null "+(char)0x0D+(char)0x0A;
@@ -292,6 +265,38 @@ public class Entity {
 			}
 		}
 		return output;
+	}
+	
+	// getAttribute(int)
+	// Simply returns the attribute at the specified index
+	public String getAttribute(int index) {
+		try {
+			return attributes[index];
+		} catch(java.lang.ArrayIndexOutOfBoundsException e) {
+			return null;
+		}
+	}
+	
+	// getAttributes()
+	// Returns the attribute array as-is
+	public String[] getAttributes() {
+		return attributes;
+	}
+	
+	// getBrush(int)
+	// Simply returns the brush at the specified index
+	public MAPBrush getBrush(int index) {
+		try {
+			return brushes[index];
+		} catch(java.lang.ArrayIndexOutOfBoundsException e) {
+			return null;
+		}
+	}
+	
+	// getBrushes()
+	// Returns the brush array as-is
+	public MAPBrush[] getBrushes() {
+		return brushes;
 	}
 	
 	// +getModelNumber()
