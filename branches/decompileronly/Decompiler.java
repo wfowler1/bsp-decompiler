@@ -1247,45 +1247,6 @@ public class Decompiler {
 			int nextNode=ssparents[i];
 			boolean leftSide=ssIsLeft[i];
 
-			do {
-				DNode currentNode=doomMap.getNodes().getNode(nextNode);
-				Vector3D start;
-				Vector3D end;
-				if(leftSide) {
-					start=currentNode.getVecHead().add(currentNode.getVecTail());
-					end=currentNode.getVecHead();
-				} else {
-					start=currentNode.getVecHead();
-					end=currentNode.getVecHead().add(currentNode.getVecTail());
-				}
-				
-				Vector3D[] plane=new Vector3D[3];
-				double[] texS=new double[3];
-				double[] texT=new double[3];
-				// This is somehow always correct. And I'm okay with that.
-				plane[0]=new Vector3D(start.getX(), start.getY(), ZMin);
-				plane[1]=new Vector3D(end.getX(), end.getY(), ZMin);
-				plane[2]=new Vector3D(start.getX(), start.getY(), ZMax);
-				
-				double sideLength=Math.sqrt(Math.pow(start.getX()-end.getX(), 2) + Math.pow(start.getY()-end.getY(),2));
-				
-				texS[0]=(start.getX()-end.getX())/sideLength;
-				texS[1]=(start.getY()-end.getY())/sideLength;
-				texS[2]=0;
-				texT[0]=0;
-				texT[1]=0;
-				texT[2]=1;
-				MAPBrushSide low=new MAPBrushSide(plane, lowerWallTextures[subsectorSidedefs[i][0]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-				MAPBrushSide high=new MAPBrushSide(plane, higherWallTextures[subsectorSidedefs[i][0]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-				MAPBrushSide mid=new MAPBrushSide(plane, midWallTextures[subsectorSidedefs[i][0]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-				
-				cielingBrush.add(high);
-				midBrush.add(mid);
-				floorBrush.add(low);
-				
-				leftSide=nodeIsLeft[nextNode];
-				nextNode=nodeparents[nextNode];
-			} while(nextNode!=-1);
 			for(int j=0;j<subsectorSidedefs[i].length;j++) {
 				DSegment currentseg=doomMap.getSegments().getSegment(currentsubsector.getFirstSeg()+j);
 				Vector3D start=doomMap.getVertices().getVertex(currentseg.getStartVertex());
@@ -1343,6 +1304,45 @@ public class Decompiler {
 				midBrush.add(mid);
 				floorBrush.add(low);
 			}
+			do {
+				DNode currentNode=doomMap.getNodes().getNode(nextNode);
+				Vector3D start;
+				Vector3D end;
+				if(leftSide) {
+					start=currentNode.getVecHead().add(currentNode.getVecTail());
+					end=currentNode.getVecHead();
+				} else {
+					start=currentNode.getVecHead();
+					end=currentNode.getVecHead().add(currentNode.getVecTail());
+				}
+				
+				Vector3D[] plane=new Vector3D[3];
+				double[] texS=new double[3];
+				double[] texT=new double[3];
+				// This is somehow always correct. And I'm okay with that.
+				plane[0]=new Vector3D(start.getX(), start.getY(), ZMin);
+				plane[1]=new Vector3D(end.getX(), end.getY(), ZMin);
+				plane[2]=new Vector3D(start.getX(), start.getY(), ZMax);
+				
+				double sideLength=Math.sqrt(Math.pow(start.getX()-end.getX(), 2) + Math.pow(start.getY()-end.getY(),2));
+				
+				texS[0]=(start.getX()-end.getX())/sideLength;
+				texS[1]=(start.getY()-end.getY())/sideLength;
+				texS[2]=0;
+				texT[0]=0;
+				texT[1]=0;
+				texT[2]=1;
+				MAPBrushSide low=new MAPBrushSide(plane, lowerWallTextures[subsectorSidedefs[i][0]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+				MAPBrushSide high=new MAPBrushSide(plane, higherWallTextures[subsectorSidedefs[i][0]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+				MAPBrushSide mid=new MAPBrushSide(plane, midWallTextures[subsectorSidedefs[i][0]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+				
+				cielingBrush.add(high);
+				midBrush.add(mid);
+				floorBrush.add(low);
+				
+				leftSide=nodeIsLeft[nextNode];
+				nextNode=nodeparents[nextNode];
+			} while(nextNode!=-1);
 			cielingBrush=GenericMethods.cullUnusedPlanes(cielingBrush, (float)0.01);
 			midBrush=GenericMethods.cullUnusedPlanes(midBrush, (float)0.01);
 			floorBrush=GenericMethods.cullUnusedPlanes(floorBrush, (float)0.01);
@@ -1391,7 +1391,7 @@ public class Decompiler {
 			VMFMaker.write();
 		} else {
 			Window.window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".map...");
-			MAP510Writer MAPMaker=new MAP510Writer(mapFile, doomMap.getPath().substring(0, doomMap.getPath().length()-4), roundNums);
+			MAP510Writer MAPMaker=new MAP510Writer(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName(), roundNums);
 			MAPMaker.write();
 		}
 	}
