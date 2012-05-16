@@ -34,7 +34,7 @@ public class MAP510Writer {
 	// Handling file I/O with Strings is generally a bad idea. If you have maybe a couple hundred
 	// Strings to write then it'll probably be okay, but when you have on the order of 10,000 Strings
 	// it gets VERY slow, even if you concatenate them all before writing.
-	public void write() {
+	public void write() throws java.io.IOException {
 		if(!path.substring(path.length()-4).equalsIgnoreCase(".map")) {
 			mapFile=new File(path+".map");
 		}
@@ -69,6 +69,7 @@ public class MAP510Writer {
 			mapWriter.close();
 		} catch(java.io.IOException e) {
 			Window.window.println("ERROR: Could not save "+mapFile.getPath()+", ensure the file is not open in another program and the path "+path+" exists");
+			throw e;
 		}
 	}
 	

@@ -4,6 +4,7 @@
 
 import java.io.File;
 import java.util.Date;
+import java.awt.Color;
 
 public class DecompilerThread implements Runnable {
 	
@@ -70,9 +71,11 @@ public class DecompilerThread implements Runnable {
 				}
 			}
 			Window.setProgress(jobnum, 1, 1, "Done!");
+			Window.setProgressColor(jobnum, new Color(128, 255, 128));
 		} catch (java.lang.Exception e) {
-			Window.window.println("\nException caught in job "+jobnum+": "+e+"\nPlease let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/entry");
-			Window.setProgress(jobnum, 0, 1, "ERROR! See log!");
+			Window.window.println((char)0x0D+(char)0x0A+"Exception caught in job "+jobnum+": "+e+(char)0x0D+(char)0x0A+"Please let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/entry");
+			Window.setProgress(jobnum, 1, 1, "ERROR! See log!");
+			Window.setProgressColor(jobnum, new Color(255, 128, 128));
 		}
 		Window.setAbortButtonEnabled(jobnum, false);
 		Window.window.startNextJob(true, threadnum);

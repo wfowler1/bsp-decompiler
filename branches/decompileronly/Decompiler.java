@@ -109,7 +109,7 @@ public class Decompiler {
 	// +decompile()
 	// Starts the decompilation process. This is leftover from when multithreading
 	// was handled through the decompiler.
-	public void decompile() {
+	public void decompile() throws java.io.IOException {
 		Date begin=new Date();
 		switch(version) {
 			case 1:
@@ -144,7 +144,7 @@ public class Decompiler {
 	//   k: Current brush, referenced in a list by the current leaf.
 	//    l: Current side of the current brush.
 	//     m: When attempting vertex decompilation, the current vertex.
-	public void decompileBSP42() {
+	public void decompileBSP42() throws java.io.IOException {
 		// Begin by copying all the entities into another Lump00 object. This is
 		// necessary because if I just modified the current entity list then it
 		// could be saved back into the BSP and really mess some stuff up.
@@ -444,7 +444,7 @@ public class Decompiler {
 	}
 	
 	// Attempt to turn the Quake 3 BSP into a .MAP file
-	public void decompileBSP46() {
+	public void decompileBSP46() throws java.io.IOException {
 		// Begin by copying all the entities into another Lump00 object. This is
 		// necessary because if I just modified the current entity list then it
 		// could be saved back into the BSP and really mess some stuff up.
@@ -640,7 +640,7 @@ public class Decompiler {
 	}
 	
 	// Attempt to turn the Quake 2 BSP into a .MAP file
-	public void decompileBSP38() {
+	public void decompileBSP38() throws java.io.IOException {
 		// Begin by copying all the entities into another Lump00 object. This is
 		// necessary because if I just modified the current entity list then it
 		// could be saved back into the BSP and really mess some stuff up.
@@ -944,7 +944,7 @@ public class Decompiler {
 	// Attempts to convert a map in a Doom WAD into a usable .MAP file. This has many
 	// challenges, not the least of which is the fact that the Doom engine didn't use
 	// brushes (at least, not in any sane way).
-	private void decompileDoomMap() {
+	private void decompileDoomMap() throws java.io.IOException {
 		Window.window.println(doomMap.getMapName());
 		
 		mapFile=new Entities();

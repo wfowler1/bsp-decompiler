@@ -565,6 +565,12 @@ public class Window extends JPanel implements ActionListener {
 		}
 	}
 	
+	protected static void setProgressColor(int jobmod, Color color) {
+		if(progressBar[jobmod]!=null) {
+			progressBar[jobmod].setForeground(color);
+		}
+	}
+	
 	protected static void setTotalProgress(int in, int max) {
 		if(totalProgressBar!=null) {
 			totalProgressBar.setMaximum(max);
