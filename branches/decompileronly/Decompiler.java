@@ -277,7 +277,7 @@ public class Decompiler {
 					if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
 						addOriginBrush(i, origin);
 					}
-					mapFile.getEntity(i).deleteAttribute("origin");
+					//mapFile.getEntity(i).deleteAttribute("origin");
 				}
 			}
 			numTotalItems++;
@@ -303,7 +303,7 @@ public class Decompiler {
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
 		MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
-		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, origin, planePointCoef, isDetailBrush);
+		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, planePointCoef, isDetailBrush);
 		int numRealFaces=0;
 		boolean containsNonClipSide=false;
 		for(int l=0;l<numSides;l++) { // For each side of the brush
@@ -492,7 +492,7 @@ public class Decompiler {
 				if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
 					addOriginBrush(i, origin);
 				}
-				mapFile.getEntity(i).deleteAttribute("origin");
+				//mapFile.getEntity(i).deleteAttribute("origin");
 			}
 			numTotalItems++;
 			Window.setProgress(jobnum, numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().getNumElements(), "Decompiling...");
@@ -520,7 +520,7 @@ public class Decompiler {
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
 		MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
-		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, origin, planePointCoef, isDetailBrush);
+		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, planePointCoef, isDetailBrush);
 		for(int l=0;l<numSides;l++) { // For each side of the brush 
 			Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
 			v46BrushSide currentSide=BSP46.getBrushSides().getBrushSide(firstSide+l);
@@ -647,10 +647,18 @@ public class Decompiler {
 		mapFile=new Entities(BSP38.getEntities());
 		//int numAreaPortals=0;
 		int numTotalItems=0;
+		boolean containsAreaPortals=false;
 		for(int i=0;i<BSP38.getEntities().getNumElements();i++) { // For each entity
 			if(toVMF) { // correct some entities to make source ports easier, TODO
-				;
+				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_wall")) {
+					mapFile.getEntity(i).setAttribute("classname", "func_brush"); // Doubt I need a case for func_detail here
+				}
 			} else { // Gearcraft also requires some changes, do those here
+				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_wall")) {
+					if(!mapFile.getEntity(i).getAttribute("targetname").equals("")) { // Really this should depend on spawnflag 2 or 4
+						mapFile.getEntity(i).setAttribute("classname", "func_wall_toggle");
+					} // 2 I believe is "Start enabled" and 4 is "toggleable", or the other way around. Not sure. Could use an OR.
+				}
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("worldspawn")) {
 					mapFile.getEntity(i).setAttribute("mapversion", "510"); // Otherwise Gearcraft cries.
 				}
@@ -666,9 +674,6 @@ public class Decompiler {
 					double[] origin=mapFile.getEntity(i).getOrigin();
 					mapFile.getEntity(i).setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+14));
 				}
-				/*if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_areaportal")) {
-					numAreaPortals++;
-				}*/
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("light")) {
 					String color=mapFile.getEntity(i).getAttribute("_color");
 					String intensity=mapFile.getEntity(i).getAttribute("light");
@@ -692,6 +697,11 @@ public class Decompiler {
 					mapFile.getEntity(i).setAttribute("_light", lightNumbers[r]+" "+lightNumbers[g]+" "+lightNumbers[b]+" "+lightNumbers[s]);
 				}
 			}
+			// And of course, they may both necessitate some changes
+			if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_areaportal")) {
+				mapFile.getEntity(i).deleteAttribute("style");
+				containsAreaPortals=true;
+			}
 			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
 			int currentModel=mapFile.getEntity(i).getModelNumber();
 			
@@ -710,7 +720,12 @@ public class Decompiler {
 						for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
 							if(!brushesUsed[BSP38.getMarkBrushes().getShort(firstBrushIndex+k)]) { // If the current brush has NOT been used in this entity
 								brushesUsed[BSP38.getMarkBrushes().getShort(firstBrushIndex+k)]=true;
-								decompileBrush38(BSP38.getBrushes().getBrush(BSP38.getMarkBrushes().getShort(firstBrushIndex+k)), i); // Decompile the brush
+								Brush brush=BSP38.getBrushes().getBrush(BSP38.getMarkBrushes().getShort(firstBrushIndex+k));
+								if(!(brush.getAttributes()[1]==-128)) {
+									decompileBrush38(brush, i); // Decompile the brush
+								} else {
+									containsAreaPortals=true;
+								}
 								numBrshs++;
 								numTotalItems++;
 								Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().getNumElements()+BSP38.getEntities().getNumElements(), "Decompiling...");
@@ -728,11 +743,27 @@ public class Decompiler {
 					if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
 						addOriginBrush(i, origin);
 					}
-					mapFile.getEntity(i).deleteAttribute("origin");
+					//mapFile.getEntity(i).deleteAttribute("origin");
 				}
 			}
 			numTotalItems++; // This entity
 			Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().getNumElements()+BSP38.getEntities().getNumElements(), "Decompiling...");
+		}
+		if(containsAreaPortals) { // If this map was found to have area portals
+			int j=0;
+			for(int i=0;i<BSP38.getBrushes().getNumElements();i++) { // For each brush in this map
+				if(BSP38.getBrushes().getBrush(i).getAttributes()[1]==-128) { // If the brush is an area portal brush
+					for(j++;j<BSP38.getEntities().getNumElements();j++) { // Find an areaportal entity
+						if(BSP38.getEntities().getEntity(j).getAttribute("classname").equalsIgnoreCase("func_areaportal")) {
+							decompileBrush38(BSP38.getBrushes().getBrush(i), j); // Add the brush to that entity
+							break; // And break out of the inner loop, but remember your place.
+						}
+					}
+					if(j==BSP38.getEntities().getNumElements()) { // If we're out of entities, stop this whole thing.
+						break;
+					}
+				}
+			}
 		}
 		//System.out.println(BSP38.getMapName()+" Num areaportals "+numAreaPortals+" area portals lump length "+BSP38.getAreaPortals().getLength());
 		Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().getNumElements()+BSP38.getEntities().getNumElements(), "Saving...");
@@ -756,7 +787,7 @@ public class Decompiler {
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
 		MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
-		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, origin, planePointCoef, false);
+		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, planePointCoef, false);
 		for(int l=0;l<numSides;l++) { // For each side of the brush
 			Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
 			v38BrushSide currentSide=BSP38.getBrushSides().getBrushSide(firstSide+l);
@@ -1184,10 +1215,9 @@ public class Decompiler {
 			}
 			
 			// Third, create a few brushes out of the geometry.
-			double[] origin=new double[3];
-			MAPBrush cielingBrush=new MAPBrush(numBrshs++, 0, origin, planePointCoef, false);
-			MAPBrush floorBrush=new MAPBrush(numBrshs++, 0, origin, planePointCoef, false);
-			MAPBrush midBrush=new MAPBrush(numBrshs++, 0, origin, planePointCoef, false);
+			MAPBrush cielingBrush=new MAPBrush(numBrshs++, 0, planePointCoef, false);
+			MAPBrush floorBrush=new MAPBrush(numBrshs++, 0, planePointCoef, false);
+			MAPBrush midBrush=new MAPBrush(numBrshs++, 0, planePointCoef, false);
 			DSector currentSector=doomMap.getSectors().getSector(subsectorSectors[i]);
 			
 			Vector3D[] roofPlane=new Vector3D[3];
@@ -1267,7 +1297,7 @@ public class Decompiler {
 				texS[2]=0;
 				texT[0]=0;
 				texT[1]=0;
-				texT[2]=1;
+				texT[2]=-1;
 				MAPBrushSide low=new MAPBrushSide(plane, lowerWallTextures[subsectorSidedefs[i][j]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				MAPBrushSide high=new MAPBrushSide(plane, higherWallTextures[subsectorSidedefs[i][j]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				MAPBrushSide mid;
@@ -1396,8 +1426,9 @@ public class Decompiler {
 		}
 	}
 	
-	public void addOriginBrush(int ent, double[] origin) {
-		MAPBrush newOriginBrush=new MAPBrush(numBrshs++, ent, new double[3], 0, false);
+	public void addOriginBrush(int ent, double[] dicks) {
+		double[] origin=new double[3];
+		MAPBrush newOriginBrush=new MAPBrush(numBrshs++, ent, 0, false);
 		Vector3D[][] planes=new Vector3D[6][3]; // Six planes for a cube brush, three vertices for each plane
 		double[][] textureS=new double[6][3];
 		double[][] textureT=new double[6][3];
@@ -1458,8 +1489,7 @@ public class Decompiler {
 	// later to include passing of texture scaling and positioning vectors as well, but this is
 	// all I need right now.
 	public MAPBrush createFaceBrush(String texture, Vector3D mins, Vector3D maxs) {
-		double[] origin=new double[3];
-		MAPBrush newBrush = new MAPBrush(numBrshs++, 0, origin, planePointCoef, false);
+		MAPBrush newBrush = new MAPBrush(numBrshs++, 0, planePointCoef, false);
 		numBrshs++;
 		Vector3D[][] planes=new Vector3D[6][3]; // Six planes for a cube brush, three vertices for each plane
 		double[][] texS=new double[6][3];

@@ -71,9 +71,9 @@ public class DecompilerThread implements Runnable {
 				}
 			}
 			Window.setProgress(jobnum, 1, 1, "Done!");
-			Window.setProgressColor(jobnum, new Color(128, 255, 128));
+			Window.setProgressColor(jobnum, new Color(64, 192, 64));
 		} catch (java.lang.Exception e) {
-			Window.window.println((char)0x0D+(char)0x0A+"Exception caught in job "+jobnum+": "+e+(char)0x0D+(char)0x0A+"Please let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/entry");
+			Window.window.println(""+(char)0x0D+(char)0x0A+"Exception caught in job "+jobnum+": "+e+(char)0x0D+(char)0x0A+"Please let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/entry");
 			Window.setProgress(jobnum, 1, 1, "ERROR! See log!");
 			Window.setProgressColor(jobnum, new Color(255, 128, 128));
 		}

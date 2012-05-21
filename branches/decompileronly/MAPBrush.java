@@ -12,7 +12,6 @@ public class MAPBrush {
 	                        // info AFTER the MAPBrushSide object has been created. Like when fixing the plane direction.
 	private Vector3D[][] triangles; // This will be the index of a side which is already defined by a triangle from vertices.
 	                        // Every side will have this. However, only sides defined by triangles will have data
-	private double[] origin;
 	private double planePointCoef;
 	private int entnum;
 	private boolean isDetailBrush;
@@ -38,14 +37,13 @@ public class MAPBrush {
 		brushNum=num;
 	}
 	
-	public MAPBrush(int num, int entnum, double[] origin, double planePointCoef, boolean isDetailBrush) {
+	public MAPBrush(int num, int entnum, double planePointCoef, boolean isDetailBrush) {
 		sides=new MAPBrushSide[0];
 		goodSides=new boolean[0];
 		planes=new Plane[0];
 		triangles=new Vector3D[0][];
 		brushNum=num;
 		this.entnum=entnum;
-		this.origin=origin;
 		this.planePointCoef=planePointCoef;
 		this.isDetailBrush=isDetailBrush;
 	}
@@ -61,7 +59,6 @@ public class MAPBrush {
 			}
 		}
 		if(!duplicate) {
-			Vector3D originVector=new Vector3D(origin);
 			MAPBrushSide[] newList=new MAPBrushSide[sides.length+1];
 			boolean[] newGoodSides=new boolean[sides.length+1];
 			Plane[] newPlaneList=new Plane[sides.length+1];
@@ -73,7 +70,6 @@ public class MAPBrush {
 				newTriangles[i]=triangles[i];
 			}
 			newList[sides.length] = in;
-			newList[sides.length].shift(originVector);
 			newGoodSides[goodSides.length]=pointsWorked;
 			newPlaneList[planes.length] = plane;
 			newTriangles[sides.length] = triangle;
@@ -93,7 +89,6 @@ public class MAPBrush {
 			}
 		}
 		if(!duplicate) {
-			Vector3D originVector=new Vector3D(origin);
 			MAPBrushSide[] newList=new MAPBrushSide[sides.length+1];
 			Plane[] newPlaneList=new Plane[sides.length+1];
 			Vector3D[][] newTriangles=new Vector3D[sides.length+1][];
@@ -106,7 +101,6 @@ public class MAPBrush {
 			}
 			newGoodSides[goodSides.length]=false;
 			newList[sides.length] = in;
-			newList[sides.length].shift(originVector);
 			newPlaneList[planes.length] = new Plane(in.getPlane());
 			newTriangles[sides.length] = in.getTriangle();
 			sides=newList;
@@ -140,30 +134,18 @@ public class MAPBrush {
 	}
 
 	public void correctPlanes() {
-		if(hasGoodSide() && hasBadSide()) {
-			Vector3D[] goodSide=triangles[getATriangle()];
-			planes=GenericMethods.SimpleCorrectPlanes(planes, goodSide, PRECISION);
+		
+		triangles=GenericMethods.AdvancedCorrectPlanes(planes, PRECISION);
+		if(triangles.length!=sides.length) {
+			Window.window.println("WARNING: Produced "+triangles.length+" triangles from Entity "+entnum+" Brush "+brushNum+"! Expected "+planes.length+"!");
+			triangles=new Vector3D[sides.length][3];
 			for(int i=0;i<sides.length;i++) {
-				if(!goodSides[i]) {
-					triangles[i]=GenericMethods.extrapPlanePoints(planes[i], planePointCoef);
-					sides[i].setTriangle(triangles[i]);
-				}
+				triangles[i]=GenericMethods.extrapPlanePoints(planes[i], planePointCoef);
+				sides[i].setTriangle(triangles[i]);
 			}
 		} else {
-			if(hasBadSide()) {
-				triangles=GenericMethods.AdvancedCorrectPlanes(planes, PRECISION);
-				if(triangles.length!=sides.length) {
-					Window.window.println("WARNING: Produced "+triangles.length+" triangles from Entity "+entnum+" Brush "+brushNum+"! Expected "+planes.length+"!");
-					triangles=new Vector3D[sides.length][3];
-					for(int i=0;i<sides.length;i++) {
-						triangles[i]=GenericMethods.extrapPlanePoints(planes[i], planePointCoef);
-						sides[i].setTriangle(triangles[i]);
-					}
-				} else {
-					for(int i=0;i<sides.length;i++) {
-						sides[i].setTriangle(triangles[i]);
-					}
-				}
+			for(int i=0;i<sides.length;i++) {
+				sides[i].setTriangle(triangles[i]);
 			}
 		}
 	}
@@ -213,6 +195,12 @@ public class MAPBrush {
 			}
 		}
 		return false;
+	}
+	
+	public void shift(Vector3D shiftVector) {
+		for(int i=0;i<sides.length;i++) {
+			sides[i].shift(shiftVector);
+		}
 	}
 	
 	// ACCESSORS/MUTATORS

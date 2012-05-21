@@ -96,6 +96,10 @@ public class VMFWriter {
 	private byte[] entityToByteArray(Entity in) {
 		in.setAttribute("id", new Integer(nextID++).toString());
 		byte[] out;
+		double[] origin=new double[3];
+		if(in.getBrushes().length>0) {
+			origin=in.getOrigin();
+		}
 		int len=0;
 		// Get the lengths of all attributes together
 		for(int i=0;i<in.getAttributes().length;i++) {
@@ -126,6 +130,7 @@ public class VMFWriter {
 					int brushArraySize=0;
 					byte[][] brushes=new byte[in.getBrushes().length][];
 					for(int j=0;j<in.getBrushes().length;j++) { // For each brush in the entity
+						in.getBrush(j).shift(new Vector3D(origin));
 						brushes[j]=brushToByteArray(in.getBrush(j));
 						brushArraySize+=brushes[j].length;
 					}

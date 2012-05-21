@@ -85,6 +85,11 @@ public class MAP510Writer {
 	// of times.
 	private byte[] entityToByteArray(Entity in, int num) {
 		byte[] out;
+		double[] origin=new double[3];
+		if(in.getBrushes().length>0) {
+			origin=in.getOrigin();
+			in.deleteAttribute("origin");
+		}
 		int len=0;
 		// Get the lengths of all attributes together
 		for(int i=0;i<in.getAttributes().length;i++) {
@@ -104,6 +109,7 @@ public class MAP510Writer {
 					int brushArraySize=0;
 					byte[][] brushes=new byte[in.getBrushes().length][];
 					for(int j=0;j<in.getBrushes().length;j++) { // For each brush in the entity
+						in.getBrush(j).shift(new Vector3D(origin));
 						brushes[j]=brushToByteArray(in.getBrush(j), j);
 						brushArraySize+=brushes[j].length;
 					}

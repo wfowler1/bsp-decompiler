@@ -518,7 +518,7 @@ public class Window extends JPanel implements ActionListener {
 			decompilerworkers[currentThread].stop(); // The Java API lists this method of stopping a thread as deprecated.
 			startNextJob(true, currentThread);       // For the purposes of this program, I'm not sure it's an issue though.
 		}                                           // More info: http://docs.oracle.com/javase/6/docs/technotes/guides/concurrency/threadPrimitiveDeprecation.html
-		println("Job number "+(job+1)+" aborted by user.");               
+		println("Job number "+job+" aborted by user.");               
 		jobs[job-1]=null;
 		btn_abort[job-1].setEnabled(false);
 		btn_abort[job-1].setText("Aborted!");

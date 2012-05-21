@@ -138,6 +138,11 @@ public class MAPBrushSide {
 		plane=new Plane(triangle);
 	}
 	
+	public void setPlane(Plane in, double planePointCoef) {
+		plane=in;
+		triangle=GenericMethods.extrapPlanePoints(plane, planePointCoef);
+	}
+	
 	public double getLgtScale() {
 		return lgtScale;
 	}
