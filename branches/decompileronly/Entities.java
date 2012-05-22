@@ -62,7 +62,7 @@ public class Entities {
 		entities=new Entity[in.getNumElements()];
 		numEnts=entities.length;
 		for(int i=0;i<numEnts;i++) {
-			entities[i]=new Entity(in.getEntity(i).toString());
+			entities[i]=new Entity(in.getEntity(i));
 		}
 	}
 	
@@ -106,13 +106,19 @@ public class Entities {
 				offset++;
 				currentChar=(char)data[offset];
 			}
+			boolean inQuotes=false; // Keep track of whether or not we're in a set of quotation marks.
+			// I came across a map where the idiot map maker used { and } in a value. This broke the code prior to revision 55.
 			do {
+				if(currentChar=='\"') {
+					inQuotes=!inQuotes;
+				}
 				current+=currentChar+""; // adds characters to the current string
 				offset++;
 				currentChar=(char)data[offset];
-			} while(currentChar!='}'); // Read bytes until we find the end of the current entity structure
+			} while(currentChar!='}' || inQuotes); // Read bytes until we find the end of the current entity structure
 			current+=currentChar+""; // adds the '}' to the current string
-			entities[i]=new Entity(current); // puts the resulting String into the constructor of the Entity class
+			entities[i]=new Entity(); // puts the resulting String into the constructor of the Entity class
+			entities[i].setData(current);
 		}
 		Date end=new Date();
 		Window.window.println(end.getTime()-begin.getTime()+"ms");
@@ -127,7 +133,8 @@ public class Entities {
 	//   etc.0x0A
 	//   }
 	public void add(String in) {
-		Entity newEnt=new Entity(in); // puts the String into the constructor of the Entity class
+		Entity newEnt=new Entity(); // puts the String into the constructor of the Entity class
+		newEnt.setData(in);
 		add(newEnt);
 	}
 	
@@ -214,9 +221,21 @@ public class Entities {
 			Window.window.print("Counting entities... ");
 			Date begin=new Date();
 			int count=0;
+			boolean inQuotes=false; // Keep track of whether or not we're in a set of quotation marks.
+			// I came across a map where the idiot map maker used { and } in a value. This broke the code prior to revision 55.
 			for(int i=0;i<data.length;i++) {
-				if(data[i] == '{') {
-					count++;
+				if(inQuotes) {
+					if(data[i]=='\"' && inQuotes) {
+						inQuotes=false;
+					}
+				} else {
+					if(data[i]=='\"') {
+						inQuotes=true;
+					} else {
+						if(data[i] == '{') {
+							count++;
+						}
+					}
 				}
 			}
 			Date end=new Date();

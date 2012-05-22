@@ -32,17 +32,25 @@ public class Entity {
 		setData(me);
 	}
 
-	public Entity(String me) {
-		setData(me);
-	}
-	
-	// Allows creation of an entity with one initial attribute set ("classname" recommended)
-	public Entity(String attribute, String data) {
+	public Entity(String classname) {
 		numAttributes=3;
 		attributes=new String[3];
 		attributes[0]="{";
-		attributes[1]="\""+attribute+"\" \""+data+"\"";
+		attributes[1]="\"classname\" \""+classname+"\"";
 		attributes[2]="}";
+	}
+	
+	public Entity() {
+		numAttributes=0;
+		attributes=new String[0];
+	}
+	
+	public Entity(Entity copy) {
+		attributes=new String[copy.getNumAttributes()];
+		numAttributes=copy.getNumAttributes();
+		for(int i=0;i<attributes.length;i++) {
+			attributes[i]=copy.getAttribute(i);
+		}
 	}
 	
 	// METHODS
@@ -190,7 +198,7 @@ public class Entity {
 					out+=attributes[i]; // This will be the ending }
 				}
 			} catch(java.lang.NullPointerException e) {
-				out+="null "+(char)0x0D+(char)0x0A;
+				out+="null"+(char)0x0D+(char)0x0A;
 			}
 		}
 		return out;
@@ -329,7 +337,7 @@ public class Entity {
 	// the preexisting one.
 	public void setAttribute(String attribute, String value) {
 		boolean done=false;
-		for(int i=0;i<numAttributes && !done;i++) {
+		for(int i=0;i<attributes.length && !done;i++) {
 			try {
 				if(attributes[i].substring(0,attribute.length()+2).compareToIgnoreCase("\""+attribute+"\"")==0) {
 					attributes[i]="\""+attribute+"\" \""+value+"\"";
@@ -337,6 +345,8 @@ public class Entity {
 				}
 			} catch(StringIndexOutOfBoundsException e) {
 				;
+			} catch(java.lang.NullPointerException e) {
+				Window.window.println("WARNING: Entity with null attribute?! Attribute no. "+i+(char)0x0D+(char)0x0A+toString());
 			}
 		}
 		if(!done) {

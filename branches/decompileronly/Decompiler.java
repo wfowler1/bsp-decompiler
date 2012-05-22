@@ -435,7 +435,7 @@ public class Decompiler {
 		// this whole program and the entities parser, this shouldn't
 		// cause any issues at all.
 		if(toVMF && isDetailBrush && containsNonClipSide) {
-			Entity newDetailEntity=new Entity("classname", "func_detail");
+			Entity newDetailEntity=new Entity("func_detail");
 			newDetailEntity.addBrush(mapBrush);
 			mapFile.add(newDetailEntity);
 		} else {
@@ -631,7 +631,7 @@ public class Decompiler {
 		// this whole program and the entities parser, this shouldn't
 		// cause any issues at all.
 		if(toVMF && isDetailBrush) {
-			Entity newDetailEntity=new Entity("classname", "func_detail");
+			Entity newDetailEntity=new Entity("func_detail");
 			newDetailEntity.addBrush(mapBrush);
 			mapFile.add(newDetailEntity);
 		} else {
@@ -659,20 +659,62 @@ public class Decompiler {
 						mapFile.getEntity(i).setAttribute("classname", "func_wall_toggle");
 					} // 2 I believe is "Start enabled" and 4 is "toggleable", or the other way around. Not sure. Could use an OR.
 				}
+				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("item_flag_team2")) { // Blue flag
+					mapFile.getEntity(0).setAttribute("defaultctf", "1"); // Turn CTF on in the worldspawn entity
+					mapFile.getEntity(i).setAttribute("classname", "item_ctfflag");
+					mapFile.getEntity(i).setAttribute("skin", "1"); // 0 for PHX, 1 for MI6
+					mapFile.getEntity(i).setAttribute("goal_no", "1"); // 2 for PHX, 1 for MI6
+					mapFile.getEntity(i).setAttribute("goal_max", "16 16 72");
+					mapFile.getEntity(i).setAttribute("goal_min", "-16 -16 0");
+					Entity flagBase=new Entity("item_ctfbase");
+					flagBase.setAttribute("origin", mapFile.getEntity(i).getAttribute("origin"));
+					flagBase.setAttribute("angles", mapFile.getEntity(i).getAttribute("angles"));
+					flagBase.setAttribute("angle", mapFile.getEntity(i).getAttribute("angle"));
+					flagBase.setAttribute("goal_no", "1");
+					flagBase.setAttribute("model", "models/ctf_flag_stand_mi6.mdl");
+					flagBase.setAttribute("goal_max", "16 16 72");
+					flagBase.setAttribute("goal_min", "-16 -16 0");
+					mapFile.add(flagBase);
+				}
+				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("item_flag_team1")) { // Red flag
+					mapFile.getEntity(0).setAttribute("defaultctf", "1"); // Turn CTF on in the worldspawn entity
+					mapFile.getEntity(i).setAttribute("classname", "item_ctfflag");
+					mapFile.getEntity(i).setAttribute("skin", "0"); // 0 for PHX, 1 for MI6
+					mapFile.getEntity(i).setAttribute("goal_no", "2"); // 2 for PHX, 1 for MI6
+					mapFile.getEntity(i).setAttribute("goal_max", "16 16 72");
+					mapFile.getEntity(i).setAttribute("goal_min", "-16 -16 0");
+					Entity flagBase=new Entity("item_ctfbase");
+					flagBase.setAttribute("origin", mapFile.getEntity(i).getAttribute("origin"));
+					flagBase.setAttribute("angles", mapFile.getEntity(i).getAttribute("angles"));
+					flagBase.setAttribute("angle", mapFile.getEntity(i).getAttribute("angle"));
+					flagBase.setAttribute("goal_no", "2");
+					flagBase.setAttribute("model", "models/ctf_flag_stand_phoenix.mdl");
+					flagBase.setAttribute("goal_max", "16 16 72");
+					flagBase.setAttribute("goal_min", "-16 -16 0");
+					mapFile.add(flagBase);
+				}
+				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("info_player_team1")) {
+					mapFile.getEntity(i).setAttribute("classname", "info_ctfspawn");
+					mapFile.getEntity(i).setAttribute("team_no", "2");
+				}
+				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("info_player_team2")) {
+					mapFile.getEntity(i).setAttribute("classname", "info_ctfspawn");
+					mapFile.getEntity(i).setAttribute("team_no", "1");
+				}
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("worldspawn")) {
 					mapFile.getEntity(i).setAttribute("mapversion", "510"); // Otherwise Gearcraft cries.
 				}
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("info_player_start")) {
 					double[] origin=mapFile.getEntity(i).getOrigin();
-					mapFile.getEntity(i).setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+14));
+					mapFile.getEntity(i).setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+18));
 				}
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("info_player_coop")) {
 					double[] origin=mapFile.getEntity(i).getOrigin();
-					mapFile.getEntity(i).setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+14));
+					mapFile.getEntity(i).setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+18));
 				}
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("info_player_deathmatch")) {
 					double[] origin=mapFile.getEntity(i).getOrigin();
-					mapFile.getEntity(i).setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+14));
+					mapFile.getEntity(i).setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+18));
 				}
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("light")) {
 					String color=mapFile.getEntity(i).getAttribute("_color");
@@ -701,6 +743,10 @@ public class Decompiler {
 			if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_areaportal")) {
 				mapFile.getEntity(i).deleteAttribute("style");
 				containsAreaPortals=true;
+			}
+			if(!mapFile.getEntity(i).getAttribute("angle").equals("")) {
+				mapFile.getEntity(i).setAttribute("angles", "0 "+mapFile.getEntity(i).getAttribute("angle")+" 0");
+				mapFile.getEntity(i).deleteAttribute("angle");
 			}
 			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
 			int currentModel=mapFile.getEntity(i).getModelNumber();
@@ -958,8 +1004,7 @@ public class Decompiler {
 		// this whole program and the entities parser, this shouldn't
 		// cause any issues at all.
 		if(containsWaterTexture) {
-			Entity newWaterEntity=new Entity("{"+(char)0x0A+"}");
-			newWaterEntity.setAttribute("classname", "func_water");
+			Entity newWaterEntity=new Entity("func_water");
 			newWaterEntity.setAttribute("rendercolor", "0 0 0");
 			newWaterEntity.setAttribute("speed", "100");
 			newWaterEntity.setAttribute("wait", "4");
@@ -979,7 +1024,7 @@ public class Decompiler {
 		Window.window.println(doomMap.getMapName());
 		
 		mapFile=new Entities();
-		Entity world = new Entity("classname", "worldspawn");
+		Entity world = new Entity("worldspawn");
 		world.setAttribute("mapversion", "510");
 		mapFile.add(world);
 		
@@ -1380,7 +1425,7 @@ public class Decompiler {
 			world.addBrush(cielingBrush);
 			boolean containsMiddle=false; // Need to figure out how to determine this. As it is, no middle sides will come out.
 			if(containsMiddle && currentSector.getCielingHeight() > currentSector.getFloorHeight()) {
-				Entity middleEnt=new Entity("classname", "func_illusionary");
+				Entity middleEnt=new Entity("func_illusionary");
 				Vector3D[] topPlane=new Vector3D[3];
 				double[] topTexS=new double[3];
 				double[] topTexT=new double[3];
