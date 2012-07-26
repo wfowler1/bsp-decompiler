@@ -49,6 +49,8 @@ public class Window extends JPanel implements ActionListener {
 	private static int numThreads;
 
 	private static String lastUsedFolder;
+	
+	public static final double PRECISION=0.4;
 
 	// main method
 	// Creates an Object of this class and launches the GUI. Entry point to the whole program.
@@ -95,7 +97,7 @@ public class Window extends JPanel implements ActionListener {
 	// Private variables for a Window object
 	private boolean vertexDecomp=true;
 	private boolean correctPlaneFlip=true;
-	private double planePointCoef=100;
+	private static double planePointCoef=100;
 	private boolean calcVerts=true;
 	private boolean roundNums=true;
 	private static int numJobs;
@@ -325,7 +327,7 @@ public class Window extends JPanel implements ActionListener {
 		for(int i=0;i<args.length;i++) {
 			try {
 				if(args[i].equalsIgnoreCase("-coef")) {
-					planePointCoef=Double.parseDouble(args[++i]);
+					Window.planePointCoef=Double.parseDouble(args[++i]);
 				}
 			} catch(java.lang.NumberFormatException e) { // if -coef is provided but something besides a number follows
 				;
@@ -501,7 +503,7 @@ public class Window extends JPanel implements ActionListener {
 		if(doomJobs[jobNum]!=null) {
 			runMe=new DecompilerThread(doomJobs[jobNum], toVMF[jobNum], roundNums, jobNum, newThread);
 		} else {
-			runMe=new DecompilerThread(job, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF[jobNum], planePointCoef, jobNum, newThread);
+			runMe=new DecompilerThread(job, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF[jobNum], jobNum, newThread);
 		}
 		decompilerworkers[newThread] = new Thread(runMe);
 		decompilerworkers[newThread].setName("Decompiler "+newThread+" job "+jobNum);
@@ -761,5 +763,9 @@ public class Window extends JPanel implements ActionListener {
 			nextJob--;
 			r.gc(); // Now the program has time to rest while the user does whatever. Collect garbage.
 		}
+	}
+	
+	public static double getPlanePointCoef() {
+		return planePointCoef;
 	}
 }

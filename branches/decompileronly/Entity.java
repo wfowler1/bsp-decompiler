@@ -208,11 +208,7 @@ public class Entity {
 	// Reads the first character of the model attribute. If it's *, then it's a brush
 	// based entity and this method returns true. If not, it returns false.
 	public boolean isBrushBased() {
-		try {
-			return (getAttribute("model").charAt(0)=='*');
-		} catch(java.lang.StringIndexOutOfBoundsException e) { // The entity has no "model"
-			return false;
-		}
+		return getModelNumber()>=0;
 	}
 	
 	// ACCESSORS/MUTATORS

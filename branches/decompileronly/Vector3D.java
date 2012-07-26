@@ -86,7 +86,7 @@ public class Vector3D {
 	
 	/// Returns:	Whether or not the vertex is identical to this one.
 	public boolean equals(Vector3D in) {
-		return (point[0] == in.getX() && point[1] == in.getY() && point[2] == in.getZ());
+		return (point[0]-in.getX()<0.01 && point[1]-in.getY()<0.01 && point[2]-in.getZ()<0.01);
 	}
 	
 	// Scalar product

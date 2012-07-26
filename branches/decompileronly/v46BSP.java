@@ -17,7 +17,7 @@ public class v46BSP {
 	private PlaneList planes;
 	private v46Textures textures;
 	private v46Models models;
-	private Brushes brushes;
+	private v46Brushes brushes;
 	private v46BrushSides brushSides;
 	private v46Vertices vertices; // Probably the only BSP version to use a different vertex format
 	private v46Faces faces;
@@ -136,10 +136,10 @@ public class v46BSP {
 	}
 	
 	public void setBrushes(byte[] data) {
-		brushes=new Brushes(data);
+		brushes=new v46Brushes(data);
 	}
 	
-	public Brushes getBrushes() {
+	public v46Brushes getBrushes() {
 		return brushes;
 	}
 	

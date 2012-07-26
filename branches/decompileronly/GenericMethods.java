@@ -6,7 +6,8 @@ public class GenericMethods {
 	// Calculates 3 face corners, to be used to define the plane in ASCII format.
 	/// Author:		UltimateSniper
 	/// Returns:	List of normalised plane vertex triplets.
-	public static Vector3D[][] CalcPlanePoints(Plane[] planes, float pmprecision) {
+	public static MAPBrush CalcBrushVertices(MAPBrush mapBrush, double pmprecision) {
+		Plane[] planes=mapBrush.getPlanes();
 		Vector3D[][] out = new Vector3D[planes.length][];
 		// For each triplet of planes, find intersect point.
 		for (int iP1 = 0; iP1 < planes.length; iP1++) {
@@ -64,32 +65,53 @@ public class GenericMethods {
 				}
 			}
 		}
-		return out;
+		for(int i=0;i<mapBrush.getNumSides();i++) {
+			mapBrush.getSide(i).setSide(mapBrush.getSide(i).getPlane(), out[i]);
+		}
+		return mapBrush;
 	}
+
 	
-	// Use if brush has at least 1 triangle (this can be used as a point to normalise other planes).
-	/// Author:		UltimateSniper
-	/// Returns:	Complete list of normalised planes.
-	public static Plane[] SimpleCorrectPlanes(Plane[] allplanes, Vector3D[] triangle, float pmprecision) {
-		// Find midpoint of triangle, and use that to normalise all other planes.
-		double[] normPoint = new double[] { (triangle[0].getX() + triangle[1].getX() + triangle[2].getX()) / 3.0 , (triangle[0].getY() + triangle[1].getY() + triangle[2].getY()) / 3.0 , (triangle[0].getZ() + triangle[1].getZ() + triangle[2].getZ()) / 3.0 };
-		for (int iPlane = 0; iPlane < allplanes.length; iPlane++) {
-			double dist = allplanes[iPlane].distance(normPoint);
-			if (dist > pmprecision) {
-				allplanes[iPlane].flip();
-			} else {
-				if (dist <= pmprecision && dist >= -pmprecision) {
-					allplanes[iPlane] = new Plane(triangle[2], triangle[0], triangle[1]);
-				}
+	// SimpleCorrectPlanes(MAPBrush, float)
+	// Uses all sides' defined points to ensure all planes are flipped correctly.
+	public static MAPBrush SimpleCorrectPlanes(MAPBrush brush, double pmprecision) {
+		MAPBrush newBrush=new MAPBrush(brush.getBrushnum(), brush.getEntnum(), brush.isDetailBrush());
+		Vector3D[] theVerts=new Vector3D[brush.getNumSides()*3];
+		int index=0;
+		for(int i=0;i<brush.getNumSides();i++) {
+			if(brush.getSide(i).isDefinedByTriangle()) {
+				theVerts[index++]=brush.getSide(i).getTriangle()[0];
+				theVerts[index++]=brush.getSide(i).getTriangle()[1];
+				theVerts[index++]=brush.getSide(i).getTriangle()[2];
 			}
 		}
-		return allplanes;
+		
+		if(theVerts[0]==null) { // If this brush had no sides with vertices defined
+			return null; // Return null. With any luck this will cause an exception. :trollface:
+		}
+		
+		for(int i=0;i<brush.getNumSides();i++) { // For each side of the brush
+			MAPBrushSide currentSide=brush.getSide(i);
+			if(!currentSide.isDefinedByTriangle()) { // If the side isn't THX certified
+				for(int j=0;j<theVerts.length;j++) {
+					if(theVerts[j]!=null) {
+						if(currentSide.getPlane().distance(theVerts[j]) > pmprecision) {
+							currentSide.flipSide();
+						}
+					}
+				}
+			}
+			newBrush.add(currentSide);
+		}
+		
+		return newBrush;
 	}
-	
+
 	// Use if brush has no triangles.
 	/// Author:		UltimateSniper
 	/// Returns:	Ordered list of normalised vertex triplets (ready to feed in to map).
-	public static Vector3D[][] AdvancedCorrectPlanes(Plane[] allplanes, float pmprecision) throws java.lang.ArrayIndexOutOfBoundsException {
+	public static MAPBrush AdvancedCorrectPlanes(MAPBrush mapBrush, double pmprecision) throws java.lang.ArrayIndexOutOfBoundsException {
+		Plane[] allplanes=mapBrush.getPlanes();
 		// Method:
 		//1. Collect all vertices created by plane intercepts.
 		//2. Create arrays of these vertices and inputted planes, to access planes via points they intersect and vice versa.
@@ -390,7 +412,7 @@ public class GenericMethods {
 		
 		// Return null value if method failed.
 		if (TrueCorns.length == 0) {
-			return new Vector3D[0][];
+			throw new java.lang.ArithmeticException("SHIT FUCK SHIT");
 		}
 		
 		
@@ -422,18 +444,21 @@ public class GenericMethods {
 				output[iPlane] = new Vector3D[] { allverts[vertPlane[0]] , allverts[vertPlane[1]] , allverts[vertPlane[2]] };
 			}
 		}
-		return output;
+		for(int i=0;i<output.length;i++) {
+			mapBrush.getSide(i).setTriangle(output[i]);
+		}
+		return mapBrush;
 	}
-	
+
 	// Some algorithms might produce planes which are correctly normalized, but
 	// some don't actually contribute to the solid (such as those solids created
 	// by iterating through a binary tree, and keeping track of all node subdivisions).
-	public static MAPBrush cullUnusedPlanes(MAPBrush in, float precision) {
+	public static MAPBrush cullUnusedPlanes(MAPBrush in, double precision) {
 		Plane[] thePlanes=in.getPlanes();
 		
-		// Step 1: Get all available vertices
+		// Step 1: Get all points of intersection
 		double numVerts = 4;
-		// Iterative nCr algorithm; thanks to the code above
+		// Iterative nCr algorithm; thanks to Alex's code
 		for(int i=thePlanes.length;i>4;i--) {
 			numVerts *= (double)i/(double)(i-3);
 		}
@@ -462,11 +487,21 @@ public class GenericMethods {
 		int side=0;
 		for(int i=0;i<thePlanes.length;i++) {
 			int numMatches=0;
+			Vector3D[] matches=new Vector3D[3];
 			for(int j=0;j<theVerts.length;j++) {
 				if(Math.abs(thePlanes[i].distance(theVerts[j])) < precision) {
-					numMatches++;
+					boolean duplicate=false;
+					for(int k=0;k<numMatches;k++) {
+						if(theVerts[j].equals(matches[k])) {
+							duplicate=true;
+						}
+					}
+					if(!duplicate) {
+						matches[numMatches]=theVerts[j];
+						numMatches++;
+					}
 				}
-				if(numMatches>=3) {
+				if(numMatches>=3) { // We have enough points.
 					break;
 				}
 			}
@@ -479,7 +514,8 @@ public class GenericMethods {
 		return in;
 	}
 
-	public static Vector3D[] extrapPlanePoints(Plane in, double planePointCoef) {
+	public static Vector3D[] extrapPlanePoints(Plane in) {
+		double planePointCoef=Window.getPlanePointCoef();
 		Vector3D[] plane=new Vector3D[3];
 		// Figure out if the plane is parallel to two of the axes. If so it can be reproduced easily
 		if(in.getB()==0 && in.getC()==0) { // parallel to plane YZ

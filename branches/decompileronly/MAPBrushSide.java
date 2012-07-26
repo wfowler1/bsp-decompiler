@@ -6,7 +6,7 @@ import java.text.DecimalFormat;
 public class MAPBrushSide {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
-	private Vector3D[] triangle; // Plane defined as three points
+	private Vector3D[] triangle=new Vector3D[3]; // Plane defined as three points
 	private Plane plane;
 	private String texture;
 	private Vector3D textureS;
@@ -21,20 +21,20 @@ public class MAPBrushSide {
 	private double lgtScale;
 	private double lgtRot;
 	
+	private boolean planeDefined=false;
+	private boolean triangleDefined=false;
+	
 	public static final int X=0;
 	public static final int Y=1;
 	public static final int Z=2;
 	
-	DecimalFormat fmt = new DecimalFormat("0.000000");
-	DecimalFormat fmtScales = new DecimalFormat("0.####");
-	
 	// CONSTRUCTORS
+	// Takes a triangle of points, and calculates a new standard equation for a plane with it. Not recommended.
 	public MAPBrushSide(Vector3D[] inTriangle, String inTexture, double[] inTextureS, double inTextureShiftS, double[] inTextureT, double inTextureShiftT, float inTexRot,
 	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot) {
-	//	triangle[0]=inTriangle[0];
-	//	triangle[1]=inTriangle[1];
-	//	triangle[2]=inTriangle[2];
-		triangle=inTriangle;
+		triangle[0]=inTriangle[0];
+		triangle[1]=inTriangle[1];
+		triangle[2]=inTriangle[2];
 		this.plane=new Plane(triangle);
 		texture=inTexture;
 		textureS=new Vector3D(inTextureS);
@@ -48,13 +48,16 @@ public class MAPBrushSide {
 		material=inMaterial;
 		lgtScale=inLgtScale;
 		lgtRot=inLgtRot;
+		planeDefined=false;
+		triangleDefined=true;
 	}
 	
+	// Takes both a plane and triangle. Recommended if at all possible.
 	public MAPBrushSide(Plane plane, Vector3D[] inTriangle, String inTexture, double[] inTextureS, double inTextureShiftS, double[] inTextureT, double inTextureShiftT, float inTexRot,
 	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot) {
-	//	triangle[0]=inTriangle[0];
-	//	triangle[1]=inTriangle[1];
-	//	triangle[2]=inTriangle[2];
+		triangle[0]=inTriangle[0];
+		triangle[1]=inTriangle[1];
+		triangle[2]=inTriangle[2];
 		this.plane=plane;
 		triangle=inTriangle;
 		texture=inTexture;
@@ -69,12 +72,15 @@ public class MAPBrushSide {
 		material=inMaterial;
 		lgtScale=inLgtScale;
 		lgtRot=inLgtRot;
+		planeDefined=true;
+		triangleDefined=true;
 	}
 
+	// Takes only a plane and finds three arbitrary points on it. Recommend only if triangle is not available.
 	public MAPBrushSide(Plane plane, String inTexture, double[] inTextureS, double inTextureShiftS, double[] inTextureT, double inTextureShiftT, float inTexRot,
 	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot) {
 		this.plane=plane;
-		triangle=GenericMethods.extrapPlanePoints(plane, 100);
+		triangle=GenericMethods.extrapPlanePoints(plane);
 		texture=inTexture;
 		textureS=new Vector3D(inTextureS);
 		textureShiftS=inTextureShiftS;
@@ -87,6 +93,8 @@ public class MAPBrushSide {
 		material=inMaterial;
 		lgtScale=inLgtScale;
 		lgtRot=inLgtRot;
+		planeDefined=true;
+		triangleDefined=false;
 	}
 
 	// METHODS
@@ -94,7 +102,8 @@ public class MAPBrushSide {
 	// toString()
 	// Returns the brush side exactly as it would look in a .MAP file.
 	// This is on multiple lines simply for readability. the returned
-	// String will have no line breaks.
+	// String will have no line breaks. This isn't used anymore for
+	// file output, this would be slower.
 	public String toString() {
 		try {
 			return "( "+triangle[0].getX()+" "+triangle[0].getY()+" "+triangle[0].getZ()+" ) "+
@@ -113,8 +122,11 @@ public class MAPBrushSide {
 	}
 	
 	// flipPlane()
-	// Negate the plane
-	public void flipPlane() {
+	// Negate all definitions of the plane in the side.
+	// Don't need to change the indicators of whether or not this side was defined by
+	// triangle or plane, since both definitions are still valid. I'm using the same
+	// information, I'm just reversing the direction.
+	public void flipSide() {
 		Vector3D temp=triangle[2];
 		triangle[2]=triangle[1];
 		triangle[1]=temp;
@@ -130,17 +142,43 @@ public class MAPBrushSide {
 		plane=new Plane(triangle);
 	}
 	
+	public boolean isDefinedByPlane() {
+		return planeDefined;
+	}
+	
+	public boolean isDefinedByTriangle() {
+		return triangleDefined;
+	}
+	
 	// ACCESSORS/MUTATORS
 	public void setTriangle(Vector3D[] in) {
+		System.out.println("SETTING A FUCKING TRIANGLE");
 		triangle[0]=in[0];
 		triangle[1]=in[1];
 		triangle[2]=in[2];
 		plane=new Plane(triangle);
+		planeDefined=false;
+		triangleDefined=true;
 	}
 	
-	public void setPlane(Plane in, double planePointCoef) {
+	public void setSide(Plane plane, Vector3D[] triangle) {
+		if(triangle.length>=3) {
+			this.triangle[0]=triangle[0];
+			this.triangle[1]=triangle[1];
+			this.triangle[2]=triangle[2];
+			triangleDefined=true;
+		} else {
+			Window.window.println("Tried to define side with "+triangle.length+" points!");
+		}
+		this.plane=plane;
+		planeDefined=true;
+	}
+	
+	public void setPlane(Plane in) {
 		plane=in;
-		triangle=GenericMethods.extrapPlanePoints(plane, planePointCoef);
+		triangle=GenericMethods.extrapPlanePoints(plane);
+		planeDefined=true;
+		triangleDefined=false;
 	}
 	
 	public double getLgtScale() {
