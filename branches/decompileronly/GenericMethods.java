@@ -6,7 +6,7 @@ public class GenericMethods {
 	// Calculates 3 face corners, to be used to define the plane in ASCII format.
 	/// Author:		UltimateSniper
 	/// Returns:	List of normalised plane vertex triplets.
-	public static MAPBrush CalcBrushVertices(MAPBrush mapBrush, double pmprecision) {
+	public static MAPBrush CalcBrushVertices(MAPBrush mapBrush) {
 		Plane[] planes=mapBrush.getPlanes();
 		Vector3D[][] out = new Vector3D[planes.length][];
 		// For each triplet of planes, find intersect point.
@@ -19,7 +19,7 @@ public class GenericMethods {
 						// If point is not null, test if point is behind/on all planes (if so, it is a corner).
 						for (int iTest = 0; iTest < planes.length; iTest++) {
 							if (!planes[iTest].getNormal().equals(planes[iP1].getNormal()) && !planes[iTest].getNormal().equals(planes[iP2].getNormal()) && !planes[iTest].getNormal().equals(planes[iP3].getNormal())) {
-								if (planes[iTest].distance(testV) > pmprecision) {
+								if (planes[iTest].distance(testV) > Window.PRECISION) {
 									isCorner = false;
 									break;
 								}
@@ -30,7 +30,7 @@ public class GenericMethods {
 							for (int iChk = 0; iChk < planes.length; iChk++) {
 								// If on this plane, and plane's vertex triplet missing min 1 point (and does not already have this point), add it.
 								double dist = planes[iChk].distance(testV);
-								if (dist <= pmprecision && dist >= -pmprecision) {
+								if (Math.abs(dist) <= Window.PRECISION) {
 									// If first point on this plane, must create array.
 									if (out[iChk] == null) {
 										out[iChk] = new Vector3D[] { new Vector3D(testV) , null , null };
@@ -53,7 +53,7 @@ public class GenericMethods {
 												}
 												break;
 											// Else, if this list already has this point, skip out (to avoid doubling it).
-											} else if (out[iChk][iChk2].getX() <= testV.getX() + pmprecision && out[iChk][iChk2].getX() >= testV.getX() - pmprecision && out[iChk][iChk2].getY() <= testV.getY() + pmprecision && out[iChk][iChk2].getY() >= testV.getY() - pmprecision && out[iChk][iChk2].getZ() <= testV.getZ() + pmprecision && out[iChk][iChk2].getZ() >= testV.getZ() - pmprecision) {
+											} else if (out[iChk][iChk2].equals(testV)) {
 												break;
 											}
 										}
@@ -74,8 +74,8 @@ public class GenericMethods {
 	
 	// SimpleCorrectPlanes(MAPBrush, float)
 	// Uses all sides' defined points to ensure all planes are flipped correctly.
-	public static MAPBrush SimpleCorrectPlanes(MAPBrush brush, double pmprecision) {
-		MAPBrush newBrush=new MAPBrush(brush.getBrushnum(), brush.getEntnum(), brush.isDetailBrush());
+	public static MAPBrush SimpleCorrectPlanes(MAPBrush brush) {
+		/*
 		Vector3D[] theVerts=new Vector3D[brush.getNumSides()*3];
 		int index=0;
 		for(int i=0;i<brush.getNumSides();i++) {
@@ -95,7 +95,7 @@ public class GenericMethods {
 			if(!currentSide.isDefinedByTriangle()) { // If the side isn't THX certified
 				for(int j=0;j<theVerts.length;j++) {
 					if(theVerts[j]!=null) {
-						if(currentSide.getPlane().distance(theVerts[j]) > pmprecision) {
+						if(currentSide.getPlane().distance(theVerts[j]) > Window.PRECISION) {
 							currentSide.flipSide();
 						}
 					}
@@ -103,14 +103,36 @@ public class GenericMethods {
 			}
 			newBrush.add(currentSide);
 		}
-		
-		return newBrush;
+		*/
+		// Find midpoint of triangle, and use that to normalise all other planes.
+		int index=-1;
+		Vector3D[] triangle=new Vector3D[0]; // This'll cause an exception if the loop fails
+		for(int i=0;i<brush.getNumSides();i++) {
+			if(brush.getSide(i).isDefinedByTriangle()) {
+				triangle=brush.getSide(i).getTriangle();
+				break;
+			}
+		}
+		double[] normPoint = new double[] { (triangle[0].getX() + triangle[1].getX() + triangle[2].getX()) / 3.0 , (triangle[0].getY() + triangle[1].getY() + triangle[2].getY()) / 3.0 , (triangle[0].getZ() + triangle[1].getZ() + triangle[2].getZ()) / 3.0 };
+		Plane[] allplanes=brush.getPlanes();
+		for (int iPlane = 0; iPlane < allplanes.length; iPlane++) {
+			double dist = allplanes[iPlane].distance(normPoint);
+			if (dist > Window.PRECISION) {
+				brush.getSide(iPlane).flipSide();
+			} else {
+				if (dist <= Window.PRECISION && dist >= -Window.PRECISION) {
+					brush.getSide(iPlane).setPlane(new Plane(triangle[2], triangle[0], triangle[1]));
+				}
+			}
+		}
+
+		return brush;
 	}
 
 	// Use if brush has no triangles.
 	/// Author:		UltimateSniper
 	/// Returns:	Ordered list of normalised vertex triplets (ready to feed in to map).
-	public static MAPBrush AdvancedCorrectPlanes(MAPBrush mapBrush, double pmprecision) throws java.lang.ArrayIndexOutOfBoundsException {
+	public static MAPBrush AdvancedCorrectPlanes(MAPBrush mapBrush) throws java.lang.ArrayIndexOutOfBoundsException {
 		Plane[] allplanes=mapBrush.getPlanes();
 		// Method:
 		//1. Collect all vertices created by plane intercepts.
@@ -133,10 +155,10 @@ public class GenericMethods {
 			for (int iP2 = iP1 + 1; iP2 < allplanes.length; iP2++) {
 				for (int iP3 = iP2 + 1; iP3 < allplanes.length; iP3++) {
 					Vector3D testV = allplanes[iP1].trisect(allplanes[iP2], allplanes[iP3]);
-					if (!testV.equals(Vector3D.undefined)) {
+					if (!testV.equals(Vector3D.undefined)) { // Arbitrary precision: Just checking if undefined or real.
 						boolean hasVtx = false;
 						for (int iVtx = 0; iVtx < iallverts; iVtx++) {
-							if (allverts[iVtx].getX() + pmprecision > testV.getX() && allverts[iVtx].getX() - pmprecision < testV.getX() && allverts[iVtx].getY() + pmprecision > testV.getY() && allverts[iVtx].getY() - pmprecision < testV.getY() && allverts[iVtx].getZ() + pmprecision > testV.getZ() && allverts[iVtx].getZ() - pmprecision < testV.getZ()) {
+							if (allverts[iVtx].equals(testV)) {
 								hasVtx = true;
 								break;
 							}
@@ -160,10 +182,10 @@ public class GenericMethods {
 			byte[] PlaneSides = new byte[allplanes.length];
 			for (int iVP = 0; iVP < allplanes.length; iVP++) {
 				double dist = allplanes[iVP].distance(allverts[iV]);
-				if (dist < pmprecision && dist > -pmprecision) {
+				if (Math.abs(dist) < Window.PRECISION) {
 					PlaneSides[iVP] = 0;
 				} else {
-					PlaneSides[iVP] = ((dist >= pmprecision) ? (byte)1 : (byte)-1);
+					PlaneSides[iVP] = ((dist >= Window.PRECISION) ? (byte)1 : (byte)-1);
 				}
 			}
 			VertPlaneSides[iV] = PlaneSides;
@@ -412,7 +434,7 @@ public class GenericMethods {
 		
 		// Return null value if method failed.
 		if (TrueCorns.length == 0) {
-			throw new java.lang.ArithmeticException("SHIT FUCK SHIT");
+			throw new java.lang.ArithmeticException("No corners found for brush!");
 		}
 		
 		
@@ -445,6 +467,7 @@ public class GenericMethods {
 			}
 		}
 		for(int i=0;i<output.length;i++) {
+			// This isn't setSide because the plane definition is no longer reliable; it might be flipped the wrong way
 			mapBrush.getSide(i).setTriangle(output[i]);
 		}
 		return mapBrush;
@@ -453,7 +476,7 @@ public class GenericMethods {
 	// Some algorithms might produce planes which are correctly normalized, but
 	// some don't actually contribute to the solid (such as those solids created
 	// by iterating through a binary tree, and keeping track of all node subdivisions).
-	public static MAPBrush cullUnusedPlanes(MAPBrush in, double precision) {
+	public static MAPBrush cullUnusedPlanes(MAPBrush in) {
 		Plane[] thePlanes=in.getPlanes();
 		
 		// Step 1: Get all points of intersection
@@ -476,7 +499,7 @@ public class GenericMethods {
 		// all facing the "right" way.
 		for(int i=0;i<theVerts.length;i++) {
 			for(int j=0;j<thePlanes.length;j++) {
-				if(thePlanes[j].distance(theVerts[i]) > precision) {
+				if(thePlanes[j].distance(theVerts[i]) > Window.PRECISION) {
 					theVerts[i]=Vector3D.undefined;
 					break; //break the inner loop, let the outer loop iterate
 				}
@@ -489,7 +512,7 @@ public class GenericMethods {
 			int numMatches=0;
 			Vector3D[] matches=new Vector3D[3];
 			for(int j=0;j<theVerts.length;j++) {
-				if(Math.abs(thePlanes[i].distance(theVerts[j])) < precision) {
+				if(Math.abs(thePlanes[i].distance(theVerts[j])) < Window.PRECISION) {
 					boolean duplicate=false;
 					for(int k=0;k<numMatches;k++) {
 						if(theVerts[j].equals(matches[k])) {
@@ -581,4 +604,3 @@ public class GenericMethods {
 		return plane;
 	}
 }
-		

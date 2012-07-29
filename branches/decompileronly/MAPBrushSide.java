@@ -32,9 +32,13 @@ public class MAPBrushSide {
 	// Takes a triangle of points, and calculates a new standard equation for a plane with it. Not recommended.
 	public MAPBrushSide(Vector3D[] inTriangle, String inTexture, double[] inTextureS, double inTextureShiftS, double[] inTextureT, double inTextureShiftT, float inTexRot,
 	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot) {
-		triangle[0]=inTriangle[0];
-		triangle[1]=inTriangle[1];
-		triangle[2]=inTriangle[2];
+		if(inTriangle.length>=3 && inTriangle[0]!=null && inTriangle[1]!=null && inTriangle[2]!=null) {
+			triangle[0]=inTriangle[0];
+			triangle[1]=inTriangle[1];
+			triangle[2]=inTriangle[2];
+		} else {
+			throw new java.lang.ArithmeticException("Invalid point definition for a plane: \n"+inTriangle[0]+"\n"+inTriangle[1]+"\n"+inTriangle[2]);
+		}
 		this.plane=new Plane(triangle);
 		texture=inTexture;
 		textureS=new Vector3D(inTextureS);
@@ -50,14 +54,19 @@ public class MAPBrushSide {
 		lgtRot=inLgtRot;
 		planeDefined=false;
 		triangleDefined=true;
+		//Window.println(triangle[0]+"\n"+triangle[1]+"\n"+triangle[2]+"\n\n");
 	}
 	
 	// Takes both a plane and triangle. Recommended if at all possible.
 	public MAPBrushSide(Plane plane, Vector3D[] inTriangle, String inTexture, double[] inTextureS, double inTextureShiftS, double[] inTextureT, double inTextureShiftT, float inTexRot,
 	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot) {
-		triangle[0]=inTriangle[0];
-		triangle[1]=inTriangle[1];
-		triangle[2]=inTriangle[2];
+		if(inTriangle.length>=3 && inTriangle[0]!=null && inTriangle[1]!=null && inTriangle[2]!=null) {
+			triangle[0]=inTriangle[0];
+			triangle[1]=inTriangle[1];
+			triangle[2]=inTriangle[2];
+		} else {
+			throw new java.lang.ArithmeticException("Invalid point definition for a plane: \n"+inTriangle[0]+"\n"+inTriangle[1]+"\n"+inTriangle[2]);
+		}
 		this.plane=plane;
 		triangle=inTriangle;
 		texture=inTexture;
@@ -74,6 +83,7 @@ public class MAPBrushSide {
 		lgtRot=inLgtRot;
 		planeDefined=true;
 		triangleDefined=true;
+		//Window.println(triangle[0]+"\n"+triangle[1]+"\n"+triangle[2]+"\n\n");
 	}
 
 	// Takes only a plane and finds three arbitrary points on it. Recommend only if triangle is not available.
@@ -136,10 +146,16 @@ public class MAPBrushSide {
 	// shift(Vector3D)
 	// Shifts the brush side and its points by the amounts in the input Vector
 	public void shift(Vector3D shift) {
-		triangle[0]=triangle[0].add(shift);
-		triangle[1]=triangle[1].add(shift);
-		triangle[2]=triangle[2].add(shift);
-		plane=new Plane(triangle);
+		try {
+			if(shift.getX()!=0 || shift.getY()!=0 || shift.getZ()!=0) {
+				triangle[0]=triangle[0].add(shift);
+				triangle[1]=triangle[1].add(shift);
+				triangle[2]=triangle[2].add(shift);
+				plane=new Plane(triangle);
+			}
+		} catch(java.lang.Exception e) {
+			Window.println("Failed to shift triangle:"+e+(char)0x0D+(char)0x0A+triangle[0]+(char)0x0D+(char)0x0A+triangle[1]+(char)0x0D+(char)0x0A+triangle[2]+(char)0x0D+(char)0x0A+"Adding: "+shift);
+		}
 	}
 	
 	public boolean isDefinedByPlane() {
@@ -152,13 +168,16 @@ public class MAPBrushSide {
 	
 	// ACCESSORS/MUTATORS
 	public void setTriangle(Vector3D[] in) {
-		System.out.println("SETTING A FUCKING TRIANGLE");
-		triangle[0]=in[0];
-		triangle[1]=in[1];
-		triangle[2]=in[2];
-		plane=new Plane(triangle);
-		planeDefined=false;
-		triangleDefined=true;
+		if(in.length>=3) {
+			triangle[0]=in[0];
+			triangle[1]=in[1];
+			triangle[2]=in[2];
+			plane=new Plane(triangle);
+			planeDefined=false;
+			triangleDefined=true;
+		} else {
+			Window.window.println("Tried to define side with "+triangle.length+" points!");
+		}
 	}
 	
 	public void setSide(Plane plane, Vector3D[] triangle) {

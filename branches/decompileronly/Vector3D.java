@@ -35,7 +35,9 @@ public class Vector3D {
 	}
 	public Vector3D(double[] in) {
 		try {
-			point = new double[] { in[0] , in[1] , in[2] };
+			point[X] = in[X];
+			point[Y] = in[Y];
+			point[Z] = in[Z];
 		} catch(java.lang.ArrayIndexOutOfBoundsException e) {
 			;
 		}
@@ -60,6 +62,7 @@ public class Vector3D {
 	}
 	
 	// Takes two shorts, and assumes they are X and Y.
+	// Useful for turning 2D data from a Doom Map into 3D coordinates
 	public Vector3D(short x, short y) {
 		point[X]=(double)x;
 		point[Y]=(double)y;
@@ -86,9 +89,9 @@ public class Vector3D {
 	
 	/// Returns:	Whether or not the vertex is identical to this one.
 	public boolean equals(Vector3D in) {
-		return (point[0]-in.getX()<0.01 && point[1]-in.getY()<0.01 && point[2]-in.getZ()<0.01);
+		return (point[0]+Window.PRECISION >= in.getX() && point[0]-Window.PRECISION <= in.getX() && point[1]+Window.PRECISION >= in.getY() && point[1]-Window.PRECISION <= in.getY() && point[2]+Window.PRECISION >= in.getZ() && point[2]-Window.PRECISION <= in.getZ());
 	}
-	
+
 	// Scalar product
 	/// Returns:	Vector3D of the components of this vertex, multiplied by the scalar value.
 	public Vector3D scale(double scalar) {

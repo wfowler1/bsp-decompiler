@@ -428,37 +428,49 @@ public class Decompiler {
 		for(int i=0;i<brushPlanes.length;i++) {
 			brushPlanes[i]=mapBrush.getSide(i).getPlane();
 		}
-		
+		/*
 		// TODO: Figure out why simplecorrect bombs
 		if(correctPlaneFlip) {
 			if(mapBrush.hasBadSide()) {
 				try {
-					mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush, Window.PRECISION); // This is good.
+					mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush); // This is good.
 				} catch(java.lang.ArithmeticException e) {
 					Window.window.println("Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
+					if(calcVerts) {
+						try {
+							mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+						} catch(java.lang.ArithmeticException f) {
+							Window.window.println("Vertex calculation returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
+							for(int j=0;j<mapBrush.getNumSides();j++) {
+								if(!mapBrush.getSide(j).isDefinedByTriangle()) {
+									mapBrush.getSide(j).setSide(mapBrush.getSide(j).getPlane(), GenericMethods.extrapPlanePoints(mapBrush.getSide(j).getPlane()));
+								}
+							}
+						}
+					}
 				}
 			}
 		} else {
 			if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
-				//try {
-					mapBrush=GenericMethods.CalcBrushVertices(mapBrush, Window.PRECISION);
-				//} catch(java.lang.ArithmeticException e) {
-				//	Window.window.println("Vertex calculation returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
-				//}
+				try {
+					mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+				} catch(java.lang.ArithmeticException e) {
+					Window.window.println("Vertex calculation returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
+				}
 			}
 		}
+		*/
 		
-		/*
 		if(correctPlaneFlip) {
-			if(mapBrush.hasBadSide()) {
-				if(mapBrush.hasGoodSide()) {
-					mapBrush=GenericMethods.SimpleCorrectPlanes(mapBrush, Window.PRECISION);
+			if(mapBrush.hasBadSide()) { // If there's a side that might be backward
+				if(mapBrush.hasGoodSide()) { // If there's a side that is forward
+					mapBrush=GenericMethods.SimpleCorrectPlanes(mapBrush);
 					if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
-						mapBrush=GenericMethods.CalcBrushVertices(mapBrush, Window.PRECISION);
+						mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
 					}
-				} else {
+				} else { // If no forward side exists
 					try {
-						mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush, Window.PRECISION);
+						mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush);
 					} catch(java.lang.ArithmeticException e) {
 						Window.window.println("Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
 					}
@@ -466,10 +478,9 @@ public class Decompiler {
 			}
 		} else {
 			if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
-				mapBrush=GenericMethods.CalcBrushVertices(mapBrush, Window.PRECISION);
+				mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
 			}
 		}
-		*/
 		
 		// This adds the brush we've been finding and creating to
 		// the current entity as an attribute. The way I've coded
@@ -533,7 +544,6 @@ public class Decompiler {
 					if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
 						addOriginBrush(i);
 					}
-					mapFile.getEntity(i).deleteAttribute("origin");
 				}
 			}
 			numTotalItems++;
@@ -658,19 +668,61 @@ public class Decompiler {
 			}*/
 		}
 		
-		// TODO: FIX FOR MY NEW CODE
+
+		
+		// TODO: Figure out why simplecorrect bombs
 		if(correctPlaneFlip) {
 			if(mapBrush.hasBadSide()) {
-			//	mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush, Window.PRECISION); // This is good.
-			//	if(calcVerts) { // So, only allow this if vertex decompile.
-			//		mapBrush.recalcCorners();
-			//	}
-			//} else {
-			//	if(mapBrush.hasBadSide()) {
-			//		mapBrush.correctPlanes(); // This is bad.
-			//	}
+				try {
+					mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush); // This is good.
+				} catch(java.lang.ArithmeticException e) {
+					Window.window.println("Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
+					if(calcVerts) {
+						try {
+							mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+						} catch(java.lang.ArithmeticException f) {
+							Window.window.println("Vertex calculation returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
+							for(int j=0;j<mapBrush.getNumSides();j++) {
+								if(!mapBrush.getSide(j).isDefinedByTriangle()) {
+									mapBrush.getSide(j).setSide(mapBrush.getSide(j).getPlane(), GenericMethods.extrapPlanePoints(mapBrush.getSide(j).getPlane()));
+								}
+							}
+						}
+					}
+				}
+			}
+		} else {
+			if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
+				try {
+					mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+				} catch(java.lang.ArithmeticException e) {
+					Window.window.println("Vertex calculation returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
+				}
 			}
 		}
+		
+		/*
+		if(correctPlaneFlip) {
+			if(mapBrush.hasBadSide()) { // If there's a side that might be backward
+				if(mapBrush.hasGoodSide()) { // If there's a side that is forward
+					mapBrush=GenericMethods.SimpleCorrectPlanes(mapBrush);
+					if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
+						mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+					}
+				} else { // If no forward side exists
+					try {
+						mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush);
+					} catch(java.lang.ArithmeticException e) {
+						Window.window.println("Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
+					}
+				}
+			}
+		} else {
+			if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
+				mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+			}
+		}
+		*/
 		
 		// This adds the brush we've been finding and creating to
 		// the current entity as an attribute. The way I've coded
@@ -1049,20 +1101,60 @@ public class Decompiler {
 				}
 			}
 		}
-		
-		// TODO: FIX FOR MY NEW CODE
+
+		// TODO: Figure out why simplecorrect bombs
 		if(correctPlaneFlip) {
 			if(mapBrush.hasBadSide()) {
-			//	mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush, Window.PRECISION); // This is good.
-			//	if(calcVerts) { // So, only allow this if vertex decompile.
-			//		mapBrush.recalcCorners();
-			//	}
-			//} else {
-			//	if(mapBrush.hasBadSide()) {
-			//		mapBrush.correctPlanes(); // This is bad.
-			//	}
+				try {
+					mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush); // This is good.
+				} catch(java.lang.ArithmeticException e) {
+					Window.window.println("Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
+					if(calcVerts) {
+						try {
+							mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+						} catch(java.lang.ArithmeticException f) {
+							Window.window.println("Vertex calculation returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
+							for(int j=0;j<mapBrush.getNumSides();j++) {
+								if(!mapBrush.getSide(j).isDefinedByTriangle()) {
+									mapBrush.getSide(j).setSide(mapBrush.getSide(j).getPlane(), GenericMethods.extrapPlanePoints(mapBrush.getSide(j).getPlane()));
+								}
+							}
+						}
+					}
+				}
+			}
+		} else {
+			if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
+				try {
+					mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+				} catch(java.lang.ArithmeticException e) {
+					Window.window.println("Vertex calculation returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
+				}
 			}
 		}
+		
+		/*
+		if(correctPlaneFlip) {
+			if(mapBrush.hasBadSide()) { // If there's a side that might be backward
+				if(mapBrush.hasGoodSide()) { // If there's a side that is forward
+					mapBrush=GenericMethods.SimpleCorrectPlanes(mapBrush);
+					if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
+						mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+					}
+				} else { // If no forward side exists
+					try {
+						mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush);
+					} catch(java.lang.ArithmeticException e) {
+						Window.window.println("Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
+					}
+				}
+			}
+		} else {
+			if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
+				mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+			}
+		}
+		*/
 		
 		// This adds the brush we've been finding and creating to
 		// the current entity as an attribute. The way I've coded
@@ -1483,9 +1575,9 @@ public class Decompiler {
 				leftSide=nodeIsLeft[nextNode];
 				nextNode=nodeparents[nextNode];
 			} while(nextNode!=-1);
-			cielingBrush=GenericMethods.cullUnusedPlanes(cielingBrush, Window.PRECISION);
-			midBrush=GenericMethods.cullUnusedPlanes(midBrush, Window.PRECISION);
-			floorBrush=GenericMethods.cullUnusedPlanes(floorBrush, Window.PRECISION);
+			cielingBrush=GenericMethods.cullUnusedPlanes(cielingBrush);
+			midBrush=GenericMethods.cullUnusedPlanes(midBrush);
+			floorBrush=GenericMethods.cullUnusedPlanes(floorBrush);
 			world.addBrush(floorBrush);
 			world.addBrush(cielingBrush);
 			boolean containsMiddle=false; // Need to figure out how to determine this. As it is, no middle sides will come out.

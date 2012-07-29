@@ -50,7 +50,10 @@ public class Window extends JPanel implements ActionListener {
 
 	private static String lastUsedFolder;
 	
-	public static final double PRECISION=0.4;
+	public static final double PRECISION=0.01;
+	// The number of decimal places of error allowed for double-precision decimal
+	// calculations. Down the line, this error can propagate fast.
+	// 0.01 is a reasonable level. 0.00001 is quite strict. 0.1 is a little ridiculous.
 
 	// main method
 	// Creates an Object of this class and launches the GUI. Entry point to the whole program.
@@ -547,6 +550,10 @@ public class Window extends JPanel implements ActionListener {
 	
 	protected static void println(String out) {
 		print(out+(char)0x0D+(char)0x0A);
+	}
+	
+	protected static void println() {
+		print(""+(char)0x0D+(char)0x0A);
 	}
 	
 	protected static void clearConsole() {

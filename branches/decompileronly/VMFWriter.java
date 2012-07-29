@@ -170,16 +170,25 @@ public class VMFWriter {
 	}
 	
 	private byte[] brushToByteArray(MAPBrush in) {
+		if(in.getNumSides() < 4) { // Can't create a brush with less than 4 sides
+			Window.println("Tried to create brush from "+in.getNumSides()+" sides!");
+			return new byte[0];
+		}
 		String brush=(char)0x09+"solid"+(char)0x0D+(char)0x0A+(char)0x09+"{"+(char)0x0D+(char)0x0A+(char)0x09+(char)0x09+"\"id\" \""+(nextID++)+"\""+(char)0x0D+(char)0x0A;
 		for(int i=0;i<in.getNumSides();i++) {
 			brush+=brushSideToString(in.getSide(i));
 		}
 		brush+=(char)0x09+"}"+(char)0x0D+(char)0x0A;
-		byte[] brushbytes=new byte[brush.length()];
-		for(int i=0;i<brush.length();i++) {
-			brushbytes[i]=(byte)brush.charAt(i);
+		if(brush.length() < 40) { // Any brush this short contains no sides.
+			Window.println("Brush with no sides being written! Oh no!");
+			return new byte[0];
+		} else {
+			byte[] brushbytes=new byte[brush.length()];
+			for(int i=0;i<brush.length();i++) {
+				brushbytes[i]=(byte)brush.charAt(i);
+			}
+			return brushbytes;
 		}
-		return brushbytes;
 	}
 	
 	private String brushSideToString(MAPBrushSide in) {

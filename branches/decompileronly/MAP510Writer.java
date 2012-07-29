@@ -85,10 +85,12 @@ public class MAP510Writer {
 	// of times.
 	private byte[] entityToByteArray(Entity in, int num) {
 		byte[] out;
-		double[] origin=new double[3];
-		if(in.getBrushes().length>0) {
+		double[] origin;
+		if(in.isBrushBased()) {
 			origin=in.getOrigin();
 			in.deleteAttribute("origin");
+		} else {
+			origin=new double[3];
 		}
 		int len=0;
 		// Get the lengths of all attributes together
@@ -109,6 +111,7 @@ public class MAP510Writer {
 					int brushArraySize=0;
 					byte[][] brushes=new byte[in.getBrushes().length][];
 					for(int j=0;j<in.getBrushes().length;j++) { // For each brush in the entity
+						// models with origin brushes need to be offset into their in-use position
 						in.getBrush(j).shift(new Vector3D(origin));
 						brushes[j]=brushToByteArray(in.getBrush(j), j);
 						brushArraySize+=brushes[j].length;
@@ -147,6 +150,10 @@ public class MAP510Writer {
 	}
 	
 	private byte[] brushToByteArray(MAPBrush in, int num) {
+		if(in.getNumSides() < 4) { // Can't create a brush with less than 4 sides
+			Window.println("Tried to create brush from "+in.getNumSides()+" sides!");
+			return new byte[0];
+		}
 		String brush="{ // Brush "+num+(char)0x0D+(char)0x0A;
 		if(in.isDetailBrush()) {
 			brush+="\"BRUSHFLAGS\" \"DETAIL\""+(char)0x0D+(char)0x0A;
@@ -155,11 +162,16 @@ public class MAP510Writer {
 			brush+=brushSideToString(in.getSide(i))+(char)0x0D+(char)0x0A;
 		}
 		brush+="}"+(char)0x0D+(char)0x0A;
-		byte[] brushbytes=new byte[brush.length()];
-		for(int i=0;i<brush.length();i++) {
-			brushbytes[i]=(byte)brush.charAt(i);
+		if(brush.length() < 45) { // Any brush this short contains no sides.
+			Window.println("Brush with no sides being written! Oh no!");
+			return new byte[0];
+		} else {
+			byte[] brushbytes=new byte[brush.length()];
+			for(int i=0;i<brush.length();i++) {
+				brushbytes[i]=(byte)brush.charAt(i);
+			}
+			return brushbytes;
 		}
-		return brushbytes;
 	}
 	
 	private String brushSideToString(MAPBrushSide in) {
@@ -200,7 +212,7 @@ public class MAP510Writer {
 			}
 		} catch(java.lang.NullPointerException e) {
 			Window.window.println("Side with bad data! Not exported!");
-			return null;
+			return "";
 		}
 	}
 	
