@@ -21,7 +21,7 @@ public class Brushes {
 		data=new File(in);
 		length=(int)data.length();
 		try {
-			numBrshs=getNumElements();
+			numBrshs=length();
 			brushes=new Brush[numBrshs];
 			populateBrushList();
 		} catch(java.io.FileNotFoundException e) {
@@ -36,7 +36,7 @@ public class Brushes {
 		data=in;
 		length=(int)data.length();
 		try {
-			numBrshs=getNumElements();
+			numBrshs=length();
 			brushes=new Brush[numBrshs];
 			populateBrushList();
 		} catch(java.io.FileNotFoundException e) {
@@ -84,7 +84,7 @@ public class Brushes {
 	}
 	
 	// Returns the number of brushes.
-	public int getNumElements() {
+	public int length() {
 		if(numBrshs==0) {
 			return length/12;
 		} else {

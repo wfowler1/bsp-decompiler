@@ -91,7 +91,7 @@ public class v38BSP {
 			Window.window.println("Texture scales not yet parsed!");
 		}
 		try {
-			Window.window.println("Brushes lump: "+brushes.getLength()+" bytes, "+brushes.getNumElements()+" items");
+			Window.window.println("Brushes lump: "+brushes.getLength()+" bytes, "+brushes.length()+" items");
 		} catch(java.lang.NullPointerException e) {
 			Window.window.println("Brushes not yet parsed!");
 		}

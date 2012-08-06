@@ -33,7 +33,8 @@ public class Window extends JPanel implements ActionListener {
 
 	private static JMenu fileMenu;
 	private static JMenuItem decompVMFItem;
-	private static JMenuItem decompMAPItem;
+	private static JMenuItem decompMAPItem; 
+	private static JMenuItem decompRadiantItem; 
 	private static JMenuItem exitItem;
 
 	private static JMenu optionsMenu;
@@ -42,7 +43,9 @@ public class Window extends JPanel implements ActionListener {
 
 	private static File[] jobs=new File[0];
 	private static DoomMap[] doomJobs=new DoomMap[0];
-	private static boolean[] toVMF;
+	private static boolean[] toHammer;
+	private static boolean[] toGC;
+	private static boolean[] toRadiant;
 	private static int[] threadNum;
 	private static Runnable runMe;
 	private static Thread[] decompilerworkers=null;
@@ -132,9 +135,12 @@ public class Window extends JPanel implements ActionListener {
 		decompVMFItem = new JMenuItem("Decompile to VMF");
 		fileMenu.add(decompVMFItem);
 		decompVMFItem.addActionListener(this);
-		decompMAPItem = new JMenuItem("Decompile to MAP");
+		decompMAPItem = new JMenuItem("Decompile to Gearcraft MAP");
 		fileMenu.add(decompMAPItem);
-		decompMAPItem.addActionListener(this);
+		decompMAPItem.addActionListener(this); 
+		decompRadiantItem = new JMenuItem("Decompile to Radiant MAP");
+		fileMenu.add(decompRadiantItem);
+		decompRadiantItem.addActionListener(this); 
 		fileMenu.addSeparator();
 		exitItem = new JMenuItem("Exit");
 		fileMenu.add(exitItem);
@@ -195,7 +201,7 @@ public class Window extends JPanel implements ActionListener {
 		coefConstraints.gridheight = 1;
 		pane.add(txt_coef, coefConstraints);
 		
-		lbl_spacer = new JLabel("                                                   ");
+		lbl_spacer = new JLabel(" ");
 		
 		GridBagConstraints spacelblConstraints = new GridBagConstraints();
 		spacelblConstraints.fill = GridBagConstraints.NONE;
@@ -385,7 +391,7 @@ public class Window extends JPanel implements ActionListener {
 		
 		// TODO: Clean this up, perhaps use a switch instead
 		// User clicks the "open" button
-		if (action.getSource() == decompMAPItem || action.getSource() == decompVMFItem) {
+		if (action.getSource() == decompMAPItem || action.getSource() == decompVMFItem || action.getSource() == decompRadiantItem) {
 			if(lastUsedFolder==null) {
 				try {
 					File dir = new File (".");
@@ -424,9 +430,13 @@ public class Window extends JPanel implements ActionListener {
 				}
 				lastUsedFolder=files[files.length-1].getParent();
 				if(action.getSource() == decompVMFItem) {
-					addJobs(files, new DoomMap[files.length], true);
-				} else { // There's only one other possibility :P
-					addJobs(files, new DoomMap[files.length], false);
+					addJobs(files, new DoomMap[files.length], true, false, false);
+				} else { 
+					if(action.getSource() == decompRadiantItem) {
+						addJobs(files, new DoomMap[files.length], false, true, false);
+					} else {
+						addJobs(files, new DoomMap[files.length], false, false, true);
+					}
 				}
 			}
 		}
@@ -504,9 +514,9 @@ public class Window extends JPanel implements ActionListener {
 		// I'd really like to use Thread.join() or something here, but the stupid thread never dies.
 		// But if somethingFinished is true, then one of the threads is telling us it's finished anyway.
 		if(doomJobs[jobNum]!=null) {
-			runMe=new DecompilerThread(doomJobs[jobNum], toVMF[jobNum], roundNums, jobNum, newThread);
+			runMe=new DecompilerThread(doomJobs[jobNum], toHammer[jobNum], toRadiant[jobNum], toGC[jobNum], roundNums, jobNum, newThread);
 		} else {
-			runMe=new DecompilerThread(job, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toVMF[jobNum], jobNum, newThread);
+			runMe=new DecompilerThread(job, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toHammer[jobNum], toRadiant[jobNum], toGC[jobNum], jobNum, newThread);
 		}
 		decompilerworkers[newThread] = new Thread(runMe);
 		decompilerworkers[newThread].setName("Decompiler "+newThread+" job "+jobNum);
@@ -606,25 +616,34 @@ public class Window extends JPanel implements ActionListener {
 		chk_roundNumsItem.setEnabled(in);
 	}
 	
-	protected void addJob(File newJob, DoomMap newDoomJob, boolean VMFDecompile) {
+	protected void addJob(File newJob, DoomMap newDoomJob, boolean hammer, boolean radiant, boolean gearcraft) {
 		if(newJob!=null || newDoomJob!=null) {
 			File[] newList = new File[jobs.length+1];
 			DoomMap[] newDoomList = new DoomMap[jobs.length+1];
-			boolean[] newToVMF = new boolean[jobs.length+1];
+			boolean[] newToHammer = new boolean[jobs.length+1]; 
+			boolean[] newToGC = new boolean[jobs.length+1]; 
+			boolean[] newToRadiant = new boolean[jobs.length+1]; 
 			int[] newThreadNo=new int[jobs.length+1];
 			for(int j=0;j<jobs.length;j++) {
 				newList[j]=jobs[j];
 				newDoomList[j]=doomJobs[j];
-				newToVMF[j]=toVMF[j];
+				newToHammer[j]=toHammer[j];
+				newToGC[j]=toGC[j];
+				newToRadiant[j]=toRadiant[j];
 				newThreadNo[j]=threadNum[j];
 			}
 			newList[jobs.length]=newJob;
 			newDoomList[jobs.length]=newDoomJob;
-			newToVMF[jobs.length]=VMFDecompile;
+			newToHammer[jobs.length]=hammer;
+			newToGC[jobs.length]=gearcraft;
+			newToRadiant[jobs.length]=radiant;
 			newThreadNo[jobs.length]=-1;
 			jobs=newList;
 			doomJobs=newDoomList;
-			toVMF=newToVMF;
+			toHammer=newToHammer;
+			toGC=newToGC;
+			toRadiant=newToRadiant;
+			
 			threadNum=newThreadNo;
 			
 			// Add another row to the jobs pane
@@ -692,12 +711,12 @@ public class Window extends JPanel implements ActionListener {
 		                       // if this is even the correct way to do this. But it works.
 	}
 	
-	protected void addJobs(File[] newJobs, DoomMap[] newDoomJobs, boolean VMFDecompile) {
+	protected void addJobs(File[] newJobs, DoomMap[] newDoomJobs, boolean hammer, boolean radiant, boolean gearcraft) {
 		int realNewJobs=0;
 		for(int i=0;i<newJobs.length;i++) {
 			if(newJobs[i]!=null || newDoomJobs[i]!=null) {
 				realNewJobs++;
-				addJob(newJobs[i], newDoomJobs[i], VMFDecompile);
+				addJob(newJobs[i], newDoomJobs[i], hammer, radiant, gearcraft);
 			}
 		}
 		println("Added "+realNewJobs+" new jobs to queue");
