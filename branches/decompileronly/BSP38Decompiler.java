@@ -610,11 +610,14 @@ public class BSP38Decompiler {
 		
 		for(int j=0;j<6;j++) {
 			MAPBrushSide currentEdge;
-			if(toRadiant) {
+			if(toHammer) {
 				currentEdge=new MAPBrushSide(planes[j], "tools/toolsorigin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 			} else {
-			// if(toGearcraft) {
-				currentEdge=new MAPBrushSide(planes[j], "special/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+				if(toGearcraft) {
+					currentEdge=new MAPBrushSide(planes[j], "special/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+				} else {
+					currentEdge=new MAPBrushSide(planes[j], "common/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+				}
 			}
 			newOriginBrush.add(currentEdge);
 		}
