@@ -140,7 +140,7 @@ public class Vector3D {
 	
 	// Generic
 	/// Returns:	Distance from the vertex to the origin.
-	public double getLength() {
+	public double length() {
 		return Math.sqrt(Math.pow(point[0], 2) + Math.pow(point[1], 2) + Math.pow(point[2], 2));
 	}
 	
@@ -159,7 +159,7 @@ public class Vector3D {
 	
 	// Modifies this vector to have length 1, with same direction
 	public void normalize() {
-		double length=getLength();
+		double length=length();
 		Vector3D newVector=scale(1/length);
 		point[X]=newVector.getX();
 		point[Y]=newVector.getY();

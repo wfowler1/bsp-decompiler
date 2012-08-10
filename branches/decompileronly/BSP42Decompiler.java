@@ -277,9 +277,9 @@ public class BSP42Decompiler {
 					for(m=m+1;m<numVertices;m++) { // For each point after the previous one used
 						triangle[2]=new Vector3D(BSP42.getVertices().getVertex(firstVertex+m));
 						if(!triangle[2].equals(triangle[0]) && !triangle[2].equals(triangle[1])) { // Make sure no point is equal to the third one
-							if((Vector3D.crossProduct(triangle[0].subtract(triangle[1]), triangle[0].subtract(triangle[2])).getX()!=0) || // Make sure all
-							   (Vector3D.crossProduct(triangle[0].subtract(triangle[1]), triangle[0].subtract(triangle[2])).getY()!=0) || // three points 
-							   (Vector3D.crossProduct(triangle[0].subtract(triangle[1]), triangle[0].subtract(triangle[2])).getZ()!=0)) { // are not collinear
+							// Make sure all three points are non collinear
+							Vector3D cr=Vector3D.crossProduct(triangle[0].subtract(triangle[1]), triangle[0].subtract(triangle[2]));
+							if(cr.length() > Window.PRECISION || cr.length() < -Window.PRECISION) {
 								pointsWorked=true;
 								break;
 							}

@@ -39,12 +39,12 @@ public class Plane {
 	// Takes 3 vertices, which define the plane.
 	public Plane(Vector3D a, Vector3D b, Vector3D c) {
 		normal = a.subtract(c).cross(a.subtract(b));
-		normal = normal.scale(1.0 / normal.getLength());
+		normal = normal.scale(1.0 / normal.length());
 		dist = a.dot(normal);
 	}
 	public Plane(Vector3D[] in) {
 		normal = in[A].subtract(in[C]).cross(in[A].subtract(in[B]));
-		normal = normal.scale(1.0 / normal.getLength());
+		normal = normal.scale(1.0 / normal.length());
 		dist = in[A].dot(normal);
 	}
 	public Plane(float[] inNormal, float inDist) {

@@ -104,7 +104,7 @@ public class Window extends JPanel implements ActionListener {
 	private boolean vertexDecomp=true;
 	private boolean correctPlaneFlip=true;
 	private static double planePointCoef=100;
-	private boolean calcVerts=true;
+	private boolean calcVerts=false;
 	private boolean roundNums=true;
 	private static int numJobs;
 	private static volatile int nextJob=0;

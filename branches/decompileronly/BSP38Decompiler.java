@@ -434,6 +434,7 @@ public class BSP38Decompiler {
 		}
 
 		// TODO: Figure out why simplecorrect bombs
+		/*
 		if(correctPlaneFlip) {
 			if(mapBrush.hasBadSide()) {
 				try {
@@ -463,8 +464,7 @@ public class BSP38Decompiler {
 				}
 			}
 		}
-		
-		/*
+		*/
 		if(correctPlaneFlip) {
 			if(mapBrush.hasBadSide()) { // If there's a side that might be backward
 				if(mapBrush.hasGoodSide()) { // If there's a side that is forward
@@ -485,7 +485,6 @@ public class BSP38Decompiler {
 				mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
 			}
 		}
-		*/
 		
 		// This adds the brush we've been finding and creating to
 		// the current entity as an attribute. The way I've coded

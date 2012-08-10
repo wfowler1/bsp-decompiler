@@ -71,57 +71,32 @@ public class GenericMethods {
 		return mapBrush;
 	}
 
-	
 	// SimpleCorrectPlanes(MAPBrush, float)
 	// Uses all sides' defined points to ensure all planes are flipped correctly.
 	public static MAPBrush SimpleCorrectPlanes(MAPBrush brush) {
-		/*
-		Vector3D[] theVerts=new Vector3D[brush.getNumSides()*3];
-		int index=0;
-		for(int i=0;i<brush.getNumSides();i++) {
-			if(brush.getSide(i).isDefinedByTriangle()) {
-				theVerts[index++]=brush.getSide(i).getTriangle()[0];
-				theVerts[index++]=brush.getSide(i).getTriangle()[1];
-				theVerts[index++]=brush.getSide(i).getTriangle()[2];
-			}
-		}
-		
-		if(theVerts[0]==null) { // If this brush had no sides with vertices defined
-			return null; // Return null. With any luck this will cause an exception. :trollface:
-		}
-		
-		for(int i=0;i<brush.getNumSides();i++) { // For each side of the brush
-			MAPBrushSide currentSide=brush.getSide(i);
-			if(!currentSide.isDefinedByTriangle()) { // If the side isn't THX certified
-				for(int j=0;j<theVerts.length;j++) {
-					if(theVerts[j]!=null) {
-						if(currentSide.getPlane().distance(theVerts[j]) > Window.PRECISION) {
-							currentSide.flipSide();
-						}
-					}
-				}
-			}
-			newBrush.add(currentSide);
-		}
-		*/
 		// Find midpoint of triangle, and use that to normalise all other planes.
-		int index=-1;
+		int triIndex=-1; // So we know which plane the triangle belongs to.
 		Vector3D[] triangle=new Vector3D[0]; // This'll cause an exception if the loop fails
 		for(int i=0;i<brush.getNumSides();i++) {
 			if(brush.getSide(i).isDefinedByTriangle()) {
 				triangle=brush.getSide(i).getTriangle();
+				triIndex = i;
 				break;
 			}
 		}
 		double[] normPoint = new double[] { (triangle[0].getX() + triangle[1].getX() + triangle[2].getX()) / 3.0 , (triangle[0].getY() + triangle[1].getY() + triangle[2].getY()) / 3.0 , (triangle[0].getZ() + triangle[1].getZ() + triangle[2].getZ()) / 3.0 };
 		Plane[] allplanes=brush.getPlanes();
-		for (int iPlane = 0; iPlane < allplanes.length; iPlane++) {
-			double dist = allplanes[iPlane].distance(normPoint);
-			if (dist > Window.PRECISION) {
-				brush.getSide(iPlane).flipSide();
-			} else {
-				if (dist <= Window.PRECISION && dist >= -Window.PRECISION) {
-					brush.getSide(iPlane).setPlane(new Plane(triangle[2], triangle[0], triangle[1]));
+		boolean foundTriPlane = false;
+		for (int iPlane = 0; iPlane < allplanes.length; iPlane++) {// For each plane
+			double dist = allplanes[iPlane].distance(normPoint); // calculate distance from point
+			if (iPlane == triIndex) {// if triangle's plane & normals point in opposite direction
+				Vector3D tmp = new Plane(triangle[2], triangle[0], triangle[1]).getNormal();
+				if (allplanes[iPlane].getNormal().dot(new Plane(triangle[2], triangle[0], triangle[1]).getNormal()) < 0) {
+					brush.getSide(iPlane).flipSide();// flip plane
+				}
+			} else { // or if not the triangle's plane
+				if (dist > Window.PRECISION) { // if point is on positive (outside) side of plane
+					brush.getSide(iPlane).flipSide();// flip plane
 				}
 			}
 		}
