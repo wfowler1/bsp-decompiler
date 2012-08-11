@@ -182,7 +182,7 @@ public class BSP42Decompiler {
 						for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
 							if(!brushesUsed[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)]) { // If the current brush has NOT been used in this entity
 								brushesUsed[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)]=true;
-								if(detailBrush[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)] && currentModel==0) {
+								if(detailBrush[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)] && currentModel==0 && !Window.noDetailIsSelected()) {
 									decompileBrush(BSP42.getBrushes().getBrush(BSP42.getMarkBrushes().getInt(firstBrushIndex+k)), i, true); // Decompile the brush, as not detail
 								} else {
 									decompileBrush(BSP42.getBrushes().getBrush(BSP42.getMarkBrushes().getInt(firstBrushIndex+k)), i, false); // Decompile the brush, as detail
@@ -279,7 +279,7 @@ public class BSP42Decompiler {
 						if(!triangle[2].equals(triangle[0]) && !triangle[2].equals(triangle[1])) { // Make sure no point is equal to the third one
 							// Make sure all three points are non collinear
 							Vector3D cr=Vector3D.crossProduct(triangle[0].subtract(triangle[1]), triangle[0].subtract(triangle[2]));
-							if(cr.length() > Window.PRECISION || cr.length() < -Window.PRECISION) {
+							if(cr.length() > Window.getPrecision()) { // vector length is never negative.
 								pointsWorked=true;
 								break;
 							}
@@ -346,6 +346,9 @@ public class BSP42Decompiler {
 				for(int i=0;i<brushSides.length;i++) {
 					newList[i]=brushSides[i];
 				}
+				if(Window.noFaceFlagsIsSelected()) {
+					flags=0;
+				}
 				if(pointsWorked) {
 					newList[brushSides.length]=new MAPBrushSide(currentPlane, triangle, texture, textureS, textureShiftS, textureT, textureShiftT,
 					                                            texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
@@ -366,38 +369,6 @@ public class BSP42Decompiler {
 		for(int i=0;i<brushPlanes.length;i++) {
 			brushPlanes[i]=mapBrush.getSide(i).getPlane();
 		}
-		/*
-		// TODO: Figure out why simplecorrect bombs
-		if(correctPlaneFlip) {
-			if(mapBrush.hasBadSide()) {
-				try {
-					mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush); // This is good.
-				} catch(java.lang.ArithmeticException e) {
-					Window.window.println("Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
-					if(calcVerts) {
-						try {
-							mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
-						} catch(java.lang.ArithmeticException f) {
-							Window.window.println("Vertex calculation returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
-							for(int j=0;j<mapBrush.getNumSides();j++) {
-								if(!mapBrush.getSide(j).isDefinedByTriangle()) {
-									mapBrush.getSide(j).setSide(mapBrush.getSide(j).getPlane(), GenericMethods.extrapPlanePoints(mapBrush.getSide(j).getPlane()));
-								}
-							}
-						}
-					}
-				}
-			}
-		} else {
-			if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
-				try {
-					mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
-				} catch(java.lang.ArithmeticException e) {
-					Window.window.println("Vertex calculation returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
-				}
-			}
-		}
-		*/
 		
 		if(correctPlaneFlip) {
 			if(mapBrush.hasBadSide()) { // If there's a side that might be backward
@@ -424,12 +395,16 @@ public class BSP42Decompiler {
 		// the current entity as an attribute. The way I've coded
 		// this whole program and the entities parser, this shouldn't
 		// cause any issues at all.
-		if(toHammer && isDetailBrush && containsNonClipSide) {
-			Entity newDetailEntity=new Entity("func_detail");
-			newDetailEntity.addBrush(mapBrush);
-			mapFile.add(newDetailEntity);
+		if(Window.brushesToWorldIsSelected()) {
+			mapFile.getEntity(0).addBrush(mapBrush);
 		} else {
-			mapFile.getEntity(currentEntity).addBrush(mapBrush);
+			if(toHammer && isDetailBrush && containsNonClipSide) {
+				Entity newDetailEntity=new Entity("func_detail");
+				newDetailEntity.addBrush(mapBrush);
+				mapFile.add(newDetailEntity);
+			} else {
+				mapFile.getEntity(currentEntity).addBrush(mapBrush);
+			}
 		}
 	}
 	

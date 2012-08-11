@@ -198,7 +198,7 @@ public class BSP38Decompiler {
 								brushesUsed[BSP38.getMarkBrushes().getShort(firstBrushIndex+k)]=true;
 								Brush brush=BSP38.getBrushes().getBrush(BSP38.getMarkBrushes().getShort(firstBrushIndex+k));
 								if(!(brush.getAttributes()[1]==-128)) {
-									decompileBrush38(brush, i); // Decompile the brush
+									decompileBrush(brush, i); // Decompile the brush
 								} else {
 									containsAreaPortals=true;
 								}
@@ -230,7 +230,7 @@ public class BSP38Decompiler {
 				if(BSP38.getBrushes().getBrush(i).getAttributes()[1]==-128) { // If the brush is an area portal brush
 					for(j++;j<BSP38.getEntities().getNumElements();j++) { // Find an areaportal entity
 						if(BSP38.getEntities().getEntity(j).getAttribute("classname").equalsIgnoreCase("func_areaportal")) {
-							decompileBrush38(BSP38.getBrushes().getBrush(i), j); // Add the brush to that entity
+							decompileBrush(BSP38.getBrushes().getBrush(i), j); // Add the brush to that entity
 							break; // And break out of the inner loop, but remember your place.
 						}
 					}
@@ -264,7 +264,7 @@ public class BSP38Decompiler {
 
 	// -decompileBrush38(Brush, int, boolean)
 	// Decompiles the Brush and adds it to entitiy #currentEntity as .MAP data.
-	private void decompileBrush38(Brush brush, int currentEntity) {
+	private void decompileBrush(Brush brush, int currentEntity) {
 		double[] origin=mapFile.getEntity(currentEntity).getOrigin();
 		boolean containsWaterTexture=false;
 		int firstSide=brush.getFirstSide();
@@ -425,6 +425,10 @@ public class BSP38Decompiler {
 				String material="wld_lightmap"; // Since materials are a NightFire only thing, set this to a good default
 				double lgtScale=16; // These values are impossible to get from a compiled map since they
 				double lgtRot=0;    // are used by RAD for generating lightmaps, then are discarded, I believe.
+				// If flags weren't already 0
+				/* if(Window.noFaceFlagsIsSelected()) {
+					flags=0;
+				}*/
 				brushSides[l]=new MAPBrushSide(plane, texture, textureS, textureShiftS, textureT, textureShiftT,
 				                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
 				if(brushSides[l]!=null) {
@@ -432,39 +436,7 @@ public class BSP38Decompiler {
 				}
 			}
 		}
-
-		// TODO: Figure out why simplecorrect bombs
-		/*
-		if(correctPlaneFlip) {
-			if(mapBrush.hasBadSide()) {
-				try {
-					mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush); // This is good.
-				} catch(java.lang.ArithmeticException e) {
-					Window.window.println("Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
-					if(calcVerts) {
-						try {
-							mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
-						} catch(java.lang.ArithmeticException f) {
-							Window.window.println("Vertex calculation returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
-							for(int j=0;j<mapBrush.getNumSides();j++) {
-								if(!mapBrush.getSide(j).isDefinedByTriangle()) {
-									mapBrush.getSide(j).setSide(mapBrush.getSide(j).getPlane(), GenericMethods.extrapPlanePoints(mapBrush.getSide(j).getPlane()));
-								}
-							}
-						}
-					}
-				}
-			}
-		} else {
-			if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
-				try {
-					mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
-				} catch(java.lang.ArithmeticException e) {
-					Window.window.println("Vertex calculation returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
-				}
-			}
-		}
-		*/
+		
 		if(correctPlaneFlip) {
 			if(mapBrush.hasBadSide()) { // If there's a side that might be backward
 				if(mapBrush.hasGoodSide()) { // If there's a side that is forward
@@ -490,17 +462,21 @@ public class BSP38Decompiler {
 		// the current entity as an attribute. The way I've coded
 		// this whole program and the entities parser, this shouldn't
 		// cause any issues at all.
-		if(containsWaterTexture) {
-			Entity newWaterEntity=new Entity("func_water");
-			newWaterEntity.setAttribute("rendercolor", "0 0 0");
-			newWaterEntity.setAttribute("speed", "100");
-			newWaterEntity.setAttribute("wait", "4");
-			newWaterEntity.setAttribute("skin", "-3");
-			newWaterEntity.setAttribute("WaveHeight", "3.2");
-			newWaterEntity.addBrush(mapBrush);
-			mapFile.add(newWaterEntity);
+		if(Window.brushesToWorldIsSelected()) {
+			mapFile.getEntity(0).addBrush(mapBrush);
 		} else {
-			mapFile.getEntity(currentEntity).addBrush(mapBrush);
+			if(containsWaterTexture) {
+				Entity newWaterEntity=new Entity("func_water");
+				newWaterEntity.setAttribute("rendercolor", "0 0 0");
+				newWaterEntity.setAttribute("speed", "100");
+				newWaterEntity.setAttribute("wait", "4");
+				newWaterEntity.setAttribute("skin", "-3");
+				newWaterEntity.setAttribute("WaveHeight", "3.2");
+				newWaterEntity.addBrush(mapBrush);
+				mapFile.add(newWaterEntity);
+			} else {
+				mapFile.getEntity(currentEntity).addBrush(mapBrush);
+			}
 		}
 	}
 	

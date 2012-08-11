@@ -5,13 +5,13 @@
 // http://download.oracle.com/javase/tutorial/ui/features/components.html
 
 import java.awt.*;
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.*;
 import java.io.File;
-import java.util.Scanner;
 import java.io.FileOutputStream;
 import java.util.Date;
+import java.util.Scanner;
 
 public class Window extends JPanel implements ActionListener {
 
@@ -38,8 +38,18 @@ public class Window extends JPanel implements ActionListener {
 	private static JMenuItem exitItem;
 
 	private static JMenu optionsMenu;
-	private static JMenuItem replaceEntitiesItem;
-	private static JMenuItem replaceTexturesItem;
+	// private static JMenuItem replaceEntitiesItem;
+	// private static JMenuItem replaceTexturesItem;
+	private static JCheckBoxMenuItem chk_planarItem;
+	private static JCheckBoxMenuItem chk_skipPlaneFlipItem;
+	private static JCheckBoxMenuItem chk_calcVertsItem;
+	private static JCheckBoxMenuItem chk_roundNumsItem;
+
+	private static JMenu debugMenu;
+	private static JCheckBoxMenuItem chk_brushesToWorldItem;
+	private static JCheckBoxMenuItem chk_noDetailsItem;
+	private static JCheckBoxMenuItem chk_noFaceFlagsItem;
+	private static JMenuItem setErrorItem;
 
 	private static File[] jobs=new File[0];
 	private static DoomMap[] doomJobs=new DoomMap[0];
@@ -53,7 +63,7 @@ public class Window extends JPanel implements ActionListener {
 
 	private static String lastUsedFolder;
 	
-	public static final double PRECISION=0.01;
+	private static double precision=0.01;
 	// The number of decimal places of error allowed for double-precision decimal
 	// calculations. Down the line, this error can propagate fast.
 	// 0.01 is a reasonable level. 0.00001 is quite strict. 0.1 is a little ridiculous.
@@ -90,10 +100,6 @@ public class Window extends JPanel implements ActionListener {
 	private static JSplitPane consoleTableSplitter;
 	private static JScrollPane console_pane;
 	private static JScrollPane table_pane;
-	private static JCheckBoxMenuItem chk_planarItem;
-	private static JCheckBoxMenuItem chk_skipPlaneFlipItem;
-	private static JCheckBoxMenuItem chk_calcVertsItem;
-	private static JCheckBoxMenuItem chk_roundNumsItem;
 	private static JButton btn_dumplog;
 	private static JProgressBar[] progressBar;
 	private static JProgressBar totalProgressBar;
@@ -130,6 +136,8 @@ public class Window extends JPanel implements ActionListener {
 		menuBar.add(fileMenu);
 		optionsMenu = new JMenu("Options");
 		menuBar.add(optionsMenu);
+		debugMenu = new JMenu("Debug");
+		menuBar.add(debugMenu);
 		
 		// File menu
 		decompVMFItem = new JMenuItem("Decompile to VMF");
@@ -170,6 +178,24 @@ public class Window extends JPanel implements ActionListener {
 		chk_roundNumsItem.setSelected(true);
 		optionsMenu.add(chk_roundNumsItem);
 		chk_roundNumsItem.addActionListener(this);
+		
+		// Debug menu
+		chk_brushesToWorldItem = new JCheckBoxMenuItem("Dump all brushes to world");
+		chk_brushesToWorldItem.setToolTipText("Send all brushes to world entity, rather than to their entities.");
+		chk_brushesToWorldItem.setSelected(false);
+		debugMenu.add(chk_brushesToWorldItem);
+		chk_noDetailsItem = new JCheckBoxMenuItem("Ignore detail flags");
+		chk_noDetailsItem.setToolTipText("Disregard detail flags on brushes. All detail brushes will be world geometry, and will block VIS.");
+		chk_noDetailsItem.setSelected(false);
+		debugMenu.add(chk_noDetailsItem);
+		chk_noFaceFlagsItem = new JCheckBoxMenuItem("Ignore face flags");
+		chk_noFaceFlagsItem.setToolTipText("Disregard face flags (NODRAW, NOIMPACTS, etc.)");
+		chk_noFaceFlagsItem.setSelected(false);
+		debugMenu.add(chk_noFaceFlagsItem);
+		setErrorItem = new JMenuItem("Set error tolerance...");
+		setErrorItem.setToolTipText("Allows customization of error tolerance of double precision calculations.");
+		debugMenu.add(setErrorItem);
+		setErrorItem.addActionListener(this);
 		
 		frame.setJMenuBar(menuBar);
 		
@@ -506,6 +532,26 @@ public class Window extends JPanel implements ActionListener {
 				System.exit(0);
 			//}
 		}
+		
+		if(action.getSource() == setErrorItem) {
+			String st=(String)JOptionPane.showInputDialog(frame,"Please enter a new error tolerance value.\n"+
+			          "This value is used to compensate for error propagation in double precision calculations.\n"+
+			          "Typical values are between 0.00001 and 0.5. Current value: "+precision,"Enter new error tolerance",
+			          JOptionPane.QUESTION_MESSAGE,null,null,precision);
+			try {
+				double temp = Double.parseDouble(st);
+				if(temp<0) {
+					throw new java.lang.NumberFormatException();
+				} else {
+					precision=temp;
+					println("Error tolerance set to "+precision+".");
+				}
+			} catch(java.lang.NumberFormatException e) {
+				println("Invalid error tolerance! Tolerance is "+precision+" instead!");
+			} catch(java.lang.NullPointerException e) { // Happens when user hits "cancel". Do nothing.
+				;
+			}
+		}
 	}
 	
 	// This method actually starts a thread for the specified job
@@ -614,6 +660,10 @@ public class Window extends JPanel implements ActionListener {
 		chk_skipPlaneFlipItem.setEnabled(in);
 		chk_calcVertsItem.setEnabled(in);
 		chk_roundNumsItem.setEnabled(in);
+		chk_brushesToWorldItem.setEnabled(in);
+		chk_noDetailsItem.setEnabled(in);
+		chk_noFaceFlagsItem.setEnabled(in);
+		setErrorItem.setEnabled(in);
 	}
 	
 	protected void addJob(File newJob, DoomMap newDoomJob, boolean hammer, boolean radiant, boolean gearcraft) {
@@ -791,7 +841,25 @@ public class Window extends JPanel implements ActionListener {
 		}
 	}
 	
+	// ACCESSORS/MUTATORS
+	
+	public static double getPrecision() {
+		return precision;
+	}
+	
 	public static double getPlanePointCoef() {
 		return planePointCoef;
+	}
+	
+	public static boolean brushesToWorldIsSelected() {
+		return chk_brushesToWorldItem.isSelected();
+	}
+	
+	public static boolean noDetailIsSelected() {
+		return chk_noDetailsItem.isSelected();
+	}
+	
+	public static boolean noFaceFlagsIsSelected() {
+		return chk_noFaceFlagsItem.isSelected();
 	}
 }

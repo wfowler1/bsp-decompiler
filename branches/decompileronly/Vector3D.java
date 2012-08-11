@@ -89,7 +89,7 @@ public class Vector3D {
 	
 	/// Returns:	Whether or not the vertex is identical to this one.
 	public boolean equals(Vector3D in) {
-		return (point[0]+Window.PRECISION >= in.getX() && point[0]-Window.PRECISION <= in.getX() && point[1]+Window.PRECISION >= in.getY() && point[1]-Window.PRECISION <= in.getY() && point[2]+Window.PRECISION >= in.getZ() && point[2]-Window.PRECISION <= in.getZ());
+		return (point[0]+Window.getPrecision() >= in.getX() && point[0]-Window.getPrecision() <= in.getX() && point[1]+Window.getPrecision() >= in.getY() && point[1]-Window.getPrecision() <= in.getY() && point[2]+Window.getPrecision() >= in.getZ() && point[2]-Window.getPrecision() <= in.getZ());
 	}
 
 	// Scalar product

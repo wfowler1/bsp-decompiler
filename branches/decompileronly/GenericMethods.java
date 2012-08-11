@@ -19,7 +19,7 @@ public class GenericMethods {
 						// If point is not null, test if point is behind/on all planes (if so, it is a corner).
 						for (int iTest = 0; iTest < planes.length; iTest++) {
 							if (!planes[iTest].getNormal().equals(planes[iP1].getNormal()) && !planes[iTest].getNormal().equals(planes[iP2].getNormal()) && !planes[iTest].getNormal().equals(planes[iP3].getNormal())) {
-								if (planes[iTest].distance(testV) > Window.PRECISION) {
+								if (planes[iTest].distance(testV) > Window.getPrecision()) {
 									isCorner = false;
 									break;
 								}
@@ -30,7 +30,7 @@ public class GenericMethods {
 							for (int iChk = 0; iChk < planes.length; iChk++) {
 								// If on this plane, and plane's vertex triplet missing min 1 point (and does not already have this point), add it.
 								double dist = planes[iChk].distance(testV);
-								if (Math.abs(dist) <= Window.PRECISION) {
+								if (Math.abs(dist) <= Window.getPrecision()) {
 									// If first point on this plane, must create array.
 									if (out[iChk] == null) {
 										out[iChk] = new Vector3D[] { new Vector3D(testV) , null , null };
@@ -95,7 +95,7 @@ public class GenericMethods {
 					brush.getSide(iPlane).flipSide();// flip plane
 				}
 			} else { // or if not the triangle's plane
-				if (dist > Window.PRECISION) { // if point is on positive (outside) side of plane
+				if (dist > Window.getPrecision()) { // if point is on positive (outside) side of plane
 					brush.getSide(iPlane).flipSide();// flip plane
 				}
 			}
@@ -157,10 +157,10 @@ public class GenericMethods {
 			byte[] PlaneSides = new byte[allplanes.length];
 			for (int iVP = 0; iVP < allplanes.length; iVP++) {
 				double dist = allplanes[iVP].distance(allverts[iV]);
-				if (Math.abs(dist) < Window.PRECISION) {
+				if (Math.abs(dist) < Window.getPrecision()) {
 					PlaneSides[iVP] = 0;
 				} else {
-					PlaneSides[iVP] = ((dist >= Window.PRECISION) ? (byte)1 : (byte)-1);
+					PlaneSides[iVP] = ((dist >= Window.getPrecision()) ? (byte)1 : (byte)-1);
 				}
 			}
 			VertPlaneSides[iV] = PlaneSides;
@@ -474,7 +474,7 @@ public class GenericMethods {
 		// all facing the "right" way.
 		for(int i=0;i<theVerts.length;i++) {
 			for(int j=0;j<thePlanes.length;j++) {
-				if(thePlanes[j].distance(theVerts[i]) > Window.PRECISION) {
+				if(thePlanes[j].distance(theVerts[i]) > Window.getPrecision()) {
 					theVerts[i]=Vector3D.undefined;
 					break; //break the inner loop, let the outer loop iterate
 				}
@@ -487,7 +487,7 @@ public class GenericMethods {
 			int numMatches=0;
 			Vector3D[] matches=new Vector3D[3];
 			for(int j=0;j<theVerts.length;j++) {
-				if(Math.abs(thePlanes[i].distance(theVerts[j])) < Window.PRECISION) {
+				if(Math.abs(thePlanes[i].distance(theVerts[j])) < Window.getPrecision()) {
 					boolean duplicate=false;
 					for(int k=0;k<numMatches;k++) {
 						if(theVerts[j].equals(matches[k])) {
