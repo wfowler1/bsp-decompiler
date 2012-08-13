@@ -32,9 +32,9 @@ public class Entities {
 			entities = new Entity[numEnts];
 			populateEntityList(data);
 		} catch(java.io.FileNotFoundException e) {
-			Window.window.println("ERROR: File "+dataFile.getPath()+" not found!");
+			Window.println("ERROR: File "+dataFile.getPath()+" not found!",0);
 		} catch(java.io.IOException e) {
-			Window.window.println("ERROR: File "+dataFile.getPath()+" could not be read, ensure the file is not open in another program");
+			Window.println("ERROR: File "+dataFile.getPath()+" could not be read, ensure the file is not open in another program",0);
 		}
 	}
 	
@@ -51,9 +51,9 @@ public class Entities {
 			entities = new Entity[numEnts];
 			populateEntityList(data);
 		} catch(java.io.FileNotFoundException e) {
-			Window.window.println("ERROR: File "+dataFile.getPath()+" not found!");
+			Window.println("ERROR: File "+dataFile.getPath()+" not found!",0);
 		} catch(java.io.IOException e) {
-			Window.window.println("ERROR: File "+dataFile.getPath()+" could not be read, ensure the file is not open in another program");
+			Window.println("ERROR: File "+dataFile.getPath()+" could not be read, ensure the file is not open in another program",0);
 		}
 	}
 	
@@ -91,7 +91,7 @@ public class Entities {
 	// whenever possible.
 	// TODO: Rewrite this, try to make it faster.
 	private void populateEntityList(byte[] data) {
-		Window.window.print("Populating entity list... ");
+		Window.print("Populating entity list... ",1);
 		Date begin=new Date();
 		// I'd love to use Scanner here, but Scanner doesn't like using delimiters
 		// with "{" or "}" in them, which I NEED
@@ -121,7 +121,7 @@ public class Entities {
 			entities[i].setData(current);
 		}
 		Date end=new Date();
-		Window.window.println(end.getTime()-begin.getTime()+"ms");
+		Window.println(end.getTime()-begin.getTime()+"ms",1);
 	}
 	
 	// +add(String)
@@ -218,7 +218,7 @@ public class Entities {
 	// Returns the number of entities.
 	public int getNumElements(byte[] data) {
 		if (numEnts==0) {
-			Window.window.print("Counting entities... ");
+			Window.print("Counting entities... ",1);
 			Date begin=new Date();
 			int count=0;
 			boolean inQuotes=false; // Keep track of whether or not we're in a set of quotation marks.
@@ -239,7 +239,7 @@ public class Entities {
 				}
 			}
 			Date end=new Date();
-			Window.window.println(end.getTime()-begin.getTime()+"ms");
+			Window.println(end.getTime()-begin.getTime()+"ms",1);
 			return count;
 		} else {
 			return numEnts;

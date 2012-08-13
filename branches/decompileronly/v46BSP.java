@@ -30,44 +30,44 @@ public class v46BSP {
 
 	public void printBSPReport() {
 		try {
-			Window.window.println("Entities lump: "+entities.getLength()+" bytes, "+entities.getNumElements()+" items");
+			Window.println("Entities lump: "+entities.getLength()+" bytes, "+entities.getNumElements()+" items",1);
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Entities not yet parsed!");
+			Window.println("Entities not yet parsed!",1);
 		}
 		try {
-			Window.window.println("Textures lump: "+textures.getLength()+" bytes, "+textures.getNumElements()+" items");
+			Window.println("Textures lump: "+textures.getLength()+" bytes, "+textures.getNumElements()+" items",1);
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Textures not yet parsed!");
+			Window.println("Textures not yet parsed!",1);
 		}
 		try {
-			Window.window.println("Planes lump: "+planes.getLength()+" bytes, "+planes.getNumElements()+" items");
+			Window.println("Planes lump: "+planes.getLength()+" bytes, "+planes.getNumElements()+" items",1);
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Planes not yet parsed!");
+			Window.println("Planes not yet parsed!",1);
 		}
 		try {
-			Window.window.println("Models lump: "+models.getLength()+" bytes, "+models.getNumElements()+" items");
+			Window.println("Models lump: "+models.getLength()+" bytes, "+models.getNumElements()+" items",1);
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Models not yet parsed!");
+			Window.println("Models not yet parsed!",1);
 		}
 		try {
-			Window.window.println("Brushes lump: "+brushes.getLength()+" bytes, "+brushes.getNumElements()+" items");
+			Window.println("Brushes lump: "+brushes.getLength()+" bytes, "+brushes.getNumElements()+" items",1);
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Brushes not yet parsed!");
+			Window.println("Brushes not yet parsed!",1);
 		}
 		try {
-			Window.window.println("Brush sides lump: "+brushSides.getLength()+" bytes, "+brushSides.getNumElements()+" items");
+			Window.println("Brush sides lump: "+brushSides.getLength()+" bytes, "+brushSides.getNumElements()+" items",1);
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Brush sides not yet parsed!");
+			Window.println("Brush sides not yet parsed!",1);
 		}
 		try {
-			Window.window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.getNumElements()+" items");
+			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.getNumElements()+" items",1);
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Vertices not yet parsed!");
+			Window.println("Vertices not yet parsed!",1);
 		}
 		try {
-			Window.window.println("Faces lump: "+faces.getLength()+" bytes, "+faces.getNumElements()+" items");
+			Window.println("Faces lump: "+faces.getLength()+" bytes, "+faces.getNumElements()+" items",1);
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Faces not yet parsed!");
+			Window.println("Faces not yet parsed!",1);
 		}
 	}
 	

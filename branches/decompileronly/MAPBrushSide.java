@@ -126,7 +126,7 @@ public class MAPBrushSide {
 			       material +
 			       " [ "+lgtScale+" "+lgtRot+" ]";
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Side with bad data! Not exported!");
+			Window.println("WARNING: Side with bad data! Not exported!",2);
 			return null;
 		}
 	}
@@ -154,7 +154,7 @@ public class MAPBrushSide {
 				plane=new Plane(triangle);
 			}
 		} catch(java.lang.Exception e) {
-			Window.println("Failed to shift triangle:"+e+(char)0x0D+(char)0x0A+triangle[0]+(char)0x0D+(char)0x0A+triangle[1]+(char)0x0D+(char)0x0A+triangle[2]+(char)0x0D+(char)0x0A+"Adding: "+shift);
+			Window.println("WARNING: Failed to shift triangle:"+e+(char)0x0D+(char)0x0A+triangle[0]+(char)0x0D+(char)0x0A+triangle[1]+(char)0x0D+(char)0x0A+triangle[2]+(char)0x0D+(char)0x0A+"Adding: "+shift,0);
 		}
 	}
 	
@@ -176,7 +176,7 @@ public class MAPBrushSide {
 			planeDefined=false;
 			triangleDefined=true;
 		} else {
-			Window.window.println("Tried to define side with "+triangle.length+" points!");
+			Window.println("WARNING: Tried to define side with "+triangle.length+" points!",2);
 		}
 	}
 	
@@ -187,7 +187,7 @@ public class MAPBrushSide {
 			this.triangle[2]=triangle[2];
 			triangleDefined=true;
 		} else {
-			Window.window.println("Tried to define side with "+triangle.length+" points!");
+			Window.println("WARNING: Tried to define side with "+triangle.length+" points!",2);
 		}
 		this.plane=plane;
 		planeDefined=true;

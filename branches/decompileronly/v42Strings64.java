@@ -27,7 +27,7 @@ public class v42Strings64 {
 			strings=new String[numStrings];
 			populateStringList();
 		} catch(java.io.FileNotFoundException e) {
-			Window.window.println("ERROR: File "+data+" not found!");
+			Window.println("ERROR: File "+data.getPath()+" not found!",0);
 		}
 	}
 	
@@ -40,7 +40,7 @@ public class v42Strings64 {
 			strings=new String[numStrings];
 			populateStringList();
 		} catch(java.io.FileNotFoundException e) {
-			Window.window.println("ERROR: File "+data+" not found!");
+			Window.println("ERROR: File "+data.getPath()+" not found!",0);
 		}
 	}
 	
@@ -75,14 +75,6 @@ public class v42Strings64 {
 			if(!strings[current].equals("")) {
 				current++;
 			}
-		}
-	}
-	
-	// +printStrings()
-	// Prints the contents of every String in the array
-	public void printStrings() {
-		for(int i=0;i<numStrings;i++) {
-			Window.window.println(strings[i]);
 		}
 	}
 		

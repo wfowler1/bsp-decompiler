@@ -7,6 +7,7 @@ public class GenericMethods {
 	/// Author:		UltimateSniper
 	/// Returns:	List of normalised plane vertex triplets.
 	public static MAPBrush CalcBrushVertices(MAPBrush mapBrush) {
+		Window.println("Recalculating vertices",3);
 		Plane[] planes=mapBrush.getPlanes();
 		Vector3D[][] out = new Vector3D[planes.length][];
 		// For each triplet of planes, find intersect point.
@@ -74,6 +75,7 @@ public class GenericMethods {
 	// SimpleCorrectPlanes(MAPBrush, float)
 	// Uses all sides' defined points to ensure all planes are flipped correctly.
 	public static MAPBrush SimpleCorrectPlanes(MAPBrush brush) {
+		Window.println("Plane flip. Method: simple",3);
 		// Find midpoint of triangle, and use that to normalise all other planes.
 		int triIndex=-1; // So we know which plane the triangle belongs to.
 		Vector3D[] triangle=new Vector3D[0]; // This'll cause an exception if the loop fails
@@ -108,6 +110,7 @@ public class GenericMethods {
 	/// Author:		UltimateSniper
 	/// Returns:	Ordered list of normalised vertex triplets (ready to feed in to map).
 	public static MAPBrush AdvancedCorrectPlanes(MAPBrush mapBrush) throws java.lang.ArrayIndexOutOfBoundsException {
+		Window.println("Plane flip. Method: advanced",3);
 		Plane[] allplanes=mapBrush.getPlanes();
 		// Method:
 		//1. Collect all vertices created by plane intercepts.
@@ -452,6 +455,7 @@ public class GenericMethods {
 	// some don't actually contribute to the solid (such as those solids created
 	// by iterating through a binary tree, and keeping track of all node subdivisions).
 	public static MAPBrush cullUnusedPlanes(MAPBrush in) {
+		Window.println("Culling unnecessary planes",3);
 		Plane[] thePlanes=in.getPlanes();
 		
 		// Step 1: Get all points of intersection
@@ -513,6 +517,7 @@ public class GenericMethods {
 	}
 
 	public static Vector3D[] extrapPlanePoints(Plane in) {
+		Window.println("Calculating arbitrary plane points",4);
 		double planePointCoef=Window.getPlanePointCoef();
 		Vector3D[] plane=new Vector3D[3];
 		// Figure out if the plane is parallel to two of the axes. If so it can be reproduced easily
@@ -577,5 +582,57 @@ public class GenericMethods {
 			}
 		}
 		return plane;
+	}
+	
+	// Create a rectangular brush from mins to maxs, with specified texture
+	public static MAPBrush createBrush(Vector3D mins, Vector3D maxs, String texture) {
+		MAPBrush newBrush=new MAPBrush(-1, 0, false);
+		Vector3D[][] planes=new Vector3D[6][3]; // Six planes for a cube brush, three vertices for each plane
+		double[][] textureS=new double[6][3];
+		double[][] textureT=new double[6][3];
+		// The planes and their texture scales
+		// I got these from an origin brush created by Gearcraft. Don't worry where these numbers came from, they work.
+		// Top
+		planes[0][0]=new Vector3D(mins.getX(), maxs.getY(), maxs.getZ());
+		planes[0][1]=new Vector3D(maxs.getX(), maxs.getY(), maxs.getZ());
+		planes[0][2]=new Vector3D(maxs.getX(), mins.getY(), maxs.getZ());
+		textureS[0][0]=1;
+		textureT[0][1]=-1;
+		// Bottom
+		planes[1][0]=new Vector3D(mins.getX(), mins.getY(), mins.getZ());
+		planes[1][1]=new Vector3D(maxs.getX(), mins.getY(), mins.getZ());
+		planes[1][2]=new Vector3D(maxs.getX(), maxs.getY(), mins.getZ());
+		textureS[1][0]=1;
+		textureT[1][1]=-1;
+		// Left
+		planes[2][0]=new Vector3D(mins.getX(), maxs.getY(), maxs.getZ());
+		planes[2][1]=new Vector3D(mins.getX(), mins.getY(), maxs.getZ());
+		planes[2][2]=new Vector3D(mins.getX(), mins.getY(), mins.getZ());
+		textureS[2][1]=1;
+		textureT[2][2]=-1;
+		// Right
+		planes[3][0]=new Vector3D(maxs.getX(), maxs.getY(), mins.getZ());
+		planes[3][1]=new Vector3D(maxs.getX(), mins.getY(), mins.getZ());
+		planes[3][2]=new Vector3D(maxs.getX(), mins.getY(), maxs.getZ());
+		textureS[3][1]=1;
+		textureT[3][2]=-1;
+		// Near
+		planes[4][0]=new Vector3D(maxs.getX(), maxs.getY(), maxs.getZ());
+		planes[4][1]=new Vector3D(mins.getX(), maxs.getY(), maxs.getZ());
+		planes[4][2]=new Vector3D(mins.getX(), maxs.getY(), mins.getZ());
+		textureS[4][0]=1;
+		textureT[4][2]=-1;
+		// Far
+		planes[5][0]=new Vector3D(maxs.getX(), mins.getY(), mins.getZ());
+		planes[5][1]=new Vector3D(mins.getX(), mins.getY(), mins.getZ());
+		planes[5][2]=new Vector3D(mins.getX(), mins.getY(), maxs.getZ());
+		textureS[5][0]=1;
+		textureT[5][2]=-1;
+		
+		for(int j=0;j<6;j++) {
+			MAPBrushSide currentEdge=new MAPBrushSide(planes[j], texture, textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+			newBrush.add(currentEdge);
+		}
+		return newBrush;
 	}
 }

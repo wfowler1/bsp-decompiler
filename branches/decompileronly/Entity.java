@@ -342,7 +342,7 @@ public class Entity {
 			} catch(StringIndexOutOfBoundsException e) {
 				;
 			} catch(java.lang.NullPointerException e) {
-				Window.window.println("WARNING: Entity with null attribute?! Attribute no. "+i+(char)0x0D+(char)0x0A+toString());
+				Window.println("WARNING: Entity with null attribute?! Attribute no. "+i+(char)0x0D+(char)0x0A+toString(),2);
 			}
 		}
 		if(!done) {

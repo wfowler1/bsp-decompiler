@@ -26,9 +26,9 @@ public class ShortList {
 			shorts=new short[numShorts];
 			populateShortList();
 		} catch(java.io.FileNotFoundException e) {
-			Window.window.println("ERROR: File "+data+" not found!");
+			Window.println("ERROR: File "+data.getPath()+" not found!",0);
 		} catch(java.io.IOException e) {
-			Window.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",0);
 		}
 	}
 	
@@ -41,9 +41,9 @@ public class ShortList {
 			shorts=new short[numShorts];
 			populateShortList();
 		} catch(java.io.FileNotFoundException e) {
-			Window.window.println("ERROR: File "+data+" not found!");
+			Window.println("ERROR: File "+data.getPath()+" not found!",0);
 		} catch(java.io.IOException e) {
-			Window.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",0);
 		}
 	}
 	

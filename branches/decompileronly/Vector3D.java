@@ -69,6 +69,13 @@ public class Vector3D {
 		point[Z]=0.0;
 	}
 	
+	// Takes three shorts.
+	public Vector3D(short x, short y, short z) {
+		point[X]=(double)x;
+		point[Y]=(double)y;
+		point[Z]=(double)z;
+	}
+	
 	// METHODS
 	
 	// Operators

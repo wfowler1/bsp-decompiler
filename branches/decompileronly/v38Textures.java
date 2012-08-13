@@ -26,9 +26,9 @@ public class v38Textures {
 			textures=new v38Texture[numTxts];
 			populateTextureList();
 		} catch(java.io.FileNotFoundException e) {
-			Window.window.println("ERROR: File "+data+" not found!");
+			Window.println("ERROR: File "+data+" not found!",0);
 		} catch(java.io.IOException e) {
-			Window.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program",0);
 		}
 	}
 	
@@ -41,9 +41,9 @@ public class v38Textures {
 			textures=new v38Texture[numTxts];
 			populateTextureList();
 		} catch(java.io.FileNotFoundException e) {
-			Window.window.println("ERROR: File "+data+" not found!");
+			Window.println("ERROR: File "+data+" not found!",0);
 		} catch(java.io.IOException e) {
-			Window.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program",0);
 		}
 	}
 	

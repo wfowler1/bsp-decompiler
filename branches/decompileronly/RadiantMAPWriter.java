@@ -68,7 +68,7 @@ public class RadiantMAPWriter {
 			mapWriter.write(allEnts);
 			mapWriter.close();
 		} catch(java.io.IOException e) {
-			Window.window.println("ERROR: Could not save "+mapFile.getPath()+", ensure the file is not open in another program and the path "+path+" exists");
+			Window.println("ERROR: Could not save "+mapFile.getPath()+", ensure the file is not open in another program and the path "+path+" exists",0);
 			throw e;
 		}
 	}
@@ -151,7 +151,7 @@ public class RadiantMAPWriter {
 	
 	private byte[] brushToByteArray(MAPBrush in, int num) {
 		if(in.getNumSides() < 4) { // Can't create a brush with less than 4 sides
-			Window.println("Tried to create brush from "+in.getNumSides()+" sides!");
+			Window.println("WARNING: Tried to create brush from "+in.getNumSides()+" sides!",2);
 			return new byte[0];
 		}
 		String brush="// Brush "+num+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A;
@@ -160,7 +160,7 @@ public class RadiantMAPWriter {
 		}
 		brush+="}"+(char)0x0D+(char)0x0A;
 		if(brush.length() < 45) { // Any brush this short contains no sides.
-			Window.println("Brush with no sides being written! Oh no!");
+			Window.println("WARNING: Brush with no sides being written! Oh no!",2);
 			return new byte[0];
 		} else {
 			byte[] brushbytes=new byte[brush.length()];
@@ -209,7 +209,7 @@ public class RadiantMAPWriter {
 			}
 			return temp;
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Side with bad data! Not exported!");
+			Window.println("WARNING: Side with bad data! Not exported!",2);
 			return "";
 		}
 	}

@@ -34,9 +34,9 @@ public class v42Faces {
 			faces=new v42Face[numFaces];
 			populateFaceList();
 		} catch(java.io.FileNotFoundException e) {
-			Window.window.println("ERROR: File "+data+" not found!");
+			Window.println("ERROR: File "+data.getPath()+" not found!",0);
 		} catch(java.io.IOException e) {
-			Window.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",0);
 		}
 	}
 	
@@ -51,9 +51,9 @@ public class v42Faces {
 			faces=new v42Face[numFaces];
 			populateFaceList();
 		} catch(java.io.FileNotFoundException e) {
-			Window.window.println("ERROR: File "+data+" not found!");
+			Window.println("ERROR: File "+data.getPath()+" not found!",0);
 		} catch(java.io.IOException e) {
-			Window.window.println("ERROR: File "+data+" could not be read, ensure the file is not open in another program");
+			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",0);
 		}
 	}
 	
@@ -125,9 +125,9 @@ public class v42Faces {
 			numWF = numWorldFacesAsByteArray[0] + numWorldFacesAsByteArray[1]*256 + numWorldFacesAsByteArray[2]*65536 + numWorldFacesAsByteArray[3]*16777216;
 			numWorldFaceGrabber.close();
 		} catch(java.io.FileNotFoundException e) {
-			Window.window.println("ERROR: File "+data.getParent()+"\\Models.hex not found!");
+			Window.println("ERROR: File "+data.getParent()+"\\Models.hex not found!",0);
 		} catch(java.io.IOException e) {
-			Window.window.println("ERROR: File "+data.getParent()+"\\Models.hex could not be read, ensure the file is not open in another program");
+			Window.println("ERROR: File "+data.getParent()+"\\Models.hex could not be read, ensure the file is not open in another program",0);
 		}
 		return numWF;
 	}

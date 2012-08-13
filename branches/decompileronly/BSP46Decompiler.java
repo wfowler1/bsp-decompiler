@@ -72,6 +72,7 @@ public class BSP46Decompiler {
 		// Then I need to go through each entity and see if it's brush-based.
 		// Worldspawn is brush-based as well as any entity with model *#.
 		for(int i=0;i<BSP46.getEntities().getNumElements();i++) { // For each entity
+			Window.println("Entity "+i+": "+mapFile.getEntity(i).getAttribute("classname"),4);
 			if(toHammer) {
 				;
 			}
@@ -107,7 +108,13 @@ public class BSP46Decompiler {
 					// I need to undo that. For this I will create a 32x32 brush, centered at the point defined
 					// by the "origin" attribute.
 					if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
-						addOriginBrush(i);
+						MAPBrush newOriginBrush;
+						if(toGearcraft) {
+							newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
+						} else {
+							newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"common/origin");
+						}
+						mapFile.getEntity(i).addBrush(newOriginBrush);
 					}
 				}
 			}
@@ -116,23 +123,23 @@ public class BSP46Decompiler {
 		} 
 		Window.setProgress(jobnum, numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().getNumElements(), "Saving..."); 
 		if(toHammer) {
-			Window.window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+".vmf...");
+			Window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+".vmf...",0);
 			VMFWriter VMFMaker=new VMFWriter(mapFile, BSP46.getPath().substring(0, BSP46.getPath().length()-4), roundNums);
 			VMFMaker.write();
 		}
 		if(toRadiant) {
-			Window.window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+"_radiant.map...");
+			Window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+"_radiant.map...",0);
 			RadiantMAPWriter MAPMaker=new RadiantMAPWriter(mapFile, BSP46.getPath().substring(0, BSP46.getPath().length()-4)+"_radiant", roundNums);
 			MAPMaker.write();
 		}
 		if(toGearcraft) {
-			Window.window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+".map...");
+			Window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+".map...",0);
 			MAP510Writer MAPMaker=new MAP510Writer(mapFile, BSP46.getPath().substring(0, BSP46.getPath().length()-4), roundNums);
 			MAPMaker.write();
 		}
-		Window.window.println("Process completed!");
+		Window.println("Process completed!",0);
 		Date end=new Date();
-		Window.window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A);
+		Window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,0);
 	}
 	
 	// -decompileBrush46(Brush, int, boolean)
@@ -240,41 +247,7 @@ public class BSP46Decompiler {
 				}
 			}*/
 		}
-		
-
-		
-		// TODO: Figure out why simplecorrect bombs
-		if(correctPlaneFlip) {
-			if(mapBrush.hasBadSide()) {
-				try {
-					mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush); // This is good.
-				} catch(java.lang.ArithmeticException e) {
-					Window.window.println("Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
-					if(calcVerts) {
-						try {
-							mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
-						} catch(java.lang.ArithmeticException f) {
-							Window.window.println("Vertex calculation returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
-							for(int j=0;j<mapBrush.getNumSides();j++) {
-								if(!mapBrush.getSide(j).isDefinedByTriangle()) {
-									mapBrush.getSide(j).setSide(mapBrush.getSide(j).getPlane(), GenericMethods.extrapPlanePoints(mapBrush.getSide(j).getPlane()));
-								}
-							}
-						}
-					}
-				}
-			}
-		} else {
-			if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
-				try {
-					mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
-				} catch(java.lang.ArithmeticException e) {
-					Window.window.println("Vertex calculation returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
-				}
-			}
-		}
-		
-		/*
+	
 		if(correctPlaneFlip) {
 			if(mapBrush.hasBadSide()) { // If there's a side that might be backward
 				if(mapBrush.hasGoodSide()) { // If there's a side that is forward
@@ -286,7 +259,7 @@ public class BSP46Decompiler {
 					try {
 						mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush);
 					} catch(java.lang.ArithmeticException e) {
-						Window.window.println("Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
+						Window.println("WARNING: Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",2);
 					}
 				}
 			}
@@ -295,7 +268,6 @@ public class BSP46Decompiler {
 				mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
 			}
 		}
-		*/
 		
 		// This adds the brush we've been finding and creating to
 		// the current entity as an attribute. The way I've coded

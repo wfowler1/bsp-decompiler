@@ -50,7 +50,7 @@ public class BSPReader {
 	public BSPReader(String in) {
 		BSP=new File(in); // The read String points directly to the BSP file.
 		if(!BSP.exists()) {
-			Window.window.println("Unable to open source BSP file, please ensure the BSP exists.");
+			Window.println("Unable to open source BSP file, please ensure the BSP exists.",0);
 		} else {
 			folder=BSP.getParent(); // The read string minus the .BSP is the lumps folder
 			if(folder==null) {
@@ -62,7 +62,7 @@ public class BSPReader {
 	public BSPReader(File in) {
 		BSP=in;
 		if(!BSP.exists()) {
-			Window.window.println("Unable to open source BSP file, please ensure the BSP exists.");
+			Window.println("Unable to open source BSP file, please ensure the BSP exists.",0);
 		} else {
 			folder=BSP.getParent(); // The read string minus the .BSP is the lumps folder
 			if(folder==null) {
@@ -77,7 +77,7 @@ public class BSPReader {
 		this.toRadiant=toRadiant;
 		this.toGearcraft=toGearcraft;
 		if(!BSP.exists()) {
-			Window.window.println("Unable to open source BSP file, please ensure the BSP exists.");
+			Window.println("Unable to open source BSP file, please ensure the BSP exists.",0);
 		} else {
 			folder=BSP.getParent(); // The read string minus the .BSP is the lumps folder
 			if(folder==null) {
@@ -93,10 +93,10 @@ public class BSPReader {
 			// Don't forget, Java uses BIG ENDIAN BYTE ORDER, so all numbers have to be read and written backwards.
 			int version=getVersion();
 			if(mohaa) {
-				Window.window.println("Sorry, no MOHAA support (yet)!");
+				Window.println("Sorry, no MOHAA support (yet)!",0);
 			} else {
 				if(source) {
-					Window.window.println("Sorry, no source map support (yet)!");
+					Window.println("Sorry, no source map support (yet)!",0);
 				} else {
 					FileInputStream offsetReader;
 					byte[] read=new byte[4];
@@ -104,7 +104,7 @@ public class BSPReader {
 					int length;
 					switch(version) {
 						case 1: // WAD file
-							Window.window.println("WAD file found");
+							Window.println("WAD file found",0);
 							offsetReader = new FileInputStream(BSP);
 							offsetReader.skip(4); // Skip the file header, putting the reader into the length and offset of the directory
 							
@@ -129,7 +129,7 @@ public class BSPReader {
 								String lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
 								if( length==0 && ( lumpName.substring(0,3).equalsIgnoreCase("MAP") || ( lumpName.charAt(0)=='E' && lumpName.charAt(2)=='M' ) ) ) {
 									String mapName=lumpName.substring(0,5); // Map names are always ExMy or MAPxx. Never more than five chars.
-									Window.window.println("Map: "+mapName);
+									Window.println("Map: "+mapName,0);
 									// All of this code updates the maplist with a new entry
 									DoomMap[] newList=new DoomMap[doomMaps.length+1];
 									for(int j=0;j<doomMaps.length;j++) {
@@ -226,10 +226,10 @@ public class BSPReader {
 						break;
 						case 29: // Quake
 						case 30: // Half-life
-							Window.window.println("Sorry, no Quake/Half-life support (yet)!");
+							Window.println("Sorry, no Quake/Half-life support (yet)!",0);
 							break;
 						case 38: // Quake 2
-							Window.window.println("BSP v38 found (Quake 2)");
+							Window.println("BSP v38 found (Quake 2)",0);
 							offsetReader = new FileInputStream(BSP);
 							BSP38 = new v38BSP(BSP.getPath());
 							offsetReader.skip(8); // Skip the file header, putting the reader into the offset/length pairs
@@ -345,7 +345,7 @@ public class BSPReader {
 							BSP38.printBSPReport();
 							break;
 						case 42: // JBN
-							Window.window.println("BSP v42 found (Nightfire)");
+							Window.println("BSP v42 found (Nightfire)",0);
 							offsetReader = new FileInputStream(BSP);
 							BSP42 = new v42BSP(BSP.getPath());
 							offsetReader.skip(4); // Skip the file header, putting the reader into the offset/length pairs
@@ -445,7 +445,7 @@ public class BSPReader {
 							BSP42.printBSPReport();
 							break;
 						case 46: // Quake 3/close derivative
-							Window.window.println("BSP v46 found (id Tech 3)");
+							Window.println("BSP v46 found (id Tech 3)",0);
 							offsetReader = new FileInputStream(BSP);
 							BSP46 = new v46BSP(BSP.getPath());
 							offsetReader.skip(8); // Skip the file header, putting the reader into the offset/length pairs
@@ -516,15 +516,15 @@ public class BSPReader {
 							
 							break;
 						case 47: // RTC Wolfenstein, I believe it's almost identical to Q3
-							Window.window.println("Sorry, no Wolfenstein support (yet)!");
+							Window.println("Sorry, no Wolfenstein support (yet)!",0);
 							break;
 						default:
-							Window.window.println("I don't know what kind of BSP this is! Please post an issue on the bug tracker!");
+							Window.println("I don't know what kind of BSP this is! Please post an issue on the bug tracker!",0);
 					}
 				}
 			}
 		} catch(java.io.IOException e) {
-			Window.window.println("Unable to access BSP file! Is it open in another program?");
+			Window.println("Unable to access BSP file! Is it open in another program?",0);
 		}
 	}
 	
@@ -538,7 +538,7 @@ public class BSPReader {
 			fileReader.read(input);
 			fileReader.close();
 		} catch(java.io.IOException e) {
-			Window.window.println("Unknown error reading BSP, it was working before!");
+			Window.println("Unknown error reading BSP, it was working before!",0);
 		}
 		return input;
 	}

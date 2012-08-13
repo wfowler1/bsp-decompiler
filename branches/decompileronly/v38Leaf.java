@@ -9,12 +9,8 @@ public class v38Leaf {
 	private int flags;
 	private short cluster;
 	private short area;
-	private short minX; // Yes, Quake 2 handles the bounding box as shorts. I'm not sure
-	private short minY; // about whether to add a constructor for shorts in the Point3D
-	private short minZ; // class or whether to just do this. So I'm doing this.
-	private short maxX;
-	private short maxY;
-	private short maxZ;
+	private Vector3D mins;
+	private Vector3D maxs;
 	private short firstMarkSurface;
 	private short numMarkSurfaces;
 	private short firstMarkBrush;
@@ -29,12 +25,8 @@ public class v38Leaf {
 		flags=inFlags;
 		cluster=inCluster;
 		area=inArea;
-		minX=inMinX;
-		minY=inMinY;
-		minZ=inMinZ;
-		maxX=inMaxX;
-		maxY=inMaxY;
-		maxZ=inMaxZ;
+		mins=new Vector3D(inMinX, inMinY, inMinZ);
+		maxs=new Vector3D(inMaxX, inMaxY, inMaxZ);
 		firstMarkSurface=inFirstMarkSurface;
 		numMarkSurfaces=inNumMarkSurfaces;
 		firstMarkBrush=inFirstMarkBrush;
@@ -47,12 +39,14 @@ public class v38Leaf {
 		flags=(in[3] << 24) | ((in[2] & 0xff) << 16) | ((in[1] & 0xff) << 8) | (in[0] & 0xff);
 		cluster=(short)((in[5] << 8) | (in[4] & 0xff));
 		area=(short)((in[7] << 8) | (in[6] & 0xff));
-		minX=(short)((in[9] << 8) | (in[8] & 0xff));
-		minY=(short)((in[11] << 8) | (in[10] & 0xff));
-		minZ=(short)((in[13] << 8) | (in[12] & 0xff));
-		maxX=(short)((in[15] << 8) | (in[14] & 0xff));
-		maxY=(short)((in[17] << 8) | (in[16] & 0xff));
-		maxZ=(short)((in[19] << 8) | (in[18] & 0xff));
+		short minX=(short)((in[9] << 8) | (in[8] & 0xff));
+		short minY=(short)((in[11] << 8) | (in[10] & 0xff));
+		short minZ=(short)((in[13] << 8) | (in[12] & 0xff));
+		short maxX=(short)((in[15] << 8) | (in[14] & 0xff));
+		short maxY=(short)((in[17] << 8) | (in[16] & 0xff));
+		short maxZ=(short)((in[19] << 8) | (in[18] & 0xff));
+		mins=new Vector3D(minX, minY, minZ);
+		maxs=new Vector3D(maxX, maxY, maxZ);
 		firstMarkSurface=(short)((in[21] << 8) | (in[20] & 0xff));
 		numMarkSurfaces=(short)((in[23] << 8) | (in[22] & 0xff));
 		firstMarkBrush=(short)((in[25] << 8) | (in[24] & 0xff));
@@ -87,52 +81,68 @@ public class v38Leaf {
 		area=in;
 	}
 	
-	public short getMinX() {
-		return minX;
+	public Vector3D getMaxs() {
+		return maxs;
 	}
 	
-	public void setMinX(short in) {
-		minX=in;
+	public Vector3D getMins() {
+		return mins;
+	}
+
+	public void setMins(Vector3D in) {
+		mins=in;
 	}
 	
-	public short getMinY() {
-		return minY;
+	public void setMaxs(Vector3D in) {
+		maxs=in;
 	}
 	
-	public void setMinY(short in) {
-		minY=in;
+	public double getMinX() {
+		return mins.getX();
 	}
 	
-	public short getMinZ() {
-		return minZ;
+	public void setMinX(double in) {
+		mins.setX(in);
 	}
 	
-	public void setMinZ(short in) {
-		minZ=in;
+	public double getMinY() {
+		return mins.getY();
 	}
 	
-	public short getMaxX() {
-		return maxX;
+	public void setMinY(double in) {
+		mins.setY(in);
 	}
 	
-	public void setMaxX(short in) {
-		maxX=in;
+	public double getMinZ() {
+		return mins.getZ();
 	}
 	
-	public short getMaxY() {
-		return maxY;
+	public void setMinZ(double in) {
+		mins.setZ(in);
 	}
 	
-	public void setMaxY(short in) {
-		maxY=in;
+	public double getMaxX() {
+		return maxs.getX();
 	}
 	
-	public short getMaxZ() {
-		return maxZ;
+	public void setMaxX(double in) {
+		maxs.setX(in);
 	}
 	
-	public void setMaxZ(short in) {
-		maxZ=in;
+	public double getMaxY() {
+		return maxs.getY();
+	}
+	
+	public void setMaxY(double in) {
+		maxs.setY(in);
+	}
+	
+	public double getMaxZ() {
+		return maxs.getZ();
+	}
+	
+	public void setMaxZ(double in) {
+		maxs.setZ(in);
 	}
 	
 	public short getFirstMarkSurface() {

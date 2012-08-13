@@ -34,6 +34,9 @@ public class BSP42Decompiler {
 	
 	private Entities mapFile; // Most MAP file formats (including GearCraft) are simply a bunch of nested entities
 	private int numBrshs;
+	private int numSimpleCorrects=0;
+	private int numAdvancedCorrects=0;
+	private int numGoodBrushes=0;
 	
 	private v42BSP BSP42;
 	
@@ -83,6 +86,7 @@ public class BSP42Decompiler {
 		// Then I need to go through each entity and see if it's brush-based.
 		// Worldspawn is brush-based as well as any entity with model *#.
 		for(int i=0;i<BSP42.getEntities().getNumElements();i++) { // For each entity
+			Window.println("Entity "+i+": "+mapFile.getEntity(i).getAttribute("classname"),4);
 			if(toHammer) { // correct some entities to make source ports easier, TODO add more
 				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("light_spot")) {
 					mapFile.getEntity(i).setAttribute("pitch", new Double(mapFile.getEntity(i).getAngles()[0]).toString());
@@ -176,11 +180,25 @@ public class BSP42Decompiler {
 				numBrshs=0;
 				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
 					v42Leaf currentLeaf=BSP42.getLeaves().getLeaf(j+firstLeaf);
+					if(Window.visLeafBBoxesIsSelected()) {
+						if(toGearcraft) {
+							mapFile.getEntity(0).addBrush(GenericMethods.createBrush(currentLeaf.getMins(), currentLeaf.getMaxs(), "special/hint"));
+						} else {
+							if(toHammer) {
+								mapFile.getEntity(0).addBrush(GenericMethods.createBrush(currentLeaf.getMins(), currentLeaf.getMaxs(), "tools/toolshint"));
+							} else {
+								if(toRadiant) {
+									mapFile.getEntity(0).addBrush(GenericMethods.createBrush(currentLeaf.getMins(), currentLeaf.getMaxs(), "common/hint"));
+								}
+							}
+						}
+					}
 					int firstBrushIndex=currentLeaf.getMarkBrush();
 					int numBrushIndices=currentLeaf.getNumMarkBrushes();
 					if(numBrushIndices>0) { // A lot of leaves reference no brushes. If this is one, this iteration of the j loop is finished
 						for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
 							if(!brushesUsed[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)]) { // If the current brush has NOT been used in this entity
+								Window.print("Brush "+(k+firstBrushIndex),4);
 								brushesUsed[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)]=true;
 								if(detailBrush[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)] && currentModel==0 && !Window.noDetailIsSelected()) {
 									decompileBrush(BSP42.getBrushes().getBrush(BSP42.getMarkBrushes().getInt(firstBrushIndex+k)), i, true); // Decompile the brush, as not detail
@@ -202,7 +220,13 @@ public class BSP42Decompiler {
 				// instead, so we'll keep it in a VMF.
 				if(!toHammer) {
 					if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this entity uses the "origin" attribute
-						addOriginBrush(i);
+						MAPBrush newOriginBrush;
+						if(toGearcraft) {
+							newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
+						} else {
+							newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"common/origin");
+						}
+						mapFile.getEntity(i).addBrush(newOriginBrush);
 					}
 				}
 			}
@@ -211,23 +235,28 @@ public class BSP42Decompiler {
 		}
 		Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements(), "Saving...");
 		if(toHammer) {
-			Window.window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".vmf...");
+			Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".vmf...",0);
 			VMFWriter VMFMaker=new VMFWriter(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4), roundNums);
 			VMFMaker.write();
 		}
 		if(toRadiant) {
-			Window.window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_radiant.map...");
+			Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_radiant.map...",0);
 			RadiantMAPWriter MAPMaker=new RadiantMAPWriter(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_radiant", roundNums);
 			MAPMaker.write();
 		}
 		if(toGearcraft) {
-			Window.window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map...");
+			Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map...",0);
 			MAP510Writer MAPMaker=new MAP510Writer(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4), roundNums);
 			MAPMaker.write();
 		}
-		Window.window.println("Process completed!");
+		Window.println("Process completed!",0);
+		if(correctPlaneFlip) {
+			Window.println("Num simple corrected brushes: "+numSimpleCorrects,1); 
+			Window.println("Num advanced corrected brushes: "+numAdvancedCorrects,1); 
+			Window.println("Num good brushes: "+numGoodBrushes,1); 
+		}
 		Date end=new Date();
-		Window.window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A);
+		Window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,0);
 	}
 	
 	// -decompileBrush(Brush, int, boolean)
@@ -241,6 +270,7 @@ public class BSP42Decompiler {
 		int numRealFaces=0;
 		boolean containsNonClipSide=false;
 		Plane[] brushPlanes=new Plane[0];
+		Window.println(": "+numSides+" sides",4);
 		for(int l=0;l<numSides;l++) { // For each side of the brush
 			v42BrushSide currentSide=BSP42.getBrushSides().getBrushSide(firstSide+l);
 			v42Face currentFace=BSP42.getFaces().getFace(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
@@ -248,7 +278,16 @@ public class BSP42Decompiler {
 			if(currentFace.getType()!=800) { // These surfaceflags (512 + 256 + 32) are set only by the compiler, on faces that need to be thrown out.
 				if(!texture.equalsIgnoreCase("special/clip") && !texture.equalsIgnoreCase("special/playerclip") && !texture.equalsIgnoreCase("special/enemyclip")) {
 					containsNonClipSide=true;
+					if(Window.replaceWithNullIsSelected() && (currentFace.getType()==512 || currentFace.getType()==544) && !texture.equalsIgnoreCase("special/trigger")) {
+						if(toHammer) {
+							texture="special/nodraw";
+						} else {
+							texture="special/null";
+						}
+						currentFace.setType(0);
+					}
 				}
+
 				int firstVertex=currentFace.getVert();
 				int numVertices=currentFace.getNumVerts();
 				Plane currentPlane;
@@ -258,7 +297,7 @@ public class BSP42Decompiler {
 					try { // So try to get the plane index from somewhere else
 						currentPlane=BSP42.getPlanes().getPlane(currentFace.getPlane()).getPlane();
 					}  catch(java.lang.ArrayIndexOutOfBoundsException f) { // If that fails, BS something
-						Window.window.println("WARNING: BSP has error, references nonexistant plane "+currentSide.getPlane()+", bad side "+(l)+" of brush "+numBrshs+" Entity "+currentEntity);
+						Window.println("WARNING: BSP has error, references nonexistant plane "+currentSide.getPlane()+", bad side "+(l)+" of brush "+numBrshs+" Entity "+currentEntity,2);
 						currentPlane=new Plane((double)1, (double)0, (double)0, (double)0);
 					}
 				}
@@ -337,7 +376,7 @@ public class BSP42Decompiler {
 				try {
 					material=BSP42.getMaterials().getString(currentFace.getMaterial());
 				} catch(java.lang.ArrayIndexOutOfBoundsException e) { // In case the BSP has some strange error making it reference nonexistant materials
-					Window.window.println("WARNING: Map referenced nonexistant material #"+currentFace.getMaterial()+", using wld_lightmap instead!");
+					Window.println("WARNING: Map referenced nonexistant material #"+currentFace.getMaterial()+", using wld_lightmap instead!",2);
 					material="wld_lightmap";
 				}
 				double lgtScale=16; // These values are impossible to get from a compiled map since they
@@ -374,16 +413,21 @@ public class BSP42Decompiler {
 			if(mapBrush.hasBadSide()) { // If there's a side that might be backward
 				if(mapBrush.hasGoodSide()) { // If there's a side that is forward
 					mapBrush=GenericMethods.SimpleCorrectPlanes(mapBrush);
+					numSimpleCorrects++;
 					if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
 						mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+						Window.println("Calculating vertices",4);
 					}
 				} else { // If no forward side exists
 					try {
 						mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush);
+						numAdvancedCorrects++;
 					} catch(java.lang.ArithmeticException e) {
-						Window.window.println("Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"");
+						Window.println("WARNING: Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",2);
 					}
 				}
+			} else {
+				numGoodBrushes++;
 			}
 		} else {
 			if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
@@ -406,66 +450,5 @@ public class BSP42Decompiler {
 				mapFile.getEntity(currentEntity).addBrush(mapBrush);
 			}
 		}
-	}
-	
-	public void addOriginBrush(int ent) {
-		double[] origin=new double[3];
-		MAPBrush newOriginBrush=new MAPBrush(numBrshs++, ent, false);
-		Vector3D[][] planes=new Vector3D[6][3]; // Six planes for a cube brush, three vertices for each plane
-		double[][] textureS=new double[6][3];
-		double[][] textureT=new double[6][3];
-		// The planes and their texture scales
-		// I got these from an origin brush created by Gearcraft. Don't worry where these numbers came from, they work.
-		// Top
-		planes[0][0]=new Vector3D(-16+origin[0], 16+origin[1], 16+origin[2]);
-		planes[0][1]=new Vector3D(16+origin[0], 16+origin[1], 16+origin[2]);
-		planes[0][2]=new Vector3D(16+origin[0], -16+origin[1], 16+origin[2]);
-		textureS[0][0]=1;
-		textureT[0][1]=-1;
-		// Bottom
-		planes[1][0]=new Vector3D(-16+origin[0], -16+origin[1], -16+origin[2]);
-		planes[1][1]=new Vector3D(16+origin[0], -16+origin[1], -16+origin[2]);
-		planes[1][2]=new Vector3D(16+origin[0], 16+origin[1], -16+origin[2]);
-		textureS[1][0]=1;
-		textureT[1][1]=-1;
-		// Left
-		planes[2][0]=new Vector3D(-16+origin[0], 16+origin[1], 16+origin[2]);
-		planes[2][1]=new Vector3D(-16+origin[0], -16+origin[1], 16+origin[2]);
-		planes[2][2]=new Vector3D(-16+origin[0], -16+origin[1], -16+origin[2]);
-		textureS[2][1]=1;
-		textureT[2][2]=-1;
-		// Right
-		planes[3][0]=new Vector3D(16+origin[0], 16+origin[1], -16+origin[2]);
-		planes[3][1]=new Vector3D(16+origin[0], -16+origin[1], -16+origin[2]);
-		planes[3][2]=new Vector3D(16+origin[0], -16+origin[1], 16+origin[2]);
-		textureS[3][1]=1;
-		textureT[3][2]=-1;
-		// Near
-		planes[4][0]=new Vector3D(16+origin[0], 16+origin[1], 16+origin[2]);
-		planes[4][1]=new Vector3D(-16+origin[0], 16+origin[1], 16+origin[2]);
-		planes[4][2]=new Vector3D(-16+origin[0], 16+origin[1], -16+origin[2]);
-		textureS[4][0]=1;
-		textureT[4][2]=-1;
-		// Far
-		planes[5][0]=new Vector3D(16+origin[0], -16+origin[1], -16+origin[2]);
-		planes[5][1]=new Vector3D(-16+origin[0], -16+origin[1], -16+origin[2]);
-		planes[5][2]=new Vector3D(-16+origin[0], -16+origin[1], 16+origin[2]);
-		textureS[5][0]=1;
-		textureT[5][2]=-1;
-		
-		for(int j=0;j<6;j++) {
-			MAPBrushSide currentEdge;
-			if(toHammer) {
-				currentEdge=new MAPBrushSide(planes[j], "tools/toolsorigin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-			} else {
-				if(toGearcraft) {
-					currentEdge=new MAPBrushSide(planes[j], "special/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-				} else {
-					currentEdge=new MAPBrushSide(planes[j], "common/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-				}
-			}
-			newOriginBrush.add(currentEdge);
-		}
-		mapFile.getEntity(ent).addBrush(newOriginBrush);
 	}
 }

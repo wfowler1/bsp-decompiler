@@ -51,7 +51,7 @@ public class DecompilerThread implements Runnable {
 				WADDecompiler decompiler = new WADDecompiler(doomMap, roundNums, toHammer, toRadiant, toGearcraft, jobnum);
 				decompiler.decompile();
 			} else {
-				Window.window.println("Opening file "+BSP.getAbsolutePath());
+				Window.println("Opening file "+BSP.getAbsolutePath(),0);
 				Window.setProgress(jobnum, 0, 1, "Reading...");
 				BSPReader reader = new BSPReader(BSP, toHammer, toRadiant, toGearcraft);
 				reader.readBSP();
@@ -76,7 +76,7 @@ public class DecompilerThread implements Runnable {
 			Window.setProgress(jobnum, 1, 1, "Done!");
 			Window.setProgressColor(jobnum, new Color(64, 192, 64));
 		} catch (java.lang.Exception e) {
-			Window.window.println(""+(char)0x0D+(char)0x0A+"Exception caught in job "+jobnum+": "+e+(char)0x0D+(char)0x0A+"Please let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/entry");
+			Window.println(""+(char)0x0D+(char)0x0A+"Exception caught in job "+jobnum+": "+e+(char)0x0D+(char)0x0A+"Please let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/entry",0);
 			Window.setProgress(jobnum, 1, 1, "ERROR! See log!");
 			Window.setProgressColor(jobnum, new Color(255, 128, 128));
 		}

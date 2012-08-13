@@ -47,44 +47,44 @@ public class DoomMap {
 
 	public void printBSPReport() {
 		try {
-			Window.window.println("Things lump: "+things.getLength()+" bytes, "+things.getNumElements()+" items");
+			Window.println("Things lump: "+things.getLength()+" bytes, "+things.getNumElements()+" items",1);
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Things not yet parsed!");
+			Window.println("Things not yet parsed!",1);
 		}
 		try {
-			Window.window.println("Linedefs lump: "+linedefs.getLength()+" bytes, "+linedefs.getNumElements()+" items");
+			Window.println("Linedefs lump: "+linedefs.getLength()+" bytes, "+linedefs.getNumElements()+" items",1);
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Linedefs not yet parsed!");
+			Window.println("Linedefs not yet parsed!",1);
 		}
 		try {
-			Window.window.println("Sidedefs lump: "+sidedefs.getLength()+" bytes, "+sidedefs.getNumElements()+" items");
+			Window.println("Sidedefs lump: "+sidedefs.getLength()+" bytes, "+sidedefs.getNumElements()+" items",1);
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Sidedefs not yet parsed!");
+			Window.println("Sidedefs not yet parsed!",1);
 		}
 		try {
-			Window.window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.getNumElements()+" items");
+			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.getNumElements()+" items",1);
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Vertices not yet parsed!");
+			Window.println("Vertices not yet parsed!",1);
 		}
 		try {
-			Window.window.println("Segments lump: "+segs.getLength()+" bytes, "+segs.getNumElements()+" items");
+			Window.println("Segments lump: "+segs.getLength()+" bytes, "+segs.getNumElements()+" items",1);
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Segments not yet parsed!");
+			Window.println("Segments not yet parsed!",1);
 		}
 		try {
-			Window.window.println("Subsectors lump: "+subsectors.getLength()+" bytes, "+subsectors.getNumElements()+" items");
+			Window.println("Subsectors lump: "+subsectors.getLength()+" bytes, "+subsectors.getNumElements()+" items",1);
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Subsectors not yet parsed!");
+			Window.println("Subsectors not yet parsed!",1);
 		}
 		try {
-			Window.window.println("Nodes lump: "+nodes.getLength()+" bytes, "+nodes.getNumElements()+" items");
+			Window.println("Nodes lump: "+nodes.getLength()+" bytes, "+nodes.getNumElements()+" items",1);
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Nodes not yet parsed!");
+			Window.println("Nodes not yet parsed!",1);
 		}
 		try {
-			Window.window.println("Sectors lump: "+sectors.getLength()+" bytes, "+sectors.getNumElements()+" items");
+			Window.println("Sectors lump: "+sectors.getLength()+" bytes, "+sectors.getNumElements()+" items",1);
 		} catch(java.lang.NullPointerException e) {
-			Window.window.println("Sectors not yet parsed!");
+			Window.println("Sectors not yet parsed!",1);
 		}
 	}
 
