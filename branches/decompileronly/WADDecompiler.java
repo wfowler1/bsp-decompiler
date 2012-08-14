@@ -59,7 +59,7 @@ public class WADDecompiler {
 	// brushes (at least, not in any sane way).
 	public void decompile() throws java.io.IOException {
 		Date begin=new Date();
-		Window.window.println(doomMap.getMapName());
+		Window.println(doomMap.getMapName(),0);
 		
 		mapFile=new Entities();
 		Entity world = new Entity("worldspawn");
@@ -214,6 +214,7 @@ public class WADDecompiler {
 		int[] ssparents = new int[doomMap.getSubSectors().getNumElements()];
 		boolean[] ssIsLeft = new boolean[doomMap.getSubSectors().getNumElements()];
 		for(int i=0;i<doomMap.getSubSectors().getNumElements();i++) {
+			Window.println("Creating brushes for subsector "+i,4);
 			// First, find the subsector's parent and whether it is the left or right child.
 			ssparents[i]=-1; // No subsector should have a -1 in here
 			for(int j=0;j<doomMap.getNodes().getNumElements();j++) {
@@ -297,8 +298,8 @@ public class WADDecompiler {
 				}
 				// Sometimes a subsector seems to belong to more than one sector. I don't know why.
 				if(subsectorSectors[i]!=-1 && currentSidedef.getSector()!=subsectorSectors[i]) {
-					Window.window.println("WARNING: Subsector "+i+" has sides defining different sectors!");
-					Window.window.println("This is probably nothing to worry about, but something might be wrong (wrong floor/cieling height)");
+					Window.println("WARNING: Subsector "+i+" has sides defining different sectors!",2);
+					Window.println("This is probably nothing to worry about, but something might be wrong (wrong floor/cieling height)",2);
 				} else {
 					subsectorSectors[i]=currentSidedef.getSector();
 				}
@@ -514,22 +515,22 @@ public class WADDecompiler {
 		
 		Window.setProgress(jobnum, 1, 1, "Saving...");
 		if(toHammer) {
-			Window.window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".vmf...");
+			Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".vmf...",0);
 			VMFWriter VMFMaker=new VMFWriter(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName(), roundNums);
 			VMFMaker.write();
 		}
 		if(toRadiant) {
-			Window.window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_radiant.map...");
+			Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_radiant.map...",0);
 			RadiantMAPWriter MAPMaker=new RadiantMAPWriter(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_radiant", roundNums);
 			MAPMaker.write();
 		}
 		if(toGearcraft) {
-			Window.window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".map...");
+			Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".map...",0);
 			MAP510Writer MAPMaker=new MAP510Writer(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName(), roundNums);
 			MAPMaker.write();
 		}
 		Date end=new Date();
-		Window.window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A);
+		Window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,0);
 	}
 	
 	// createFaceBrush(String, Vector3D, Vector3D)
@@ -538,6 +539,7 @@ public class WADDecompiler {
 	// later to include passing of texture scaling and positioning vectors as well, but this is
 	// all I need right now.
 	public MAPBrush createFaceBrush(String texture, Vector3D mins, Vector3D maxs) {
+		Window.println("Creating brush for face with "+texture,4);
 		MAPBrush newBrush = new MAPBrush(numBrshs++, 0, false);
 		numBrshs++;
 		Vector3D[][] planes=new Vector3D[6][3]; // Six planes for a cube brush, three vertices for each plane
