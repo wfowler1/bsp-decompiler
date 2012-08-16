@@ -7,6 +7,10 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowAdapter;
 import javax.swing.*;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -25,8 +29,6 @@ public class Window extends JPanel implements ActionListener {
 	                                                 // from within the program by calling .exec(path).
 
 	protected static Window window;
-	private static BSPFileFilter BSPFilter = new BSPFileFilter();
-	private static LOGFileFilter LOGFilter = new LOGFileFilter();
 	
 	public static final char NBSP = ' '; // Non-breaking space
 
@@ -112,12 +114,15 @@ public class Window extends JPanel implements ActionListener {
 	private static JFileChooser file_selector;
 	private static JFileChooser file_saver;
 	private static JButton[] btn_abort;
+	private static JButton btn_abort_all;
 	private static JTextArea consolebox;
 	private static JLabel lbl_coef;
 	private static JLabel lbl_threads;
+	private static JLabel lbl_mapName;
 	private static JSplitPane consoleTableSplitter;
 	private static JScrollPane console_pane;
 	private static JScrollPane table_pane;
+	private static JLabel[] mapNames;
 	private static JProgressBar[] progressBar;
 	private static JProgressBar totalProgressBar;
 	private static JPanel pnl_jobs;
@@ -141,12 +146,12 @@ public class Window extends JPanel implements ActionListener {
 		frame.setPreferredSize(new Dimension(640, 460));
 
 		frame.pack();
-		frame.setResizable(false);
-		frame.setVisible(true);			
+		frame.setResizable(true);
+		frame.setVisible(true);
 		
+		frame.setMinimumSize(new Dimension(316, 240));
 		
-		
-		/// Menu Bar
+		// Menu Bar
 		menuBar = new JMenuBar();
 		fileMenu = new JMenu("File");
 		menuBar.add(fileMenu);
@@ -297,7 +302,7 @@ public class Window extends JPanel implements ActionListener {
 		jobNoConstraints.gridheight = 1;
 		pnl_jobs.add(lbl_jobno, jobNoConstraints);
 		
-		JLabel lbl_mapName = new JLabel("Map name");
+		lbl_mapName = new JLabel("Map name");
 		lbl_mapName.setPreferredSize(new Dimension(325, 12));
 		GridBagConstraints mapNameConstraints = new GridBagConstraints();
 		mapNameConstraints.fill = GridBagConstraints.NONE;
@@ -320,30 +325,21 @@ public class Window extends JPanel implements ActionListener {
 		totalProgressBar.setValue(0);
 		totalProgressBar.setString("Total: 0%");
 		
-		/*JLabel lbl_progress = new JLabel("Status");
-		lbl_progress.setPreferredSize(new Dimension(150, 12));
-		GridBagConstraints progressConstraints = new GridBagConstraints();
-		progressConstraints.fill = GridBagConstraints.NONE;
-		progressConstraints.gridx = 2;
-		progressConstraints.gridy = 0;
-		progressConstraints.gridwidth = 1;
-		progressConstraints.gridheight = 1;
-		pnl_jobs.add(lbl_progress, progressConstraints);*/
-		
-		JLabel lbl_abort = new JLabel("Abort");
-		lbl_abort.setPreferredSize(new Dimension(50, 12));
-		GridBagConstraints abortlabelConstraints = new GridBagConstraints();
-		abortlabelConstraints.fill = GridBagConstraints.NONE;
-		abortlabelConstraints.gridx = 3;
-		abortlabelConstraints.gridy = 0;
-		abortlabelConstraints.gridwidth = 1;
-		abortlabelConstraints.gridheight = 1;
-		pnl_jobs.add(lbl_abort, abortlabelConstraints);
+		JButton btn_abort_all = new JButton("Abort all");
+		btn_abort_all.setPreferredSize(new Dimension(75, 20));
+		GridBagConstraints abortbuttonConstraints = new GridBagConstraints();
+		abortbuttonConstraints.fill = GridBagConstraints.NONE;
+		abortbuttonConstraints.gridx = 3;
+		abortbuttonConstraints.gridy = 0;
+		abortbuttonConstraints.gridwidth = 1;
+		abortbuttonConstraints.gridheight = 1;
+		pnl_jobs.add(btn_abort_all, abortbuttonConstraints);
+		btn_abort_all.addActionListener(this);
 		
 		table_pane = new JScrollPane(pnl_jobs);
 		
 		consoleTableSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, console_pane, table_pane);
-		consoleTableSplitter.setPreferredSize(new Dimension(620, 390));
+		consoleTableSplitter.setPreferredSize(new Dimension(616, 390));
 		consoleTableSplitter.setOneTouchExpandable(true);
 		consoleTableSplitter.setDividerLocation(190);
 		
@@ -354,6 +350,28 @@ public class Window extends JPanel implements ActionListener {
 		consoleConstraints.gridwidth = 1;
 		consoleConstraints.gridheight = 1;
 		pane.add(consoleTableSplitter, consoleConstraints);
+		
+		// This crap allows the window to be resized, and sets the size of the GUI components as needed.
+		frame.addWindowStateListener(new WindowAdapter() {
+			public void windowStateChanged(WindowEvent event) {
+				consoleTableSplitter.setPreferredSize(new Dimension(frame.getWidth()-24, frame.getHeight()-70));
+				lbl_mapName.setPreferredSize(new Dimension(frame.getWidth()-315, 12));
+				for(int i=0;i<numJobs;i++) {
+					mapNames[i].setPreferredSize(new Dimension(frame.getWidth()-315, 12));
+				}
+				frame.validate();
+			}
+		});
+		frame.addComponentListener(new ComponentAdapter() {
+			public void componentResized(ComponentEvent comp) {
+				consoleTableSplitter.setPreferredSize(new Dimension(frame.getWidth()-24, frame.getHeight()-70));
+				lbl_mapName.setPreferredSize(new Dimension(frame.getWidth()-315, 12));
+				for(int i=0;i<numJobs;i++) {
+					mapNames[i].setPreferredSize(new Dimension(frame.getWidth()-315, 12));
+				}
+				frame.validate();
+			}
+		});
 		
 		frame.validate(); // make sure everything is actually SHOWN
 		
@@ -415,8 +433,20 @@ public class Window extends JPanel implements ActionListener {
 	// going to perform actions when certain things are clicked. The rest are discarded.
 	public void actionPerformed(ActionEvent action) {
 		if(action.getActionCommand().substring(0,6).equals("Abort ")) {
-			int cancelJob=new Integer(action.getActionCommand().substring(6));
-			stopDecompilerThread(cancelJob);
+			try {
+				int cancelJob=new Integer(action.getActionCommand().substring(6));
+				stopDecompilerThread(cancelJob);
+			} catch(java.lang.NumberFormatException e) {
+				for(int i=numJobs;i>0;i--) { // Start from the last one and work towards the first.
+					try {
+						if(btn_abort[i-1].getText().substring(0,6).equals("Abort ")) {
+							stopDecompilerThread(i); // This prevents new threads from starting while this loop is running.
+						}
+					} catch(java.lang.StringIndexOutOfBoundsException f) {
+						;
+					}
+				}
+			}
 		}
 		
 		// TODO: Clean this up, perhaps use a switch instead
@@ -432,7 +462,11 @@ public class Window extends JPanel implements ActionListener {
 			} else {
 				file_selector = new JFileChooser(lastUsedFolder);
 			}
-			file_selector.addChoosableFileFilter(BSPFilter);
+			file_selector.setAcceptAllFileFilterUsed(false); // "all files". I would like this to be AFTER the others.
+			file_selector.addChoosableFileFilter(new SupportedFileFilter());
+			file_selector.addChoosableFileFilter(new BSPFileFilter());
+			file_selector.addChoosableFileFilter(new WADFileFilter());
+			file_selector.setAcceptAllFileFilterUsed(true); // Setting this false above then true here forces the "all files" filter to be last.
 			file_selector.setMultiSelectionEnabled(true);
 			int returnVal = file_selector.showOpenDialog(this);
 			
@@ -467,7 +501,8 @@ public class Window extends JPanel implements ActionListener {
 		if(action.getSource() == saveLogItem) {
 			file_saver = new JFileChooser();
 			file_saver.setSelectedFile(new File("DecompilerConsole.log"));
-			file_saver.addChoosableFileFilter(LOGFilter);
+			file_saver.addChoosableFileFilter(new LOGFileFilter());
+			file_saver.setAcceptAllFileFilterUsed(false);
 			file_saver.setMultiSelectionEnabled(false);
 			// file_selector.setIconImage(new ImageIcon("folder32x32.PNG").getImage());
 			int returnVal = file_saver.showSaveDialog(this);
@@ -646,11 +681,14 @@ public class Window extends JPanel implements ActionListener {
 	private void stopDecompilerThread(int job) {
 		int currentThread=threadNum[job-1];
 		if(currentThread>-1) {
-			decompilerworkers[currentThread].stop(); // The Java API lists this method of stopping a thread as deprecated.
-			startNextJob(true, currentThread);       // For the purposes of this program, I'm not sure it's an issue though.
-		}                                           // More info: http://docs.oracle.com/javase/6/docs/technotes/guides/concurrency/threadPrimitiveDeprecation.html
-		println("Job number "+job+" aborted by user.",0);
+			decompilerworkers[currentThread].stop();          // The Java API lists this method of stopping a thread as deprecated.
+			startNextJob(true, currentThread);                // For the purposes of this program, I'm not sure it's an issue though.
+			println("Job number "+job+" aborted by user.",0); // More info: http://docs.oracle.com/javase/6/docs/technotes/guides/concurrency/threadPrimitiveDeprecation.html
+		} else {
+			println("Job number "+job+" canceled by user.",0);
+		}
 		jobs[job-1]=null;
+		doomJobs[job-1]=null;
 		btn_abort[job-1].setEnabled(false);
 		btn_abort[job-1].setText("Aborted!");
 		progressBar[job-1].setIndeterminate(false);
@@ -696,6 +734,9 @@ public class Window extends JPanel implements ActionListener {
 			progressBar[jobmod].setValue(in);
 			if((int)((in/(float)max)*100)==100 || (int)((in/(float)max)*100)==0) {
 				progressBar[jobmod].setString(status);
+				if(status.equals("Done!") || status.substring(0,3).equals("ERR")) {
+					btn_abort[jobmod].setText("Done");
+				}
 			} else {
 				progressBar[jobmod].setString(status+" "+(int)((in/(float)max)*100)+"%");
 			}
@@ -767,20 +808,24 @@ public class Window extends JPanel implements ActionListener {
 			jobNoConstraints.gridheight = 1;
 			pnl_jobs.add(lbl_jobno, jobNoConstraints);
 			
-			JLabel lbl_mapName;
-			if(newDoomJob!=null) { // If this isn't null it's a DoomMap
-				lbl_mapName = new JLabel(newDoomJob.getWadName()+"\\"+newDoomJob.getMapName());
-			} else {
-				lbl_mapName = new JLabel(newJob.getName());
+			JLabel[] newMapNames=new JLabel[numJobs];
+			for(int j=0;j<numJobs-1;j++) {
+				newMapNames[j]=mapNames[j];
 			}
-			lbl_mapName.setPreferredSize(new Dimension(325, 12));
+			if(newDoomJob!=null) { // If this isn't null it's a DoomMap
+				newMapNames[numJobs-1] = new JLabel(newDoomJob.getWadName()+"\\"+newDoomJob.getMapName());
+			} else {
+				newMapNames[numJobs-1] = new JLabel(newJob.getName());
+			}
+			mapNames=newMapNames;
+			newMapNames[numJobs-1].setPreferredSize(new Dimension(frame.getWidth()-315, 12));
 			GridBagConstraints mapNameConstraints = new GridBagConstraints();
 			mapNameConstraints.fill = GridBagConstraints.NONE;
 			mapNameConstraints.gridx = 1;
 			mapNameConstraints.gridy = numJobs;
 			mapNameConstraints.gridwidth = 1;
 			mapNameConstraints.gridheight = 1;
-			pnl_jobs.add(lbl_mapName, mapNameConstraints);
+			pnl_jobs.add(newMapNames[numJobs-1], mapNameConstraints);
 			
 			JProgressBar[] newBars=new JProgressBar[numJobs];
 			for(int j=0;j<numJobs-1;j++) {
@@ -953,5 +998,107 @@ public class Window extends JPanel implements ActionListener {
 	
 	public static double getOriginBrushSize() {
 		return originBrushSize;
+	}
+	
+	// INTERNAL CLASSES
+
+	private class SupportedFileFilter extends javax.swing.filechooser.FileFilter {
+		private String description = "All supported files (*.BSP, *.WAD)";
+
+		public boolean accept(File file) {
+			if (file.isDirectory()) {
+				return true; // Must return true for a directory, otherwise you can't navigate the filesystem using the GUI!
+			} else {
+				if (file.isFile()) {
+					try { // Avoid StringIndexOutOfBoundsExceptions
+						if(file.getName().substring(file.getName().length()-4).equalsIgnoreCase(".BSP") || file.getName().substring(file.getName().length()-4).equalsIgnoreCase(".WAD")) {
+							return true; // Return true if the last four characters in the filename are ".BSP", not case sensitive
+						}
+					} catch(java.lang.StringIndexOutOfBoundsException e) {
+						return false;
+					}
+				}
+			}
+			return false; // It's not a dir or a BSP file
+		}
+	
+		public String getDescription() {
+			return description;
+		}
+	}
+
+	private class BSPFileFilter extends javax.swing.filechooser.FileFilter {
+		private String description = "Binary Space Partition files (*.BSP)";
+
+		public boolean accept(File file) {
+			if (file.isDirectory()) {
+				return true; // Must return true for a directory, otherwise you can't navigate the filesystem using the GUI!
+			} else {
+				if (file.isFile()) {
+					try { // Avoid StringIndexOutOfBoundsExceptions
+						if(file.getName().substring(file.getName().length()-4).equalsIgnoreCase(".BSP")) {
+							return true; // Return true if the last four characters in the filename are ".BSP", not case sensitive
+						}
+					} catch(java.lang.StringIndexOutOfBoundsException e) {
+						return false;
+					}
+				}
+			}
+			return false; // It's not a dir or a BSP file
+		}
+	
+		public String getDescription() {
+			return description;
+		}
+	}
+
+	private class WADFileFilter extends javax.swing.filechooser.FileFilter {
+		private String description = "WAD files (*.WAD)";
+
+		public boolean accept(File file) {
+			if (file.isDirectory()) {
+				return true; // Must return true for a directory, otherwise you can't navigate the filesystem using the GUI!
+			} else {
+				if (file.isFile()) {
+					try { // Avoid StringIndexOutOfBoundsExceptions
+						if(file.getName().substring(file.getName().length()-4).equalsIgnoreCase(".WAD")) {
+							return true; // Return true if the last four characters in the filename are ".BSP", not case sensitive
+						}
+					} catch(java.lang.StringIndexOutOfBoundsException e) {
+						return false;
+					}
+				}
+			}
+			return false; // It's not a dir or a BSP file
+		}
+	
+		public String getDescription() {
+			return description;
+		}
+	}
+	
+	private class LOGFileFilter extends javax.swing.filechooser.FileFilter {
+		private String description = "Log File (*.LOG)";
+	
+		public boolean accept(File file) {
+			if (file.isDirectory()) {
+				return true; // Must return true for a directory, otherwise you can't navigate the filesystem using the GUI!
+			} else {
+				if (file.isFile()) {
+					try { // Avoid StringIndexOutOfBoundsExceptions
+						if(file.getName().substring(file.getName().length()-4).equalsIgnoreCase(".LOG")) {
+							return true; // Return true if the last four characters in the filename are ".LOG", not case sensitive
+						}
+					} catch(java.lang.StringIndexOutOfBoundsException e) {
+						return false;
+					}
+				}
+			}
+			return false; // It's not a dir or a LOG file
+		}
+	
+		public String getDescription() {
+			return description;
+		}
 	}
 }
