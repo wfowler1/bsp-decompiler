@@ -29,8 +29,6 @@ public class Window extends JPanel implements ActionListener {
 	                                                 // from within the program by calling .exec(path).
 
 	protected static Window window;
-	
-	public static final char NBSP = ' '; // Non-breaking space
 
 	private static JFrame frame;
 	private static JMenuBar menuBar;
@@ -46,6 +44,7 @@ public class Window extends JPanel implements ActionListener {
 	// private static JMenuItem replaceTexturesItem;
 	private static JMenuItem setPlanePointCoefItem;
 	private static JMenuItem setThreadsItem;
+	private static JMenuItem setOutFolderItem;
 	private static JCheckBoxMenuItem chk_planarItem;
 	private static JCheckBoxMenuItem chk_skipPlaneFlipItem;
 	private static JCheckBoxMenuItem chk_calcVertsItem;
@@ -91,6 +90,7 @@ public class Window extends JPanel implements ActionListener {
 	// Creates an Object of this class and launches the GUI. Entry point to the whole program.
 	private static double originBrushSize=16;
 	private static int verbosity=0;
+	private static String outputFolder="default";
 	
 	public static void main(String[] args) {
 		//if(args.length==0) {
@@ -112,7 +112,6 @@ public class Window extends JPanel implements ActionListener {
 
 	// All GUI components get initialized here
 	private static JFileChooser file_selector;
-	private static JFileChooser file_saver;
 	private static JButton[] btn_abort;
 	private static JButton btn_abort_all;
 	private static JTextArea consolebox;
@@ -209,6 +208,10 @@ public class Window extends JPanel implements ActionListener {
 		setThreadsItem.setToolTipText("The job system is multithreaded and multiple maps can be decompiled simultaneously, especially on multiprocessor CPUs.");
 		setThreadsItem.addActionListener(this);
 		optionsMenu.add(setThreadsItem);
+		setOutFolderItem=new JMenuItem("Set output folder...");
+		setOutFolderItem.setToolTipText("Set where to save output mapfiles. Click cancel to use the folder where the map came from.");
+		setOutFolderItem.addActionListener(this);
+		optionsMenu.add(setOutFolderItem);
 		
 		// Debug menu
 		chk_brushesToWorldItem = new JCheckBoxMenuItem("Dump all brushes to world");
@@ -449,7 +452,6 @@ public class Window extends JPanel implements ActionListener {
 			}
 		}
 		
-		// TODO: Clean this up, perhaps use a switch instead
 		// User clicks the "open" button
 		if (action.getSource() == decompMAPItem || action.getSource() == decompVMFItem || action.getSource() == decompRadiantItem) {
 			if(lastUsedFolder==null) {
@@ -499,16 +501,15 @@ public class Window extends JPanel implements ActionListener {
 		
 		// User clicks the "Save log" button
 		if(action.getSource() == saveLogItem) {
-			file_saver = new JFileChooser();
-			file_saver.setSelectedFile(new File("DecompilerConsole.log"));
-			file_saver.addChoosableFileFilter(new LOGFileFilter());
-			file_saver.setAcceptAllFileFilterUsed(false);
-			file_saver.setMultiSelectionEnabled(false);
-			// file_selector.setIconImage(new ImageIcon("folder32x32.PNG").getImage());
-			int returnVal = file_saver.showSaveDialog(this);
+			file_selector = new JFileChooser();
+			file_selector.setSelectedFile(new File("DecompilerConsole.log"));
+			file_selector.addChoosableFileFilter(new LOGFileFilter());
+			file_selector.setAcceptAllFileFilterUsed(false);
+			file_selector.setMultiSelectionEnabled(false);
+			int returnVal = file_selector.showSaveDialog(this);
 			
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				String saveHere=file_saver.getSelectedFile().getAbsolutePath();
+				String saveHere=file_selector.getSelectedFile().getAbsolutePath();
 				try {
 					if(!saveHere.substring(saveHere.length()-4).equalsIgnoreCase(".LOG")) {
 						saveHere+=".log";
@@ -529,6 +530,39 @@ public class Window extends JPanel implements ActionListener {
 						Window.println("Unable to create file "+logfile.getAbsolutePath()+(char)0x0D+(char)0x0A+"Ensure the filesystem is not read only!",0);
 					}
 				}
+			}
+		}
+		
+		// change the output folder
+		if(action.getSource() == setOutFolderItem) {
+			file_selector = new JFileChooser();
+			file_selector.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			file_selector.setAcceptAllFileFilterUsed(false);
+			file_selector.setMultiSelectionEnabled(false);
+			int returnVal = file_selector.showSaveDialog(this);
+			
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				File saveHere=file_selector.getSelectedFile();
+				if(saveHere!=null) {
+					if(!saveHere.exists()) {
+						Window.println(saveHere.getAbsolutePath()+" does not exist! Setting to \"default\" instead.",0);
+						outputFolder="default";
+					} else {
+						if(!saveHere.isDirectory()) {
+							Window.println(saveHere.getAbsolutePath()+" is not a directory! Setting to \"default\" instead.",0);
+							outputFolder="default";
+						} else {
+							Window.println("Output directory set to "+saveHere.getAbsolutePath(),0);
+							outputFolder=saveHere.getAbsolutePath();
+						}
+					}
+				} else {
+					Window.println("Output folder set to default.",0);
+					outputFolder="default";
+				}
+			} else {
+				Window.println("Output folder set to default.",0);
+				outputFolder="default";
 			}
 		}
 		
@@ -998,6 +1032,10 @@ public class Window extends JPanel implements ActionListener {
 	
 	public static double getOriginBrushSize() {
 		return originBrushSize;
+	}
+	
+	public static String getOutputFolder() {
+		return outputFolder;
 	}
 	
 	// INTERNAL CLASSES

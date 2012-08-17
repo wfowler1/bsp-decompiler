@@ -235,18 +235,36 @@ public class BSP42Decompiler {
 		}
 		Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements(), "Saving...");
 		if(toHammer) {
-			Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".vmf...",0);
-			VMFWriter VMFMaker=new VMFWriter(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4), roundNums);
+			VMFWriter VMFMaker;
+			if(Window.getOutputFolder().equals("default")) {
+				Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".vmf...",0);
+				VMFMaker=new VMFWriter(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4), roundNums);
+			} else {
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+".vmf...",0);
+				VMFMaker=new VMFWriter(mapFile, Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4), roundNums);
+			}
 			VMFMaker.write();
 		}
 		if(toRadiant) {
-			Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_radiant.map...",0);
-			RadiantMAPWriter MAPMaker=new RadiantMAPWriter(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_radiant", roundNums);
+			RadiantMAPWriter MAPMaker;
+			if(Window.getOutputFolder().equals("default")) {
+				Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_radiant.map...",0);
+				MAPMaker=new RadiantMAPWriter(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_radiant", roundNums);
+			} else {
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+"_radiant.map...",0);
+				MAPMaker=new RadiantMAPWriter(mapFile, Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+"_radiant", roundNums);
+			}
 			MAPMaker.write();
 		}
 		if(toGearcraft) {
-			Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map...",0);
-			MAP510Writer MAPMaker=new MAP510Writer(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4), roundNums);
+			MAP510Writer MAPMaker;
+			if(Window.getOutputFolder().equals("default")) {
+				Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map...",0);
+				MAPMaker=new MAP510Writer(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4), roundNums);
+			} else {
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+".map...",0);
+				MAPMaker=new MAP510Writer(mapFile, Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4), roundNums);
+			}
 			MAPMaker.write();
 		}
 		Window.println("Process completed!",0);

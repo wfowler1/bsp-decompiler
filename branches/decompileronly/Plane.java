@@ -167,24 +167,11 @@ public class Plane {
 		return dist;
 	}
 	
-	public float getAF() {
-		return (float)normal.getX();
-	}
-	public float getBF() {
-		return (float)normal.getY();
-	}
-	public float getCF() {
-		return (float)normal.getZ();
-	}
-	public float getDistF() {
-		return (float)dist;
-	}
-	
 	// Sets
 	public void setNormal(Vector3D in) {
 		normal = in;
 	}
-	public void setA(double in) {
+	public void setA(double in) { 
 		normal.setX(in);
 	}
 	public void setB(double in) {
@@ -194,7 +181,11 @@ public class Plane {
 		normal.setZ(in);
 	}
 	public void setDist(double in) {
-		dist = in;
+		if(in+Window.getPrecision() >= Math.round(in) && in-Window.getPrecision() <= Math.round(in)) {
+			dist=(double)Math.round(in);
+		} else {
+			dist=in;
+		}
 	}
 	
 	public void setA(float in) {
@@ -207,6 +198,10 @@ public class Plane {
 		normal.setZ((double)in);
 	}
 	public void setDist(float in) {
-		dist = (double)in;
+		if(in+Window.getPrecision() >= Math.round(in) && in-Window.getPrecision() <= Math.round(in)) {
+			dist=(double)Math.round(in);
+		} else {
+			dist=(double)in;
+		}
 	}
 }

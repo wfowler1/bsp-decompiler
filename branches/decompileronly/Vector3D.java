@@ -208,15 +208,27 @@ public class Vector3D {
 	}
 	
 	public void setX(double in) {
-		point[X]=in;
+		if(in+Window.getPrecision() >= Math.round(in) && in-Window.getPrecision() <= Math.round(in)) {
+			point[X]=(double)Math.round(in);
+		} else {
+			point[X]=in;
+		}
 	}
 	
 	public void setY(double in) {
-		point[Y]=in;
+		if(in+Window.getPrecision() >= Math.round(in) && in-Window.getPrecision() <= Math.round(in)) {
+			point[Y]=(double)Math.round(in);
+		} else {
+			point[Y]=in;
+		}
 	}
 	
 	public void setZ(double in) {
-		point[Z]=in;
+		if(in+Window.getPrecision() >= Math.round(in) && in-Window.getPrecision() <= Math.round(in)) {
+			point[Z]=(double)Math.round(in);
+		} else {
+			point[Z]=in;
+		}
 	}
 	
 	public void setPoint(double[] in) {

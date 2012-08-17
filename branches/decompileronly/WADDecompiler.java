@@ -515,18 +515,36 @@ public class WADDecompiler {
 		
 		Window.setProgress(jobnum, 1, 1, "Saving...");
 		if(toHammer) {
-			Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".vmf...",0);
-			VMFWriter VMFMaker=new VMFWriter(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName(), roundNums);
+			VMFWriter VMFMaker;
+			if(Window.getOutputFolder().equals("default")) {
+				Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".vmf...",0);
+				VMFMaker=new VMFWriter(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName(), roundNums);
+			} else {
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+".vmf...",0);
+				VMFMaker=new VMFWriter(mapFile, Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName(), roundNums);
+			}
 			VMFMaker.write();
 		}
 		if(toRadiant) {
-			Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_radiant.map...",0);
-			RadiantMAPWriter MAPMaker=new RadiantMAPWriter(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_radiant", roundNums);
+			RadiantMAPWriter MAPMaker;
+			if(Window.getOutputFolder().equals("default")) {
+				Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_radiant.map...",0);
+				MAPMaker=new RadiantMAPWriter(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_radiant", roundNums);
+			} else {
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_radiant.map...",0);
+				MAPMaker=new RadiantMAPWriter(mapFile, Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_radiant", roundNums);
+			}
 			MAPMaker.write();
 		}
 		if(toGearcraft) {
-			Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".map...",0);
-			MAP510Writer MAPMaker=new MAP510Writer(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName(), roundNums);
+			MAP510Writer MAPMaker;
+			if(Window.getOutputFolder().equals("default")) {
+				Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".map...",0);
+				MAPMaker=new MAP510Writer(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName(), roundNums);
+			} else {
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+".map...",0);
+				MAPMaker=new MAP510Writer(mapFile, Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName(), roundNums);
+			}
 			MAPMaker.write();
 		}
 		Date end=new Date();

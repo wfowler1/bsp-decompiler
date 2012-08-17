@@ -87,44 +87,6 @@ public class DoomMap {
 			Window.println("Sectors not yet parsed!",1);
 		}
 	}
-
-	// findSubSector(int)
-	// Finds the path of nodes taken to find the subsector's (needle's) location in the
-	// list of nodes (haystack) and returns the path as a boolean array. False (0) means
-	// the subsector can be found on the right side of the node, true (1) means it can
-	// be found on the left. There will be one element in the array for each step taken
-	// to find the subsector. If the needle's index is too high, or not found, returns
-	// an array of boolean[0].
-	/*public boolean[] findSubSector(int needle) {
-		if(needle>subsectors.getNumElements()) {
-			return new boolean[0];
-		} else {
-			DNode headNode=nodes.getNode(0);
-			boolean[] path=new boolean[0];
-			DNodeStack nodestack = new DNodeStack();
-			nodestack.push(headNode);
-	 
-			DNode currentNode;
-			boolean found=false;
-	
-			while (found==false && !nodestack.isEmpty()) {
-				currentNode = nodestack.pop();
-				int right = currentNode.getChild1();
-				if (right >= 0) {
-					nodestack.push(nodes.getNode(right));
-				} else {
-					
-				}
-				int left = currentNode.getChild2();
-				if (left >= 0) {
-					nodestack.push(nodes.getNode(left));
-				} else {
-					
-				}
-			}
-			return nodeLeaves;
-		}
-	}*/
 	
 	// ACCESSORS/MUTATORS
 	
