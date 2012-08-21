@@ -1,5 +1,3 @@
-// Window class
-
 // GUI for the decompiler.
 // For a list of swing components check here:
 // http://download.oracle.com/javase/tutorial/ui/features/components.html
@@ -127,11 +125,10 @@ public class Window extends JPanel implements ActionListener {
 	private static JPanel pnl_jobs;
 	private static JLabel lbl_spacer;
 	
-	// Private variables for a Window object
-	private boolean vertexDecomp=true;
-	private boolean correctPlaneFlip=true;
-	private boolean calcVerts=false;
-	private boolean roundNums=true;
+	private static boolean vertexDecomp=true;
+	private static boolean correctPlaneFlip=true;
+	private static boolean calcVerts=false;
+	private static boolean roundNums=true;
 	private static int numJobs;
 	private static volatile int nextJob=0;
 
@@ -229,6 +226,7 @@ public class Window extends JPanel implements ActionListener {
 		setErrorItem = new JMenuItem("Set error tolerance...");
 		setErrorItem.setToolTipText("Allows customization of error tolerance of double precision calculations.");
 		debugMenu.add(setErrorItem);
+		setErrorItem.addActionListener(this);
 		setOriginBrushSizeItem = new JMenuItem("Set origin brush size...");
 		setOriginBrushSizeItem.setToolTipText("Origin brushes are generated on the fly. This allows customization of their size.");
 		debugMenu.add(setOriginBrushSizeItem);
@@ -621,16 +619,21 @@ public class Window extends JPanel implements ActionListener {
 		if(action.getSource() == setOriginBrushSizeItem) {
 			String st=(String)JOptionPane.showInputDialog(frame,"Please enter a new origin brush size.\n"+
 			          "Current value: "+originBrushSize,"Enter new origin brush size",JOptionPane.QUESTION_MESSAGE,null,null,originBrushSize);
+			double temp=originBrushSize;
 			try {
-				double temp = Double.parseDouble(st);
-				if(temp<0) {
+				temp = Double.parseDouble(st);
+				if(temp<=0) {
 					throw new java.lang.NumberFormatException();
 				} else {
 					originBrushSize=temp;
 					println("Origin brush size set to "+originBrushSize+".",0);
 				}
 			} catch(java.lang.NumberFormatException e) {
-				println("Invalid brush size! Size remains "+originBrushSize+" instead!",0);
+				if(st.equalsIgnoreCase("penis") || temp==0) { // Is it Easter time already?! :D
+					println("Brush size cannot be zero! Size remains "+originBrushSize+" instead!",0);
+				} else {
+					println("Invalid brush size! Size remains "+originBrushSize+" instead!",0);
+				}
 			} catch(java.lang.NullPointerException e) { // Happens when user hits "cancel". Do nothing.
 				;
 			}
@@ -641,7 +644,7 @@ public class Window extends JPanel implements ActionListener {
 			          "Current value: "+numThreads,"Enter new thread amount",JOptionPane.QUESTION_MESSAGE,null,null,numThreads);
 			try {
 				int temp = Integer.parseInt(st);
-				if(temp<0) {
+				if(temp<1) {
 					throw new java.lang.NumberFormatException();
 				} else {
 					numThreads=temp;
@@ -718,9 +721,12 @@ public class Window extends JPanel implements ActionListener {
 			decompilerworkers[currentThread].stop();          // The Java API lists this method of stopping a thread as deprecated.
 			startNextJob(true, currentThread);                // For the purposes of this program, I'm not sure it's an issue though.
 			println("Job number "+job+" aborted by user.",0); // More info: http://docs.oracle.com/javase/6/docs/technotes/guides/concurrency/threadPrimitiveDeprecation.html
+			setProgress(job-1, 1, 1, "Aborted!");
 		} else {
 			println("Job number "+job+" canceled by user.",0);
+			setProgress(job-1, 1, 1, "Canceled!");
 		}
+		setProgressColor(job-1, new Color(255, 128, 128));
 		jobs[job-1]=null;
 		doomJobs[job-1]=null;
 		btn_abort[job-1].setEnabled(false);
@@ -774,6 +780,7 @@ public class Window extends JPanel implements ActionListener {
 			} else {
 				progressBar[jobmod].setString(status+" "+(int)((in/(float)max)*100)+"%");
 			}
+			updateTotalProgress();
 		}
 	}
 	
@@ -783,14 +790,19 @@ public class Window extends JPanel implements ActionListener {
 		}
 	}
 	
-	protected static void setTotalProgress(int in, int max) {
+	protected static void updateTotalProgress() {
 		if(totalProgressBar!=null) {
+			int max=progressBar.length*100;
+			int progress=0;
+			for(int i=0;i<progressBar.length;i++) { // For each progress bar
+				progress+=Math.round(progressBar[i].getPercentComplete()*100.0);
+			}
 			totalProgressBar.setMaximum(max);
-			totalProgressBar.setValue(in);
-			if(in==max) {
+			totalProgressBar.setValue(progress);
+			if(progress==max) {
 				totalProgressBar.setString("Done!");
 			} else {
-				totalProgressBar.setString("Total: "+(int)((in/(float)max)*100)+"%");
+				totalProgressBar.setString("Total: "+(int)((progress/(float)max)*100)+"%");
 			}
 		}
 	}
@@ -919,7 +931,6 @@ public class Window extends JPanel implements ActionListener {
 	protected void startNextJob(boolean somethingFinished, int threadFinished) {
 		int myJob=nextJob++; // Increment this right away, then use myJob. For thread safety, in case two threads are using this method at once.
 		// This isn't a perfect, or ideal solution, and it's not 100% failproof. But it is much safer.
-		setTotalProgress(myJob, numJobs);
 		if(myJob==0) {
 			clearConsole();
 		}
@@ -991,7 +1002,6 @@ public class Window extends JPanel implements ActionListener {
 		setPlanePointCoefItem.setEnabled(in);
 		chk_planarItem.setEnabled(in);
 		chk_skipPlaneFlipItem.setEnabled(in);
-		chk_calcVertsItem.setEnabled(in);
 		chk_roundNumsItem.setEnabled(in);
 		chk_brushesToWorldItem.setEnabled(in);
 		chk_noDetailsItem.setEnabled(in);
@@ -1000,6 +1010,14 @@ public class Window extends JPanel implements ActionListener {
 		chk_replaceWithNull.setEnabled(in);
 		chk_visLeafBBoxes.setEnabled(in);
 		setOriginBrushSizeItem.setEnabled(in);
+		if(in) {
+			chk_calcVertsItem.setEnabled(!(chk_planarItem.isSelected() && !chk_skipPlaneFlipItem.isSelected()));
+			if(chk_planarItem.isSelected() && !chk_skipPlaneFlipItem.isSelected()) {
+				chk_calcVertsItem.setSelected(true);
+			}
+		} else {
+			chk_calcVertsItem.setEnabled(false);
+		}
 	}
 	
 	public static double getPrecision() {
