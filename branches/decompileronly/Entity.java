@@ -51,6 +51,10 @@ public class Entity {
 		for(int i=0;i<attributes.length;i++) {
 			attributes[i]=copy.getAttribute(i);
 		}
+		brushes=new MAPBrush[copy.getBrushes().length];
+		for(int i=0;i<brushes.length;i++) {
+			brushes[i]=new MAPBrush(copy.getBrush(i));
+		}
 	}
 	
 	// METHODS

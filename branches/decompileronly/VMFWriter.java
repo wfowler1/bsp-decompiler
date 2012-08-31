@@ -5,15 +5,33 @@
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.DecimalFormat;
+import java.util.Scanner;
 
 public class VMFWriter {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
+	public static final int A = 0;
+	public static final int B = 1;
+	public static final int C = 2;
+	
+	public static final int X = 0;
+	public static final int Y = 1;
+	public static final int Z = 2;
+	
+	// These are lowercase so as not to conflict with A B and C
+	// Light entity attributes; red, green, blue, strength (can't use i for intensity :P)
+	public static final int r = 0;
+	public static final int g = 1;
+	public static final int b = 2;
+	public static final int s = 3;
+	
 	private String path;
 	private Entities data;
 	private File mapFile;
-	private boolean hammerDecs;
+	private int BSPVersion;
+	
+	private int currentEntity;
 	
 	int nextID=1;
 	
@@ -21,11 +39,11 @@ public class VMFWriter {
 	
 	// CONSTRUCTORS
 	
-	public VMFWriter(Entities from, String to, boolean hammerDecs) {
-		this.data=from;
+	public VMFWriter(Entities from, String to, int BSPVersion) {
+		this.data=new Entities(from);
 		this.path=to;
-		this.hammerDecs=hammerDecs;
 		this.mapFile=new File(path);
+		this.BSPVersion=BSPVersion;
 	}
 	
 	// METHODS
@@ -63,9 +81,18 @@ public class VMFWriter {
 			
 			byte[][] entityBytes=new byte[data.getNumElements()][];
 			int totalLength=0;
-			for(int i=0;i<data.getNumElements();i++) {
-				entityBytes[i]=entityToByteArray(data.getEntity(i));
-				totalLength+=entityBytes[i].length;
+			for(int currentEntity=0;currentEntity<data.getNumElements();currentEntity++) {
+				try {
+					entityBytes[currentEntity]=entityToByteArray(data.getEntity(currentEntity));
+				} catch(java.lang.ArrayIndexOutOfBoundsException e) { // This happens when entities are added after the array is made
+					byte[][] newList=new byte[data.getNumElements()][]; // Create a new array with the new length
+					for(int j=0;j<entityBytes.length;j++) {
+						newList[j]=entityBytes[j];
+					}
+					newList[currentEntity]=entityToByteArray(data.getEntity(currentEntity));
+					entityBytes=newList;
+				}
+				totalLength+=entityBytes[currentEntity].length;
 			}
 			byte[] allEnts=new byte[totalLength];
 			int offset=0;
@@ -97,6 +124,20 @@ public class VMFWriter {
 		in.setAttribute("id", new Integer(nextID++).toString());
 		byte[] out;
 		double[] origin=new double[3];
+		// Correct some attributes of entities
+		switch(BSPVersion) {
+			case 42: // Nightfire
+				in=ent42ToEntVMF(in);
+				break;
+			case 38:
+				in=ent38ToEntVMF(in);
+				break;
+			case 1: // Doom! I can use any versioning system I want!
+				break;
+		}
+		if(in.isBrushBased()) {
+			in.deleteAttribute("model");
+		}
 		if(in.getBrushes().length>0) {
 			origin=in.getOrigin();
 		}
@@ -130,9 +171,17 @@ public class VMFWriter {
 					int brushArraySize=0;
 					byte[][] brushes=new byte[in.getBrushes().length][];
 					for(int j=0;j<in.getBrushes().length;j++) { // For each brush in the entity
-						in.getBrush(j).shift(new Vector3D(origin));
-						brushes[j]=brushToByteArray(in.getBrush(j));
-						brushArraySize+=brushes[j].length;
+						if(in.getBrush(j).isDetailBrush()) {
+							in.getBrush(j).setDetail(false);
+							Entity newDetailEntity=new Entity("func_detail");
+							newDetailEntity.addBrush(in.getBrush(j));
+							data.add(newDetailEntity);
+							brushes[j]=new byte[0]; // No data here! The brush will be output in its entity instead.
+						} else {
+							in.getBrush(j).shift(new Vector3D(origin));
+							brushes[j]=brushToByteArray(in.getBrush(j));
+							brushArraySize+=brushes[j].length;
+						}
 					}
 					int brushoffset=0;
 					byte[] brushArray=new byte[brushArraySize];
@@ -203,7 +252,66 @@ public class VMFWriter {
 			double texScaleY=in.getTexScaleY();
 			float texRot=in.getTexRot();
 			double lgtScale=in.getLgtScale();
-			if(hammerDecs) {
+			if(BSPVersion==42 || BSPVersion==1) {
+				if(texture.equalsIgnoreCase("special/nodraw") || texture.equalsIgnoreCase("special/null")) {
+					texture="tools/toolsnodraw";
+				} else {
+					if(texture.equalsIgnoreCase("special/clip")) {
+						texture="tools/toolsclip";
+					} else {
+						if(texture.equalsIgnoreCase("special/sky")) {
+							texture="tools/toolsskybox";
+						} else {
+							if(texture.equalsIgnoreCase("special/trigger")) {
+								texture="tools/toolstrigger";
+							} else {
+								if(texture.equalsIgnoreCase("special/playerclip")) {
+									texture="tools/toolsplayerclip";
+								} else {
+									if(texture.equalsIgnoreCase("special/npcclip") || texture.equalsIgnoreCase("special/enemyclip")) {
+										texture="tools/toolsnpcclip";
+									}
+								}
+							}
+						}
+					}
+				}
+			} else {
+				if(BSPVersion==38) {
+					try {
+						if(texture.substring(texture.length()-5).equalsIgnoreCase("/hint")) {
+							if(currentEntity==0) {
+								texture="tools/toolshint";
+							} else {
+								texture="tools/toolstrigger";
+							}
+						} else {
+							if(texture.substring(texture.length()-5).equalsIgnoreCase("/skip")) {
+								texture="tools/toolsskip";
+							} else {
+								if(texture.substring(texture.length()-5).equalsIgnoreCase("/clip")) {
+									texture="tools/toolsclip";
+								} else {
+									if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
+										texture="tools/toolstrigger";
+									} else {
+										if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky1")) {
+											texture="tools/toolsskybox";
+										} else {
+											if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky2")) {
+												texture="tools/toolsskybox";
+											}
+										}
+									}
+								}
+							}
+						}
+					} catch(StringIndexOutOfBoundsException e) {
+						;
+					}
+				}
+			}
+			if(Window.roundNumsIsSelected()) {
 				String out="		side"+(char)0x0D+(char)0x0A+"		{"+(char)0x0D+(char)0x0A;
 				out+="			\"id\" \""+(nextID++)+"\""+(char)0x0D+(char)0x0A;
 				out+="			\"plane\" \"("+fmt.format((double)Math.round(triangle[0].getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[0].getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[0].getZ()*1000000.0)/1000000.0)+") ";
@@ -234,6 +342,157 @@ public class VMFWriter {
 			Window.println("WARNING: Side with bad data! Not exported!",2);
 			return null;
 		}
+	}
+	
+	// Turn a Q2 entity into a Hammer one. This won't magically fix every single
+	// thing to work in Gearcraft, for example the Nightfire engine had no support
+	// for area portals. But it should save map porters some time, especially when
+	// it comes to the Capture The Flag mod.
+	public Entity ent38ToEntVMF(Entity in) {
+		if(!in.getAttribute("angle").equals("")) {
+			in.setAttribute("angles", "0 "+in.getAttribute("angle")+" 0");
+			in.deleteAttribute("angle");
+		}
+		if(in.getAttribute("classname").equalsIgnoreCase("func_wall")) {
+			in.setAttribute("classname", "func_brush");
+			if(!in.getAttribute("targetname").equals("")) { // Really this should depend on spawnflag 2 or 4
+				in.setAttribute("solidity", "0"); // TODO: Make sure the attribute is actually "solidity"
+			} else { // 2 I believe is "Start enabled" and 4 is "toggleable", or the other way around. Not sure. Could use an OR.
+				in.setAttribute("solidity", "2");
+			}
+		} else {
+			if(in.getAttribute("classname").equalsIgnoreCase("info_player_start")) {
+				double[] origin=in.getOrigin();
+				in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+18));
+			} else {
+				if(in.getAttribute("classname").equalsIgnoreCase("info_player_deathmatch")) {
+					double[] origin=in.getOrigin();
+					in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+18));
+				} else {
+					if(in.getAttribute("classname").equalsIgnoreCase("light")) {
+						String color=in.getAttribute("_color");
+						String intensity=in.getAttribute("light");
+						Scanner colorScanner=new Scanner(color);
+						double[] lightNumbers=new double[4];
+						for(int j=0;j<3 && colorScanner.hasNext();j++) {
+							try {
+								lightNumbers[j]=Double.parseDouble(colorScanner.next());
+								lightNumbers[j]*=255; // Quake 2's numbers are from 0 to 1, Nightfire are from 0 to 255
+							} catch(java.lang.NumberFormatException e) {
+								;
+							}
+						}
+						try {
+							lightNumbers[s]=Double.parseDouble(intensity)/2; // Quake 2's light intensity is waaaaaay too bright
+						} catch(java.lang.NumberFormatException e) {
+							;
+						}
+						in.deleteAttribute("_color");
+						in.deleteAttribute("light");
+						in.setAttribute("_light", lightNumbers[r]+" "+lightNumbers[g]+" "+lightNumbers[b]+" "+lightNumbers[s]);
+					} else {
+						if(in.getAttribute("classname").equalsIgnoreCase("misc_teleporter")) {
+							double[] origin=in.getOrigin();
+							Vector3D mins=new Vector3D(origin[X]-24, origin[Y]-24, origin[Z]-24);
+							Vector3D maxs=new Vector3D(origin[X]+24, origin[Y]+24, origin[Z]+48);
+							in.addBrush(GenericMethods.createBrush(mins,maxs,"tools/toolstrigger"));
+							in.deleteAttribute("origin");
+							in.setAttribute("classname", "trigger_teleport");
+						} else {
+							if(in.getAttribute("classname").equalsIgnoreCase("misc_teleporter_dest")) {
+								in.setAttribute("classname", "info_target");
+							}
+						}
+					}
+				}
+			}
+		}
+		return in;
+	}
+	
+	// Turn a Nightfire entity into a Hammer one.
+	public Entity ent42ToEntVMF(Entity in) {
+		if(!in.getAttribute("body").equalsIgnoreCase("")) {
+			in.renameAttribute("body", "SetBodyGroup");
+		}
+		if(in.getAttribute("rendercolor").equals("0 0 0")) {
+			in.setAttribute("rendercolor", "255 255 255");
+		}
+		try {
+			if(in.getAttribute("model").substring(in.getAttribute("model").length()-4).equalsIgnoreCase(".spz")) {
+				in.setAttribute("model", in.getAttribute("model").substring(0, in.getAttribute("model").length()-4)+".spr");
+			}
+		} catch(java.lang.StringIndexOutOfBoundsException e) {
+			;
+		}
+		if(in.getAttribute("classname").equalsIgnoreCase("light_spot")) {
+			in.setAttribute("pitch", new Double(in.getAngles()[0]).toString());
+			in.renameAttribute("_cone", "_inner_cone"); 
+			in.renameAttribute("_cone2", "_cone");
+			try {
+				if(Double.parseDouble(in.getAttribute("_cone"))>90.0) {
+					in.setAttribute("_cone", "90");
+				} else {
+					if(Double.parseDouble(in.getAttribute("_cone"))<0.0) {
+						in.setAttribute("_cone", "0");
+					}
+				}
+				if(Double.parseDouble(in.getAttribute("_cone2"))>90.0) {
+					in.setAttribute("_cone2", "90");
+				} else {
+					if(Double.parseDouble(in.getAttribute("_cone2"))<0.0) {
+						in.setAttribute("_cone2", "0");
+					}
+				}
+			} catch(java.lang.NumberFormatException e) {
+				;
+			}
+		} else {
+			if(in.getAttribute("classname").equalsIgnoreCase("func_wall")) {
+				if(in.getAttribute("rendermode").equals("0")) {
+					in.setAttribute("classname", "func_detail");
+					in.deleteAttribute("rendermode");
+				} else {
+					in.setAttribute("classname", "func_brush");
+					in.setAttribute("solidity", "2");
+				}
+			} else {
+				if(in.getAttribute("classname").equalsIgnoreCase("func_wall_toggle")) {
+					in.setAttribute("classname", "func_brush");
+					in.setAttribute("solidity", "0");
+					try {
+						if((Double.parseDouble(in.getAttribute("spawnflags")))/2.0 == Double.parseDouble(in.getAttribute("spawnflags"))) {
+							in.setAttribute("StartDisabled", "1"); // If spawnflags is an odd number, the start disabled flag is set.
+						} else {
+							in.setAttribute("StartDisabled", "0");
+						}
+					} catch(java.lang.NumberFormatException e) {
+						in.setAttribute("StartDisabled", "0");
+					}
+				} else {
+					if(in.getAttribute("classname").equalsIgnoreCase("func_illusionary")) {
+						in.setAttribute("classname", "func_brush");
+						in.setAttribute("solidity", "1");
+					} else {
+						if(in.getAttribute("classname").equalsIgnoreCase("item_generic")) {
+							in.setAttribute("classname", "prop_dynamic");
+							in.setAttribute("solid", "0");
+							in.deleteAttribute("effects");
+							in.deleteAttribute("fixedlight");
+						} else {
+							if(in.getAttribute("classname").equalsIgnoreCase("env_glow")) {
+								in.setAttribute("classname", "env_sprite");
+							} else {
+								if(in.getAttribute("classname").equalsIgnoreCase("info_teleport_destination")) {
+									in.setAttribute("classname", "info_target");
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return in;
 	}
 	
 	// ACCESSORS/MUTATORS

@@ -36,7 +36,7 @@ public class MAPBrush {
 		this.isDetailBrush=in.isDetailBrush();
 		sides=new MAPBrushSide[in.getNumSides()];
 		for(int i=0;i<in.getNumSides();i++) {
-			sides[i]=in.getSide(i);
+			sides[i]=new MAPBrushSide(in.getSide(i));
 		}
 	}
 	

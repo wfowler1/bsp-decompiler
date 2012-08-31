@@ -2,7 +2,6 @@
 // Decompile BSP v38
 
 import java.util.Date;
-import java.util.Scanner;
 
 public class BSP38Decompiler {
 
@@ -15,21 +14,6 @@ public class BSP38Decompiler {
 	public static final int X = 0;
 	public static final int Y = 1;
 	public static final int Z = 2;
-	
-	// These are lowercase so as not to conflict with A B and C
-	// Light entity attributes; red, green, blue, strength (can't use i for intensity :P)
-	public static final int r = 0;
-	public static final int g = 1;
-	public static final int b = 2;
-	public static final int s = 3;
-	
-	private boolean vertexDecomp;
-	private boolean correctPlaneFlip;
-	private boolean toHammer;
-	private boolean toRadiant;
-	private boolean toGearcraft;
-	private boolean calcVerts;
-	private boolean roundNums;
 	
 	private int jobnum;
 	
@@ -44,16 +28,9 @@ public class BSP38Decompiler {
 	// CONSTRUCTORS
 
 	// This constructor sets everything according to specified settings.
-	public BSP38Decompiler(v38BSP BSP38, boolean vertexDecomp, boolean correctPlaneFlip, boolean calcVerts, boolean roundNums, boolean toHammer, boolean toRadiant, boolean toGearcraft, int jobnum) {
+	public BSP38Decompiler(v38BSP BSP38, int jobnum) {
 		// Set up global variables
 		this.BSP38=BSP38;
-		this.vertexDecomp=vertexDecomp;
-		this.correctPlaneFlip=correctPlaneFlip;
-		this.toHammer=toHammer;
-		this.toRadiant=toRadiant;
-		this.toGearcraft=toGearcraft;
-		this.calcVerts=calcVerts;
-		this.roundNums=roundNums;
 		this.jobnum=jobnum;
 	}
 	
@@ -71,116 +48,10 @@ public class BSP38Decompiler {
 		boolean containsAreaPortals=false;
 		for(int i=0;i<BSP38.getEntities().getNumElements();i++) { // For each entity
 			Window.println("Entity "+i+": "+mapFile.getEntity(i).getAttribute("classname"),4);
-			if(toHammer) { // correct some entities to make source ports easier, TODO
-				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_wall")) {
-					mapFile.getEntity(i).setAttribute("classname", "func_brush"); // Doubt I need a case for func_detail here
-				}
-			}
-			if(toGearcraft) { // Gearcraft also requires some changes, do those here
-				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_wall")) {
-					if(!mapFile.getEntity(i).getAttribute("targetname").equals("")) { // Really this should depend on spawnflag 2 or 4
-						mapFile.getEntity(i).setAttribute("classname", "func_wall_toggle");
-					} // 2 I believe is "Start enabled" and 4 is "toggleable", or the other way around. Not sure. Could use an OR.
-				}
-				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("item_flag_team2")) { // Blue flag
-					mapFile.getEntity(0).setAttribute("defaultctf", "1"); // Turn CTF on in the worldspawn entity
-					mapFile.getEntity(i).setAttribute("classname", "item_ctfflag");
-					mapFile.getEntity(i).setAttribute("skin", "1"); // 0 for PHX, 1 for MI6
-					mapFile.getEntity(i).setAttribute("goal_no", "1"); // 2 for PHX, 1 for MI6
-					mapFile.getEntity(i).setAttribute("goal_max", "16 16 72");
-					mapFile.getEntity(i).setAttribute("goal_min", "-16 -16 0");
-					Entity flagBase=new Entity("item_ctfbase");
-					flagBase.setAttribute("origin", mapFile.getEntity(i).getAttribute("origin"));
-					flagBase.setAttribute("angles", mapFile.getEntity(i).getAttribute("angles"));
-					flagBase.setAttribute("angle", mapFile.getEntity(i).getAttribute("angle"));
-					flagBase.setAttribute("goal_no", "1");
-					flagBase.setAttribute("model", "models/ctf_flag_stand_mi6.mdl");
-					flagBase.setAttribute("goal_max", "16 16 72");
-					flagBase.setAttribute("goal_min", "-16 -16 0");
-					mapFile.add(flagBase);
-				}
-				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("item_flag_team1")) { // Red flag
-					mapFile.getEntity(0).setAttribute("defaultctf", "1"); // Turn CTF on in the worldspawn entity
-					mapFile.getEntity(i).setAttribute("classname", "item_ctfflag");
-					mapFile.getEntity(i).setAttribute("skin", "0"); // 0 for PHX, 1 for MI6
-					mapFile.getEntity(i).setAttribute("goal_no", "2"); // 2 for PHX, 1 for MI6
-					mapFile.getEntity(i).setAttribute("goal_max", "16 16 72");
-					mapFile.getEntity(i).setAttribute("goal_min", "-16 -16 0");
-					Entity flagBase=new Entity("item_ctfbase");
-					flagBase.setAttribute("origin", mapFile.getEntity(i).getAttribute("origin"));
-					flagBase.setAttribute("angles", mapFile.getEntity(i).getAttribute("angles"));
-					flagBase.setAttribute("angle", mapFile.getEntity(i).getAttribute("angle"));
-					flagBase.setAttribute("goal_no", "2");
-					flagBase.setAttribute("model", "models/ctf_flag_stand_phoenix.mdl");
-					flagBase.setAttribute("goal_max", "16 16 72");
-					flagBase.setAttribute("goal_min", "-16 -16 0");
-					mapFile.add(flagBase);
-				}
-				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("info_player_team1")) {
-					mapFile.getEntity(i).setAttribute("classname", "info_ctfspawn");
-					mapFile.getEntity(i).setAttribute("team_no", "2");
-				}
-				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("info_player_team2")) {
-					mapFile.getEntity(i).setAttribute("classname", "info_ctfspawn");
-					mapFile.getEntity(i).setAttribute("team_no", "1");
-				}
-				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("worldspawn")) {
-					mapFile.getEntity(i).setAttribute("mapversion", "510"); // Otherwise Gearcraft cries.
-				}
-				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("info_player_start")) {
-					double[] origin=mapFile.getEntity(i).getOrigin();
-					mapFile.getEntity(i).setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+18));
-				}
-				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("info_player_coop")) {
-					double[] origin=mapFile.getEntity(i).getOrigin();
-					mapFile.getEntity(i).setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+18));
-				}
-				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("info_player_deathmatch")) {
-					double[] origin=mapFile.getEntity(i).getOrigin();
-					mapFile.getEntity(i).setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+18));
-				}
-				if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("light")) {
-					String color=mapFile.getEntity(i).getAttribute("_color");
-					String intensity=mapFile.getEntity(i).getAttribute("light");
-					Scanner colorScanner=new Scanner(color);
-					double[] lightNumbers=new double[4];
-					for(int j=0;j<3 && colorScanner.hasNext();j++) {
-						try {
-							lightNumbers[j]=Double.parseDouble(colorScanner.next());
-							lightNumbers[j]*=255; // Quake 2's numbers are from 0 to 1, Nightfire are from 0 to 255
-						} catch(java.lang.NumberFormatException e) {
-							;
-						}
-					}
-					try {
-						lightNumbers[s]=Double.parseDouble(intensity)/2; // Quake 2's light intensity is waaaaaay too bright
-					} catch(java.lang.NumberFormatException e) {
-						;
-					}
-					mapFile.getEntity(i).deleteAttribute("_color");
-					mapFile.getEntity(i).deleteAttribute("light");
-					mapFile.getEntity(i).setAttribute("_light", lightNumbers[r]+" "+lightNumbers[g]+" "+lightNumbers[b]+" "+lightNumbers[s]);
-				}
-			}
-			if(toRadiant) {
-				;
-			}
-			// And of course, they may both necessitate some changes
+			// Deal with area portals.
 			if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_areaportal")) {
 				mapFile.getEntity(i).deleteAttribute("style");
 				containsAreaPortals=true;
-			}
-			if(!mapFile.getEntity(i).getAttribute("angle").equals("")) {
-				mapFile.getEntity(i).setAttribute("angles", "0 "+mapFile.getEntity(i).getAttribute("angle")+" 0");
-				mapFile.getEntity(i).deleteAttribute("angle");
-			}
-			if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("misc_teleporter")) {
-				mapFile.getEntity(i).addBrush(createTriggerBrush(i));
-				mapFile.getEntity(i).deleteAttribute("origin");
-				mapFile.getEntity(i).setAttribute("classname", "trigger_teleport");
-			}
-			if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("misc_teleporter_dest")) {
-				mapFile.getEntity(i).setAttribute("classname", "info_teleport_destination");
 			}
 			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
 			int currentModel=mapFile.getEntity(i).getModelNumber();
@@ -195,17 +66,7 @@ public class BSP38Decompiler {
 				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
 					v38Leaf currentLeaf=leaves[j];
 					if(Window.visLeafBBoxesIsSelected()) {
-						if(toGearcraft) {
-							mapFile.getEntity(0).addBrush(GenericMethods.createBrush(currentLeaf.getMins(), currentLeaf.getMaxs(), "special/hint"));
-						} else {
-							if(toHammer) {
-								mapFile.getEntity(0).addBrush(GenericMethods.createBrush(currentLeaf.getMins(), currentLeaf.getMaxs(), "tools/toolshint"));
-							} else {
-								if(toRadiant) {
-									mapFile.getEntity(0).addBrush(GenericMethods.createBrush(currentLeaf.getMins(), currentLeaf.getMaxs(), "common/hint"));
-								}
-							}
-						}
+						mapFile.getEntity(0).addBrush(GenericMethods.createBrush(currentLeaf.getMins(), currentLeaf.getMaxs(), "special/hint"));
 					}
 					short firstBrushIndex=currentLeaf.getFirstMarkBrush();
 					short numBrushIndices=currentLeaf.getNumMarkBrushes();
@@ -225,23 +86,6 @@ public class BSP38Decompiler {
 								Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().length()+BSP38.getEntities().getNumElements(), "Decompiling...");
 							}
 						}
-					}
-				}
-				mapFile.getEntity(i).deleteAttribute("model");
-				// Recreate origin brushes for entities that need them, only for GearCraft though.
-				// These are discarded on compile and replaced with an "origin" attribute in the entity.
-				// I need to undo that. For this I will create a 32x32 brush, centered at the point defined
-				// by the "origin" attribute. Hammer keeps the "origin" attribute and uses it directly
-				// instead, so we'll keep it in a VMF.
-				if(!toHammer) {
-					if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
-						MAPBrush newOriginBrush;
-						if(toGearcraft) {
-							newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
-						} else {
-							newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"common/origin");
-						}
-						mapFile.getEntity(i).addBrush(newOriginBrush);
 					}
 				}
 			}
@@ -265,41 +109,41 @@ public class BSP38Decompiler {
 			}
 		}
 		Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().length()+BSP38.getEntities().getNumElements(), "Saving...");
-		if(toHammer) {
+		if(Window.toVMF()) {
 			VMFWriter VMFMaker;
 			if(Window.getOutputFolder().equals("default")) {
 				Window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+".vmf...",0);
-				VMFMaker=new VMFWriter(mapFile, BSP38.getPath().substring(0, BSP38.getPath().length()-4), roundNums);
+				VMFMaker=new VMFWriter(mapFile, BSP38.getPath().substring(0, BSP38.getPath().length()-4),38);
 			} else {
 				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+".vmf...",0);
-				VMFMaker=new VMFWriter(mapFile, Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4), roundNums);
+				VMFMaker=new VMFWriter(mapFile, Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4),38);
 			}
 			VMFMaker.write();
 		}
-		if(toRadiant) {
-			RadiantMAPWriter MAPMaker;
+		if(Window.toMOH()) {
+			MOHRadiantMAPWriter MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+"_radiant.map...",0);
-				MAPMaker=new RadiantMAPWriter(mapFile, BSP38.getPath().substring(0, BSP38.getPath().length()-4), roundNums);
+				Window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+"_MOH.map...",0);
+				MAPMaker=new MOHRadiantMAPWriter(mapFile, BSP38.getPath().substring(0, BSP38.getPath().length()-4)+"_MOH",38);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+"_radiant.map...",0);
-				MAPMaker=new RadiantMAPWriter(mapFile, Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+"_radiant", roundNums);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+"_MOH.map...",0);
+				MAPMaker=new MOHRadiantMAPWriter(mapFile, Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+"_MOH",38);
 			}
 			MAPMaker.write();
 		}
-		if(toGearcraft) {
+		if(Window.toGCMAP()) {
 			MAP510Writer MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
 				Window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+".map...",0);
-				MAPMaker=new MAP510Writer(mapFile, BSP38.getPath().substring(0, BSP38.getPath().length()-4), roundNums);
+				MAPMaker=new MAP510Writer(mapFile, BSP38.getPath().substring(0, BSP38.getPath().length()-4),38);
 			} else {
 				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+".map...",0);
-				MAPMaker=new MAP510Writer(mapFile, Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4), roundNums);
+				MAPMaker=new MAP510Writer(mapFile, Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4),38);
 			}
 			MAPMaker.write();
 		}
 		Window.println("Process completed!",0);
-		if(correctPlaneFlip) {
+		if(!Window.skipFlipIsSelected()) {
 			Window.println("Num simple corrected brushes: "+numSimpleCorrects,1); 
 			Window.println("Num advanced corrected brushes: "+numAdvancedCorrects,1); 
 			Window.println("Num good brushes: "+numGoodBrushes,1); 
@@ -312,7 +156,7 @@ public class BSP38Decompiler {
 	// Decompiles the Brush and adds it to entitiy #currentEntity as .MAP data.
 	private void decompileBrush(Brush brush, int currentEntity) {
 		double[] origin=mapFile.getEntity(currentEntity).getOrigin();
-		boolean containsWaterTexture=false;
+		boolean isWater=false;
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
 		MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
@@ -326,7 +170,8 @@ public class BSP38Decompiler {
 			boolean isDuplicate=false;
 			for(int i=l+1;i<numSides;i++) { // For each subsequent side of the brush
 				if(currentPlane.equals(BSP38.getPlanes().getPlane(BSP38.getBrushSides().getBrushSide(firstSide+i).getPlane()))) {
-					Window.println("Duplicate planes, sides "+l+" and "+i,2);
+					Window.println("WARNING: Duplicate planes in a brush, sides "+l+" and "+i,2);
+					isDuplicate=true;
 				}
 			}
 			if(!isDuplicate) {
@@ -338,7 +183,7 @@ public class BSP38Decompiler {
 				//int firstVertex=currentFace.getVert();
 				//int numVertices=currentFace.getNumVerts();
 				// boolean pointsWorked=false; // Need to figure out how to get faces from brush sides, then use vertices
-				/*if(numVertices!=0 && vertexDecomp) { // If the face actually references a set of vertices
+				/*if(numVertices!=0 && !Window.planarDecompIsSelected()) { // If the face actually references a set of vertices
 					plane[0]=new Vector3D(BSP42.getVertices().getVertex(firstVertex)); // Grab and store the first one
 					int m=1;
 					for(m=1;m<numVertices;m++) { // For each point after the first one
@@ -364,90 +209,8 @@ public class BSP38Decompiler {
 					plane=GenericMethods.extrapPlanePoints(currentPlane);
 				//}
 				String texture=currentTexture.getTexture();
-				if(texture.equalsIgnoreCase("e1u1/brwater") || 
-				   texture.equalsIgnoreCase("e1u1/water1_8") || 
-				   texture.equalsIgnoreCase("e1u1/water4") || 
-				   texture.equalsIgnoreCase("e1u1/water8") || 
-				   texture.equalsIgnoreCase("e1u3/brwater") || 
-				   texture.equalsIgnoreCase("e2u3/water6") || 
-				   texture.equalsIgnoreCase("e2u3/water8") || 
-				   texture.equalsIgnoreCase("e3u1/brwater") || 
-				   texture.equalsIgnoreCase("e3u2/water2") || 
-				   texture.equalsIgnoreCase("e3u3/awater") || 
-				   texture.equalsIgnoreCase("e3u3/water7") ||
-				   texture.equalsIgnoreCase("e1u1/bluwter") ||
-				   texture.equalsIgnoreCase("e1u2/bluwter") ||
-				   texture.equalsIgnoreCase("e1u3/bluwter") ||
-				   texture.equalsIgnoreCase("e2u2/bluwter") ||
-				   texture.equalsIgnoreCase("e2u3/bluwter") ||
-				   texture.equalsIgnoreCase("e3u1/bluwter")) {
-					containsWaterTexture=true;
-				} else {
-					if(toHammer) { // TODO more to do here
-						try {
-							if(texture.substring(texture.length()-5).equalsIgnoreCase("/hint")) {
-								if(currentEntity==0) {
-									texture="tools/toolshint";
-								} else {
-									texture="tools/toolstrigger";
-								}
-							} else {
-								if(texture.substring(texture.length()-5).equalsIgnoreCase("/skip")) {
-									texture="tools/toolsskip";
-								} else {
-									if(texture.substring(texture.length()-5).equalsIgnoreCase("/clip")) {
-										texture="tools/toolsclip";
-									} else {
-										if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
-											texture="tools/toolstrigger";
-										} else {
-											if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky1")) {
-												texture="tools/toolsskybox";
-											} else {
-												if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky2")) {
-													texture="tools/toolsskybox";
-												}
-											}
-										}
-									}
-								}
-							}
-						} catch(StringIndexOutOfBoundsException e) {
-							;
-						}
-					} else {
-						try {
-							if(texture.substring(texture.length()-5).equalsIgnoreCase("/hint")) {
-								if(currentEntity==0) {
-									texture="special/hint"; // Hint was not used the same way in Quake 2 as other games.
-								} else {                   // For example, a Hint brush CAN be used for a trigger in Q2 and is used as such a lot.
-									texture="special/trigger";
-								}
-							} else {
-								if(texture.substring(texture.length()-5).equalsIgnoreCase("/skip")) {
-									texture="special/skip";
-								} else {
-									if(texture.substring(texture.length()-5).equalsIgnoreCase("/clip")) {
-										texture="special/clip";
-									} else {
-										if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
-											texture="special/trigger";
-										} else {
-											if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky1")) {
-												texture="special/sky";
-											} else {
-												if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky2")) {
-													texture="special/sky";
-												}
-											}
-										}
-									}
-								}
-							}
-						} catch(StringIndexOutOfBoundsException e) {
-							;
-						}
-					}
+				if(brush.getAttributes()[0]==32) {
+					isWater=true;
 				}
 				double[] textureS=new double[3];
 				double[] textureT=new double[3];
@@ -472,10 +235,6 @@ public class BSP38Decompiler {
 				String material="wld_lightmap"; // Since materials are a NightFire only thing, set this to a good default
 				double lgtScale=16; // These values are impossible to get from a compiled map since they
 				double lgtRot=0;    // are used by RAD for generating lightmaps, then are discarded, I believe.
-				// If flags weren't already 0
-				/* if(Window.noFaceFlagsIsSelected()) {
-					flags=0;
-				}*/
 				brushSides[l]=new MAPBrushSide(plane, texture, textureS, textureShiftS, textureT, textureShiftT,
 				                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
 				if(brushSides[l]!=null) {
@@ -484,29 +243,36 @@ public class BSP38Decompiler {
 			}
 		}
 		
-		if(correctPlaneFlip) {
+		if(!Window.skipFlipIsSelected()) {
 			if(mapBrush.hasBadSide()) { // If there's a side that might be backward
 				if(mapBrush.hasGoodSide()) { // If there's a side that is forward
 					mapBrush=GenericMethods.SimpleCorrectPlanes(mapBrush);
 					numSimpleCorrects++;
-					if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
-						mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
-						Window.println("Calculating vertices",4);
+					if(Window.calcVertsIsSelected()) { // This is performed in advancedcorrect, so don't use it if that's happening
+						try {
+							mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+						} catch(java.lang.NullPointerException e) {
+							Window.println("WARNING: Brush vertex calculation failed on entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",2);
+						}
 					}
 				} else { // If no forward side exists
 					try {
 						mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush);
 						numAdvancedCorrects++;
 					} catch(java.lang.ArithmeticException e) {
-						Window.println("Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",2);
+						Window.println("WARNING: Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",2);
 					}
 				}
 			} else {
 				numGoodBrushes++;
 			}
 		} else {
-			if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
-				mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+			if(Window.calcVertsIsSelected()) { // This is performed in advancedcorrect, so don't use it if that's happening
+				try {
+					mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+				} catch(java.lang.NullPointerException e) {
+					Window.println("WARNING: Brush vertex calculation failed on entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",2);
+				}
 			}
 		}
 		
@@ -517,7 +283,7 @@ public class BSP38Decompiler {
 		if(Window.brushesToWorldIsSelected()) {
 			mapFile.getEntity(0).addBrush(mapBrush);
 		} else {
-			if(containsWaterTexture) {
+			if(isWater) {
 				Entity newWaterEntity=new Entity("func_water");
 				newWaterEntity.setAttribute("rendercolor", "0 0 0");
 				newWaterEntity.setAttribute("speed", "100");
@@ -530,64 +296,6 @@ public class BSP38Decompiler {
 				mapFile.getEntity(currentEntity).addBrush(mapBrush);
 			}
 		}
-	}
-	
-	public MAPBrush createTriggerBrush(int ent) {
-		double[] origin=mapFile.getEntity(ent).getOrigin();
-		MAPBrush newTriggerBrush=new MAPBrush(numBrshs++, ent, false);
-		Vector3D[][] planes=new Vector3D[6][3]; // Six planes for a cube brush, three vertices for each plane
-		double[][] textureS=new double[6][3];
-		double[][] textureT=new double[6][3];
-		// The planes and their texture scales
-		// I got these from an origin brush created by Gearcraft. Don't worry where these numbers came from, they work.
-		// Top
-		planes[0][0]=new Vector3D(-24+origin[0], 24+origin[1], 48+origin[2]);
-		planes[0][1]=new Vector3D(24+origin[0], 24+origin[1], 48+origin[2]);
-		planes[0][2]=new Vector3D(24+origin[0], -24+origin[1], 48+origin[2]);
-		textureS[0][0]=1;
-		textureT[0][1]=-1;
-		// Bottom
-		planes[1][0]=new Vector3D(-24+origin[0], -24+origin[1], -24+origin[2]);
-		planes[1][1]=new Vector3D(24+origin[0], -24+origin[1], -24+origin[2]);
-		planes[1][2]=new Vector3D(24+origin[0], 24+origin[1], -24+origin[2]);
-		textureS[1][0]=1;
-		textureT[1][1]=-1;
-		// Left
-		planes[2][0]=new Vector3D(-24+origin[0], 24+origin[1], 48+origin[2]);
-		planes[2][1]=new Vector3D(-24+origin[0], -24+origin[1], 48+origin[2]);
-		planes[2][2]=new Vector3D(-24+origin[0], -24+origin[1], -24+origin[2]);
-		textureS[2][1]=1;
-		textureT[2][2]=-1;
-		// Right
-		planes[3][0]=new Vector3D(24+origin[0], 24+origin[1], -24+origin[2]);
-		planes[3][1]=new Vector3D(24+origin[0], -24+origin[1], -24+origin[2]);
-		planes[3][2]=new Vector3D(24+origin[0], -24+origin[1], 48+origin[2]);
-		textureS[3][1]=1;
-		textureT[3][2]=-1;
-		// Near
-		planes[4][0]=new Vector3D(24+origin[0], 24+origin[1], 48+origin[2]);
-		planes[4][1]=new Vector3D(-24+origin[0], 24+origin[1], 48+origin[2]);
-		planes[4][2]=new Vector3D(-24+origin[0], 24+origin[1], -24+origin[2]);
-		textureS[4][0]=1;
-		textureT[4][2]=-1;
-		// Far
-		planes[5][0]=new Vector3D(24+origin[0], -24+origin[1], -24+origin[2]);
-		planes[5][1]=new Vector3D(-24+origin[0], -24+origin[1], -24+origin[2]);
-		planes[5][2]=new Vector3D(-24+origin[0], -24+origin[1], 48+origin[2]);
-		textureS[5][0]=1;
-		textureT[5][2]=-1;
-		
-		for(int j=0;j<6;j++) {
-			MAPBrushSide currentEdge;
-			if(toHammer) {
-				currentEdge=new MAPBrushSide(planes[j], "tools/toolstrigger", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-			} else {
-			// if(toGearcraft) {
-				currentEdge=new MAPBrushSide(planes[j], "special/trigger", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-			}
-			newTriggerBrush.add(currentEdge);
-		}
-		return newTriggerBrush;
 	}
 	
 	public v38Texture createPerpTexture38(Plane in) {

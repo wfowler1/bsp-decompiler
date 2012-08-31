@@ -106,6 +106,27 @@ public class MAPBrushSide {
 		planeDefined=true;
 		triangleDefined=false;
 	}
+	
+	public MAPBrushSide(MAPBrushSide copy) {
+		plane=new Plane(copy.getPlane());
+		triangle[0]=new Vector3D(copy.getTriangle()[0]);
+		triangle[1]=new Vector3D(copy.getTriangle()[1]);
+		triangle[2]=new Vector3D(copy.getTriangle()[2]);
+		texture=copy.getTexture();
+		textureS=new Vector3D(copy.getTextureS());
+		textureT=new Vector3D(copy.getTextureT());
+		textureShiftS=copy.getTextureShiftS();
+		textureShiftT=copy.getTextureShiftT();
+		texRot=copy.getTexRot();
+		texScaleX=copy.getTexScaleX();
+		texScaleY=copy.getTexScaleY();
+		flags=copy.getFlags();
+		material=copy.getMaterial();
+		lgtScale=copy.getLgtScale();
+		lgtRot=copy.getLgtRot();
+		planeDefined=copy.isDefinedByPlane();
+		triangleDefined=copy.isDefinedByTriangle();
+	}
 
 	// METHODS
 
@@ -169,12 +190,24 @@ public class MAPBrushSide {
 	// ACCESSORS/MUTATORS
 	public void setTriangle(Vector3D[] in) {
 		if(in.length>=3) {
-			triangle[0]=in[0];
-			triangle[1]=in[1];
-			triangle[2]=in[2];
-			plane=new Plane(triangle);
-			planeDefined=false;
-			triangleDefined=true;
+			if(in[0]==null) {
+				Window.println("WARNING: Tried to set triangle but point 0 was null!",2);
+			} else {
+				if(in[1]==null) {
+					Window.println("WARNING: Tried to set triangle but point 1 was null!",2);
+				} else {
+					if(in[2]==null) {
+						Window.println("WARNING: Tried to set triangle but point 2 was null!",2);
+					} else {
+						triangle[0]=in[0];
+						triangle[1]=in[1];
+						triangle[2]=in[2];
+						plane=new Plane(triangle);
+						planeDefined=false;
+						triangleDefined=true;
+					}
+				}
+			}
 		} else {
 			Window.println("WARNING: Tried to define side with "+triangle.length+" points!",2);
 		}
@@ -182,15 +215,28 @@ public class MAPBrushSide {
 	
 	public void setSide(Plane plane, Vector3D[] triangle) {
 		if(triangle.length>=3) {
-			this.triangle[0]=triangle[0];
-			this.triangle[1]=triangle[1];
-			this.triangle[2]=triangle[2];
-			triangleDefined=true;
+			if(triangle[0]==null) {
+				Window.println("WARNING: Tried to set triangle but point 0 was null!",2);
+			} else {
+				if(triangle[1]==null) {
+					Window.println("WARNING: Tried to set triangle but point 1 was null!",2);
+				} else {
+					if(triangle[2]==null) {
+						Window.println("WARNING: Tried to set triangle but point 2 was null!",2);
+					} else {
+						this.triangle[0]=triangle[0];
+						this.triangle[1]=triangle[1];
+						this.triangle[2]=triangle[2];
+						triangleDefined=true;
+						this.plane=plane;
+						planeDefined=true;
+					}
+				}
+			}
 		} else {
 			Window.println("WARNING: Tried to define side with "+triangle.length+" points!",2);
 		}
-		this.plane=plane;
-		planeDefined=true;
+
 	}
 	
 	public void setPlane(Plane in) {

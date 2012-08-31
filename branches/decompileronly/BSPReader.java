@@ -22,10 +22,6 @@ public class BSPReader {
 	
 	private boolean wad=false;
 	
-	private boolean toHammer;
-	private boolean toRadiant;
-	private boolean toGearcraft;
-	
 	public final int OFFSET=0;
 	public final int LENGTH=1;
 	
@@ -61,21 +57,6 @@ public class BSPReader {
 	
 	public BSPReader(File in) {
 		BSP=in;
-		if(!BSP.exists()) {
-			Window.println("Unable to open source BSP file, please ensure the BSP exists.",0);
-		} else {
-			folder=BSP.getParent(); // The read string minus the .BSP is the lumps folder
-			if(folder==null) {
-				folder="";
-			}
-		}
-	}
-	
-	public BSPReader(File in, boolean toHammer, boolean toRadiant, boolean toGearcraft) {
-		BSP=in;
-		this.toHammer=toHammer;
-		this.toRadiant=toRadiant;
-		this.toGearcraft=toGearcraft;
 		if(!BSP.exists()) {
 			Window.println("Unable to open source BSP file, please ensure the BSP exists.",0);
 		} else {
@@ -217,7 +198,7 @@ public class BSPReader {
 							
 									doomMaps[doomMaps.length-1].printBSPReport();
 									
-									Window.window.addJob(null, doomMaps[doomMaps.length-1], toHammer, toRadiant, toGearcraft);
+									Window.window.addJob(null, doomMaps[doomMaps.length-1]);
 								}
 							}
 							

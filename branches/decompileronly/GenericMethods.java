@@ -454,9 +454,12 @@ public class GenericMethods {
 	// Some algorithms might produce planes which are correctly normalized, but
 	// some don't actually contribute to the solid (such as those solids created
 	// by iterating through a binary tree, and keeping track of all node subdivisions).
-	public static MAPBrush cullUnusedPlanes(MAPBrush in) {
-		Window.println("Culling unnecessary planes",3);
+	// This finds them, returns a list of their indices as an array. I could return
+	// a MAPBrush with those planes culled, but oftentimes there are two or three
+	// brushes with the same unnecessary planes.
+	public static int[] findUnusedPlanes(MAPBrush in) {
 		Plane[] thePlanes=in.getPlanes();
+		Window.print("Finding unnecessary planes. Before: "+thePlanes.length,3);
 		
 		// Step 1: Get all points of intersection
 		double numVerts = 4;
@@ -486,7 +489,7 @@ public class GenericMethods {
 		}
 		
 		// Step 3: Only keep sides which have three or more vertices defined
-		int side=0;
+		int[] badSides=new int[0];
 		for(int i=0;i<thePlanes.length;i++) {
 			int numMatches=0;
 			Vector3D[] matches=new Vector3D[3];
@@ -508,12 +511,16 @@ public class GenericMethods {
 				}
 			}
 			if(numMatches<3) {
-				in.delete(side); // Delete this side from the brush
-				side--;
+				int[] newList=new int[badSides.length+1];
+				for(int j=0;j<badSides.length;j++) {
+					newList[j]=badSides[j];
+				}
+				newList[newList.length-1]=i;
+				badSides=newList;
 			}
-			side++;
 		}
-		return in;
+		Window.println(" After: "+(thePlanes.length-badSides.length),3);
+		return badSides;
 	}
 
 	public static Vector3D[] extrapPlanePoints(Plane in) {

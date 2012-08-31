@@ -1,3 +1,5 @@
+// Window class
+
 // GUI for the decompiler.
 // For a list of swing components check here:
 // http://download.oracle.com/javase/tutorial/ui/features/components.html
@@ -17,6 +19,11 @@ import java.util.Scanner;
 
 public class Window extends JPanel implements ActionListener {
 
+	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
+	
+	// Constants
+	public static final String LF=""+(char)0x0D+(char)0x0A;
+
 	private static Runtime r = Runtime.getRuntime(); // Get a runtime object. This is for calling
 	                                                 // Java's garbage collector and does not need
 	                                                 // to be ported. I try not to leave memory leaks
@@ -26,38 +33,46 @@ public class Window extends JPanel implements ActionListener {
 	                                                 // calling gc(). Also, it is used to execute EXEs
 	                                                 // from within the program by calling .exec(path).
 
-	protected static Window window;
+	// Window container
+	protected static Window window; // Window
 
-	private static JFrame frame;
-	private static JMenuBar menuBar;
+	// Inside the window we have...
+	private static JMenuBar menuBar; // Menu bar
+	private static JFrame frame; // Frame
 
+	// Menu bar components
+	// "File" menu
 	private static JMenu fileMenu;
-	private static JMenuItem decompVMFItem;
-	private static JMenuItem decompMAPItem; 
-	private static JMenuItem decompRadiantItem; 
+	private static JMenuItem openItem;
+	private static JCheckBoxMenuItem decompVMFItem;
+	private static JCheckBoxMenuItem decompMAPItem; 
+	private static JCheckBoxMenuItem decompMOHRadiantItem;
 	private static JMenuItem exitItem;
 
+	// "Options" menu
 	private static JMenu optionsMenu;
-	// private static JMenuItem replaceEntitiesItem;
-	// private static JMenuItem replaceTexturesItem;
 	private static JMenuItem setPlanePointCoefItem;
-	private static JMenuItem setThreadsItem;
-	private static JMenuItem setOutFolderItem;
 	private static JCheckBoxMenuItem chk_planarItem;
 	private static JCheckBoxMenuItem chk_skipPlaneFlipItem;
 	private static JCheckBoxMenuItem chk_calcVertsItem;
 	private static JCheckBoxMenuItem chk_roundNumsItem;
+	private static JMenuItem setThreadsItem;
+	private static JMenuItem setOutFolderItem;
 
+	// "Debug" menu
 	private static JMenu debugMenu;
 	private static JCheckBoxMenuItem chk_brushesToWorldItem;
 	private static JCheckBoxMenuItem chk_noDetailsItem;
 	private static JCheckBoxMenuItem chk_noFaceFlagsItem;
 	private static JMenuItem setErrorItem;
 	private static JMenuItem setOriginBrushSizeItem;
+	private static JMenuItem saveLogItem;
+	// "Special requests" submenu
 	private static JMenu specialMenu;
 	private static JCheckBoxMenuItem chk_replaceWithNull;
 	private static JCheckBoxMenuItem chk_visLeafBBoxes;
-	private static JMenuItem saveLogItem;
+	private static JCheckBoxMenuItem chk_dontCull;
+	// "Log Verbosity" submenu
 	private static JMenu verbosityMenu;
 	private static ButtonGroup verbosityGroup;
 	private static JRadioButtonMenuItem rad_verbosity_0;
@@ -65,31 +80,43 @@ public class Window extends JPanel implements ActionListener {
 	private static JRadioButtonMenuItem rad_verbosity_2;
 	private static JRadioButtonMenuItem rad_verbosity_3;
 	private static JRadioButtonMenuItem rad_verbosity_4;
-
+	
+	// Frame components
+	// There's really only one, the Split Pane
+	private static JSplitPane consoleTableSplitter;
+	// On top...
+	private static JScrollPane console_pane; // And inside that...
+	private static JTextArea consolebox;
+	// On bottom...
+	private static JScrollPane table_pane; // And inside that...
+	private static JPanel pnl_jobs; // This panel gets the jobs table in it.
+	private static JLabel lbl_mapName;
+	private static JProgressBar totalProgressBar;
+	private static JButton btn_abort_all;
+	private static JLabel[] mapNames;
+	private static JProgressBar[] progressBar;
+	private static JButton[] btn_abort;
+	
+	// Global variables, used internally
+	private static int numJobs;
+	private static volatile int nextJob=0;
 	private static File[] jobs=new File[0];
 	private static DoomMap[] doomJobs=new DoomMap[0];
-	private static boolean[] toHammer;
-	private static boolean[] toGC;
-	private static boolean[] toRadiant;
 	private static int[] threadNum;
 	private static Runnable runMe;
 	private static Thread[] decompilerworkers=null;
-	private static int numThreads=1;
-	private static double planePointCoef=100;
-
 	private static String lastUsedFolder;
 	
-	private static double precision=0.01;
-	// The number of decimal places of error allowed for double-precision decimal
-	// calculations. Down the line, this error can propagate fast.
-	// 0.01 is a reasonable level. 0.00001 is quite strict. 0.1 is a little ridiculous.
-
-	// main method
-	// Creates an Object of this class and launches the GUI. Entry point to the whole program.
+	// Global variables, can be freely set by user
+	private static int numThreads=1;
+	private static double planePointCoef=100;
 	private static double originBrushSize=16;
 	private static int verbosity=0;
 	private static String outputFolder="default";
-	
+	private static double precision=0.01;
+
+	// main method
+	// Creates an Object of this class and launches the GUI. Entry point to the whole program.
 	public static void main(String[] args) {
 		//if(args.length==0) {
 			UIManager myUI=new UIManager();
@@ -105,47 +132,21 @@ public class Window extends JPanel implements ActionListener {
 		//} else {
 		//	window = new Window(args);
 		//}
-		window.print("Got a bug to report? Want to request a feature?"+(char)0x0D+(char)0x0A+"Create an issue report at"+(char)0x0D+(char)0x0A+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry"+(char)0x0D+(char)0x0A+(char)0x0D+(char)0x0A, 0);
+		print("Got a bug to report? Want to request a feature?"+LF+"Create an issue report at"+LF+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry"+LF+LF, 0);
 	}
-
-	// All GUI components get initialized here
-	private static JFileChooser file_selector;
-	private static JButton[] btn_abort;
-	private static JButton btn_abort_all;
-	private static JTextArea consolebox;
-	private static JLabel lbl_coef;
-	private static JLabel lbl_threads;
-	private static JLabel lbl_mapName;
-	private static JSplitPane consoleTableSplitter;
-	private static JScrollPane console_pane;
-	private static JScrollPane table_pane;
-	private static JLabel[] mapNames;
-	private static JProgressBar[] progressBar;
-	private static JProgressBar totalProgressBar;
-	private static JPanel pnl_jobs;
-	private static JLabel lbl_spacer;
-	
-	private static boolean vertexDecomp=true;
-	private static boolean correctPlaneFlip=true;
-	private static boolean calcVerts=false;
-	private static boolean roundNums=true;
-	private static int numJobs;
-	private static volatile int nextJob=0;
 
 	// This constructor configures and displays the GUI
 	public Window(Container pane) {
 		// Set up most of the window's properties, since we definitely have a window
 		// Good thing frame is a global object
+		// Set up frame's properties here
 		frame.setIconImage(new ImageIcon("icon32x32.PNG").getImage());
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
 		frame.setPreferredSize(new Dimension(640, 460));
-
+		frame.setMinimumSize(new Dimension(316, 240));
 		frame.pack();
 		frame.setResizable(true);
 		frame.setVisible(true);
-		
-		frame.setMinimumSize(new Dimension(316, 240));
 		
 		// Menu Bar
 		menuBar = new JMenuBar();
@@ -157,26 +158,28 @@ public class Window extends JPanel implements ActionListener {
 		menuBar.add(debugMenu);
 		
 		// File menu
-		decompVMFItem = new JMenuItem("Decompile to VMF");
+		openItem = new JMenuItem("Open map...");
+		fileMenu.add(openItem);
+		openItem.addActionListener(this);
+		fileMenu.addSeparator();
+		decompVMFItem = new JCheckBoxMenuItem("Output Hammer VMF");
 		fileMenu.add(decompVMFItem);
 		decompVMFItem.addActionListener(this);
-		decompMAPItem = new JMenuItem("Decompile to Gearcraft MAP");
+		decompVMFItem.setSelected(true);
+		decompMAPItem = new JCheckBoxMenuItem("Output Gearcraft MAP");
 		fileMenu.add(decompMAPItem);
-		decompMAPItem.addActionListener(this); 
-		decompRadiantItem = new JMenuItem("Decompile to Radiant MAP");
-		fileMenu.add(decompRadiantItem);
-		decompRadiantItem.addActionListener(this); 
+		decompMAPItem.addActionListener(this);
+		decompMAPItem.setSelected(true);
+		decompMOHRadiantItem = new JCheckBoxMenuItem("Output MOHRadiant MAP");
+		fileMenu.add(decompMOHRadiantItem);
+		decompMOHRadiantItem.addActionListener(this); 
+		decompMOHRadiantItem.setSelected(true);
 		fileMenu.addSeparator();
 		exitItem = new JMenuItem("Exit");
 		fileMenu.add(exitItem);
 		exitItem.addActionListener(this);
 		
 		// Options menu
-		//replaceEntitiesItem = new JMenuItem("Entity replacements...");
-		//optionsMenu.add(replaceEntitiesItem);
-		//replaceTexturesItem = new JMenuItem("Texture replacements...");
-		//optionsMenu.add(replaceTexturesItem);
-		//optionsMenu.addSeparator();
 		setPlanePointCoefItem=new JMenuItem("Set plane point coefficient...");
 		setPlanePointCoefItem.setToolTipText("If not calculating brush corners, this is used in calculating points on planes. Might tweak invalid solids into working.");
 		setPlanePointCoefItem.addActionListener(this);
@@ -193,12 +196,10 @@ public class Window extends JPanel implements ActionListener {
 		chk_calcVertsItem.setToolTipText("Calculate every brush's corners. May solve problems arising from decompilation of faces with no vertex information.");
 		chk_calcVertsItem.setSelected(false);
 		optionsMenu.add(chk_calcVertsItem);
-		chk_calcVertsItem.addActionListener(this);
 		chk_roundNumsItem = new JCheckBoxMenuItem("Editor-style decimals");
 		chk_roundNumsItem.setToolTipText("Rounds all decimals to the same precision as each map editor uses for its map format. Might make editors happier.");
 		chk_roundNumsItem.setSelected(true);
 		optionsMenu.add(chk_roundNumsItem);
-		chk_roundNumsItem.addActionListener(this);
 		optionsMenu.addSeparator();
 		
 		setThreadsItem=new JMenuItem("Set number of threads...");
@@ -250,6 +251,9 @@ public class Window extends JPanel implements ActionListener {
 		chk_visLeafBBoxes = new JCheckBoxMenuItem("Place brushes on visleaf bounding boxes");
 		chk_visLeafBBoxes.setSelected(false);
 		specialMenu.add(chk_visLeafBBoxes);
+		chk_dontCull = new JCheckBoxMenuItem("Don't cull extra planes in Doom maps");
+		chk_dontCull.setSelected(false);
+		specialMenu.add(chk_dontCull);
 		
 		verbosityGroup=new ButtonGroup();
 		rad_verbosity_0=new JRadioButtonMenuItem("Status only");
@@ -353,6 +357,7 @@ public class Window extends JPanel implements ActionListener {
 		pane.add(consoleTableSplitter, consoleConstraints);
 		
 		// This crap allows the window to be resized, and sets the size of the GUI components as needed.
+		// Maximizing/restoring the window
 		frame.addWindowStateListener(new WindowAdapter() {
 			public void windowStateChanged(WindowEvent event) {
 				consoleTableSplitter.setPreferredSize(new Dimension(frame.getWidth()-24, frame.getHeight()-70));
@@ -363,6 +368,7 @@ public class Window extends JPanel implements ActionListener {
 				frame.validate();
 			}
 		});
+		// Resizing the window
 		frame.addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent comp) {
 				consoleTableSplitter.setPreferredSize(new Dimension(frame.getWidth()-24, frame.getHeight()-70));
@@ -378,66 +384,19 @@ public class Window extends JPanel implements ActionListener {
 		
 	} // constructor
 	
-	public Window(String[] args) {
-		System.out.println("BSP Decompiler by 005"); // This stuff only shows if run from console or cmd
-		String out="";
-		
-		for(int i=0;i<args.length;i++) {
-			try {
-				if(args[i].equalsIgnoreCase("-coef")) {
-					planePointCoef=Double.parseDouble(args[++i]);
-				}
-			} catch(java.lang.NumberFormatException e) { // if -coef is provided but something besides a number follows
-				;
-			} catch(java.lang.ArrayIndexOutOfBoundsException e) { // if -coef is provided but no further args exist
-				;
-			}
-			if(args[i].equalsIgnoreCase("-c")) {
-				calcVerts=true;
-			}
-			if(args[i].equalsIgnoreCase("-s")) {
-				roundNums=true;
-			}
-			if(args[i].equalsIgnoreCase("-p")) {
-				vertexDecomp=false;
-			}
-			if(args[i].equalsIgnoreCase("-f")) {
-				correctPlaneFlip=false;
-			}
-			if(args[i].equalsIgnoreCase("-?")) {
-				System.out.println("Usage:");
-				System.out.println("decompiler.jar [options] <\"mappath\" \"mappath 2\" \"mappath 3\" etc.>");
-				System.out.println("Options:");
-				System.out.println("-toMAP: Decompile to Gearcraft MAP instead of Hammer 4.1 VMF format");
-				System.out.println("-c: Calculate Brush Corners. Automatically set if -p without -s");
-				System.out.println("-s: Snap to coordinates");
-				System.out.println("-p: Planar Decompilation Only");
-				System.out.println("-f: Skip plane flip");
-				System.out.println("-coef #: Plane point coefficient (default 100)");
-				System.out.println("-?: Show this help text");
-			}
-			if(args[i].equalsIgnoreCase("-toMAP")) {
-			//	toVMF=false;
-			} else {
-				if(!out.equals("")) {
-					out+=","+args[i];
-				} else {
-					out=args[i];
-				}
-			}
-		}
-		//startDecompilerThread(out);
-	}
+	// TODO: make a command-line constructor here
 
 	// actionPerformed(ActionEvent)
 	// Any time something happens on the GUI, this is called. However we're only
 	// going to perform actions when certain things are clicked. The rest are discarded.
 	public void actionPerformed(ActionEvent action) {
+		// It's an abort button
 		if(action.getActionCommand().substring(0,6).equals("Abort ")) {
+			// Try to figure out which one
 			try {
 				int cancelJob=new Integer(action.getActionCommand().substring(6));
 				stopDecompilerThread(cancelJob);
-			} catch(java.lang.NumberFormatException e) {
+			} catch(java.lang.NumberFormatException e) { // If it wasn't numbered, it was the "Abort all" button
 				for(int i=numJobs;i>0;i--) { // Start from the last one and work towards the first.
 					try {
 						if(btn_abort[i-1].getText().substring(0,6).equals("Abort ")) {
@@ -450,8 +409,30 @@ public class Window extends JPanel implements ActionListener {
 			}
 		}
 		
+		if(action.getSource() == decompMAPItem) {
+			if(!decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
+				decompMAPItem.setSelected(true);
+				println("Must output to at least one MAP format!",0);
+			}
+		}
+		
+		if(action.getSource() == decompVMFItem) {
+			if(!decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
+				decompVMFItem.setSelected(true);
+				println("Must output to at least one MAP format!",0);
+			}
+		}
+		
+		if(action.getSource() == decompMOHRadiantItem) {
+			if(!decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
+				decompMOHRadiantItem.setSelected(true);
+				println("Must output to at least one MAP format!",0);
+			}
+		}
+		
 		// User clicks the "open" button
-		if (action.getSource() == decompMAPItem || action.getSource() == decompVMFItem || action.getSource() == decompRadiantItem) {
+		if(action.getSource() == openItem) {
+			JFileChooser file_selector;
 			if(lastUsedFolder==null) {
 				try {
 					File dir = new File (".");
@@ -463,9 +444,9 @@ public class Window extends JPanel implements ActionListener {
 				file_selector = new JFileChooser(lastUsedFolder);
 			}
 			file_selector.setAcceptAllFileFilterUsed(false); // "all files". I would like this to be AFTER the others.
-			file_selector.addChoosableFileFilter(new SupportedFileFilter());
-			file_selector.addChoosableFileFilter(new BSPFileFilter());
-			file_selector.addChoosableFileFilter(new WADFileFilter());
+			file_selector.addChoosableFileFilter(new CustomFileFilter("All supported files (*.BSP, *.WAD)", new String[] { ".BSP", ".WAD" }));
+			file_selector.addChoosableFileFilter(new CustomFileFilter("Binary Space Partition files (*.BSP)", new String[] { ".BSP" }));
+			file_selector.addChoosableFileFilter(new CustomFileFilter("WAD files (*.WAD)", new String[] { ".WAD" }));
 			file_selector.setAcceptAllFileFilterUsed(true); // Setting this false above then true here forces the "all files" filter to be last.
 			file_selector.setMultiSelectionEnabled(true);
 			int returnVal = file_selector.showOpenDialog(this);
@@ -485,24 +466,16 @@ public class Window extends JPanel implements ActionListener {
 					}
 				}
 				lastUsedFolder=files[files.length-1].getParent();
-				if(action.getSource() == decompVMFItem) {
-					addJobs(files, new DoomMap[files.length], true, false, false);
-				} else { 
-					if(action.getSource() == decompRadiantItem) {
-						addJobs(files, new DoomMap[files.length], false, true, false);
-					} else {
-						addJobs(files, new DoomMap[files.length], false, false, true);
-					}
-				}
+				addJobs(files, new DoomMap[files.length]);
 			}
 		}
 		
 		// User clicks the "Save log" button
 		if(action.getSource() == saveLogItem) {
-			file_selector = new JFileChooser();
+			JFileChooser file_selector = new JFileChooser();
 			file_selector.setSelectedFile(new File("DecompilerConsole.log"));
-			file_selector.addChoosableFileFilter(new LOGFileFilter());
 			file_selector.setAcceptAllFileFilterUsed(false);
+			file_selector.addChoosableFileFilter(new CustomFileFilter("Log File (*.LOG)", new String[] { ".LOG" }));
 			file_selector.setMultiSelectionEnabled(false);
 			int returnVal = file_selector.showSaveDialog(this);
 			
@@ -525,7 +498,7 @@ public class Window extends JPanel implements ActionListener {
 						logWriter.close();
 						Window.println("Log file saved!",0);
 					} catch(java.io.IOException e) {
-						Window.println("Unable to create file "+logfile.getAbsolutePath()+(char)0x0D+(char)0x0A+"Ensure the filesystem is not read only!",0);
+						Window.println("Unable to create file "+logfile.getAbsolutePath()+LF+"Ensure the filesystem is not read only!",0);
 					}
 				}
 			}
@@ -533,7 +506,7 @@ public class Window extends JPanel implements ActionListener {
 		
 		// change the output folder
 		if(action.getSource() == setOutFolderItem) {
-			file_selector = new JFileChooser();
+			JFileChooser file_selector = new JFileChooser();
 			file_selector.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 			file_selector.setAcceptAllFileFilterUsed(false);
 			file_selector.setMultiSelectionEnabled(false);
@@ -564,30 +537,15 @@ public class Window extends JPanel implements ActionListener {
 			}
 		}
 		
-		if(action.getSource() == chk_planarItem) {
-			vertexDecomp=!chk_planarItem.isSelected();
-		}
-		
-		if(action.getSource() == chk_skipPlaneFlipItem) {
-			correctPlaneFlip=!chk_skipPlaneFlipItem.isSelected();
-		}
-		
-		if(action.getSource() == chk_calcVertsItem) {
-			calcVerts=chk_calcVertsItem.isSelected();
-		}
-		
-		if(action.getSource() == chk_roundNumsItem) {
-			roundNums=chk_roundNumsItem.isSelected();
-		}
-		
+		// The planar decompilation and skip plane flip items will enable/disable the calculate vertices option in a certain case.
 		if(action.getSource() == chk_planarItem || action.getSource() == chk_skipPlaneFlipItem) {
 			chk_calcVertsItem.setEnabled(!(chk_planarItem.isSelected() && !chk_skipPlaneFlipItem.isSelected()));
 			if(chk_planarItem.isSelected() && !chk_skipPlaneFlipItem.isSelected()) {
 				chk_calcVertsItem.setSelected(true);
-				calcVerts=true;
 			}
 		}
 		
+		// File -> Exit
 		if(action.getSource() == exitItem) {
 			//if(decompilerworkers[0]!=null) {
 			//	add some warning dialog here?
@@ -596,6 +554,7 @@ public class Window extends JPanel implements ActionListener {
 			//}
 		}
 		
+		// Set error tolerance
 		if(action.getSource() == setErrorItem) {
 			String st=(String)JOptionPane.showInputDialog(frame,"Please enter a new error tolerance value.\n"+
 			          "This value is used to compensate for error propagation in double precision calculations.\n"+
@@ -616,6 +575,7 @@ public class Window extends JPanel implements ActionListener {
 			}
 		}
 		
+		// Set origin brush size
 		if(action.getSource() == setOriginBrushSizeItem) {
 			String st=(String)JOptionPane.showInputDialog(frame,"Please enter a new origin brush size.\n"+
 			          "Current value: "+originBrushSize,"Enter new origin brush size",JOptionPane.QUESTION_MESSAGE,null,null,originBrushSize);
@@ -639,6 +599,7 @@ public class Window extends JPanel implements ActionListener {
 			}
 		}
 		
+		// Set num threads
 		if(action.getSource() == setThreadsItem) {
 			String st=(String)JOptionPane.showInputDialog(frame,"Please enter number of concurrent decompiles allowed.\n"+
 			          "Current value: "+numThreads,"Enter new thread amount",JOptionPane.QUESTION_MESSAGE,null,null,numThreads);
@@ -657,6 +618,7 @@ public class Window extends JPanel implements ActionListener {
 			}
 		}
 		
+		// Set plane point coefficient
 		if(action.getSource() == setPlanePointCoefItem) {
 			String st=(String)JOptionPane.showInputDialog(frame,"Please enter plane point coefficient.\n"+
 			          "Current value: "+planePointCoef,"Enter new coefficient",JOptionPane.QUESTION_MESSAGE,null,null,planePointCoef);
@@ -675,6 +637,7 @@ public class Window extends JPanel implements ActionListener {
 			}
 		}
 		
+		// Log verbosity items
 		if(action.getSource() == rad_verbosity_0) {
 			verbosity=0;
 		}
@@ -702,9 +665,9 @@ public class Window extends JPanel implements ActionListener {
 		// I'd really like to use Thread.join() or something here, but the stupid thread never dies.
 		// But if somethingFinished is true, then one of the threads is telling us it's finished anyway.
 		if(doomJobs[jobNum]!=null) {
-			runMe=new DecompilerThread(doomJobs[jobNum], toHammer[jobNum], toRadiant[jobNum], toGC[jobNum], roundNums, jobNum, newThread);
+			runMe=new DecompilerThread(doomJobs[jobNum], jobNum, newThread);
 		} else {
-			runMe=new DecompilerThread(job, vertexDecomp, correctPlaneFlip, calcVerts, roundNums, toHammer[jobNum], toRadiant[jobNum], toGC[jobNum], jobNum, newThread);
+			runMe=new DecompilerThread(job, jobNum, newThread);
 		}
 		decompilerworkers[newThread] = new Thread(runMe);
 		decompilerworkers[newThread].setName("Decompiler "+newThread+" job "+jobNum);
@@ -755,11 +718,11 @@ public class Window extends JPanel implements ActionListener {
 	}
 	
 	protected static void println(String out,int priority) {
-		print(out+(char)0x0D+(char)0x0A,priority);
+		print(out+LF,priority);
 	}
 	
 	protected static void println() {
-		print(""+(char)0x0D+(char)0x0A,0);
+		print(""+LF,0);
 	}
 	
 	protected static void clearConsole() {
@@ -813,34 +776,21 @@ public class Window extends JPanel implements ActionListener {
 		}
 	}
 	
-	protected void addJob(File newJob, DoomMap newDoomJob, boolean hammer, boolean radiant, boolean gearcraft) {
+	protected void addJob(File newJob, DoomMap newDoomJob) {
 		if(newJob!=null || newDoomJob!=null) {
 			File[] newList = new File[jobs.length+1];
 			DoomMap[] newDoomList = new DoomMap[jobs.length+1];
-			boolean[] newToHammer = new boolean[jobs.length+1]; 
-			boolean[] newToGC = new boolean[jobs.length+1]; 
-			boolean[] newToRadiant = new boolean[jobs.length+1]; 
 			int[] newThreadNo=new int[jobs.length+1];
 			for(int j=0;j<jobs.length;j++) {
 				newList[j]=jobs[j];
 				newDoomList[j]=doomJobs[j];
-				newToHammer[j]=toHammer[j];
-				newToGC[j]=toGC[j];
-				newToRadiant[j]=toRadiant[j];
 				newThreadNo[j]=threadNum[j];
 			}
 			newList[jobs.length]=newJob;
 			newDoomList[jobs.length]=newDoomJob;
-			newToHammer[jobs.length]=hammer;
-			newToGC[jobs.length]=gearcraft;
-			newToRadiant[jobs.length]=radiant;
 			newThreadNo[jobs.length]=-1;
 			jobs=newList;
 			doomJobs=newDoomList;
-			toHammer=newToHammer;
-			toGC=newToGC;
-			toRadiant=newToRadiant;
-			
 			threadNum=newThreadNo;
 			
 			// Add another row to the jobs pane
@@ -912,7 +862,7 @@ public class Window extends JPanel implements ActionListener {
 		                       // if this is even the correct way to do this. But it works.
 	}
 	
-	protected void addJobs(File[] newJobs, DoomMap[] newDoomJobs, boolean hammer, boolean radiant, boolean gearcraft) {
+	protected void addJobs(File[] newJobs, DoomMap[] newDoomJobs) {
 		int realNewJobs=0;
 		for(int i=0;i<newJobs.length;i++) {
 			if(newJobs[i]!=null || newDoomJobs[i]!=null) {
@@ -922,7 +872,7 @@ public class Window extends JPanel implements ActionListener {
 		println("Adding "+realNewJobs+" new jobs to queue",0);
 		for(int i=0;i<newJobs.length;i++) {
 			if(newJobs[i]!=null || newDoomJobs[i]!=null) {
-				addJob(newJobs[i], newDoomJobs[i], hammer, radiant, gearcraft);
+				addJob(newJobs[i], newDoomJobs[i]);
 			}
 		}
 	}
@@ -1010,6 +960,7 @@ public class Window extends JPanel implements ActionListener {
 		chk_replaceWithNull.setEnabled(in);
 		chk_visLeafBBoxes.setEnabled(in);
 		setOriginBrushSizeItem.setEnabled(in);
+		chk_dontCull.setEnabled(in);
 		if(in) {
 			chk_calcVertsItem.setEnabled(!(chk_planarItem.isSelected() && !chk_skipPlaneFlipItem.isSelected()));
 			if(chk_planarItem.isSelected() && !chk_skipPlaneFlipItem.isSelected()) {
@@ -1036,6 +987,22 @@ public class Window extends JPanel implements ActionListener {
 		return chk_noDetailsItem.isSelected();
 	}
 	
+	public static boolean calcVertsIsSelected() {
+		return chk_calcVertsItem.isSelected();
+	}
+	
+	public static boolean planarDecompIsSelected() {
+		return chk_planarItem.isSelected();
+	}
+	
+	public static boolean skipFlipIsSelected() {
+		return chk_skipPlaneFlipItem.isSelected();
+	}
+	
+	public static boolean roundNumsIsSelected() {
+		return chk_roundNumsItem.isSelected();
+	}
+	
 	public static boolean noFaceFlagsIsSelected() {
 		return chk_noFaceFlagsItem.isSelected();
 	}
@@ -1048,6 +1015,10 @@ public class Window extends JPanel implements ActionListener {
 		return chk_visLeafBBoxes.isSelected();
 	}
 	
+	public static boolean dontCullIsSelected() {
+		return chk_dontCull.isSelected();
+	}
+	
 	public static double getOriginBrushSize() {
 		return originBrushSize;
 	}
@@ -1056,101 +1027,46 @@ public class Window extends JPanel implements ActionListener {
 		return outputFolder;
 	}
 	
+	public static boolean toVMF() {
+		return decompVMFItem.isSelected();
+	}
+	
+	public static boolean toMOH() {
+		return decompMOHRadiantItem.isSelected();
+	}
+	
+	public static boolean toGCMAP() {
+		return decompMAPItem.isSelected();
+	}
+	
 	// INTERNAL CLASSES
 
-	private class SupportedFileFilter extends javax.swing.filechooser.FileFilter {
-		private String description = "All supported files (*.BSP, *.WAD)";
-
+	private class CustomFileFilter extends javax.swing.filechooser.FileFilter {
+		private String description = "";
+		private String[] extensions=new String[0];
+		
+		public CustomFileFilter(String description, String[] extensions) {
+			this.description=description;
+			this.extensions=extensions;
+		}
+		
 		public boolean accept(File file) {
 			if (file.isDirectory()) {
 				return true; // Must return true for a directory, otherwise you can't navigate the filesystem using the GUI!
 			} else {
 				if (file.isFile()) {
-					try { // Avoid StringIndexOutOfBoundsExceptions
-						if(file.getName().substring(file.getName().length()-4).equalsIgnoreCase(".BSP") || file.getName().substring(file.getName().length()-4).equalsIgnoreCase(".WAD")) {
-							return true; // Return true if the last four characters in the filename are ".BSP", not case sensitive
+					for(int i=0;i<extensions.length;i++) {
+						try { // Avoid StringIndexOutOfBoundsExceptions
+							if (file.getName().substring(file.getName().length()-extensions[i].length()).equalsIgnoreCase(extensions[i])) {
+								return true;
+							}
+						} catch(java.lang.StringIndexOutOfBoundsException e) {
+							; // The entire name of the requested file is shorter than the specified extension
 						}
-					} catch(java.lang.StringIndexOutOfBoundsException e) {
-						return false;
 					}
 				}
 			}
-			return false; // It's not a dir or a BSP file
-		}
-	
-		public String getDescription() {
-			return description;
-		}
-	}
-
-	private class BSPFileFilter extends javax.swing.filechooser.FileFilter {
-		private String description = "Binary Space Partition files (*.BSP)";
-
-		public boolean accept(File file) {
-			if (file.isDirectory()) {
-				return true; // Must return true for a directory, otherwise you can't navigate the filesystem using the GUI!
-			} else {
-				if (file.isFile()) {
-					try { // Avoid StringIndexOutOfBoundsExceptions
-						if(file.getName().substring(file.getName().length()-4).equalsIgnoreCase(".BSP")) {
-							return true; // Return true if the last four characters in the filename are ".BSP", not case sensitive
-						}
-					} catch(java.lang.StringIndexOutOfBoundsException e) {
-						return false;
-					}
-				}
-			}
-			return false; // It's not a dir or a BSP file
-		}
-	
-		public String getDescription() {
-			return description;
-		}
-	}
-
-	private class WADFileFilter extends javax.swing.filechooser.FileFilter {
-		private String description = "WAD files (*.WAD)";
-
-		public boolean accept(File file) {
-			if (file.isDirectory()) {
-				return true; // Must return true for a directory, otherwise you can't navigate the filesystem using the GUI!
-			} else {
-				if (file.isFile()) {
-					try { // Avoid StringIndexOutOfBoundsExceptions
-						if(file.getName().substring(file.getName().length()-4).equalsIgnoreCase(".WAD")) {
-							return true; // Return true if the last four characters in the filename are ".BSP", not case sensitive
-						}
-					} catch(java.lang.StringIndexOutOfBoundsException e) {
-						return false;
-					}
-				}
-			}
-			return false; // It's not a dir or a BSP file
-		}
-	
-		public String getDescription() {
-			return description;
-		}
-	}
-	
-	private class LOGFileFilter extends javax.swing.filechooser.FileFilter {
-		private String description = "Log File (*.LOG)";
-	
-		public boolean accept(File file) {
-			if (file.isDirectory()) {
-				return true; // Must return true for a directory, otherwise you can't navigate the filesystem using the GUI!
-			} else {
-				if (file.isFile()) {
-					try { // Avoid StringIndexOutOfBoundsExceptions
-						if(file.getName().substring(file.getName().length()-4).equalsIgnoreCase(".LOG")) {
-							return true; // Return true if the last four characters in the filename are ".LOG", not case sensitive
-						}
-					} catch(java.lang.StringIndexOutOfBoundsException e) {
-						return false;
-					}
-				}
-			}
-			return false; // It's not a dir or a LOG file
+			return false; // It's not a dir or a filetype listed in extensions
 		}
 	
 		public String getDescription() {

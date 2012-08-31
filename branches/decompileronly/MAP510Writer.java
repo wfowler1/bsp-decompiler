@@ -5,26 +5,44 @@
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.DecimalFormat;
+import java.util.Scanner;
 
 public class MAP510Writer {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
+	public static final int A = 0;
+	public static final int B = 1;
+	public static final int C = 2;
+	
+	public static final int X = 0;
+	public static final int Y = 1;
+	public static final int Z = 2;
+	
+	// These are lowercase so as not to conflict with A B and C
+	// Light entity attributes; red, green, blue, strength (can't use i for intensity :P)
+	public static final int r = 0;
+	public static final int g = 1;
+	public static final int b = 2;
+	public static final int s = 3;
+	
 	private String path;
 	private Entities data;
 	private File mapFile;
-	private boolean gearcraftDecs;
+	private int BSPVersion;
+	
+	private int currentEntity;
 	
 	private static DecimalFormat fmtPoints = new DecimalFormat("0.000000");
 	private static DecimalFormat fmtScales = new DecimalFormat("0.####");
 	
 	// CONSTRUCTORS
 	
-	public MAP510Writer(Entities from, String to, boolean gearcraftDecs) {
-		this.data=from;
+	public MAP510Writer(Entities from, String to, int BSPVersion) {
+		this.data=new Entities(from);
 		this.path=to;
-		this.gearcraftDecs=gearcraftDecs;
 		this.mapFile=new File(path);
+		this.BSPVersion=BSPVersion;
 	}
 	
 	// METHODS
@@ -53,9 +71,18 @@ public class MAP510Writer {
 			FileOutputStream mapWriter=new FileOutputStream(mapFile);
 			byte[][] entityBytes=new byte[data.getNumElements()][];
 			int totalLength=0;
-			for(int i=0;i<data.getNumElements();i++) {
-				entityBytes[i]=entityToByteArray(data.getEntity(i), i);
-				totalLength+=entityBytes[i].length;
+			for(currentEntity=0;currentEntity<data.getNumElements();currentEntity++) {
+				try {
+					entityBytes[currentEntity]=entityToByteArray(data.getEntity(currentEntity), currentEntity);
+				} catch(java.lang.ArrayIndexOutOfBoundsException e) { // This happens when entities are added after the array is made
+					byte[][] newList=new byte[data.getNumElements()][]; // Create a new array with the new length
+					for(int j=0;j<entityBytes.length;j++) {
+						newList[j]=entityBytes[j];
+					}
+					newList[currentEntity]=entityToByteArray(data.getEntity(currentEntity), currentEntity);
+					entityBytes=newList;
+				}
+				totalLength+=entityBytes[currentEntity].length;
 			}
 			byte[] allEnts=new byte[totalLength];
 			int offset=0;
@@ -86,9 +113,28 @@ public class MAP510Writer {
 	private byte[] entityToByteArray(Entity in, int num) {
 		byte[] out;
 		double[] origin;
+		// Correct some attributes of entities
+		switch(BSPVersion) {
+			case 42: // Nightfire
+				// Nightfire is good for map510
+				break;
+			case 38:
+				in=ent38ToEntM510(in);
+				break;
+			case 1: // Doom! I can use any versioning system I want!
+				break;
+		}
+		if(in.getAttribute("classname").equalsIgnoreCase("worldspawn")) {
+			in.setAttribute("mapversion", "510");
+		}
 		if(in.isBrushBased()) {
 			origin=in.getOrigin();
 			in.deleteAttribute("origin");
+			in.deleteAttribute("model");
+			if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
+				MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
+				in.addBrush(newOriginBrush);
+			}
 		} else {
 			origin=new double[3];
 		}
@@ -189,7 +235,41 @@ public class MAP510Writer {
 			String material=in.getMaterial();
 			double lgtScale=in.getLgtScale();
 			double lgtRot=in.getLgtRot();
-			if(gearcraftDecs) {
+			// Correct special textures on Q2 maps
+			if(BSPVersion==38) {
+				try {
+					if(texture.substring(texture.length()-5).equalsIgnoreCase("/hint")) {
+						if(currentEntity==0) {
+							texture="special/hint"; // Hint was not used the same way in Quake 2 as other games.
+						} else {                   // For example, a Hint brush CAN be used for a trigger in Q2 and is used as such a lot.
+							texture="special/trigger";
+						}
+					} else {
+						if(texture.substring(texture.length()-5).equalsIgnoreCase("/skip")) {
+							texture="special/skip";
+						} else {
+							if(texture.substring(texture.length()-5).equalsIgnoreCase("/clip")) {
+								texture="special/clip";
+							} else {
+								if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
+									texture="special/trigger";
+								} else {
+									if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky1")) {
+										texture="special/sky";
+									} else {
+										if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky2")) {
+											texture="special/sky";
+										}
+									}
+								}
+							}
+						}
+					}
+				} catch(StringIndexOutOfBoundsException e) {
+					;
+				}
+			}
+			if(Window.roundNumsIsSelected()) {
 				return "( "+fmtPoints.format((double)Math.round(triangle[0].getX()*1000000.0)/1000000.0)+" "+fmtPoints.format((double)Math.round(triangle[0].getY()*1000000.0)/1000000.0)+" "+fmtPoints.format((double)Math.round(triangle[0].getZ()*1000000.0)/1000000.0)+" ) "+
 				       "( "+fmtPoints.format((double)Math.round(triangle[1].getX()*1000000.0)/1000000.0)+" "+fmtPoints.format((double)Math.round(triangle[1].getY()*1000000.0)/1000000.0)+" "+fmtPoints.format((double)Math.round(triangle[1].getZ()*1000000.0)/1000000.0)+" ) "+
 				       "( "+fmtPoints.format((double)Math.round(triangle[2].getX()*1000000.0)/1000000.0)+" "+fmtPoints.format((double)Math.round(triangle[2].getY()*1000000.0)/1000000.0)+" "+fmtPoints.format((double)Math.round(triangle[2].getZ()*1000000.0)/1000000.0)+" ) "+
@@ -214,6 +294,118 @@ public class MAP510Writer {
 			Window.println("WARNING: Side with bad data! Not exported!",2);
 			return "";
 		}
+	}
+	
+	// Turn a Q2 entity into a Gearcraft one (generally for use with nightfire)
+	// This won't magically fix every single thing to work in Gearcraft, for example
+	// the Nightfire engine had no support for area portals. But it should save map
+	// porters some time, especially when it comes to the Capture The Flag mod.
+	public Entity ent38ToEntM510(Entity in) {
+		if(!in.getAttribute("angle").equals("")) {
+			in.setAttribute("angles", "0 "+in.getAttribute("angle")+" 0");
+			in.deleteAttribute("angle");
+		}
+		if(in.getAttribute("classname").equalsIgnoreCase("func_wall")) {
+			if(!in.getAttribute("targetname").equals("")) { // Really this should depend on spawnflag 2 or 4
+				in.setAttribute("classname", "func_wall_toggle");
+			} // 2 I believe is "Start enabled" and 4 is "toggleable", or the other way around. Not sure. Could use an OR.
+		} else {
+			if(in.getAttribute("classname").equalsIgnoreCase("item_flag_team2")) { // Blue flag
+				in.setAttribute("classname", "item_ctfflag");
+				in.setAttribute("skin", "1"); // 0 for PHX, 1 for MI6
+				in.setAttribute("goal_no", "1"); // 2 for PHX, 1 for MI6
+				in.setAttribute("goal_max", "16 16 72");
+				in.setAttribute("goal_min", "-16 -16 0");
+				Entity flagBase=new Entity("item_ctfbase");
+				flagBase.setAttribute("origin", in.getAttribute("origin"));
+				flagBase.setAttribute("angles", in.getAttribute("angles"));
+				flagBase.setAttribute("angle", in.getAttribute("angle"));
+				flagBase.setAttribute("goal_no", "1");
+				flagBase.setAttribute("model", "models/ctf_flag_stand_mi6.mdl");
+				flagBase.setAttribute("goal_max", "16 16 72");
+				flagBase.setAttribute("goal_min", "-16 -16 0");
+				data.add(flagBase);
+			} else {
+				if(in.getAttribute("classname").equalsIgnoreCase("item_flag_team1")) { // Red flag
+					in.setAttribute("classname", "item_ctfflag");
+					in.setAttribute("skin", "0"); // 0 for PHX, 1 for MI6
+					in.setAttribute("goal_no", "2"); // 2 for PHX, 1 for MI6
+					in.setAttribute("goal_max", "16 16 72");
+					in.setAttribute("goal_min", "-16 -16 0");
+					Entity flagBase=new Entity("item_ctfbase");
+					flagBase.setAttribute("origin", in.getAttribute("origin"));
+					flagBase.setAttribute("angles", in.getAttribute("angles"));
+					flagBase.setAttribute("angle", in.getAttribute("angle"));
+					flagBase.setAttribute("goal_no", "2");
+					flagBase.setAttribute("model", "models/ctf_flag_stand_phoenix.mdl");
+					flagBase.setAttribute("goal_max", "16 16 72");
+					flagBase.setAttribute("goal_min", "-16 -16 0");
+					data.add(flagBase);
+				} else {
+					if(in.getAttribute("classname").equalsIgnoreCase("info_player_team1")) {
+						in.setAttribute("classname", "info_ctfspawn");
+						in.setAttribute("team_no", "2");
+					} else {
+						if(in.getAttribute("classname").equalsIgnoreCase("info_player_team2")) {
+							in.setAttribute("classname", "info_ctfspawn");
+							in.setAttribute("team_no", "1");
+						} else {
+							if(in.getAttribute("classname").equalsIgnoreCase("info_player_start")) {
+								double[] origin=in.getOrigin();
+								in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+18));
+							} else {
+								if(in.getAttribute("classname").equalsIgnoreCase("info_player_coop")) {
+									double[] origin=in.getOrigin();
+									in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+18));
+								} else {
+									if(in.getAttribute("classname").equalsIgnoreCase("info_player_deathmatch")) {
+										double[] origin=in.getOrigin();
+										in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+18));
+									} else {
+										if(in.getAttribute("classname").equalsIgnoreCase("light")) {
+											String color=in.getAttribute("_color");
+											String intensity=in.getAttribute("light");
+											Scanner colorScanner=new Scanner(color);
+											double[] lightNumbers=new double[4];
+											for(int j=0;j<3 && colorScanner.hasNext();j++) {
+												try {
+													lightNumbers[j]=Double.parseDouble(colorScanner.next());
+													lightNumbers[j]*=255; // Quake 2's numbers are from 0 to 1, Nightfire are from 0 to 255
+												} catch(java.lang.NumberFormatException e) {
+													;
+												}
+											}
+											try {
+												lightNumbers[s]=Double.parseDouble(intensity)/2; // Quake 2's light intensity is waaaaaay too bright
+											} catch(java.lang.NumberFormatException e) {
+												;
+											}
+											in.deleteAttribute("_color");
+											in.deleteAttribute("light");
+											in.setAttribute("_light", lightNumbers[r]+" "+lightNumbers[g]+" "+lightNumbers[b]+" "+lightNumbers[s]);
+										} else {
+											if(in.getAttribute("classname").equalsIgnoreCase("misc_teleporter")) {
+												double[] origin=in.getOrigin();
+												Vector3D mins=new Vector3D(origin[X]-24, origin[Y]-24, origin[Z]-24);
+												Vector3D maxs=new Vector3D(origin[X]+24, origin[Y]+24, origin[Z]+48);
+												in.addBrush(GenericMethods.createBrush(mins,maxs,"special/trigger"));
+												in.deleteAttribute("origin");
+												in.setAttribute("classname", "trigger_teleport");
+											} else {
+												if(in.getAttribute("classname").equalsIgnoreCase("misc_teleporter_dest")) {
+													in.setAttribute("classname", "info_teleport_destination");
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return in;
 	}
 	
 	// ACCESSORS/MUTATORS

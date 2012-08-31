@@ -23,14 +23,6 @@ public class WADDecompiler {
 	public static final int b = 2;
 	public static final int s = 3;
 	
-	private boolean vertexDecomp;
-	private boolean correctPlaneFlip;
-	private boolean toHammer;
-	private boolean toRadiant;
-	private boolean toGearcraft;
-	private boolean calcVerts;
-	private boolean roundNums;
-	
 	private int jobnum;
 	
 	private Entities mapFile; // Most MAP file formats (including GearCraft) are simply a bunch of nested entities
@@ -42,12 +34,8 @@ public class WADDecompiler {
 	
 	// This constructor sets up everything to convert a Doom map into brushes compatible with modern map editors.
 	// I don't know if this is decompiling, per se. I don't know if Doom maps were ever compiled or if they just had nodes built.
-	public WADDecompiler(DoomMap doomMap, boolean roundNums, boolean toHammer, boolean toRadiant, boolean toGearcraft, int jobnum) {
+	public WADDecompiler(DoomMap doomMap, int jobnum) {
 		this.doomMap=doomMap;
-		this.roundNums=roundNums;
-		this.toHammer=toHammer;
-		this.toRadiant=toRadiant;
-		this.toGearcraft=toGearcraft;
 		this.jobnum=jobnum;
 	}
 	
@@ -87,97 +75,6 @@ public class WADDecompiler {
 					ZMax=currentSector.getCielingHeight()+32; // or the cieling. Subtract or add a sane value to it.
 				}
 			}
-		}
-		
-		// Also need to find minimum and maximum X and Y values. Best way to do this is probably
-		// to search the vertices lump, and also pad it by 32 units.
-		double XMin=32767;
-		double XMax=-32768;
-		double YMin=32767;
-		double YMax=-32768;
-		for(int i=0;i<doomMap.getVertices().getNumElements();i++) {
-			Vector3D currentVertex=doomMap.getVertices().getVertex(i);
-			if(currentVertex.getX()<XMin+32) {
-				XMin=currentVertex.getX()-32;
-			} else {
-				if(currentVertex.getX()>XMax-32) {
-					XMax=currentVertex.getX()+32;
-				}
-			}
-			if(currentVertex.getY()<YMin+32) {
-				YMin=currentVertex.getY()-32;
-			} else {
-				if(currentVertex.getY()>YMax-32) {
-					YMax=currentVertex.getY()+32;
-				}
-			}
-		}
-		
-		// Now create a few brush sides to be used to pad the sides of the map. This is
-		// needed since walls for the outside of the map don't define the outer sides.
-		// Left
-		Vector3D[] outsideLeftPlane=new Vector3D[3];
-		double[] outsideLeftTexS=new double[3];
-		double[] outsideLeftTexT=new double[3];
-		outsideLeftPlane[0]=new Vector3D(XMin, 1, 1);
-		outsideLeftPlane[1]=new Vector3D(XMin, 0, 1);
-		outsideLeftPlane[2]=new Vector3D(XMin, 0, 0);
-		outsideLeftTexS[1]=1;
-		outsideLeftTexT[2]=-1;
-		MAPBrushSide outsideLeft;
-		if(toHammer) {
-			outsideLeft=new MAPBrushSide(outsideLeftPlane, "tools/toolsnodraw", outsideLeftTexS, 0, outsideLeftTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-		} else {
-			// if(toGearcraft)
-			outsideLeft=new MAPBrushSide(outsideLeftPlane, "special/nodraw", outsideLeftTexS, 0, outsideLeftTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-		}
-		// Right
-		Vector3D[] outsideRightPlane=new Vector3D[3];
-		double[] outsideRightTexS=new double[3];
-		double[] outsideRightTexT=new double[3];
-		outsideRightPlane[0]=new Vector3D(XMax, 1, 0);
-		outsideRightPlane[1]=new Vector3D(XMax, 0, 0);
-		outsideRightPlane[2]=new Vector3D(XMax, 0, 1);
-		outsideRightTexS[1]=1;
-		outsideRightTexT[2]=-1;
-		MAPBrushSide outsideRight;
-		if(toHammer) {
-			outsideRight=new MAPBrushSide(outsideRightPlane, "tools/toolsnodraw", outsideRightTexS, 0, outsideRightTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-		} else {
-			// if(toGearcraft)
-			outsideRight=new MAPBrushSide(outsideRightPlane, "special/nodraw", outsideRightTexS, 0, outsideRightTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-		}
-		// Near
-		Vector3D[] outsideNearPlane=new Vector3D[3];
-		double[] outsideNearTexS=new double[3];
-		double[] outsideNearTexT=new double[3];
-		outsideNearPlane[0]=new Vector3D(1, YMax, 1);
-		outsideNearPlane[1]=new Vector3D(0, YMax, 1);
-		outsideNearPlane[2]=new Vector3D(0, YMax, 0);
-		outsideNearTexS[0]=1;
-		outsideNearTexT[2]=-1;
-		MAPBrushSide outsideNear;
-		if(toHammer) {
-			outsideNear=new MAPBrushSide(outsideNearPlane, "tools/toolsnodraw", outsideNearTexS, 0, outsideNearTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-		} else {
-			// if(toGearcraft)
-			outsideNear=new MAPBrushSide(outsideNearPlane, "special/nodraw", outsideNearTexS, 0, outsideNearTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-		}
-		// Far
-		Vector3D[] outsideFarPlane=new Vector3D[3];
-		double[] outsideFarTexS=new double[3];
-		double[] outsideFarTexT=new double[3];
-		outsideFarPlane[0]=new Vector3D(1, YMin, 0);
-		outsideFarPlane[1]=new Vector3D(0, YMin, 0);
-		outsideFarPlane[2]=new Vector3D(0, YMin, 1);
-		outsideFarTexS[0]=1;
-		outsideFarTexT[2]=-1;
-		MAPBrushSide outsideFar;
-		if(toHammer) {
-			outsideFar=new MAPBrushSide(outsideFarPlane, "tools/toolsnodraw", outsideFarTexS, 0, outsideFarTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-		} else {
-			// if(toGearcraft)
-			outsideFar=new MAPBrushSide(outsideFarPlane, "special/nodraw", outsideFarTexS, 0, outsideFarTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 		}
 		
 		// I need to analyze the binary tree and get more information, particularly the
@@ -269,32 +166,17 @@ public class WADDecompiler {
 				if(!currentSidedef.getMidTexture().equals("-")) {
 					midWallTextures[currentsidedefIndex]=doomMap.getWadName()+"/"+currentSidedef.getMidTexture();
 				} else {
-					if(toHammer) {
-						midWallTextures[currentsidedefIndex]="tools/toolsnodraw";
-					} else {
-					// if(toGearcraft) {
-						midWallTextures[currentsidedefIndex]="special/nodraw";
-					}
+					midWallTextures[currentsidedefIndex]="special/nodraw";
 				}
 				if(!currentSidedef.getHighTexture().equals("-")) {
 					higherWallTextures[currentsidedefIndex]=doomMap.getWadName()+"/"+currentSidedef.getHighTexture();
 				} else {
-					if(toHammer) {
-						higherWallTextures[currentsidedefIndex]="tools/toolsnodraw";
-					} else {
-					// if (toGearcraft)
-						higherWallTextures[currentsidedefIndex]="special/nodraw";
-					}
+					higherWallTextures[currentsidedefIndex]="special/nodraw";
 				}
 				if(!currentSidedef.getLowTexture().equals("-")) {
 					lowerWallTextures[currentsidedefIndex]=doomMap.getWadName()+"/"+currentSidedef.getLowTexture();
 				} else {
-					if(toHammer) {
-						lowerWallTextures[currentsidedefIndex]="tools/toolsnodraw";
-					} else {
-					// if(toGearcraft)
-						lowerWallTextures[currentsidedefIndex]="special/nodraw";
-					}
+					lowerWallTextures[currentsidedefIndex]="special/nodraw";
 				}
 				// Sometimes a subsector seems to belong to more than one sector. I don't know why.
 				if(subsectorSectors[i]!=-1 && currentSidedef.getSector()!=subsectorSectors[i]) {
@@ -314,9 +196,9 @@ public class WADDecompiler {
 			Vector3D[] roofPlane=new Vector3D[3];
 			double[] roofTexS=new double[3];
 			double[] roofTexT=new double[3];
-			roofPlane[0]=new Vector3D(0, 1, ZMax);
-			roofPlane[1]=new Vector3D(1, 1, ZMax);
-			roofPlane[2]=new Vector3D(1, 0, ZMax);
+			roofPlane[0]=new Vector3D(0, Window.getPlanePointCoef(), ZMax);
+			roofPlane[1]=new Vector3D(Window.getPlanePointCoef(), Window.getPlanePointCoef(), ZMax);
+			roofPlane[2]=new Vector3D(Window.getPlanePointCoef(), 0, ZMax);
 			roofTexS[0]=1;
 			roofTexT[1]=-1;
 			MAPBrushSide roof=new MAPBrushSide(roofPlane, doomMap.getWadName()+"/"+currentSector.getCielingTexture(), roofTexS, 0, roofTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
@@ -325,8 +207,8 @@ public class WADDecompiler {
 			double[] cileingTexS=new double[3];
 			double[] cileingTexT=new double[3];
 			cileingPlane[0]=new Vector3D(0, 0, currentSector.getCielingHeight());
-			cileingPlane[1]=new Vector3D(1, 0, currentSector.getCielingHeight());
-			cileingPlane[2]=new Vector3D(1, 1, currentSector.getCielingHeight());
+			cileingPlane[1]=new Vector3D(Window.getPlanePointCoef(), 0, currentSector.getCielingHeight());
+			cileingPlane[2]=new Vector3D(Window.getPlanePointCoef(), Window.getPlanePointCoef(), currentSector.getCielingHeight());
 			cileingTexS[0]=1;
 			cileingTexT[1]=-1;
 			MAPBrushSide cieling=new MAPBrushSide(cileingPlane, doomMap.getWadName()+"/"+currentSector.getCielingTexture(), cileingTexS, 0, cileingTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
@@ -334,9 +216,9 @@ public class WADDecompiler {
 			Vector3D[] floorPlane=new Vector3D[3];
 			double[] floorTexS=new double[3];
 			double[] floorTexT=new double[3];
-			floorPlane[0]=new Vector3D(0, 1, currentSector.getFloorHeight());
-			floorPlane[1]=new Vector3D(1, 1, currentSector.getFloorHeight());
-			floorPlane[2]=new Vector3D(1, 0, currentSector.getFloorHeight());
+			floorPlane[0]=new Vector3D(0, Window.getPlanePointCoef(), currentSector.getFloorHeight());
+			floorPlane[1]=new Vector3D(Window.getPlanePointCoef(), Window.getPlanePointCoef(), currentSector.getFloorHeight());
+			floorPlane[2]=new Vector3D(Window.getPlanePointCoef(), 0, currentSector.getFloorHeight());
 			floorTexS[0]=1;
 			floorTexT[1]=-1;
 			MAPBrushSide floor=new MAPBrushSide(floorPlane, doomMap.getWadName()+"/"+currentSector.getFloorTexture(), floorTexS, 0, floorTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
@@ -345,30 +227,22 @@ public class WADDecompiler {
 			double[] foundationTexS=new double[3];
 			double[] foundationTexT=new double[3];
 			foundationPlane[0]=new Vector3D(0, 0, ZMin);
-			foundationPlane[1]=new Vector3D(1, 0, ZMin);
-			foundationPlane[2]=new Vector3D(1, 1, ZMin);
+			foundationPlane[1]=new Vector3D(Window.getPlanePointCoef(), 0, ZMin);
+			foundationPlane[2]=new Vector3D(Window.getPlanePointCoef(), Window.getPlanePointCoef(), ZMin);
 			foundationTexS[0]=1;
 			foundationTexT[1]=-1;
 			MAPBrushSide foundation=new MAPBrushSide(foundationPlane, doomMap.getWadName()+"/"+currentSector.getFloorTexture(), foundationTexS, 0, foundationTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 			
 			cielingBrush.add(cieling);
 			cielingBrush.add(roof);
-			cielingBrush.add(outsideLeft);
-			cielingBrush.add(outsideRight);
-			cielingBrush.add(outsideNear);
-			cielingBrush.add(outsideFar);
 			
 			floorBrush.add(floor);
 			floorBrush.add(foundation);
-			floorBrush.add(outsideLeft);
-			floorBrush.add(outsideRight);
-			floorBrush.add(outsideNear);
-			floorBrush.add(outsideFar);
 
 			int nextNode=ssparents[i];
 			boolean leftSide=ssIsLeft[i];
 
-			for(int j=0;j<subsectorSidedefs[i].length;j++) {
+			for(int j=0;j<subsectorSidedefs[i].length;j++) { // Iterate through the sidedefs defined by segments of this subsector
 				DSegment currentseg=doomMap.getSegments().getSegment(currentsubsector.getFirstSeg()+j);
 				Vector3D start=doomMap.getVertices().getVertex(currentseg.getStartVertex());
 				Vector3D end=doomMap.getVertices().getVertex(currentseg.getEndVertex());
@@ -404,21 +278,11 @@ public class WADDecompiler {
 							}
 						}
 						if(outsideBrush==null) { // If no side of the subsector uses one, then fuck.
-							if(toHammer) {
-								outsideBrush = createFaceBrush("tools/toolsnodraw", plane[0], plane[2]);
-							} else {
-							// if(toGearcraft)
-								outsideBrush = createFaceBrush("special/nodraw", plane[0], plane[2]);
-							}
+							outsideBrush = createFaceBrush("special/nodraw", plane[0], plane[2]);
 						}
 					}
 					world.addBrush(outsideBrush);
-					if(toHammer) {
-						mid=new MAPBrushSide(plane, "tools/toolsnodraw", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-					} else {
-					// if(toGearcraft)
-						mid=new MAPBrushSide(plane, "special/nodraw", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-					}
+					mid=new MAPBrushSide(plane, "special/nodraw", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				} else {
 					mid=new MAPBrushSide(plane, midWallTextures[subsectorSidedefs[i][j]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				}
@@ -468,23 +332,33 @@ public class WADDecompiler {
 				leftSide=nodeIsLeft[nextNode];
 				nextNode=nodeparents[nextNode];
 			} while(nextNode!=-1);
-			// Now we need to get rid of all the sides that aren't used. There's probaby
-			// some way to make this faster, since this is definitely the slowest part of
-			// the code. Since all three brushes are essentially the same, there ought to
-			// be a way to run the code once for all three.
-			cielingBrush=GenericMethods.cullUnusedPlanes(cielingBrush);
-			floorBrush=GenericMethods.cullUnusedPlanes(floorBrush);
+			// Now we need to get rid of all the sides that aren't used. Get a list of
+			// the useless sides from one brush, and delete those sides from all of them,
+			// since they all have the same sides.
+			if(!Window.dontCullIsSelected()) {
+				int[] badSides=GenericMethods.findUnusedPlanes(cielingBrush);
+				// Need to iterate backward, since these lists go from low indices to high, and
+				// the index of all subsequent items changes when something before it is removed.
+				if(cielingBrush.getNumSides()-badSides.length<4) {
+					Window.println("WARNING: Plane cull returned less than 4 sides for subsector "+i,2);
+				} else {
+					for(int j=badSides.length-1;j>-1;j--) {
+						cielingBrush.delete(badSides[j]);
+						floorBrush.delete(badSides[j]);
+					}
+				}
+			}
 			world.addBrush(floorBrush);
 			world.addBrush(cielingBrush);
-			boolean containsMiddle=false; // Need to figure out how to determine this. As it is, no middle sides will come out.
+			/*boolean containsMiddle=false; // Need to figure out how to determine this. As it is, no middle sides will come out.
 			if(containsMiddle && currentSector.getCielingHeight() > currentSector.getFloorHeight()) {
 				Entity middleEnt=new Entity("func_illusionary");
 				Vector3D[] topPlane=new Vector3D[3];
 				double[] topTexS=new double[3];
 				double[] topTexT=new double[3];
-				topPlane[0]=new Vector3D(0, 1, currentSector.getCielingHeight());
-				topPlane[1]=new Vector3D(1, 1, currentSector.getCielingHeight());
-				topPlane[2]=new Vector3D(1, 0, currentSector.getCielingHeight());
+				topPlane[0]=new Vector3D(0, Window.getPlanePointCoef(), currentSector.getCielingHeight());
+				topPlane[1]=new Vector3D(Window.getPlanePointCoef(), Window.getPlanePointCoef(), currentSector.getCielingHeight());
+				topPlane[2]=new Vector3D(Window.getPlanePointCoef(), 0, currentSector.getCielingHeight());
 				topTexS[0]=1;
 				topTexT[1]=-1;
 				MAPBrushSide top=new MAPBrushSide(topPlane, doomMap.getWadName()+"/"+currentSector.getFloorTexture(), topTexS, 0, topTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
@@ -493,8 +367,8 @@ public class WADDecompiler {
 				double[] bottomTexS=new double[3];
 				double[] bottomTexT=new double[3];
 				bottomPlane[0]=new Vector3D(0, 0, currentSector.getFloorHeight());
-				bottomPlane[1]=new Vector3D(1, 0, currentSector.getFloorHeight());
-				bottomPlane[2]=new Vector3D(1, 1, currentSector.getFloorHeight());
+				bottomPlane[1]=new Vector3D(Window.getPlanePointCoef(), 0, currentSector.getFloorHeight());
+				bottomPlane[2]=new Vector3D(Window.getPlanePointCoef(), Window.getPlanePointCoef(), currentSector.getFloorHeight());
 				bottomTexS[0]=1;
 				bottomTexT[1]=-1;
 				MAPBrushSide bottom=new MAPBrushSide(bottomPlane, doomMap.getWadName()+"/"+currentSector.getFloorTexture(), bottomTexS, 0, bottomTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
@@ -509,41 +383,41 @@ public class WADDecompiler {
 				
 				middleEnt.addBrush(midBrush);
 				mapFile.add(middleEnt);
-			}
+			}*/
 			Window.setProgress(jobnum, i+1, doomMap.getSubSectors().getNumElements(), "Decompiling...");
 		}
 		
 		Window.setProgress(jobnum, 1, 1, "Saving...");
-		if(toHammer) {
+		if(Window.toVMF()) {
 			VMFWriter VMFMaker;
 			if(Window.getOutputFolder().equals("default")) {
 				Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".vmf...",0);
-				VMFMaker=new VMFWriter(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName(), roundNums);
+				VMFMaker=new VMFWriter(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName(),1);
 			} else {
 				Window.println("Saving "+Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+".vmf...",0);
-				VMFMaker=new VMFWriter(mapFile, Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName(), roundNums);
+				VMFMaker=new VMFWriter(mapFile, Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName(),1);
 			}
 			VMFMaker.write();
 		}
-		if(toRadiant) {
-			RadiantMAPWriter MAPMaker;
+		if(Window.toMOH()) {
+			MOHRadiantMAPWriter MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_radiant.map...",0);
-				MAPMaker=new RadiantMAPWriter(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_radiant", roundNums);
+				Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_MOH.map...",0);
+				MAPMaker=new MOHRadiantMAPWriter(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_MOH",1);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_radiant.map...",0);
-				MAPMaker=new RadiantMAPWriter(mapFile, Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_radiant", roundNums);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_MOH.map...",0);
+				MAPMaker=new MOHRadiantMAPWriter(mapFile, Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_MOH",1);
 			}
 			MAPMaker.write();
 		}
-		if(toGearcraft) {
+		if(Window.toGCMAP()) {
 			MAP510Writer MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
 				Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".map...",0);
-				MAPMaker=new MAP510Writer(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName(), roundNums);
+				MAPMaker=new MAP510Writer(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName(),1);
 			} else {
 				Window.println("Saving "+Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+".map...",0);
-				MAPMaker=new MAP510Writer(mapFile, Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName(), roundNums);
+				MAPMaker=new MAP510Writer(mapFile, Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName(),1);
 			}
 			MAPMaker.write();
 		}
@@ -616,14 +490,7 @@ public class WADDecompiler {
 		MAPBrushSide front=new MAPBrushSide(planes[0], texture, texS[0], 0, texT[0], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 		newBrush.add(front);
 		for(int i=1;i<6;i++) {
-			MAPBrushSide currentEdge;
-			if(toHammer) {
-				currentEdge=new MAPBrushSide(planes[i], "tools/toolsnodraw", texS[i], 0, texT[i], 0, 0, 1, 1, 32, "wld_lightmap", 16, 0);
-			} else {
-			// if(toGearcraft) {
-				currentEdge=new MAPBrushSide(planes[i], "special/nodraw", texS[i], 0, texT[i], 0, 0, 1, 1, 32, "wld_lightmap", 16, 0);
-			}
-			newBrush.add(currentEdge);
+			newBrush.add(new MAPBrushSide(planes[i], "special/nodraw", texS[i], 0, texT[i], 0, 0, 1, 1, 32, "wld_lightmap", 16, 0));
 		}
 		
 		return newBrush;

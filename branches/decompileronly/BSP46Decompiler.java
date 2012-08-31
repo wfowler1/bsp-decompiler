@@ -22,14 +22,6 @@ public class BSP46Decompiler {
 	public static final int b = 2;
 	public static final int s = 3;
 	
-	private boolean vertexDecomp;
-	private boolean correctPlaneFlip;
-	private boolean toHammer;
-	private boolean toRadiant;
-	private boolean toGearcraft;
-	private boolean calcVerts;
-	private boolean roundNums;
-	
 	private int jobnum;
 	
 	private Entities mapFile; // Most MAP file formats (including GearCraft) are simply a bunch of nested entities
@@ -40,16 +32,9 @@ public class BSP46Decompiler {
 	// CONSTRUCTORS
 	
 	// This constructor sets everything according to specified settings.
-	public BSP46Decompiler(v46BSP BSP46, boolean vertexDecomp, boolean correctPlaneFlip, boolean calcVerts, boolean roundNums, boolean toHammer, boolean toRadiant, boolean toGearcraft, int jobnum) {
+	public BSP46Decompiler(v46BSP BSP46, int jobnum) {
 		// Set up global variables
 		this.BSP46=BSP46;
-		this.vertexDecomp=vertexDecomp;
-		this.correctPlaneFlip=correctPlaneFlip;
-		this.toHammer=toHammer;
-		this.toRadiant=toRadiant;
-		this.toGearcraft=toGearcraft;
-		this.calcVerts=calcVerts;
-		this.roundNums=roundNums;
 		this.jobnum=jobnum;
 	}
 
@@ -73,15 +58,6 @@ public class BSP46Decompiler {
 		// Worldspawn is brush-based as well as any entity with model *#.
 		for(int i=0;i<BSP46.getEntities().getNumElements();i++) { // For each entity
 			Window.println("Entity "+i+": "+mapFile.getEntity(i).getAttribute("classname"),4);
-			if(toHammer) {
-				;
-			}
-			if(toGearcraft) {
-				;
-			}
-			if(toRadiant) {
-				;
-			}
 			numBrshs=0; // Reset the brush count for each entity
 			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
 			int currentModel=mapFile.getEntity(i).getModelNumber();
@@ -101,57 +77,41 @@ public class BSP46Decompiler {
 					numTotalItems++;
 					Window.setProgress(jobnum, numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().getNumElements(), "Decompiling...");
 				}
-				mapFile.getEntity(i).deleteAttribute("model");
-				if(!toHammer) {
-					// Recreate origin brushes for entities that need them
-					// These are discarded on compile and replaced with an "origin" attribute in the entity.
-					// I need to undo that. For this I will create a 32x32 brush, centered at the point defined
-					// by the "origin" attribute.
-					if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
-						MAPBrush newOriginBrush;
-						if(toGearcraft) {
-							newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
-						} else {
-							newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"common/origin");
-						}
-						mapFile.getEntity(i).addBrush(newOriginBrush);
-					}
-				}
 			}
 			numTotalItems++;
 			Window.setProgress(jobnum, numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().getNumElements(), "Decompiling...");
 		} 
 		Window.setProgress(jobnum, numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().getNumElements(), "Saving..."); 
-		if(toHammer) {
+		if(Window.toVMF()) {
 			VMFWriter VMFMaker;
 			if(Window.getOutputFolder().equals("default")) {
 				Window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+".vmf...",0);
-				VMFMaker=new VMFWriter(mapFile, BSP46.getPath().substring(0, BSP46.getPath().length()-4), roundNums);
+				VMFMaker=new VMFWriter(mapFile, BSP46.getPath().substring(0, BSP46.getPath().length()-4),46);
 			} else {
 				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4)+".vmf...",0);
-				VMFMaker=new VMFWriter(mapFile, Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4), roundNums);
+				VMFMaker=new VMFWriter(mapFile, Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4),46);
 			}
 			VMFMaker.write();
 		}
-		if(toRadiant) {
-			RadiantMAPWriter MAPMaker;
+		if(Window.toMOH()) {
+			MOHRadiantMAPWriter MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+"_radiant.map...",0);
-				MAPMaker=new RadiantMAPWriter(mapFile, BSP46.getPath().substring(0, BSP46.getPath().length()-4)+"_radiant", roundNums);
+				Window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+"_MOH.map...",0);
+				MAPMaker=new MOHRadiantMAPWriter(mapFile, BSP46.getPath().substring(0, BSP46.getPath().length()-4)+"_MOH",46);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4)+"_radiant.map...",0);
-				MAPMaker=new RadiantMAPWriter(mapFile, Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4)+"_radiant", roundNums);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4)+"_MOH.map...",0);
+				MAPMaker=new MOHRadiantMAPWriter(mapFile, Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4)+"_MOH",46);
 			}
 			MAPMaker.write();
 		}
-		if(toGearcraft) {
+		if(Window.toGCMAP()) {
 			MAP510Writer MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
 				Window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+".map...",0);
-				MAPMaker=new MAP510Writer(mapFile, BSP46.getPath().substring(0, BSP46.getPath().length()-4), roundNums);
+				MAPMaker=new MAP510Writer(mapFile, BSP46.getPath().substring(0, BSP46.getPath().length()-4),46);
 			} else {
 				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4)+".map...",0);
-				MAPMaker=new MAP510Writer(mapFile, Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4), roundNums);
+				MAPMaker=new MAP510Writer(mapFile, Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4),46);
 			}
 			MAPMaker.write();
 		}
@@ -176,7 +136,7 @@ public class BSP46Decompiler {
 			//int firstVertex=currentFace.getVert();
 			//int numVertices=currentFace.getNumVerts();
 			// boolean pointsWorked=false; // Need to figure out how to get faces from brush sides, then use vertices
-			/*if(numVertices!=0 && vertexDecomp) { // If the face actually references a set of vertices
+			/*if(numVertices!=0 && !Window.planarDecompIsSelected()) { // If the face actually references a set of vertices
 				plane[0]=new Vector3D(BSP42.getVertices().getVertex(firstVertex)); // Grab and store the first one
 				int m=1;
 				for(m=1;m<numVertices;m++) { // For each point after the first one
@@ -202,33 +162,6 @@ public class BSP46Decompiler {
 				plane=GenericMethods.extrapPlanePoints(currentPlane);
 			//}
 			String texture=BSP46.getTextures().getTexture(currentSide.getTexture()).getTexture();
-			/*if(toHammer) { // Figure out what Q3's trigger textures are
-				if(texture.equalsIgnoreCase("special/nodraw")) {
-					texture="tools/toolsnodraw";
-				} else {
-					if(texture.equalsIgnoreCase("special/clip")) {
-						texture="tools/toolsclip";
-					} else {
-						if(texture.equalsIgnoreCase("special/sky")) {
-							texture="tools/toolsskybox";
-						} else {
-							if(texture.equalsIgnoreCase("special/trigger")) {
-								texture="tools/toolstrigger";
-							} else {
-								if(texture.equalsIgnoreCase("special/playerclip")) {
-									texture="tools/toolsplayerclip";
-								} else {
-									if(texture.equalsIgnoreCase("special/npcclip")) {
-										texture="tools/toolsnpcclip";
-									}
-								}
-							}
-						}
-					}
-				}
-			} else { // To Gearcraft MAP. This also necessitates some corrections.
-				
-			}*/
 			double[] textureS=new double[3];
 			double[] textureT=new double[3];
 			/*
@@ -266,11 +199,11 @@ public class BSP46Decompiler {
 			}*/
 		}
 	
-		if(correctPlaneFlip) {
+		if(!Window.skipFlipIsSelected()) {
 			if(mapBrush.hasBadSide()) { // If there's a side that might be backward
 				if(mapBrush.hasGoodSide()) { // If there's a side that is forward
 					mapBrush=GenericMethods.SimpleCorrectPlanes(mapBrush);
-					if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
+					if(Window.calcVertsIsSelected()) { // This is performed in advancedcorrect, so don't use it if that's happening
 						mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
 					}
 				} else { // If no forward side exists
@@ -282,7 +215,7 @@ public class BSP46Decompiler {
 				}
 			}
 		} else {
-			if(calcVerts) { // This is performed in advancedcorrect, so don't use it if that's happening
+			if(Window.calcVertsIsSelected()) { // This is performed in advancedcorrect, so don't use it if that's happening
 				mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
 			}
 		}
@@ -291,10 +224,8 @@ public class BSP46Decompiler {
 		// the current entity as an attribute. The way I've coded
 		// this whole program and the entities parser, this shouldn't
 		// cause any issues at all.
-		if(toHammer && isDetailBrush) {
-			Entity newDetailEntity=new Entity("func_detail");
-			newDetailEntity.addBrush(mapBrush);
-			mapFile.add(newDetailEntity);
+		if(Window.brushesToWorldIsSelected()) {
+			mapFile.getEntity(0).addBrush(mapBrush);
 		} else {
 			mapFile.getEntity(currentEntity).addBrush(mapBrush);
 		}
@@ -346,16 +277,7 @@ public class BSP46Decompiler {
 		textureT[5][2]=-1;
 		
 		for(int j=0;j<6;j++) {
-			MAPBrushSide currentEdge;
-			if(toHammer) {
-				currentEdge=new MAPBrushSide(planes[j], "tools/toolsorigin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-			} else {
-				if(toGearcraft) {
-					currentEdge=new MAPBrushSide(planes[j], "special/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-				} else {
-					currentEdge=new MAPBrushSide(planes[j], "common/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-				}
-			}
+			MAPBrushSide currentEdge=new MAPBrushSide(planes[j], "common/origin", textureS[j], 0, textureT[j], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 			newOriginBrush.add(currentEdge);
 		}
 		mapFile.getEntity(ent).addBrush(newOriginBrush);

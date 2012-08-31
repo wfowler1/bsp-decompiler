@@ -1,4 +1,4 @@
-// RadiantMAPWriter class
+// MOHRadiantMAPWriter class
 //
 // Writes a Radiant .MAP file from a passed Entities object
 
@@ -6,25 +6,27 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.text.DecimalFormat;
 
-public class RadiantMAPWriter {
+public class MOHRadiantMAPWriter {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private String path;
 	private Entities data;
 	private File mapFile;
-	private boolean editorDecs;
+	private int BSPVersion;
+	
+	private int CurrentEntity;
 	
 	private static DecimalFormat fmtFloats = new DecimalFormat("0.######");
 	private static DecimalFormat fmtRot = new DecimalFormat("0.00");
 	
 	// CONSTRUCTORS
 	
-	public RadiantMAPWriter(Entities from, String to, boolean editorDecs) {
-		this.data=from;
+	public MOHRadiantMAPWriter(Entities from, String to, int BSPVersion) {
+		this.data=new Entities(from);
 		this.path=to;
-		this.editorDecs=editorDecs;
 		this.mapFile=new File(path);
+		this.BSPVersion=BSPVersion;
 	}
 	
 	// METHODS
@@ -53,9 +55,18 @@ public class RadiantMAPWriter {
 			FileOutputStream mapWriter=new FileOutputStream(mapFile);
 			byte[][] entityBytes=new byte[data.getNumElements()][];
 			int totalLength=0;
-			for(int i=0;i<data.getNumElements();i++) {
-				entityBytes[i]=entityToByteArray(data.getEntity(i), i);
-				totalLength+=entityBytes[i].length;
+			for(int currentEntity=0;currentEntity<data.getNumElements();currentEntity++) {
+				try {
+					entityBytes[currentEntity]=entityToByteArray(data.getEntity(currentEntity), currentEntity);
+				} catch(java.lang.ArrayIndexOutOfBoundsException e) { // This happens when entities are added after the array is made
+					byte[][] newList=new byte[data.getNumElements()][]; // Create a new array with the new length
+					for(int j=0;j<entityBytes.length;j++) {
+						newList[j]=entityBytes[j];
+					}
+					newList[currentEntity]=entityToByteArray(data.getEntity(currentEntity), currentEntity);
+					entityBytes=newList;
+				}
+				totalLength+=entityBytes[currentEntity].length;
 			}
 			byte[] allEnts=new byte[totalLength];
 			int offset=0;
@@ -86,9 +97,25 @@ public class RadiantMAPWriter {
 	private byte[] entityToByteArray(Entity in, int num) {
 		byte[] out;
 		double[] origin;
+		// Correct some attributes of entities
+		switch(BSPVersion) {
+			case 42: // Nightfire
+				in=ent42ToEntRad(in);
+				break;
+			case 38:
+				in=ent38ToEntRad(in);
+				break;
+			case 1: // Doom! I can use any versioning system I want!
+				break;
+		}
 		if(in.isBrushBased()) {
 			origin=in.getOrigin();
 			in.deleteAttribute("origin");
+			in.deleteAttribute("model");
+			if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this entity uses the "origin" attribute
+				MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
+				in.addBrush(newOriginBrush);
+			}
 		} else {
 			origin=new double[3];
 		}
@@ -187,7 +214,18 @@ public class RadiantMAPWriter {
 			double lgtScale=in.getLgtScale();
 			double lgtRot=in.getLgtRot();
 			String temp="";
-			if(editorDecs) {
+			// Correct textures here
+			if(BSPVersion==42 || BSPVersion==1) {
+				if(texture.substring(texture.length()-7).equalsIgnoreCase("/origin")) {
+					texture="common/origin";
+				}
+			}
+			if(BSPVersion==38) {
+				if(texture.substring(texture.length()-7).equalsIgnoreCase("/origin")) {
+					texture="common/origin";
+				}
+			}
+			if(Window.roundNumsIsSelected()) {
 				temp = "( "+fmtFloats.format((double)Math.round(triangle[0].getX()*1000000.0)/1000000.0)+" "+fmtFloats.format((double)Math.round(triangle[0].getY()*1000000.0)/1000000.0)+" "+fmtFloats.format((double)Math.round(triangle[0].getZ()*1000000.0)/1000000.0)+" ) "+
 				       "( "+fmtFloats.format((double)Math.round(triangle[1].getX()*1000000.0)/1000000.0)+" "+fmtFloats.format((double)Math.round(triangle[1].getY()*1000000.0)/1000000.0)+" "+fmtFloats.format((double)Math.round(triangle[1].getZ()*1000000.0)/1000000.0)+" ) "+
 				       "( "+fmtFloats.format((double)Math.round(triangle[2].getX()*1000000.0)/1000000.0)+" "+fmtFloats.format((double)Math.round(triangle[2].getY()*1000000.0)/1000000.0)+" "+fmtFloats.format((double)Math.round(triangle[2].getZ()*1000000.0)/1000000.0)+" ) "+
@@ -212,6 +250,15 @@ public class RadiantMAPWriter {
 			Window.println("WARNING: Side with bad data! Not exported!",2);
 			return "";
 		}
+	}
+	
+	// These methods are TODO
+	public Entity ent42ToEntRad(Entity in) {
+		return in;
+	}
+	
+	public Entity ent38ToEntRad(Entity in) {
+		return in;
 	}
 	
 	// ACCESSORS/MUTATORS
