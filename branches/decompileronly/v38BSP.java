@@ -7,7 +7,7 @@ public class v38BSP {
 	
 	// This is the version of the BSP. This will determine the lumps order and aid in
 	// decompilation.
-	public static final int version=38;
+	public static final int VERSION=38;
 	
 	private String filepath;
 	
@@ -23,7 +23,7 @@ public class v38BSP {
 	private ShortList markbrushes;
 	private Edges edges;
 	private IntList markedges;
-	private v38Models models;
+	private Models models;
 	private Brushes brushes;
 	private v38BrushSides brushSides;
 	//private IntList areaPortals;
@@ -36,74 +36,74 @@ public class v38BSP {
 
 	public void printBSPReport() {
 		try {
-			Window.println("Entities lump: "+entities.getLength()+" bytes, "+entities.getNumElements()+" items",1);
+			Window.println("Entities lump: "+entities.getLength()+" bytes, "+entities.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Entities not yet parsed!",1);
+			Window.println("Entities not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Planes lump: "+planes.getLength()+" bytes, "+planes.getNumElements()+" items",1);
+			Window.println("Planes lump: "+planes.getLength()+" bytes, "+planes.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Planes not yet parsed!",1);
+			Window.println("Planes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Textures lump: "+textures.getLength()+" bytes, "+textures.getNumElements()+" items",1);
+			Window.println("Textures lump: "+textures.getLength()+" bytes, "+textures.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Textures not yet parsed!",1);
+			Window.println("Textures not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.getNumElements()+" items",1);
+			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Vertices not yet parsed!",1);
+			Window.println("Vertices not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Nodes lump: "+nodes.getLength()+" bytes, "+nodes.getNumElements()+" items",1);
+			Window.println("Nodes lump: "+nodes.getLength()+" bytes, "+nodes.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Nodes not yet parsed!",1);
+			Window.println("Nodes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Faces lump: "+faces.getLength()+" bytes, "+faces.getNumElements()+" items",1);
+			Window.println("Faces lump: "+faces.getLength()+" bytes, "+faces.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Faces not yet parsed!",1);
+			Window.println("Faces not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Leaves lump: "+leaves.getLength()+" bytes, "+leaves.getNumElements()+" items",1);
+			Window.println("Leaves lump: "+leaves.getLength()+" bytes, "+leaves.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Leaves not yet parsed!",1);
+			Window.println("Leaves not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Leaf brushes lump: "+markbrushes.getLength()+" bytes, "+markbrushes.getNumElements()+" items",1);
+			Window.println("Leaf brushes lump: "+markbrushes.getLength()+" bytes, "+markbrushes.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Leaf brushes not yet parsed!",1);
+			Window.println("Leaf brushes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Edges lump: "+edges.getLength()+" bytes, "+edges.getNumElements()+" items",1);
+			Window.println("Edges lump: "+edges.getLength()+" bytes, "+edges.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Edges not yet parsed!",1);
+			Window.println("Edges not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Face Edges lump: "+markedges.getLength()+" bytes, "+markedges.getNumElements()+" items",1);
+			Window.println("Surface Edges lump: "+markedges.getLength()+" bytes, "+markedges.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Models not yet parsed!",1);
+			Window.println("Surface Edges not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Models lump: "+models.getLength()+" bytes, "+models.getNumElements()+" items",1);
+			Window.println("Models lump: "+models.getLength()+" bytes, "+models.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Texture scales not yet parsed!",1);
+			Window.println("Models not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Brushes lump: "+brushes.getLength()+" bytes, "+brushes.length()+" items",1);
+			Window.println("Brushes lump: "+brushes.getLength()+" bytes, "+brushes.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Brushes not yet parsed!",1);
+			Window.println("Brushes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Brush sides lump: "+brushSides.getLength()+" bytes, "+brushSides.getNumElements()+" items",1);
+			Window.println("Brush sides lump: "+brushSides.getLength()+" bytes, "+brushSides.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Brush sides not yet parsed!",1);
+			Window.println("Brush sides not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		/*try {
-			Window.println("Area Portals lump: "+areaPortals.getLength()+" bytes, "+areaPortals.getNumElements()+" items",1);
+			Window.println("Area Portals lump: "+areaPortals.getLength()+" bytes, "+areaPortals.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Area Portals not yet parsed!",1);
+			Window.println("Area Portals not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}*/
 	}
 	
@@ -279,10 +279,10 @@ public class v38BSP {
 	}
 	
 	public void setModels(byte[] data) {
-		models=new v38Models(data);
+		models=new Models(data);
 	}
 	
-	public v38Models getModels() {
+	public Models getModels() {
 		return models;
 	}
 	

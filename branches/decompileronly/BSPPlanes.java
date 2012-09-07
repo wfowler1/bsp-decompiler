@@ -27,9 +27,9 @@ public class BSPPlanes {
 			planes=new BSPPlane[numPlns];
 			populatePlaneList();
 		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+data.getName()+" not found!",0);
+			Window.println("ERROR: File "+data.getName()+" not found!",Window.VERBOSITY_ALWAYS);
 		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+data.getName()+" could not be read, ensure the file is not open in another program",0);
+			Window.println("ERROR: File "+data.getName()+" could not be read, ensure the file is not open in another program",Window.VERBOSITY_ALWAYS);
 		}
 	}
 	
@@ -42,9 +42,9 @@ public class BSPPlanes {
 			planes=new BSPPlane[numPlns];
 			populatePlaneList();
 		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+data.getName()+" not found!",0);
+			Window.println("ERROR: File "+data.getName()+" not found!",Window.VERBOSITY_ALWAYS);
 		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+data.getName()+" could not be read, ensure the file is not open in another program",0);
+			Window.println("ERROR: File "+data.getName()+" could not be read, ensure the file is not open in another program",Window.VERBOSITY_ALWAYS);
 		}
 	}
 	

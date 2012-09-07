@@ -147,7 +147,7 @@ public class MAPBrushSide {
 			       material +
 			       " [ "+lgtScale+" "+lgtRot+" ]";
 		} catch(java.lang.NullPointerException e) {
-			Window.println("WARNING: Side with bad data! Not exported!",2);
+			Window.println("WARNING: Side with bad data! Not exported!",Window.VERBOSITY_WARNINGS);
 			return null;
 		}
 	}
@@ -175,7 +175,7 @@ public class MAPBrushSide {
 				plane=new Plane(triangle);
 			}
 		} catch(java.lang.Exception e) {
-			Window.println("WARNING: Failed to shift triangle:"+e+(char)0x0D+(char)0x0A+triangle[0]+(char)0x0D+(char)0x0A+triangle[1]+(char)0x0D+(char)0x0A+triangle[2]+(char)0x0D+(char)0x0A+"Adding: "+shift,0);
+			Window.println("WARNING: Failed to shift triangle:"+e+(char)0x0D+(char)0x0A+triangle[0]+(char)0x0D+(char)0x0A+triangle[1]+(char)0x0D+(char)0x0A+triangle[2]+(char)0x0D+(char)0x0A+"Adding: "+shift,Window.VERBOSITY_ALWAYS);
 		}
 	}
 	
@@ -191,13 +191,13 @@ public class MAPBrushSide {
 	public void setTriangle(Vector3D[] in) {
 		if(in.length>=3) {
 			if(in[0]==null) {
-				Window.println("WARNING: Tried to set triangle but point 0 was null!",2);
+				Window.println("WARNING: Tried to set triangle but point 0 was null!",Window.VERBOSITY_WARNINGS);
 			} else {
 				if(in[1]==null) {
-					Window.println("WARNING: Tried to set triangle but point 1 was null!",2);
+					Window.println("WARNING: Tried to set triangle but point 1 was null!",Window.VERBOSITY_WARNINGS);
 				} else {
 					if(in[2]==null) {
-						Window.println("WARNING: Tried to set triangle but point 2 was null!",2);
+						Window.println("WARNING: Tried to set triangle but point 2 was null!",Window.VERBOSITY_WARNINGS);
 					} else {
 						triangle[0]=in[0];
 						triangle[1]=in[1];
@@ -209,20 +209,20 @@ public class MAPBrushSide {
 				}
 			}
 		} else {
-			Window.println("WARNING: Tried to define side with "+triangle.length+" points!",2);
+			Window.println("WARNING: Tried to define side with "+triangle.length+" points!",Window.VERBOSITY_WARNINGS);
 		}
 	}
 	
 	public void setSide(Plane plane, Vector3D[] triangle) {
 		if(triangle.length>=3) {
 			if(triangle[0]==null) {
-				Window.println("WARNING: Tried to set triangle but point 0 was null!",2);
+				Window.println("WARNING: Tried to set triangle but point 0 was null!",Window.VERBOSITY_WARNINGS);
 			} else {
 				if(triangle[1]==null) {
-					Window.println("WARNING: Tried to set triangle but point 1 was null!",2);
+					Window.println("WARNING: Tried to set triangle but point 1 was null!",Window.VERBOSITY_WARNINGS);
 				} else {
 					if(triangle[2]==null) {
-						Window.println("WARNING: Tried to set triangle but point 2 was null!",2);
+						Window.println("WARNING: Tried to set triangle but point 2 was null!",Window.VERBOSITY_WARNINGS);
 					} else {
 						this.triangle[0]=triangle[0];
 						this.triangle[1]=triangle[1];
@@ -234,7 +234,7 @@ public class MAPBrushSide {
 				}
 			}
 		} else {
-			Window.println("WARNING: Tried to define side with "+triangle.length+" points!",2);
+			Window.println("WARNING: Tried to define side with "+triangle.length+" points!",Window.VERBOSITY_WARNINGS);
 		}
 
 	}

@@ -46,8 +46,8 @@ public class BSP38Decompiler {
 		//int numAreaPortals=0;
 		int numTotalItems=0;
 		boolean containsAreaPortals=false;
-		for(int i=0;i<BSP38.getEntities().getNumElements();i++) { // For each entity
-			Window.println("Entity "+i+": "+mapFile.getEntity(i).getAttribute("classname"),4);
+		for(int i=0;i<BSP38.getEntities().length();i++) { // For each entity
+			Window.println("Entity "+i+": "+mapFile.getEntity(i).getAttribute("classname"),Window.VERBOSITY_ENTITIES);
 			// Deal with area portals.
 			if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_areaportal")) {
 				mapFile.getEntity(i).deleteAttribute("style");
@@ -58,7 +58,6 @@ public class BSP38Decompiler {
 			
 			if(currentModel!=-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
 				double[] origin=mapFile.getEntity(i).getOrigin();
-				int firstLeaf=BSP38.getModels().getModel(currentModel).getHead();
 				v38Leaf[] leaves=BSP38.getLeavesInModel(currentModel);
 				int numLeaves=leaves.length;
 				boolean[] brushesUsed=new boolean[BSP38.getBrushes().length()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
@@ -73,7 +72,7 @@ public class BSP38Decompiler {
 					if(numBrushIndices>0) { // A lot of leaves reference no brushes. If this is one, this iteration of the j loop is finished
 						for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
 							if(!brushesUsed[BSP38.getMarkBrushes().getShort(firstBrushIndex+k)]) { // If the current brush has NOT been used in this entity
-								Window.print("Brush "+(k+numBrushIndices),4);
+								Window.print("Brush "+(k+numBrushIndices),Window.VERBOSITY_BRUSHCREATION);
 								brushesUsed[BSP38.getMarkBrushes().getShort(firstBrushIndex+k)]=true;
 								Brush brush=BSP38.getBrushes().getBrush(BSP38.getMarkBrushes().getShort(firstBrushIndex+k));
 								if(!(brush.getAttributes()[1]==-128)) {
@@ -83,39 +82,39 @@ public class BSP38Decompiler {
 								}
 								numBrshs++;
 								numTotalItems++;
-								Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().length()+BSP38.getEntities().getNumElements(), "Decompiling...");
+								Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().length()+BSP38.getEntities().length(), "Decompiling...");
 							}
 						}
 					}
 				}
 			}
 			numTotalItems++; // This entity
-			Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().length()+BSP38.getEntities().getNumElements(), "Decompiling...");
+			Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().length()+BSP38.getEntities().length(), "Decompiling...");
 		}
 		if(containsAreaPortals) { // If this map was found to have area portals
 			int j=0;
 			for(int i=0;i<BSP38.getBrushes().length();i++) { // For each brush in this map
 				if(BSP38.getBrushes().getBrush(i).getAttributes()[1]==-128) { // If the brush is an area portal brush
-					for(j++;j<BSP38.getEntities().getNumElements();j++) { // Find an areaportal entity
+					for(j++;j<BSP38.getEntities().length();j++) { // Find an areaportal entity
 						if(BSP38.getEntities().getEntity(j).getAttribute("classname").equalsIgnoreCase("func_areaportal")) {
 							decompileBrush(BSP38.getBrushes().getBrush(i), j); // Add the brush to that entity
 							break; // And break out of the inner loop, but remember your place.
 						}
 					}
-					if(j==BSP38.getEntities().getNumElements()) { // If we're out of entities, stop this whole thing.
+					if(j==BSP38.getEntities().length()) { // If we're out of entities, stop this whole thing.
 						break;
 					}
 				}
 			}
 		}
-		Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().length()+BSP38.getEntities().getNumElements(), "Saving...");
+		Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().length()+BSP38.getEntities().length(), "Saving...");
 		if(Window.toVMF()) {
 			VMFWriter VMFMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+".vmf...",0);
+				Window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+".vmf...",Window.VERBOSITY_ALWAYS);
 				VMFMaker=new VMFWriter(mapFile, BSP38.getPath().substring(0, BSP38.getPath().length()-4),38);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+".vmf...",0);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+".vmf...",Window.VERBOSITY_ALWAYS);
 				VMFMaker=new VMFWriter(mapFile, Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4),38);
 			}
 			VMFMaker.write();
@@ -123,10 +122,10 @@ public class BSP38Decompiler {
 		if(Window.toMOH()) {
 			MOHRadiantMAPWriter MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+"_MOH.map...",0);
+				Window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+"_MOH.map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new MOHRadiantMAPWriter(mapFile, BSP38.getPath().substring(0, BSP38.getPath().length()-4)+"_MOH",38);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+"_MOH.map...",0);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+"_MOH.map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new MOHRadiantMAPWriter(mapFile, Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+"_MOH",38);
 			}
 			MAPMaker.write();
@@ -134,43 +133,56 @@ public class BSP38Decompiler {
 		if(Window.toGCMAP()) {
 			MAP510Writer MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+".map...",0);
+				Window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+".map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new MAP510Writer(mapFile, BSP38.getPath().substring(0, BSP38.getPath().length()-4),38);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+".map...",0);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+".map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new MAP510Writer(mapFile, Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4),38);
 			}
 			MAPMaker.write();
 		}
-		Window.println("Process completed!",0);
+		if(Window.toRadiantMAP()) {
+			GTKRadiantMapWriter MAPMaker;
+			if(Window.getOutputFolder().equals("default")) {
+				Window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+"_radiant.map...",Window.VERBOSITY_ALWAYS);
+				MAPMaker=new GTKRadiantMapWriter(mapFile, BSP38.getPath().substring(0, BSP38.getPath().length()-4)+"_radiant",38);
+			} else {
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+"_radiant.map...",Window.VERBOSITY_ALWAYS);
+				MAPMaker=new GTKRadiantMapWriter(mapFile, Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+"_radiant",38);
+			}
+			MAPMaker.write();
+		}
+		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {
-			Window.println("Num simple corrected brushes: "+numSimpleCorrects,1); 
-			Window.println("Num advanced corrected brushes: "+numAdvancedCorrects,1); 
-			Window.println("Num good brushes: "+numGoodBrushes,1); 
+			Window.println("Num simple corrected brushes: "+numSimpleCorrects,Window.VERBOSITY_MAPSTATS); 
+			Window.println("Num advanced corrected brushes: "+numAdvancedCorrects,Window.VERBOSITY_MAPSTATS); 
+			Window.println("Num good brushes: "+numGoodBrushes,Window.VERBOSITY_MAPSTATS); 
 		}
 		Date end=new Date();
-		Window.window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,0);
+		Window.window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,Window.VERBOSITY_ALWAYS);
 	}
 
 	// -decompileBrush38(Brush, int, boolean)
 	// Decompiles the Brush and adds it to entitiy #currentEntity as .MAP data.
 	private void decompileBrush(Brush brush, int currentEntity) {
 		double[] origin=mapFile.getEntity(currentEntity).getOrigin();
-		boolean isWater=false;
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
 		MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
 		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, false);
-		Window.println(": "+numSides+" sides",4);
-		for(int l=0;l<numSides;l++) { // For each side of the brush
+		Window.println(": "+numSides+" sides",Window.VERBOSITY_BRUSHCREATION);
+		if((brush.getAttributes()[0] & ((byte)1 << 5)) != 0) {
+			mapBrush.setWater(true);
+		}
+		for(int i=0;i<numSides;i++) { // For each side of the brush
 			Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
-			v38BrushSide currentSide=BSP38.getBrushSides().getBrushSide(firstSide+l);
-			Plane currentPlane=BSP38.getPlanes().getPlane(currentSide.getPlane()).getPlane(); // To find those three points, I must extrapolate from planes until I find a way to associate faces with brushes
+			v38BrushSide currentSide=BSP38.getBrushSides().getBrushSide(firstSide+i);
+			Plane currentPlane=BSP38.getPlanes().getPlane(currentSide.getPlane()); // To find those three points, I must extrapolate from planes until I find a way to associate faces with brushes
 			v38Texture currentTexture;
 			boolean isDuplicate=false;
-			for(int i=l+1;i<numSides;i++) { // For each subsequent side of the brush
-				if(currentPlane.equals(BSP38.getPlanes().getPlane(BSP38.getBrushSides().getBrushSide(firstSide+i).getPlane()))) {
-					Window.println("WARNING: Duplicate planes in a brush, sides "+l+" and "+i,2);
+			for(int j=i+1;j<numSides;j++) { // For each subsequent side of the brush
+				if(currentPlane.equals(BSP38.getPlanes().getPlane(BSP38.getBrushSides().getBrushSide(firstSide+j).getPlane()))) {
+					Window.println("WARNING: Duplicate planes in a brush, sides "+i+" and "+j,Window.VERBOSITY_WARNINGS);
 					isDuplicate=true;
 				}
 			}
@@ -179,39 +191,107 @@ public class BSP38Decompiler {
 					currentTexture=BSP38.getTextures().getTexture(currentSide.getTexInfo());
 				} else {
 					currentTexture=createPerpTexture38(currentPlane); // Create a texture plane perpendicular to current plane's normal
-				}
-				//int firstVertex=currentFace.getVert();
-				//int numVertices=currentFace.getNumVerts();
-				// boolean pointsWorked=false; // Need to figure out how to get faces from brush sides, then use vertices
-				/*if(numVertices!=0 && !Window.planarDecompIsSelected()) { // If the face actually references a set of vertices
-					plane[0]=new Vector3D(BSP42.getVertices().getVertex(firstVertex)); // Grab and store the first one
-					int m=1;
-					for(m=1;m<numVertices;m++) { // For each point after the first one
-						plane[1]=new Vector3D(BSP42.getVertices().getVertex(firstVertex+m));
-						if(!plane[0].equals(plane[1])) { // Make sure the point isn't the same as the first one
-							break; // If it isn't the same, this point is good
+				}/*
+				if(!Window.planarDecompIsSelected()) {
+					// Find a face whose plane and texture information corresponds to the current side
+					// It doesn't really matter if it's the actual brush's face, just as long as it provides vertices.
+					v38Face currentFace=null;
+					boolean faceFound=false;
+					for(int j=0;j<BSP38.getFaces().length();j++) {
+						currentFace=BSP38.getFaces().getFace(j);
+						if(currentFace.getPlane()==currentSide.getPlane() && currentFace.getTexInfo()==currentSide.getTexInfo() && currentFace.getNumEdges()>1) {
+							faceFound=true;
+							break;
 						}
 					}
-					for(m=m+1;m<numVertices;m++) { // For each point after the previous one used
-						plane[2]=new Vector3D(BSP42.getVertices().getVertex(firstVertex+m));
-						if(!plane[2].equals(plane[0]) && !plane[2].equals(plane[1])) { // Make sure no point is equal to the third one
-							if((Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || // Make sure all
-							   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getY()!=0) || // three points 
-							   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getZ()!=0)) { // are not collinear
-									pointsWorked=true;
-								break;
+					if(faceFound) {
+						int markEdge=BSP38.getMarkEdges().getInt(currentFace.getFirstEdge());
+						int currentMarkEdge=0;
+						int firstVertex;
+						int secondVertex;
+						if(markEdge>0) {
+							firstVertex=BSP38.getEdges().getEdge(markEdge).getFirstVertex();
+							secondVertex=BSP38.getEdges().getEdge(markEdge).getSecondVertex();
+						} else {
+							firstVertex=BSP38.getEdges().getEdge(-markEdge).getSecondVertex();
+							secondVertex=BSP38.getEdges().getEdge(-markEdge).getFirstVertex();
+						}
+						int numVertices=currentFace.getNumEdges()+1;
+						boolean pointsWorked=false;
+						plane[0]=new Vector3D(BSP38.getVertices().getVertex(firstVertex)); // Grab and store the first one
+						plane[1]=new Vector3D(BSP38.getVertices().getVertex(secondVertex)); // The second should be unique from the first
+						boolean second=false;
+						if(plane[0].equals(plane[1])) { // If for some messed up reason they are the same
+							for(currentMarkEdge=1;currentMarkEdge<currentFace.getNumEdges();currentMarkEdge++) { // For each edge after the first one
+								markEdge=BSP38.getMarkEdges().getInt(currentFace.getFirstEdge()+currentMarkEdge);
+								if(markEdge>0) {
+									plane[1]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(markEdge).getFirstVertex()));
+								} else {
+									plane[1]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(-markEdge).getSecondVertex()));
+								}
+								if(!plane[0].equals(plane[1])) { // Make sure the point isn't the same as the first one
+									second=false;
+									break; // If it isn't the same, this point is good
+								} else {
+									if(markEdge>0) {
+										plane[1]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(markEdge).getSecondVertex()));
+									} else {
+										plane[1]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(-markEdge).getFirstVertex()));
+									}
+									if(!plane[0].equals(plane[1])) {
+										second=true;
+										break;
+									}
+								}
 							}
 						}
+						if(second) {
+							currentMarkEdge++;
+						}
+						for(;currentMarkEdge<currentFace.getNumEdges();currentMarkEdge++) {
+							markEdge=BSP38.getMarkEdges().getInt(currentFace.getFirstEdge()+currentMarkEdge);
+							if(second) {
+								if(markEdge>0) {
+									plane[2]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(markEdge).getFirstVertex()));
+								} else {
+									plane[2]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(-markEdge).getSecondVertex()));
+								}
+								if(!plane[2].equals(plane[0]) && !plane[2].equals(plane[1])) { // Make sure no point is equal to the third one
+									if((Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || // Make sure all
+									   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getY()!=0) || // three points 
+									   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getZ()!=0)) { // are not collinear
+										pointsWorked=true;
+										break;
+									}
+								}
+							}
+							// if we get to here, the first vertex of the edge failed, or was already used
+							if(markEdge>0) { // use the second vertex
+								plane[2]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(markEdge).getSecondVertex()));
+							} else {
+								plane[2]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(-markEdge).getFirstVertex()));
+							}
+							if(!plane[2].equals(plane[0]) && !plane[2].equals(plane[1])) { // Make sure no point is equal to the third one
+								if((Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || // Make sure all
+								   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getY()!=0) || // three points 
+								   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getZ()!=0)) { // are not collinear
+									pointsWorked=true;
+									break;
+								}
+							}
+							// If we get here, neither point worked and we need to try the next edge.
+							second=true;
+						}
+						if(!pointsWorked) {
+							plane=GenericMethods.extrapPlanePoints(currentPlane);
+						}
+					} else { // Face not found
+						plane=GenericMethods.extrapPlanePoints(currentPlane);
 					}
-				}*/
-				//if(numVertices==0 || !pointsWorked) { // Fallback to planar decompilation. Since there are no explicitly defined points anymore,
-					                                   // we must find them ourselves using the A, B, C and D values.
+				} else { // Planar decomp only */
 					plane=GenericMethods.extrapPlanePoints(currentPlane);
-				//}
+				// }
 				String texture=currentTexture.getTexture();
-				if(brush.getAttributes()[0]==32) {
-					isWater=true;
-				}
 				double[] textureS=new double[3];
 				double[] textureT=new double[3];
 				// Get the lengths of the axis vectors
@@ -235,11 +315,9 @@ public class BSP38Decompiler {
 				String material="wld_lightmap"; // Since materials are a NightFire only thing, set this to a good default
 				double lgtScale=16; // These values are impossible to get from a compiled map since they
 				double lgtRot=0;    // are used by RAD for generating lightmaps, then are discarded, I believe.
-				brushSides[l]=new MAPBrushSide(plane, texture, textureS, textureShiftS, textureT, textureShiftT,
+				brushSides[i]=new MAPBrushSide(plane, texture, textureS, textureShiftS, textureT, textureShiftT,
 				                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
-				if(brushSides[l]!=null) {
-					mapBrush.add(brushSides[l]);
-				}
+				mapBrush.add(brushSides[i]);
 			}
 		}
 		
@@ -252,7 +330,7 @@ public class BSP38Decompiler {
 						try {
 							mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
 						} catch(java.lang.NullPointerException e) {
-							Window.println("WARNING: Brush vertex calculation failed on entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",2);
+							Window.println("WARNING: Brush vertex calculation failed on entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",Window.VERBOSITY_WARNINGS);
 						}
 					}
 				} else { // If no forward side exists
@@ -260,7 +338,7 @@ public class BSP38Decompiler {
 						mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush);
 						numAdvancedCorrects++;
 					} catch(java.lang.ArithmeticException e) {
-						Window.println("WARNING: Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",2);
+						Window.println("WARNING: Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",Window.VERBOSITY_WARNINGS);
 					}
 				}
 			} else {
@@ -271,7 +349,7 @@ public class BSP38Decompiler {
 				try {
 					mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
 				} catch(java.lang.NullPointerException e) {
-					Window.println("WARNING: Brush vertex calculation failed on entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",2);
+					Window.println("WARNING: Brush vertex calculation failed on entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",Window.VERBOSITY_WARNINGS);
 				}
 			}
 		}
@@ -281,20 +359,10 @@ public class BSP38Decompiler {
 		// this whole program and the entities parser, this shouldn't
 		// cause any issues at all.
 		if(Window.brushesToWorldIsSelected()) {
+			mapBrush.setWater(false);
 			mapFile.getEntity(0).addBrush(mapBrush);
 		} else {
-			if(isWater) {
-				Entity newWaterEntity=new Entity("func_water");
-				newWaterEntity.setAttribute("rendercolor", "0 0 0");
-				newWaterEntity.setAttribute("speed", "100");
-				newWaterEntity.setAttribute("wait", "4");
-				newWaterEntity.setAttribute("skin", "-3");
-				newWaterEntity.setAttribute("WaveHeight", "3.2");
-				newWaterEntity.addBrush(mapBrush);
-				mapFile.add(newWaterEntity);
-			} else {
-				mapFile.getEntity(currentEntity).addBrush(mapBrush);
-			}
+			mapFile.getEntity(currentEntity).addBrush(mapBrush);
 		}
 	}
 	

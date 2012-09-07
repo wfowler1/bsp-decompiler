@@ -14,7 +14,6 @@ import java.awt.event.WindowAdapter;
 import javax.swing.*;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.Date;
 import java.util.Scanner;
 
 public class Window extends JPanel implements ActionListener {
@@ -23,6 +22,13 @@ public class Window extends JPanel implements ActionListener {
 	
 	// Constants
 	public static final String LF=""+(char)0x0D+(char)0x0A;
+	
+	public static final int VERBOSITY_ALWAYS=0;
+	public static final int VERBOSITY_WARNINGS=1;
+	public static final int VERBOSITY_MAPSTATS=2;
+	public static final int VERBOSITY_ENTITIES=3;
+	public static final int VERBOSITY_BRUSHCORRECTION=4;
+	public static final int VERBOSITY_BRUSHCREATION=5;
 
 	private static Runtime r = Runtime.getRuntime(); // Get a runtime object. This is for calling
 	                                                 // Java's garbage collector and does not need
@@ -47,6 +53,7 @@ public class Window extends JPanel implements ActionListener {
 	private static JCheckBoxMenuItem decompVMFItem;
 	private static JCheckBoxMenuItem decompMAPItem; 
 	private static JCheckBoxMenuItem decompMOHRadiantItem;
+	private static JCheckBoxMenuItem decompRadiantItem;
 	private static JMenuItem exitItem;
 
 	// "Options" menu
@@ -56,6 +63,7 @@ public class Window extends JPanel implements ActionListener {
 	private static JCheckBoxMenuItem chk_skipPlaneFlipItem;
 	private static JCheckBoxMenuItem chk_calcVertsItem;
 	private static JCheckBoxMenuItem chk_roundNumsItem;
+	private static JCheckBoxMenuItem chk_extractZipItem;
 	private static JMenuItem setThreadsItem;
 	private static JMenuItem setOutFolderItem;
 
@@ -80,6 +88,7 @@ public class Window extends JPanel implements ActionListener {
 	private static JRadioButtonMenuItem rad_verbosity_2;
 	private static JRadioButtonMenuItem rad_verbosity_3;
 	private static JRadioButtonMenuItem rad_verbosity_4;
+	private static JRadioButtonMenuItem rad_verbosity_5;
 	
 	// Frame components
 	// There's really only one, the Split Pane
@@ -118,21 +127,18 @@ public class Window extends JPanel implements ActionListener {
 	// main method
 	// Creates an Object of this class and launches the GUI. Entry point to the whole program.
 	public static void main(String[] args) {
-		//if(args.length==0) {
-			UIManager myUI=new UIManager();
-			try {
-				myUI.setLookAndFeel(myUI.getSystemLookAndFeelClassName());
-			} catch(java.lang.Exception e) {
-				;
-			}
+		UIManager myUI=new UIManager();
+		try {
+			myUI.setLookAndFeel(myUI.getSystemLookAndFeelClassName());
+		} catch(java.lang.Exception e) {
+			;
+		}
 			
-			frame = new JFrame("BSP Decompiler by 005");
+		frame = new JFrame("BSP Decompiler by 005");
 	
-			window = new Window(frame.getContentPane());
-		//} else {
-		//	window = new Window(args);
-		//}
-		print("Got a bug to report? Want to request a feature?"+LF+"Create an issue report at"+LF+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry"+LF+LF, 0);
+		window = new Window(frame.getContentPane());
+		print("Got a bug to report? Want to request a feature?"+LF+"Create an issue report at"+LF+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry"+LF+LF, VERBOSITY_ALWAYS);
+
 	}
 
 	// This constructor configures and displays the GUI
@@ -140,7 +146,8 @@ public class Window extends JPanel implements ActionListener {
 		// Set up most of the window's properties, since we definitely have a window
 		// Good thing frame is a global object
 		// Set up frame's properties here
-		frame.setIconImage(new ImageIcon("icon32x32.PNG").getImage());
+		java.net.URL imageURL = Window.class.getResource("icon32x32.PNG");
+		frame.setIconImage(new ImageIcon(imageURL).getImage());
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setPreferredSize(new Dimension(640, 460));
 		frame.setMinimumSize(new Dimension(316, 240));
@@ -174,6 +181,10 @@ public class Window extends JPanel implements ActionListener {
 		fileMenu.add(decompMOHRadiantItem);
 		decompMOHRadiantItem.addActionListener(this); 
 		decompMOHRadiantItem.setSelected(true);
+		decompRadiantItem = new JCheckBoxMenuItem("Output GTKRadiant MAP");
+		fileMenu.add(decompRadiantItem);
+		decompRadiantItem.addActionListener(this);
+		decompRadiantItem.setSelected(true);
 		fileMenu.addSeparator();
 		exitItem = new JMenuItem("Exit");
 		fileMenu.add(exitItem);
@@ -200,6 +211,12 @@ public class Window extends JPanel implements ActionListener {
 		chk_roundNumsItem.setToolTipText("Rounds all decimals to the same precision as each map editor uses for its map format. Might make editors happier.");
 		chk_roundNumsItem.setSelected(true);
 		optionsMenu.add(chk_roundNumsItem);
+		optionsMenu.addSeparator();
+		
+		chk_extractZipItem=new JCheckBoxMenuItem("Extract internal PAK file");
+		chk_extractZipItem.setToolTipText("Source engine maps contain an internal PAK file containing map-specific files. Extraction takes a little while and creates another file.");
+		chk_extractZipItem.setSelected(true);
+		optionsMenu.add(chk_extractZipItem);
 		optionsMenu.addSeparator();
 		
 		setThreadsItem=new JMenuItem("Set number of threads...");
@@ -257,26 +274,30 @@ public class Window extends JPanel implements ActionListener {
 		
 		verbosityGroup=new ButtonGroup();
 		rad_verbosity_0=new JRadioButtonMenuItem("Status only");
-		rad_verbosity_1=new JRadioButtonMenuItem("Output map statistics");
-		rad_verbosity_2=new JRadioButtonMenuItem("Show warnings");
-		rad_verbosity_3=new JRadioButtonMenuItem("Show brush correction method calls");
-		rad_verbosity_4=new JRadioButtonMenuItem("Show all brush creation method calls");
+		rad_verbosity_1=new JRadioButtonMenuItem("Show warnings");
+		rad_verbosity_2=new JRadioButtonMenuItem("Output map statistics");
+		rad_verbosity_3=new JRadioButtonMenuItem("Show entities");
+		rad_verbosity_4=new JRadioButtonMenuItem("Show brush correction method calls");
+		rad_verbosity_5=new JRadioButtonMenuItem("Show all brush creation method calls");
 		verbosityGroup.add(rad_verbosity_0);
 		verbosityGroup.add(rad_verbosity_1);
 		verbosityGroup.add(rad_verbosity_2);
 		verbosityGroup.add(rad_verbosity_3);
 		verbosityGroup.add(rad_verbosity_4);
+		verbosityGroup.add(rad_verbosity_5);
 		verbosityMenu.add(rad_verbosity_0);
 		verbosityMenu.add(rad_verbosity_1);
 		verbosityMenu.add(rad_verbosity_2);
 		verbosityMenu.add(rad_verbosity_3);
 		verbosityMenu.add(rad_verbosity_4);
+		verbosityMenu.add(rad_verbosity_5);
 		rad_verbosity_0.setSelected(true);
 		rad_verbosity_0.addActionListener(this);
 		rad_verbosity_1.addActionListener(this);
 		rad_verbosity_2.addActionListener(this);
 		rad_verbosity_3.addActionListener(this);
 		rad_verbosity_4.addActionListener(this);
+		rad_verbosity_5.addActionListener(this);
 		
 		frame.setJMenuBar(menuBar);
 		
@@ -391,42 +412,49 @@ public class Window extends JPanel implements ActionListener {
 	// going to perform actions when certain things are clicked. The rest are discarded.
 	public void actionPerformed(ActionEvent action) {
 		// It's an abort button
-		if(action.getActionCommand().substring(0,6).equals("Abort ")) {
+		try {
+			if(action.getActionCommand().substring(0,6).equals("Abort ")) {
 			// Try to figure out which one
-			try {
-				int cancelJob=new Integer(action.getActionCommand().substring(6));
-				stopDecompilerThread(cancelJob);
-			} catch(java.lang.NumberFormatException e) { // If it wasn't numbered, it was the "Abort all" button
-				for(int i=numJobs;i>0;i--) { // Start from the last one and work towards the first.
-					try {
+				try {
+					int cancelJob=new Integer(action.getActionCommand().substring(6));
+					stopDecompilerThread(cancelJob);
+				} catch(java.lang.NumberFormatException e) { // If it wasn't numbered, it was the "Abort all" button
+					for(int i=numJobs;i>0;i--) { // Start from the last one and work towards the first.
 						if(btn_abort[i-1].getText().substring(0,6).equals("Abort ")) {
 							stopDecompilerThread(i); // This prevents new threads from starting while this loop is running.
 						}
-					} catch(java.lang.StringIndexOutOfBoundsException f) {
-						;
 					}
 				}
 			}
+		} catch(java.lang.StringIndexOutOfBoundsException f) {
+			;
 		}
 		
 		if(action.getSource() == decompMAPItem) {
-			if(!decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
+			if(!decompRadiantItem.isSelected() && !decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
 				decompMAPItem.setSelected(true);
-				println("Must output to at least one MAP format!",0);
+				println("Must output to at least one MAP format!",VERBOSITY_ALWAYS);
 			}
 		}
 		
 		if(action.getSource() == decompVMFItem) {
-			if(!decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
+			if(!decompRadiantItem.isSelected() && !decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
 				decompVMFItem.setSelected(true);
-				println("Must output to at least one MAP format!",0);
+				println("Must output to at least one MAP format!",VERBOSITY_ALWAYS);
 			}
 		}
 		
 		if(action.getSource() == decompMOHRadiantItem) {
-			if(!decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
+			if(!decompRadiantItem.isSelected() && !decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
 				decompMOHRadiantItem.setSelected(true);
-				println("Must output to at least one MAP format!",0);
+				println("Must output to at least one MAP format!",VERBOSITY_ALWAYS);
+			}
+		}
+		
+		if(action.getSource() == decompRadiantItem) {
+			if(!decompRadiantItem.isSelected() && !decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
+				decompRadiantItem.setSelected(true);
+				println("Must output to at least one MAP format!",VERBOSITY_ALWAYS);
 			}
 		}
 		
@@ -496,9 +524,9 @@ public class Window extends JPanel implements ActionListener {
 						FileOutputStream logWriter=new FileOutputStream(logfile);
 						logWriter.write(out);
 						logWriter.close();
-						Window.println("Log file saved!",0);
+						Window.println("Log file saved!",VERBOSITY_ALWAYS);
 					} catch(java.io.IOException e) {
-						Window.println("Unable to create file "+logfile.getAbsolutePath()+LF+"Ensure the filesystem is not read only!",0);
+						Window.println("Unable to create file "+logfile.getAbsolutePath()+LF+"Ensure the filesystem is not read only!",VERBOSITY_ALWAYS);
 					}
 				}
 			}
@@ -516,23 +544,23 @@ public class Window extends JPanel implements ActionListener {
 				File saveHere=file_selector.getSelectedFile();
 				if(saveHere!=null) {
 					if(!saveHere.exists()) {
-						Window.println(saveHere.getAbsolutePath()+" does not exist! Setting to \"default\" instead.",0);
+						Window.println(saveHere.getAbsolutePath()+" does not exist! Setting to \"default\" instead.",VERBOSITY_ALWAYS);
 						outputFolder="default";
 					} else {
 						if(!saveHere.isDirectory()) {
-							Window.println(saveHere.getAbsolutePath()+" is not a directory! Setting to \"default\" instead.",0);
+							Window.println(saveHere.getAbsolutePath()+" is not a directory! Setting to \"default\" instead.",VERBOSITY_ALWAYS);
 							outputFolder="default";
 						} else {
-							Window.println("Output directory set to "+saveHere.getAbsolutePath(),0);
+							Window.println("Output directory set to "+saveHere.getAbsolutePath(),VERBOSITY_ALWAYS);
 							outputFolder=saveHere.getAbsolutePath();
 						}
 					}
 				} else {
-					Window.println("Output folder set to default.",0);
+					Window.println("Output folder set to default.",VERBOSITY_ALWAYS);
 					outputFolder="default";
 				}
 			} else {
-				Window.println("Output folder set to default.",0);
+				Window.println("Output folder set to default.",VERBOSITY_ALWAYS);
 				outputFolder="default";
 			}
 		}
@@ -566,10 +594,10 @@ public class Window extends JPanel implements ActionListener {
 					throw new java.lang.NumberFormatException();
 				} else {
 					precision=temp;
-					println("Error tolerance set to "+precision+".",0);
+					println("Error tolerance set to "+precision+".",VERBOSITY_ALWAYS);
 				}
 			} catch(java.lang.NumberFormatException e) {
-				println("Invalid error tolerance! Tolerance is "+precision+" instead!",0);
+				println("Invalid error tolerance! Tolerance is "+precision+" instead!",VERBOSITY_ALWAYS);
 			} catch(java.lang.NullPointerException e) { // Happens when user hits "cancel". Do nothing.
 				;
 			}
@@ -586,13 +614,13 @@ public class Window extends JPanel implements ActionListener {
 					throw new java.lang.NumberFormatException();
 				} else {
 					originBrushSize=temp;
-					println("Origin brush size set to "+originBrushSize+".",0);
+					println("Origin brush size set to "+originBrushSize+".",VERBOSITY_ALWAYS);
 				}
 			} catch(java.lang.NumberFormatException e) {
 				if(st.equalsIgnoreCase("penis") || temp==0) { // Is it Easter time already?! :D
-					println("Brush size cannot be zero! Size remains "+originBrushSize+" instead!",0);
+					println("Brush size cannot be zero! Size remains "+originBrushSize+" instead!",VERBOSITY_ALWAYS);
 				} else {
-					println("Invalid brush size! Size remains "+originBrushSize+" instead!",0);
+					println("Invalid brush size! Size remains "+originBrushSize+" instead!",VERBOSITY_ALWAYS);
 				}
 			} catch(java.lang.NullPointerException e) { // Happens when user hits "cancel". Do nothing.
 				;
@@ -609,10 +637,10 @@ public class Window extends JPanel implements ActionListener {
 					throw new java.lang.NumberFormatException();
 				} else {
 					numThreads=temp;
-					println("Num threads set to "+numThreads+".",0);
+					println("Num threads set to "+numThreads+".",VERBOSITY_ALWAYS);
 				}
 			} catch(java.lang.NumberFormatException e) {
-				println("Invalid number of threads! Thread count remains "+numThreads+" instead!",0);
+				println("Invalid number of threads! Thread count remains "+numThreads+" instead!",VERBOSITY_ALWAYS);
 			} catch(java.lang.NullPointerException e) { // Happens when user hits "cancel". Do nothing.
 				;
 			}
@@ -628,34 +656,39 @@ public class Window extends JPanel implements ActionListener {
 					throw new java.lang.NumberFormatException();
 				} else {
 					planePointCoef=temp;
-					println("Coefficient set to "+planePointCoef+".",0);
+					println("Coefficient set to "+planePointCoef+".",VERBOSITY_ALWAYS);
 				}
 			} catch(java.lang.NumberFormatException e) {
-				println("Invalid coefficient! Coefficient remains "+planePointCoef+" instead!",0);
+				println("Invalid coefficient! Coefficient remains "+planePointCoef+" instead!",VERBOSITY_ALWAYS);
 			} catch(java.lang.NullPointerException e) { // Happens when user hits "cancel". Do nothing.
 				;
 			}
 		}
 		
 		// Log verbosity items
+		
 		if(action.getSource() == rad_verbosity_0) {
-			verbosity=0;
+			verbosity=VERBOSITY_ALWAYS;
 		}
 		
 		if(action.getSource() == rad_verbosity_1) {
-			verbosity=1;
+			verbosity=VERBOSITY_WARNINGS;
 		}
 		
 		if(action.getSource() == rad_verbosity_2) {
-			verbosity=2;
+			verbosity=VERBOSITY_MAPSTATS;
 		}
 		
 		if(action.getSource() == rad_verbosity_3) {
-			verbosity=3;
+			verbosity=VERBOSITY_ENTITIES;
 		}
 		
 		if(action.getSource() == rad_verbosity_4) {
-			verbosity=4;
+			verbosity=VERBOSITY_BRUSHCORRECTION;
+		}
+		
+		if(action.getSource() == rad_verbosity_5) {
+			verbosity=VERBOSITY_BRUSHCREATION;
 		}
 	}
 	
@@ -672,7 +705,7 @@ public class Window extends JPanel implements ActionListener {
 		decompilerworkers[newThread] = new Thread(runMe);
 		decompilerworkers[newThread].setName("Decompiler "+newThread+" job "+jobNum);
 		decompilerworkers[newThread].setPriority(Thread.MIN_PRIORITY);
-		println("Starting job #"+(jobNum+1),0);
+		println("Starting job #"+(jobNum+1),VERBOSITY_ALWAYS);
 		decompilerworkers[newThread].start();
 		threadNum[jobNum]=newThread;
 		progressBar[jobNum].setIndeterminate(false);
@@ -683,10 +716,10 @@ public class Window extends JPanel implements ActionListener {
 		if(currentThread>-1) {
 			decompilerworkers[currentThread].stop();          // The Java API lists this method of stopping a thread as deprecated.
 			startNextJob(true, currentThread);                // For the purposes of this program, I'm not sure it's an issue though.
-			println("Job number "+job+" aborted by user.",0); // More info: http://docs.oracle.com/javase/6/docs/technotes/guides/concurrency/threadPrimitiveDeprecation.html
+			println("Job number "+job+" aborted by user.",VERBOSITY_ALWAYS); // More info: http://docs.oracle.com/javase/6/docs/technotes/guides/concurrency/threadPrimitiveDeprecation.html
 			setProgress(job-1, 1, 1, "Aborted!");
 		} else {
-			println("Job number "+job+" canceled by user.",0);
+			println("Job number "+job+" canceled by user.",VERBOSITY_ALWAYS);
 			setProgress(job-1, 1, 1, "Canceled!");
 		}
 		setProgressColor(job-1, new Color(255, 128, 128));
@@ -722,7 +755,7 @@ public class Window extends JPanel implements ActionListener {
 	}
 	
 	protected static void println() {
-		print(""+LF,0);
+		print(""+LF,VERBOSITY_ALWAYS);
 	}
 	
 	protected static void clearConsole() {
@@ -869,7 +902,7 @@ public class Window extends JPanel implements ActionListener {
 				realNewJobs++;
 			}
 		}
-		println("Adding "+realNewJobs+" new jobs to queue",0);
+		println("Adding "+realNewJobs+" new jobs to queue",VERBOSITY_ALWAYS);
 		for(int i=0;i<newJobs.length;i++) {
 			if(newJobs[i]!=null || newDoomJobs[i]!=null) {
 				addJob(newJobs[i], newDoomJobs[i]);
@@ -961,6 +994,7 @@ public class Window extends JPanel implements ActionListener {
 		chk_visLeafBBoxes.setEnabled(in);
 		setOriginBrushSizeItem.setEnabled(in);
 		chk_dontCull.setEnabled(in);
+		chk_extractZipItem.setEnabled(in);
 		if(in) {
 			chk_calcVertsItem.setEnabled(!(chk_planarItem.isSelected() && !chk_skipPlaneFlipItem.isSelected()));
 			if(chk_planarItem.isSelected() && !chk_skipPlaneFlipItem.isSelected()) {
@@ -1003,6 +1037,10 @@ public class Window extends JPanel implements ActionListener {
 		return chk_roundNumsItem.isSelected();
 	}
 	
+	public static boolean extractZipIsSelected() {
+		return chk_extractZipItem.isSelected();
+	}
+	
 	public static boolean noFaceFlagsIsSelected() {
 		return chk_noFaceFlagsItem.isSelected();
 	}
@@ -1033,6 +1071,10 @@ public class Window extends JPanel implements ActionListener {
 	
 	public static boolean toMOH() {
 		return decompMOHRadiantItem.isSelected();
+	}
+	
+	public static boolean toRadiantMAP() {
+		return decompRadiantItem.isSelected();
 	}
 	
 	public static boolean toGCMAP() {

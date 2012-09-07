@@ -76,11 +76,27 @@ public class IntList {
 		reader.close();
 	}
 	
+	// For debug purposes only
+	public void printList() {
+		for(int i=0;i<ints.length;i++) {
+			Window.println(ints[i]+"",Window.VERBOSITY_ALWAYS);
+		}
+	}
+	
 	// ACCESSORS/MUTATORS
 	
 	// Returns the length (in bytes) of the lump
 	public int getLength() {
 		return length;
+	}
+	
+	public int indexOf(int needle) {
+		for(int i=0;i<ints.length;i++) {
+			if(ints[i]==needle) {
+				return i;
+			}
+		}
+		return -1;
 	}
 	
 	// Returns the number of brush indices. This lump is RETARDED.

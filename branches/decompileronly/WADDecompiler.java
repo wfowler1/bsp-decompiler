@@ -47,7 +47,7 @@ public class WADDecompiler {
 	// brushes (at least, not in any sane way).
 	public void decompile() throws java.io.IOException {
 		Date begin=new Date();
-		Window.println(doomMap.getMapName(),0);
+		Window.println(doomMap.getMapName(),Window.VERBOSITY_ALWAYS);
 		
 		mapFile=new Entities();
 		Entity world = new Entity("worldspawn");
@@ -111,7 +111,7 @@ public class WADDecompiler {
 		int[] ssparents = new int[doomMap.getSubSectors().getNumElements()];
 		boolean[] ssIsLeft = new boolean[doomMap.getSubSectors().getNumElements()];
 		for(int i=0;i<doomMap.getSubSectors().getNumElements();i++) {
-			Window.println("Creating brushes for subsector "+i,4);
+			Window.println("Creating brushes for subsector "+i,Window.VERBOSITY_BRUSHCREATION);
 			// First, find the subsector's parent and whether it is the left or right child.
 			ssparents[i]=-1; // No subsector should have a -1 in here
 			for(int j=0;j<doomMap.getNodes().getNumElements();j++) {
@@ -180,8 +180,8 @@ public class WADDecompiler {
 				}
 				// Sometimes a subsector seems to belong to more than one sector. I don't know why.
 				if(subsectorSectors[i]!=-1 && currentSidedef.getSector()!=subsectorSectors[i]) {
-					Window.println("WARNING: Subsector "+i+" has sides defining different sectors!",2);
-					Window.println("This is probably nothing to worry about, but something might be wrong (wrong floor/cieling height)",2);
+					Window.println("WARNING: Subsector "+i+" has sides defining different sectors!",Window.VERBOSITY_WARNINGS);
+					Window.println("This is probably nothing to worry about, but something might be wrong (wrong floor/cieling height)",Window.VERBOSITY_WARNINGS);
 				} else {
 					subsectorSectors[i]=currentSidedef.getSector();
 				}
@@ -340,7 +340,7 @@ public class WADDecompiler {
 				// Need to iterate backward, since these lists go from low indices to high, and
 				// the index of all subsequent items changes when something before it is removed.
 				if(cielingBrush.getNumSides()-badSides.length<4) {
-					Window.println("WARNING: Plane cull returned less than 4 sides for subsector "+i,2);
+					Window.println("WARNING: Plane cull returned less than 4 sides for subsector "+i,Window.VERBOSITY_WARNINGS);
 				} else {
 					for(int j=badSides.length-1;j>-1;j--) {
 						cielingBrush.delete(badSides[j]);
@@ -391,10 +391,10 @@ public class WADDecompiler {
 		if(Window.toVMF()) {
 			VMFWriter VMFMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".vmf...",0);
+				Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".vmf...",Window.VERBOSITY_ALWAYS);
 				VMFMaker=new VMFWriter(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName(),1);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+".vmf...",0);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+".vmf...",Window.VERBOSITY_ALWAYS);
 				VMFMaker=new VMFWriter(mapFile, Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName(),1);
 			}
 			VMFMaker.write();
@@ -402,10 +402,10 @@ public class WADDecompiler {
 		if(Window.toMOH()) {
 			MOHRadiantMAPWriter MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_MOH.map...",0);
+				Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_MOH.map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new MOHRadiantMAPWriter(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_MOH",1);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_MOH.map...",0);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_MOH.map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new MOHRadiantMAPWriter(mapFile, Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_MOH",1);
 			}
 			MAPMaker.write();
@@ -413,16 +413,27 @@ public class WADDecompiler {
 		if(Window.toGCMAP()) {
 			MAP510Writer MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".map...",0);
+				Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+".map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new MAP510Writer(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName(),1);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+".map...",0);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+".map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new MAP510Writer(mapFile, Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName(),1);
 			}
 			MAPMaker.write();
 		}
+		if(Window.toRadiantMAP()) {
+			GTKRadiantMapWriter MAPMaker;
+			if(Window.getOutputFolder().equals("default")) {
+				Window.println("Saving "+doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_radiant.map...",Window.VERBOSITY_ALWAYS);
+				MAPMaker=new GTKRadiantMapWriter(mapFile, doomMap.getFolder()+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_radiant",1);
+			} else {
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_radiant.map...",Window.VERBOSITY_ALWAYS);
+				MAPMaker=new GTKRadiantMapWriter(mapFile, Window.getOutputFolder()+"\\"+doomMap.getWadName()+"\\"+doomMap.getMapName()+"_radiant",1);
+			}
+			MAPMaker.write();
+		}
 		Date end=new Date();
-		Window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,0);
+		Window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,Window.VERBOSITY_ALWAYS);
 	}
 	
 	// createFaceBrush(String, Vector3D, Vector3D)
@@ -431,7 +442,7 @@ public class WADDecompiler {
 	// later to include passing of texture scaling and positioning vectors as well, but this is
 	// all I need right now.
 	public MAPBrush createFaceBrush(String texture, Vector3D mins, Vector3D maxs) {
-		Window.println("Creating brush for face with "+texture,4);
+		Window.println("Creating brush for face with "+texture,Window.VERBOSITY_BRUSHCREATION);
 		MAPBrush newBrush = new MAPBrush(numBrshs++, 0, false);
 		numBrshs++;
 		Vector3D[][] planes=new Vector3D[6][3]; // Six planes for a cube brush, three vertices for each plane
@@ -444,15 +455,13 @@ public class WADDecompiler {
 		Vector3D cross = Vector3D.crossProduct(diffVec2, diffVec1);
 		cross.normalize();
 		
-		//Vector3D mins = new Vector3D(16, 0, 0);
-		//Vector3D maxs = new Vector3D(16, 16, 16);
 		// Face
 		planes[0][0]=new Vector3D(mins.getX(), mins.getY(), maxs.getZ());
 		planes[0][1]=new Vector3D(maxs.getX(), maxs.getY(), mins.getZ());
 		planes[0][2]=mins;
 		texS[0][0]=(mins.getX()-maxs.getX())/sideLengthXY;
 		texS[0][1]=(mins.getY()-maxs.getY())/sideLengthXY;
-		texT[0][2]=1;
+		texT[0][2]=-1;
 		// Far
 		planes[1][0]=new Vector3D(mins.getX(), mins.getY(), maxs.getZ()).subtract(cross);
 		planes[1][1]=mins.subtract(cross);

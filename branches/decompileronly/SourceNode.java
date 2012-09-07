@@ -1,18 +1,21 @@
-// v38Node class
+// SourceNode class
 
-// Holds all the data for a node in a Quake 2 map.
+// Holds all the data for a node in a Source map.
+// Funny thing is it's almost identical to the Quake 2 node format
 
-public class v38Node {
+public class SourceNode {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
-	private int plane;
+	private int plane; // I'm forced to wonder why they used an int here, and a ushort elsewhere. Oh well, I'm glad they did.
 	private int child1;
 	private int child2;
 	private Vector3D mins;
 	private Vector3D maxs;
 	private short firstFace;
 	private short numFaces;
+	private short area;
+	private short padding;
 	
 	public final int X=0;
 	public final int Y=1;
@@ -21,7 +24,7 @@ public class v38Node {
 	// CONSTRUCTORS
 	
 	// This constructor takes all data in their proper data types
-	public v38Node(int plane, int child1, int child2, Vector3D mins, Vector3D maxs, short firstFace, short numFaces) {
+	public SourceNode(int plane, int child1, int child2, Vector3D mins, Vector3D maxs, short firstFace, short numFaces, short area, short padding) {
 		this.plane=plane;
 		this.child1=child1;
 		this.child2=child2;
@@ -29,11 +32,13 @@ public class v38Node {
 		this.maxs=maxs;
 		this.firstFace=firstFace;
 		this.numFaces=numFaces;
+		this.area=area;
+		this.padding=padding;
 	}
 	
-	// This constructor takes 28 bytes in a byte array, as though
+	// This constructor takes 32 bytes in a byte array, as though
 	// it had just been read by a FileInputStream.
-	public v38Node(byte[] in) {
+	public SourceNode(byte[] in) {
 		plane=DataReader.readInt(in[0], in[1], in[2], in[3]);
 		child1=DataReader.readInt(in[4], in[5], in[6], in[7]);
 		child2=DataReader.readInt(in[8], in[9], in[10], in[11]);
@@ -49,6 +54,8 @@ public class v38Node {
 		this.maxs=new Vector3D(maxs);
 		firstFace=DataReader.readShort(in[24], in[25]);
 		numFaces=DataReader.readShort(in[26], in[27]);
+		area=DataReader.readShort(in[28], in[29]);
+		padding=DataReader.readShort(in[30], in[31]);
 	}
 	
 	// METHODS
@@ -157,5 +164,21 @@ public class v38Node {
 	
 	public void setNumFaces(short in) {
 		numFaces=in;
+	}
+	
+	public short getArea() {
+		return area;
+	}
+	
+	public void setArea(short in) {
+		area=in;
+	}
+	
+	public short getpadding() {
+		return padding;
+	}
+	
+	public void setPadding(short in) {
+		padding=in;
 	}
 }

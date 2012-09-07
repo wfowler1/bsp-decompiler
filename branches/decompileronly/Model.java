@@ -1,8 +1,8 @@
-// v38Model class
+// Model class
 
 // Holds all the data for a model in a Quake 2 map.
 
-public class v38Model {
+public class Model {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
@@ -21,7 +21,7 @@ public class v38Model {
 	// CONSTRUCTORS
 	
 	// This constructor takes all data in their proper data types
-	public v38Model(Vector3D inMins, Vector3D inMaxs, Vector3D inOrigin, int inHead, int inFace, int inNumFaces) {
+	public Model(Vector3D inMins, Vector3D inMaxs, Vector3D inOrigin, int inHead, int inFace, int inNumFaces) {
 		mins=inMins;
 		maxs=inMaxs;
 		origin=inOrigin;
@@ -32,7 +32,7 @@ public class v38Model {
 	
 	// This constructor takes 48 bytes in a byte array, as though
 	// it had just been read by a FileInputStream.
-	public v38Model(byte[] in) {
+	public Model(byte[] in) {
 		float[] point=new float[3];
 		int myInt=(in[3] << 24) | ((in[2] & 0xff) << 16) | ((in[1] & 0xff) << 8) | (in[0] & 0xff);
 		point[X]=Float.intBitsToFloat(myInt);

@@ -25,9 +25,9 @@ public class Brushes {
 			brushes=new Brush[numBrshs];
 			populateBrushList();
 		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+data.getPath()+" not found!",0);
+			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
 		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",0);
+			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",Window.VERBOSITY_ALWAYS);
 		}
 	}
 	
@@ -40,9 +40,9 @@ public class Brushes {
 			brushes=new Brush[numBrshs];
 			populateBrushList();
 		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+data.getPath()+" not found!",0);
+			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
 		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",0);
+			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",Window.VERBOSITY_ALWAYS);
 		}
 	}
 	

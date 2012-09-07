@@ -56,8 +56,8 @@ public class BSP46Decompiler {
 		}*/
 		// Then I need to go through each entity and see if it's brush-based.
 		// Worldspawn is brush-based as well as any entity with model *#.
-		for(int i=0;i<BSP46.getEntities().getNumElements();i++) { // For each entity
-			Window.println("Entity "+i+": "+mapFile.getEntity(i).getAttribute("classname"),4);
+		for(int i=0;i<BSP46.getEntities().length();i++) { // For each entity
+			Window.println("Entity "+i+": "+mapFile.getEntity(i).getAttribute("classname"),Window.VERBOSITY_ENTITIES);
 			numBrshs=0; // Reset the brush count for each entity
 			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
 			int currentModel=mapFile.getEntity(i).getModelNumber();
@@ -75,20 +75,20 @@ public class BSP46Decompiler {
 					}
 					numBrshs++;
 					numTotalItems++;
-					Window.setProgress(jobnum, numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().getNumElements(), "Decompiling...");
+					Window.setProgress(jobnum, numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().length(), "Decompiling...");
 				}
 			}
 			numTotalItems++;
-			Window.setProgress(jobnum, numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().getNumElements(), "Decompiling...");
+			Window.setProgress(jobnum, numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().length(), "Decompiling...");
 		} 
-		Window.setProgress(jobnum, numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().getNumElements(), "Saving..."); 
+		Window.setProgress(jobnum, numTotalItems, BSP46.getBrushes().getNumElements()+BSP46.getEntities().length(), "Saving..."); 
 		if(Window.toVMF()) {
 			VMFWriter VMFMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+".vmf...",0);
+				Window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+".vmf...",Window.VERBOSITY_ALWAYS);
 				VMFMaker=new VMFWriter(mapFile, BSP46.getPath().substring(0, BSP46.getPath().length()-4),46);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4)+".vmf...",0);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4)+".vmf...",Window.VERBOSITY_ALWAYS);
 				VMFMaker=new VMFWriter(mapFile, Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4),46);
 			}
 			VMFMaker.write();
@@ -96,10 +96,10 @@ public class BSP46Decompiler {
 		if(Window.toMOH()) {
 			MOHRadiantMAPWriter MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+"_MOH.map...",0);
+				Window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+"_MOH.map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new MOHRadiantMAPWriter(mapFile, BSP46.getPath().substring(0, BSP46.getPath().length()-4)+"_MOH",46);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4)+"_MOH.map...",0);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4)+"_MOH.map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new MOHRadiantMAPWriter(mapFile, Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4)+"_MOH",46);
 			}
 			MAPMaker.write();
@@ -107,17 +107,28 @@ public class BSP46Decompiler {
 		if(Window.toGCMAP()) {
 			MAP510Writer MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+".map...",0);
+				Window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+".map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new MAP510Writer(mapFile, BSP46.getPath().substring(0, BSP46.getPath().length()-4),46);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4)+".map...",0);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4)+".map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new MAP510Writer(mapFile, Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4),46);
 			}
 			MAPMaker.write();
 		}
-		Window.println("Process completed!",0);
+		if(Window.toRadiantMAP()) {
+			GTKRadiantMapWriter MAPMaker;
+			if(Window.getOutputFolder().equals("default")) {
+				Window.println("Saving "+BSP46.getPath().substring(0, BSP46.getPath().length()-4)+"_radiant.map...",Window.VERBOSITY_ALWAYS);
+				MAPMaker=new GTKRadiantMapWriter(mapFile, BSP46.getPath().substring(0, BSP46.getPath().length()-4)+"_radiant",46);
+			} else {
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4)+"_radiant.map...",Window.VERBOSITY_ALWAYS);
+				MAPMaker=new GTKRadiantMapWriter(mapFile, Window.getOutputFolder()+"\\"+BSP46.getMapName().substring(0, BSP46.getMapName().length()-4)+"_radiant",46);
+			}
+			MAPMaker.write();
+		}
+		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		Date end=new Date();
-		Window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,0);
+		Window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,Window.VERBOSITY_ALWAYS);
 	}
 	
 	// -decompileBrush46(Brush, int, boolean)
@@ -210,7 +221,7 @@ public class BSP46Decompiler {
 					try {
 						mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush);
 					} catch(java.lang.ArithmeticException e) {
-						Window.println("WARNING: Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",2);
+						Window.println("WARNING: Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",Window.VERBOSITY_WARNINGS);
 					}
 				}
 			}

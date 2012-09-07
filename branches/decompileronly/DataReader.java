@@ -23,6 +23,14 @@ public class DataReader {
 		return readShort(in[0], in[1]);
 	}
 	
+	public static int readUShort(byte first, byte second) {
+		return (((byte)0 << 24) | (((byte)0 & 0xff) << 16) | ((second & 0xff) << 8) | (first & 0xff));
+	}
+	
+	public static int readUShort(byte[] in) {
+		return readUShort(in[0], in[1]);
+	}
+	
 	public static int readInt(byte first, byte second, byte third, byte fourth) {
 		return ((fourth << 24) | ((third & 0xff) << 16) | ((second & 0xff) << 8) | (first & 0xff));
 	}
@@ -30,7 +38,15 @@ public class DataReader {
 	public static int readInt(byte[] in) {
 		return readInt(in[0], in[1], in[2], in[3]);
 	}
+	/* TODO
+	public static long readUInt(byte first, byte second, byte third, byte fourth) {
+		return ((fourth << 24) | ((third & 0xff) << 16) | ((second & 0xff) << 8) | (first & 0xff));
+	}
 	
+	public static long readUInt(byte[] in) {
+		return readUInt(in[0], in[1], in[2], in[3]);
+	}
+	*/
 	public static float readFloat(byte first, byte second, byte third, byte fourth) {
 		return Float.intBitsToFloat((fourth << 24) | ((third & 0xff) << 16) | ((second & 0xff) << 8) | (first & 0xff));
 	}
@@ -69,6 +85,18 @@ public class DataReader {
 	public static Vector3D readPoint3D(byte[] in) {
 		return new Vector3D(readDouble(in[0], in[1], in[2], in[3], in[4], in[5], in[6], in[7]), readDouble(in[8], in[9], in[10], in[11], in[12], in[13], in[14], in[15]), readDouble(in[16], in[17], in[18], in[19], in[20], in[21], in[22], in[23]));
 	}
+	/*
+	public static boolean bitIsSet(byte in, int bit) {
 	
+	}
+	
+	public static boolean bitIsSet(short in, int bit) {
+	
+	}
+	
+	public static boolean bitIsSet(int in, int bit) {
+	
+	}
+	*/
 	// ACCESSORS/MUTATORS
 }

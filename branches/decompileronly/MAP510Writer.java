@@ -68,14 +68,44 @@ public class MAP510Writer {
 				mapFile.createNewFile();
 			}
 			
+			// Preprocessing entity corrections
+			if(BSPVersion!=42) {
+				Entity waterEntity=null;
+				boolean newEnt=false;
+				for(int i=0;i<data.length();i++) {
+					if(data.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_water")) {
+						waterEntity=data.getEntity(i);
+						break;
+					}
+				}
+				if(waterEntity==null) {
+					newEnt=true;
+					waterEntity=new Entity("func_water");
+					waterEntity.setAttribute("rendercolor", "0 0 0");
+					waterEntity.setAttribute("speed", "100");
+					waterEntity.setAttribute("wait", "4");
+					waterEntity.setAttribute("skin", "-3");
+					waterEntity.setAttribute("WaveHeight", "3.2");
+				} // TODO: Y U NO WORK?!?!?
+				for(int i=0;i<data.getEntity(0).getNumBrushes();i++) {
+					if(data.getEntity(0).getBrushes()[i].isWaterBrush()) {
+						waterEntity.addBrush(data.getEntity(0).getBrushes()[i]);
+						data.getEntity(0).deleteBrush(i);
+					}
+				}
+				if(newEnt) {
+					data.add(waterEntity);
+				}
+			}
+			
 			FileOutputStream mapWriter=new FileOutputStream(mapFile);
-			byte[][] entityBytes=new byte[data.getNumElements()][];
+			byte[][] entityBytes=new byte[data.length()][];
 			int totalLength=0;
-			for(currentEntity=0;currentEntity<data.getNumElements();currentEntity++) {
+			for(currentEntity=0;currentEntity<data.length();currentEntity++) {
 				try {
 					entityBytes[currentEntity]=entityToByteArray(data.getEntity(currentEntity), currentEntity);
 				} catch(java.lang.ArrayIndexOutOfBoundsException e) { // This happens when entities are added after the array is made
-					byte[][] newList=new byte[data.getNumElements()][]; // Create a new array with the new length
+					byte[][] newList=new byte[data.length()][]; // Create a new array with the new length
 					for(int j=0;j<entityBytes.length;j++) {
 						newList[j]=entityBytes[j];
 					}
@@ -86,7 +116,7 @@ public class MAP510Writer {
 			}
 			byte[] allEnts=new byte[totalLength];
 			int offset=0;
-			for(int i=0;i<data.getNumElements();i++) {
+			for(int i=0;i<data.length();i++) {
 				for(int j=0;j<entityBytes[i].length;j++) {
 					allEnts[offset+j]=entityBytes[i][j];
 				}
@@ -95,7 +125,7 @@ public class MAP510Writer {
 			mapWriter.write(allEnts);
 			mapWriter.close();
 		} catch(java.io.IOException e) {
-			Window.println("ERROR: Could not save "+mapFile.getPath()+", ensure the file is not open in another program and the path "+path+" exists",0);
+			Window.println("ERROR: Could not save "+mapFile.getPath()+", ensure the file is not open in another program and the path "+path+" exists",Window.VERBOSITY_ALWAYS);
 			throw e;
 		}
 	}
@@ -197,7 +227,7 @@ public class MAP510Writer {
 	
 	private byte[] brushToByteArray(MAPBrush in, int num) {
 		if(in.getNumSides() < 4) { // Can't create a brush with less than 4 sides
-			Window.println("WARNING: Tried to create brush from "+in.getNumSides()+" sides!",2);
+			Window.println("WARNING: Tried to create brush from "+in.getNumSides()+" sides!",Window.VERBOSITY_WARNINGS);
 			return new byte[0];
 		}
 		String brush="{ // Brush "+num+(char)0x0D+(char)0x0A;
@@ -209,7 +239,7 @@ public class MAP510Writer {
 		}
 		brush+="}"+(char)0x0D+(char)0x0A;
 		if(brush.length() < 45) { // Any brush this short contains no sides.
-			Window.println("WARNING: Brush with no sides being written! Oh no!",2);
+			Window.println("WARNING: Brush with no sides being written! Oh no!",Window.VERBOSITY_WARNINGS);
 			return new byte[0];
 		} else {
 			byte[] brushbytes=new byte[brush.length()];
@@ -269,6 +299,35 @@ public class MAP510Writer {
 					;
 				}
 			}
+			if(BSPVersion==255) {
+				try {
+					if(texture.equalsIgnoreCase("tools/toolshint")) {
+						texture="special/hint";
+					} else {
+						if(texture.equalsIgnoreCase("tools/toolsskip")) {
+							texture="special/skip";
+						} else {
+							if(texture.equalsIgnoreCase("tools/toolsclip")) {
+								texture="special/clip";
+							} else {
+								if(texture.equalsIgnoreCase("tools/toolstrigger")) {
+									texture="special/trigger";
+								} else {
+									if(texture.equalsIgnoreCase("tools/TOOLSSKYBOX")) {
+										texture="special/sky";
+									} else {
+										if(texture.equalsIgnoreCase("tools/toolsnodraw")) {
+											texture="special/nodraw";
+										}
+									}
+								}
+							}
+						}
+					}
+				} catch(StringIndexOutOfBoundsException e) {
+					;
+				}
+			}
 			if(Window.roundNumsIsSelected()) {
 				return "( "+fmtPoints.format((double)Math.round(triangle[0].getX()*1000000.0)/1000000.0)+" "+fmtPoints.format((double)Math.round(triangle[0].getY()*1000000.0)/1000000.0)+" "+fmtPoints.format((double)Math.round(triangle[0].getZ()*1000000.0)/1000000.0)+" ) "+
 				       "( "+fmtPoints.format((double)Math.round(triangle[1].getX()*1000000.0)/1000000.0)+" "+fmtPoints.format((double)Math.round(triangle[1].getY()*1000000.0)/1000000.0)+" "+fmtPoints.format((double)Math.round(triangle[1].getZ()*1000000.0)/1000000.0)+" ) "+
@@ -291,7 +350,7 @@ public class MAP510Writer {
 				       " [ "+lgtScale+" "+lgtRot+" ]";
 			}
 		} catch(java.lang.NullPointerException e) {
-			Window.println("WARNING: Side with bad data! Not exported!",2);
+			Window.println("WARNING: Side with bad data! Not exported!",Window.VERBOSITY_WARNINGS);
 			return "";
 		}
 	}

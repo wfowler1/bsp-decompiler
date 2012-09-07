@@ -14,28 +14,13 @@ public class Entities {
 	
 	private File dataFile;
 	private int length;
-	private int numEnts=0;
 	private Entity[] entities;
 	
 	// CONSTRUCTORS
 	
 	// This one accepts the lump path as a String
 	public Entities(String in) {
-		dataFile=new File(in);
-		try {
-			FileInputStream reader=new FileInputStream(dataFile); // reads the file
-			byte[] data=new byte[(int)dataFile.length()];
-			reader.read(data);
-			length=data.length;
-			reader.close();
-			numEnts=getNumElements(data);
-			entities = new Entity[numEnts];
-			populateEntityList(data);
-		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+dataFile.getPath()+" not found!",0);
-		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+dataFile.getPath()+" could not be read, ensure the file is not open in another program",0);
-		}
+		new Entities(new File(in));
 	}
 	
 	// This one accepts the input file path as a File
@@ -47,21 +32,19 @@ public class Entities {
 			reader.read(data);
 			length=data.length;
 			reader.close();
-			numEnts=getNumElements(data);
-			entities = new Entity[numEnts];
+			entities = new Entity[countEnts(data)];
 			populateEntityList(data);
 		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+dataFile.getPath()+" not found!",0);
+			Window.println("ERROR: File "+dataFile.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
 		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+dataFile.getPath()+" could not be read, ensure the file is not open in another program",0);
+			Window.println("ERROR: File "+dataFile.getPath()+" could not be read, ensure the file is not open in another program",Window.VERBOSITY_ALWAYS);
 		}
 	}
 	
 	// This one accepts a Entities and copies it
 	public Entities(Entities in) {
-		entities=new Entity[in.getNumElements()];
-		numEnts=entities.length;
-		for(int i=0;i<numEnts;i++) {
+		entities=new Entity[in.length()];
+		for(int i=0;i<entities.length;i++) {
 			entities[i]=new Entity(in.getEntity(i));
 		}
 	}
@@ -69,14 +52,12 @@ public class Entities {
 	// This one just takes an array of byte[]
 	public Entities(byte[] data) {
 		length=data.length;
-		numEnts=getNumElements(data);
-		entities = new Entity[numEnts];
+		entities = new Entity[countEnts(data)];
 		populateEntityList(data);
 	}
 	
 	public Entities() {
 		length=0;
-		numEnts=0;
 		entities = new Entity[0];
 	}
 	
@@ -91,7 +72,7 @@ public class Entities {
 	// whenever possible.
 	// TODO: Rewrite this, try to make it faster.
 	private void populateEntityList(byte[] data) {
-		Window.print("Populating entity list... ",1);
+		Window.print("Populating entity list... ",Window.VERBOSITY_ALWAYS);
 		Date begin=new Date();
 		// I'd love to use Scanner here, but Scanner doesn't like using delimiters
 		// with "{" or "}" in them, which I NEED
@@ -99,7 +80,7 @@ public class Entities {
 		                  // we need to know exactly when the { and } characters occur and capture
 								// all text between them.
 		int offset=0;
-		for(int i=0;i<numEnts;i++) { // For every entity
+		for(int i=0;i<entities.length;i++) { // For every entity
 			String current=""; // This will be the resulting entity, fed into the Entity class
 			currentChar=(char)data[offset]; // begin reading the file
 			while(currentChar!='{') { // Eat bytes until we find the beginning of an entity structure
@@ -121,7 +102,7 @@ public class Entities {
 			entities[i].setData(current);
 		}
 		Date end=new Date();
-		Window.println(end.getTime()-begin.getTime()+"ms",1);
+		Window.println(end.getTime()-begin.getTime()+"ms",Window.VERBOSITY_ALWAYS);
 	}
 	
 	// +add(String)
@@ -143,12 +124,11 @@ public class Entities {
 	// which is already of type Entity. It can be assumed it's already
 	// been parsed and is valid the way it is.
 	public void add(Entity in) {
-		numEnts++;
-		Entity[] newList=new Entity[numEnts];
-		for(int i=0;i<numEnts-1;i++) {
+		Entity[] newList=new Entity[entities.length+1];
+		for(int i=0;i<entities.length;i++) {
 			newList[i]=entities[i];
 		}
-		newList[numEnts-1]=in;
+		newList[entities.length]=in;
 		entities=newList;
 	}
 	
@@ -174,15 +154,14 @@ public class Entities {
 	// +delete(int)
 	// Deletes the entity at the specified index
 	public void delete(int index) {
-		Entity[] newList=new Entity[numEnts-1];
-		for(int i=0;i<numEnts-1;i++) {
+		Entity[] newList=new Entity[entities.length-1];
+		for(int i=0;i<entities.length-1;i++) {
 			if(i<index) {
 				newList[i]=entities[i];
 			} else {
 				newList[i]=entities[i+1];
 			}
 		}
-		numEnts-=1;
 		entities=newList;
 	}
 	
@@ -192,20 +171,47 @@ public class Entities {
 	public int[] findAllWithAttribute(String attribute, String value) {
 		int[] indices;
 		int num=0;
-		for(int i=0;i<numEnts;i++) {
+		for(int i=0;i<entities.length;i++) {
 			if(entities[i].getAttribute(attribute).equalsIgnoreCase(value)) {
 				num++;
 			}
 		}
 		indices=new int[num];
 		int current=0;
-		for(int i=0;i<numEnts && current<num;i++) {
+		for(int i=0;i<entities.length && current<num;i++) {
 			if(entities[i].getAttribute(attribute).equalsIgnoreCase(value)) {
 				indices[current]=i;
 				current++;
 			}
 		}
 		return indices;
+	}
+	
+	// Counts the entities in a given byte array 
+	public int countEnts(byte[] data) {
+		Window.print("Counting entities... ",Window.VERBOSITY_ALWAYS);
+		Date begin=new Date();
+		int count=0;
+		boolean inQuotes=false; // Keep track of whether or not we're in a set of quotation marks.
+		// I came across a map where the idiot map maker used { and } in a value. This broke the code prior to revision 55.
+		for(int i=0;i<data.length;i++) {
+			if(inQuotes) {
+				if(data[i]=='\"' && inQuotes) {
+					inQuotes=false;
+				}
+			} else {
+				if(data[i]=='\"') {
+					inQuotes=true;
+				} else {
+					if(data[i] == '{') {
+						count++;
+					}
+				}
+			}
+		}
+		Date end=new Date();
+		Window.println(end.getTime()-begin.getTime()+"ms",Window.VERBOSITY_ALWAYS);
+		return count;
 	}
 	
 	// ACCESSORS/MUTATORS
@@ -215,39 +221,8 @@ public class Entities {
 		return length;
 	}
 	
-	// Returns the number of entities.
-	public int getNumElements(byte[] data) {
-		if (numEnts==0) {
-			Window.print("Counting entities... ",1);
-			Date begin=new Date();
-			int count=0;
-			boolean inQuotes=false; // Keep track of whether or not we're in a set of quotation marks.
-			// I came across a map where the idiot map maker used { and } in a value. This broke the code prior to revision 55.
-			for(int i=0;i<data.length;i++) {
-				if(inQuotes) {
-					if(data[i]=='\"' && inQuotes) {
-						inQuotes=false;
-					}
-				} else {
-					if(data[i]=='\"') {
-						inQuotes=true;
-					} else {
-						if(data[i] == '{') {
-							count++;
-						}
-					}
-				}
-			}
-			Date end=new Date();
-			Window.println(end.getTime()-begin.getTime()+"ms",1);
-			return count;
-		} else {
-			return numEnts;
-		}
-	}
-	
-	public int getNumElements() {
-		return numEnts;
+	public int length() {
+		return entities.length;
 	}
 	
 	// Returns a specific entity as an Entity object.

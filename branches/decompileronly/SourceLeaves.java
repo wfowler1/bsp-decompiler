@@ -1,29 +1,37 @@
-// v38Models class
+// SourceLeaves class
 
 // Contains all information for leaves for a BSPv38
 
 import java.io.FileInputStream;
 import java.io.File;
 
-public class v38Models {
+public class SourceLeaves {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
 	private int numElems=0;
 	private int length;
-	private v38Model[] elements;
+	private SourceLeaf[] elements;
 	
-	public static int structLength=48;
+	private int version;
+	
+	private int structLength=32;
 
 	// CONSTRUCTORS
 	
-	public v38Models(String in) {
+	public SourceLeaves(String in, int version) {
+		this.version=version;
+		if(version==18 || version==19) {
+			structLength=56;
+		} else {
+			structLength=32;
+		}
 		data=new File(in);
 		length=(int)data.length();
 		try {
-			numElems=getNumElements();
-			elements=new v38Model[numElems];
+			numElems=length();
+			elements=new SourceLeaf[numElems];
 			populateList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+data.getPath()+" not found!",0);
@@ -33,12 +41,18 @@ public class v38Models {
 	}
 	
 	// This one accepts the input file path as a File
-	public v38Models(File in) {
+	public SourceLeaves(File in, int version) {
+		this.version=version;
+		if(version==18 || version==19) {
+			structLength=56;
+		} else {
+			structLength=32;
+		}
 		data=in;
 		length=(int)data.length();
 		try {
-			numElems=getNumElements();
-			elements=new v38Model[numElems];
+			numElems=length();
+			elements=new SourceLeaf[numElems];
 			populateList();
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+data.getPath()+" not found!",0);
@@ -47,17 +61,23 @@ public class v38Models {
 		}
 	}
 	
-	public v38Models(byte[] in) {
+	public SourceLeaves(byte[] in, int version) {
+		this.version=version;
+		if(version==18 || version==19) {
+			structLength=56;
+		} else {
+			structLength=32;
+		}
 		int offset=0;
 		length=in.length;
 		numElems=in.length/structLength;
-		elements=new v38Model[numElems];
+		elements=new SourceLeaf[numElems];
 		for(int i=0;i<numElems;i++) {
 			byte[] bytes=new byte[structLength];
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
-			elements[i]=new v38Model(bytes);
+			elements[i]=new SourceLeaf(bytes,version);
 			offset+=structLength;
 		}
 	}
@@ -65,13 +85,13 @@ public class v38Models {
 	// METHODS
 	
 	// -populateList()
-	// Uses the instance data to populate the array of v38Model
+	// Uses the instance data to populate the array of SourceLeaf
 	private void populateList() throws java.io.FileNotFoundException, java.io.IOException {
 		FileInputStream reader=new FileInputStream(data);
 		for(int i=0;i<numElems;i++) {
 			byte[] datain=new byte[structLength];
 			reader.read(datain);
-			elements[i]=new v38Model(datain);
+			elements[i]=new SourceLeaf(datain,version);
 		}
 		reader.close();
 	}
@@ -83,8 +103,8 @@ public class v38Models {
 		return length;
 	}
 	
-	// Returns the number of Models.
-	public int getNumElements() {
+	// Returns the number of Leaves.
+	public int length() {
 		if(numElems==0) {
 			return length/structLength;
 		} else {
@@ -92,11 +112,11 @@ public class v38Models {
 		}
 	}
 	
-	public v38Model getModel(int i) {
+	public SourceLeaf getLeaf(int i) {
 		return elements[i];
 	}
 	
-	public v38Model[] getModels() {
+	public SourceLeaf[] getLeaves() {
 		return elements;
 	}
 }

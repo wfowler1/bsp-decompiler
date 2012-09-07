@@ -6,14 +6,14 @@ public class v38Texture {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
-	Vector3D u;
-	float uShift;
-	Vector3D v;
-	float vShift;
-	int flags;
-	int unknown;
-	String texture;
-	int next;
+	private Vector3D u;
+	private float uShift;
+	private Vector3D v;
+	private float vShift;
+	private int flags;
+	private int unknown;
+	private String texture;
+	private int next;
 	
 	// CONSTRUCTORS
 	

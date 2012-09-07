@@ -75,6 +75,11 @@ public class Vector3D {
 		point[Y]=(double)y;
 		point[Z]=(double)z;
 	}
+	public Vector3D(short[] in) {
+		point[X]=(double)in[X];
+		point[Y]=(double)in[Y];
+		point[Z]=(double)in[Z];
+	}
 	
 	// METHODS
 	

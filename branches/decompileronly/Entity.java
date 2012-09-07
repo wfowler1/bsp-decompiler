@@ -179,6 +179,21 @@ public class Entity {
 		newList[newList.length-1]=in;
 		brushes=newList;
 	}
+	
+	// deleteBrush(int)
+	// Deletes the brush at int
+	public void deleteBrush(int index) {
+		MAPBrush[] newList=new MAPBrush[brushes.length-1];
+		for(int i=0;i<brushes.length-1;i++) {
+			if(i<index) {
+				newList[i]=brushes[i];
+			}
+			if(i>=index) {
+				newList[i]=brushes[i+1];
+			}
+		}
+		brushes=newList;
+	}
 
 	// +toString()
 	// Returns the entity as an ASCII entity structure. The output of this method
@@ -346,7 +361,7 @@ public class Entity {
 			} catch(StringIndexOutOfBoundsException e) {
 				;
 			} catch(java.lang.NullPointerException e) {
-				Window.println("WARNING: Entity with null attribute?! Attribute no. "+i+(char)0x0D+(char)0x0A+toString(),2);
+				Window.println("WARNING: Entity with null attribute?! Attribute no. "+i+(char)0x0D+(char)0x0A+toString(),Window.VERBOSITY_WARNINGS);
 			}
 		}
 		if(!done) {
@@ -390,5 +405,9 @@ public class Entity {
 	// Returns the number of attributes in the entity
 	public int getNumAttributes() {
 		return attributes.length;
+	}
+	
+	public int getNumBrushes() {
+		return brushes.length;
 	}
 }

@@ -64,14 +64,14 @@ public class BSP42Decompiler {
 		// Next make a list of all detail brushes.
 		boolean[] detailBrush=new boolean[BSP42.getBrushes().getNumElements()];
 		for(int i=0;i<BSP42.getBrushes().getNumElements();i++) {	// For every brush
-			if(BSP42.getBrushes().getBrush(i).getAttributes()[1]==0x02) { // This attribute seems to indicate no affect on vis
+			if((BSP42.getBrushes().getBrush(i).getAttributes()[1] & ((byte)1 << 1)) != 0) { // This attribute seems to indicate no affect on vis
 				detailBrush[i]=true; // Flag the brush as detail
 			}
 		}
 		// Then I need to go through each entity and see if it's brush-based.
 		// Worldspawn is brush-based as well as any entity with model *#.
-		for(int i=0;i<BSP42.getEntities().getNumElements();i++) { // For each entity
-			Window.println("Entity "+i+": "+mapFile.getEntity(i).getAttribute("classname"),4);
+		for(int i=0;i<BSP42.getEntities().length();i++) { // For each entity
+			Window.println("Entity "+i+": "+mapFile.getEntity(i).getAttribute("classname"),Window.VERBOSITY_ENTITIES);
 			numBrshs=0; // Reset the brush count for each entity
 			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
 			int currentModel=mapFile.getEntity(i).getModelNumber();
@@ -92,7 +92,7 @@ public class BSP42Decompiler {
 					if(numBrushIndices>0) { // A lot of leaves reference no brushes. If this is one, this iteration of the j loop is finished
 						for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
 							if(!brushesUsed[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)]) { // If the current brush has NOT been used in this entity
-								Window.print("Brush "+(k+firstBrushIndex),4);
+								Window.print("Brush "+(k+firstBrushIndex),Window.VERBOSITY_BRUSHCREATION);
 								brushesUsed[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)]=true;
 								if(detailBrush[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)] && currentModel==0 && !Window.noDetailIsSelected()) {
 									decompileBrush(BSP42.getBrushes().getBrush(BSP42.getMarkBrushes().getInt(firstBrushIndex+k)), i, true); // Decompile the brush, as not detail
@@ -101,23 +101,23 @@ public class BSP42Decompiler {
 								}
 								numBrshs++;
 								numTotalItems++;
-								Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements(), "Decompiling...");
+								Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().length(), "Decompiling...");
 							}
 						}
 					}
 				}
 			}
 			numTotalItems++;
-			Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements(), "Decompiling...");
+			Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().length(), "Decompiling...");
 		}
-		Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().getNumElements(), "Saving...");
+		Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().length(), "Saving...");
 		if(Window.toVMF()) {
 			VMFWriter VMFMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".vmf...",0);
+				Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".vmf...",Window.VERBOSITY_ALWAYS);
 				VMFMaker=new VMFWriter(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4),42);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+".vmf...",0);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+".vmf...",Window.VERBOSITY_ALWAYS);
 				VMFMaker=new VMFWriter(mapFile, Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4),42);
 			}
 			VMFMaker.write();
@@ -125,10 +125,10 @@ public class BSP42Decompiler {
 		if(Window.toMOH()) {
 			MOHRadiantMAPWriter MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_MOH.map...",0);
+				Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_MOH.map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new MOHRadiantMAPWriter(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_MOH",42);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+"_MOH.map...",0);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+"_MOH.map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new MOHRadiantMAPWriter(mapFile, Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+"_MOH",42);
 			}
 			MAPMaker.write();
@@ -136,22 +136,33 @@ public class BSP42Decompiler {
 		if(Window.toGCMAP()) {
 			MAP510Writer MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map...",0);
+				Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new MAP510Writer(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4),42);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+".map...",0);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+".map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new MAP510Writer(mapFile, Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4),42);
 			}
 			MAPMaker.write();
 		}
-		Window.println("Process completed!",0);
+		if(Window.toRadiantMAP()) {
+			GTKRadiantMapWriter MAPMaker;
+			if(Window.getOutputFolder().equals("default")) {
+				Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_radiang.map...",Window.VERBOSITY_ALWAYS);
+				MAPMaker=new GTKRadiantMapWriter(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_radiant",42);
+			} else {
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+"_radiant.map...",Window.VERBOSITY_ALWAYS);
+				MAPMaker=new GTKRadiantMapWriter(mapFile, Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+"_radiant",42);
+			}
+			MAPMaker.write();
+		}
+		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {
-			Window.println("Num simple corrected brushes: "+numSimpleCorrects,1); 
-			Window.println("Num advanced corrected brushes: "+numAdvancedCorrects,1); 
-			Window.println("Num good brushes: "+numGoodBrushes,1); 
+			Window.println("Num simple corrected brushes: "+numSimpleCorrects,Window.VERBOSITY_MAPSTATS); 
+			Window.println("Num advanced corrected brushes: "+numAdvancedCorrects,Window.VERBOSITY_MAPSTATS); 
+			Window.println("Num good brushes: "+numGoodBrushes,Window.VERBOSITY_MAPSTATS); 
 		}
 		Date end=new Date();
-		Window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,0);
+		Window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,Window.VERBOSITY_ALWAYS);
 	}
 	
 	// -decompileBrush(Brush, int, boolean)
@@ -165,7 +176,10 @@ public class BSP42Decompiler {
 		int numRealFaces=0;
 		boolean containsNonClipSide=false;
 		Plane[] brushPlanes=new Plane[0];
-		Window.println(": "+numSides+" sides",4);
+		Window.println(": "+numSides+" sides",Window.VERBOSITY_BRUSHCREATION);
+		if(mapFile.getEntity(currentEntity).getAttribute("classname").equalsIgnoreCase("func_water")) {
+			mapBrush.setWater(true);
+		}
 		for(int l=0;l<numSides;l++) { // For each side of the brush
 			v42BrushSide currentSide=BSP42.getBrushSides().getBrushSide(firstSide+l);
 			v42Face currentFace=BSP42.getFaces().getFace(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
@@ -182,12 +196,12 @@ public class BSP42Decompiler {
 				int numVertices=currentFace.getNumVerts();
 				Plane currentPlane;
 				try { // I've only ever come across this error once or twice, but something causes it very rarely
-					currentPlane=BSP42.getPlanes().getPlane(currentSide.getPlane()).getPlane();
+					currentPlane=BSP42.getPlanes().getPlane(currentSide.getPlane());
 				} catch(java.lang.ArrayIndexOutOfBoundsException e) {
 					try { // So try to get the plane index from somewhere else
-						currentPlane=BSP42.getPlanes().getPlane(currentFace.getPlane()).getPlane();
+						currentPlane=BSP42.getPlanes().getPlane(currentFace.getPlane());
 					}  catch(java.lang.ArrayIndexOutOfBoundsException f) { // If that fails, BS something
-						Window.println("WARNING: BSP has error, references nonexistant plane "+currentSide.getPlane()+", bad side "+(l)+" of brush "+numBrshs+" Entity "+currentEntity,2);
+						Window.println("WARNING: BSP has error, references nonexistant plane "+currentSide.getPlane()+", bad side "+(l)+" of brush "+numBrshs+" Entity "+currentEntity,Window.VERBOSITY_WARNINGS);
 						currentPlane=new Plane((double)1, (double)0, (double)0, (double)0);
 					}
 				}
@@ -240,7 +254,7 @@ public class BSP42Decompiler {
 				try {
 					material=BSP42.getMaterials().getString(currentFace.getMaterial());
 				} catch(java.lang.ArrayIndexOutOfBoundsException e) { // In case the BSP has some strange error making it reference nonexistant materials
-					Window.println("WARNING: Map referenced nonexistant material #"+currentFace.getMaterial()+", using wld_lightmap instead!",2);
+					Window.println("WARNING: Map referenced nonexistant material #"+currentFace.getMaterial()+", using wld_lightmap instead!",Window.VERBOSITY_WARNINGS);
 					material="wld_lightmap";
 				}
 				double lgtScale=16; // These values are impossible to get from a compiled map since they
@@ -282,7 +296,7 @@ public class BSP42Decompiler {
 						try {
 							mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
 						} catch(java.lang.NullPointerException e) {
-							Window.println("WARNING: Brush vertex calculation failed on entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",2);
+							Window.println("WARNING: Brush vertex calculation failed on entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",Window.VERBOSITY_WARNINGS);
 						}
 					}
 				} else { // If no forward side exists
@@ -290,7 +304,7 @@ public class BSP42Decompiler {
 						mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush);
 						numAdvancedCorrects++;
 					} catch(java.lang.ArithmeticException e) {
-						Window.println("WARNING: Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",2);
+						Window.println("WARNING: Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",Window.VERBOSITY_WARNINGS);
 					}
 				}
 			} else {
@@ -301,7 +315,7 @@ public class BSP42Decompiler {
 				try {
 					mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
 				} catch(java.lang.NullPointerException e) {
-					Window.println("WARNING: Brush vertex calculation failed on entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",2);
+					Window.println("WARNING: Brush vertex calculation failed on entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",Window.VERBOSITY_WARNINGS);
 				}
 			}
 		}
@@ -311,6 +325,7 @@ public class BSP42Decompiler {
 		// this whole program and the entities parser, this shouldn't
 		// cause any issues at all.
 		if(Window.brushesToWorldIsSelected()) {
+			mapBrush.setWater(false);
 			mapFile.getEntity(0).addBrush(mapBrush);
 		} else {
 			mapFile.getEntity(currentEntity).addBrush(mapBrush);

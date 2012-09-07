@@ -1,12 +1,12 @@
-// MOHRadiantMAPWriter class
+// GTKRadiantMapWriter class
 //
-// Writes a Radiant .MAP file from a passed Entities object
+// Writes a GTKRadiant .MAP file from a passed Entities object
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.DecimalFormat;
 
-public class MOHRadiantMAPWriter {
+public class GTKRadiantMapWriter {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
@@ -22,7 +22,7 @@ public class MOHRadiantMAPWriter {
 	
 	// CONSTRUCTORS
 	
-	public MOHRadiantMAPWriter(Entities from, String to, int BSPVersion) {
+	public GTKRadiantMapWriter(Entities from, String to, int BSPVersion) {
 		this.data=new Entities(from);
 		this.path=to;
 		this.mapFile=new File(path);
@@ -290,25 +290,26 @@ public class MOHRadiantMAPWriter {
 					}
 				}
 			}
+			// There might be other flags, detail was the only one I found though.
+			if(isDetail) {
+				flags=134217728;
+			} else {
+				flags=0;
+			}
 			if(Window.roundNumsIsSelected()) {
 				temp = "( "+fmtFloats.format((double)Math.round(triangle[0].getX()*1000000.0)/1000000.0)+" "+fmtFloats.format((double)Math.round(triangle[0].getY()*1000000.0)/1000000.0)+" "+fmtFloats.format((double)Math.round(triangle[0].getZ()*1000000.0)/1000000.0)+" ) "+
 				       "( "+fmtFloats.format((double)Math.round(triangle[1].getX()*1000000.0)/1000000.0)+" "+fmtFloats.format((double)Math.round(triangle[1].getY()*1000000.0)/1000000.0)+" "+fmtFloats.format((double)Math.round(triangle[1].getZ()*1000000.0)/1000000.0)+" ) "+
 				       "( "+fmtFloats.format((double)Math.round(triangle[2].getX()*1000000.0)/1000000.0)+" "+fmtFloats.format((double)Math.round(triangle[2].getY()*1000000.0)/1000000.0)+" "+fmtFloats.format((double)Math.round(triangle[2].getZ()*1000000.0)/1000000.0)+" ) "+
 				       texture + " "+Math.floor(textureShiftS)+" "+Math.floor(textureShiftT)+" "+fmtRot.format((double)Math.round(texRot*100.0)/100.0)+
 						 " "+fmtFloats.format((double)Math.round(texScaleX*1000000.0)/1000000.0)+" "+fmtFloats.format((double)Math.round(texScaleY*1000000.0)/1000000.0)+
-						 " 0 0 0 ";
-						 // flags need more attention here
+						 " "+flags+" 0 0 ";
 			} else {
 				temp = "( "+triangle[0].getX()+" "+triangle[0].getY()+" "+triangle[0].getZ()+" ) "+
 				       "( "+triangle[1].getX()+" "+triangle[1].getY()+" "+triangle[1].getZ()+" ) "+
 				       "( "+triangle[2].getX()+" "+triangle[2].getY()+" "+triangle[2].getZ()+" ) "+
 				       texture + " "+textureShiftS+" "+textureShiftT+" "+texRot+
 						 " "+texScaleX+" "+texScaleY+
-						 " 0 0 0 ";
-						 // flags need more attention here
-			}
-			if(isDetail) {
-				temp+="+surfaceparm detail ";
+						 " "+flags+" 0 0 ";
 			}
 			return temp;
 		} catch(java.lang.NullPointerException e) {
@@ -317,13 +318,11 @@ public class MOHRadiantMAPWriter {
 		}
 	}
 	
-	// TODO: Polish these up. Entity corrections are particularly important for Radiant editors.
-	// For some ridiculous reason, Radiant seems to throw out any entity of class it does not
-	// recognize, and every entity thereafter.
+	// These methods are TODO
 	public Entity ent42ToEntRad(Entity in) {
-		if(in.getAttribute("classname").equalsIgnoreCase("func_door_rotating")) {
-			in.setAttribute("classname", "func_rotatingdoor");
-		}//else {
+		//if(in.getAttribute("classname").equalsIgnoreCase("")) {
+		//	in.setAttribute("classname", "func_rotatingdoor");
+		//}
 		return in;
 	}
 	

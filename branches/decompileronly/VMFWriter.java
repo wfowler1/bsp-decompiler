@@ -69,6 +69,22 @@ public class VMFWriter {
 				mapFile.createNewFile();
 			}
 			
+			// Preprocessing entity corrections
+			if(BSPVersion==42) {
+				for(int i=1;i<data.length();i++) {
+					for(int j=0;j<data.getEntity(i).getNumBrushes();j++) {
+						if(data.getEntity(i).getBrushes()[j].isWaterBrush()) {
+							data.getEntity(0).addBrush(data.getEntity(i).getBrushes()[j]);
+							// TODO: Textures on this brush
+						}
+					}
+					if(data.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_water")) {
+						data.delete(i);
+						i--;
+					}
+				}
+			}
+			
 			byte[] temp;
 			
 			FileOutputStream mapWriter=new FileOutputStream(mapFile);
@@ -79,13 +95,13 @@ public class VMFWriter {
 			
 			mapWriter.write(temp);
 			
-			byte[][] entityBytes=new byte[data.getNumElements()][];
+			byte[][] entityBytes=new byte[data.length()][];
 			int totalLength=0;
-			for(int currentEntity=0;currentEntity<data.getNumElements();currentEntity++) {
+			for(currentEntity=0;currentEntity<data.length();currentEntity++) {
 				try {
 					entityBytes[currentEntity]=entityToByteArray(data.getEntity(currentEntity));
 				} catch(java.lang.ArrayIndexOutOfBoundsException e) { // This happens when entities are added after the array is made
-					byte[][] newList=new byte[data.getNumElements()][]; // Create a new array with the new length
+					byte[][] newList=new byte[data.length()][]; // Create a new array with the new length
 					for(int j=0;j<entityBytes.length;j++) {
 						newList[j]=entityBytes[j];
 					}
@@ -96,7 +112,7 @@ public class VMFWriter {
 			}
 			byte[] allEnts=new byte[totalLength];
 			int offset=0;
-			for(int i=0;i<data.getNumElements();i++) {
+			for(int i=0;i<data.length();i++) {
 				for(int j=0;j<entityBytes[i].length;j++) {
 					allEnts[offset+j]=entityBytes[i][j];
 				}
@@ -105,7 +121,7 @@ public class VMFWriter {
 			mapWriter.write(allEnts);
 			mapWriter.close();
 		} catch(java.io.IOException e) {
-			Window.println("ERROR: Could not save "+mapFile.getPath()+", ensure the file is not open in another program and the path "+path+" exists",0);
+			Window.println("ERROR: Could not save "+mapFile.getPath()+", ensure the file is not open in another program and the path "+path+" exists",Window.VERBOSITY_ALWAYS);
 			throw e;
 		}
 	}
@@ -220,7 +236,7 @@ public class VMFWriter {
 	
 	private byte[] brushToByteArray(MAPBrush in) {
 		if(in.getNumSides() < 4) { // Can't create a brush with less than 4 sides
-			Window.println("WARNING: Tried to create brush from "+in.getNumSides()+" sides!",2);
+			Window.println("WARNING: Tried to create brush from "+in.getNumSides()+" sides!",Window.VERBOSITY_WARNINGS);
 			return new byte[0];
 		}
 		String brush=(char)0x09+"solid"+(char)0x0D+(char)0x0A+(char)0x09+"{"+(char)0x0D+(char)0x0A+(char)0x09+(char)0x09+"\"id\" \""+(nextID++)+"\""+(char)0x0D+(char)0x0A;
@@ -229,7 +245,7 @@ public class VMFWriter {
 		}
 		brush+=(char)0x09+"}"+(char)0x0D+(char)0x0A;
 		if(brush.length() < 40) { // Any brush this short contains no sides.
-			Window.println("WARNING: Brush with no sides being written! Oh no!",2);
+			Window.println("WARNING: Brush with no sides being written! Oh no!",Window.VERBOSITY_WARNINGS);
 			return new byte[0];
 		} else {
 			byte[] brushbytes=new byte[brush.length()];
@@ -339,7 +355,7 @@ public class VMFWriter {
 				return out;
 			}
 		} catch(java.lang.NullPointerException e) {
-			Window.println("WARNING: Side with bad data! Not exported!",2);
+			Window.println("WARNING: Side with bad data! Not exported!",Window.VERBOSITY_WARNINGS);
 			return null;
 		}
 	}

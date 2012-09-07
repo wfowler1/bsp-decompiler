@@ -7,6 +7,8 @@ public class MAPBrush {
 	
 	private MAPBrushSide[] sides;
 	private boolean isDetailBrush=false;
+	private boolean isWaterBrush=false; // Both Source and Quake 2 compile water brushes into the world. Hammer doesn't use func_water.
+	// So I need to keep track of whether a brush is water or not, so I can deal with it on a per-mapformat basis.
 	
 	// For debugging purposes only, if there's a problem these will be in the error message
 	private int entnum;
@@ -34,6 +36,7 @@ public class MAPBrush {
 		brushnum=in.getBrushnum();
 		entnum=in.getEntnum();
 		this.isDetailBrush=in.isDetailBrush();
+		this.isWaterBrush=in.isWaterBrush();
 		sides=new MAPBrushSide[in.getNumSides()];
 		for(int i=0;i<in.getNumSides();i++) {
 			sides[i]=new MAPBrushSide(in.getSide(i));
@@ -150,6 +153,15 @@ public class MAPBrush {
 	
 	public void setDetail(boolean in) {
 		isDetailBrush=in;
+	}
+	
+	public boolean isWaterBrush() {
+		return isWaterBrush;
+	}
+	
+	// These aren't common enough to warrent setting this in the constructor.
+	public void setWater(boolean in) {
+		isWaterBrush=in;
 	}
 	
 	public int getBrushnum() {

@@ -33,32 +33,38 @@ public class DecompilerThread implements Runnable {
 				WADDecompiler decompiler = new WADDecompiler(doomMap, jobnum);
 				decompiler.decompile();
 			} else {
-				Window.println("Opening file "+BSP.getAbsolutePath(),0);
+				Window.println("Opening file "+BSP.getAbsolutePath(),Window.VERBOSITY_ALWAYS);
 				Window.setProgress(jobnum, 0, 1, "Reading...");
 				BSPReader reader = new BSPReader(BSP);
 				reader.readBSP();
-				switch(reader.getVersion()) {
-					case 38:
-						Window.setProgress(jobnum, 0, reader.BSP38.getBrushes().length()+reader.BSP38.getEntities().getNumElements(), "Decompiling...");
-						BSP38Decompiler decompiler38 = new BSP38Decompiler(reader.BSP38, jobnum);
-						decompiler38.decompile();
-						break;
-					case 42:
-						Window.setProgress(jobnum, 0, reader.BSP42.getBrushes().getNumElements()+reader.BSP42.getEntities().getNumElements(), "Decompiling...");
-						BSP42Decompiler decompiler42 = new BSP42Decompiler(reader.BSP42, jobnum);
-						decompiler42.decompile();
-						break;
-					case 46:
-						Window.setProgress(jobnum, 0, reader.BSP46.getBrushes().getNumElements()+reader.BSP46.getEntities().getNumElements(), "Decompiling...");
-						BSP46Decompiler decompiler46 = new BSP46Decompiler(reader.BSP46, jobnum);
-						decompiler46.decompile();
-						break;
+				if(reader.isSource()) {
+					Window.setProgress(jobnum, 0, reader.SourceBSPObject.getBrushes().length()+reader.SourceBSPObject.getEntities().length(), "Decompiling...");
+					SourceBSPDecompiler decompiler38 = new SourceBSPDecompiler(reader.SourceBSPObject, jobnum);
+					decompiler38.decompile();
+				} else {
+					switch(reader.getVersion()) {
+						case 38:
+							Window.setProgress(jobnum, 0, reader.BSP38.getBrushes().length()+reader.BSP38.getEntities().length(), "Decompiling...");
+							BSP38Decompiler decompiler38 = new BSP38Decompiler(reader.BSP38, jobnum);
+							decompiler38.decompile();
+							break;
+						case 42:
+							Window.setProgress(jobnum, 0, reader.BSP42.getBrushes().getNumElements()+reader.BSP42.getEntities().length(), "Decompiling...");
+							BSP42Decompiler decompiler42 = new BSP42Decompiler(reader.BSP42, jobnum);
+							decompiler42.decompile();
+							break;
+						case 46:
+							Window.setProgress(jobnum, 0, reader.BSP46.getBrushes().getNumElements()+reader.BSP46.getEntities().length(), "Decompiling...");
+							BSP46Decompiler decompiler46 = new BSP46Decompiler(reader.BSP46, jobnum);
+							decompiler46.decompile();
+							break;
+					}
 				}
 			}
 			Window.setProgress(jobnum, 1, 1, "Done!");
 			Window.setProgressColor(jobnum, new Color(64, 192, 64));
-		} catch (java.lang.Exception e) {
-			Window.println(""+(char)0x0D+(char)0x0A+"Exception caught in job "+(jobnum+1)+": "+e+(char)0x0D+(char)0x0A+"Please let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/entry",0);
+		} catch (java.io.IOException e) {
+			Window.println(""+(char)0x0D+(char)0x0A+"Exception caught in job "+(jobnum+1)+": "+e+(char)0x0D+(char)0x0A+"Please let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/entry",Window.VERBOSITY_ALWAYS);
 			Window.setProgress(jobnum, 1, 1, "ERROR! See log!");
 			Window.setProgressColor(jobnum, new Color(255, 128, 128));
 		}

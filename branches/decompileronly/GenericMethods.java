@@ -7,7 +7,7 @@ public class GenericMethods {
 	/// Author:		UltimateSniper
 	/// Returns:	List of normalised plane vertex triplets.
 	public static MAPBrush CalcBrushVertices(MAPBrush mapBrush) {
-		Window.println("Recalculating vertices",3);
+		Window.println("Recalculating vertices",Window.VERBOSITY_BRUSHCORRECTION);
 		Plane[] planes=mapBrush.getPlanes();
 		Vector3D[][] out = new Vector3D[planes.length][];
 		// For each triplet of planes, find intersect point.
@@ -75,7 +75,7 @@ public class GenericMethods {
 	// SimpleCorrectPlanes(MAPBrush, float)
 	// Uses all sides' defined points to ensure all planes are flipped correctly.
 	public static MAPBrush SimpleCorrectPlanes(MAPBrush brush) {
-		Window.println("Plane flip. Method: simple",3);
+		Window.println("Plane flip. Method: simple",Window.VERBOSITY_BRUSHCORRECTION);
 		// Find midpoint of triangle, and use that to normalise all other planes.
 		int triIndex=-1; // So we know which plane the triangle belongs to.
 		Vector3D[] triangle=new Vector3D[0]; // This'll cause an exception if the loop fails
@@ -110,7 +110,7 @@ public class GenericMethods {
 	/// Author:		UltimateSniper
 	/// Returns:	Ordered list of normalised vertex triplets (ready to feed in to map).
 	public static MAPBrush AdvancedCorrectPlanes(MAPBrush mapBrush) throws java.lang.ArrayIndexOutOfBoundsException {
-		Window.println("Plane flip. Method: advanced",3);
+		Window.println("Plane flip. Method: advanced",Window.VERBOSITY_BRUSHCORRECTION);
 		Plane[] allplanes=mapBrush.getPlanes();
 		// Method:
 		//1. Collect all vertices created by plane intercepts.
@@ -459,7 +459,7 @@ public class GenericMethods {
 	// brushes with the same unnecessary planes.
 	public static int[] findUnusedPlanes(MAPBrush in) {
 		Plane[] thePlanes=in.getPlanes();
-		Window.print("Finding unnecessary planes. Before: "+thePlanes.length,3);
+		Window.print("Finding unnecessary planes. Before: "+thePlanes.length,Window.VERBOSITY_BRUSHCORRECTION);
 		
 		// Step 1: Get all points of intersection
 		double numVerts = 4;
@@ -519,12 +519,12 @@ public class GenericMethods {
 				badSides=newList;
 			}
 		}
-		Window.println(" After: "+(thePlanes.length-badSides.length),3);
+		Window.println(" After: "+(thePlanes.length-badSides.length),Window.VERBOSITY_BRUSHCORRECTION);
 		return badSides;
 	}
 
 	public static Vector3D[] extrapPlanePoints(Plane in) {
-		Window.println("Calculating arbitrary plane points",4);
+		Window.println("Calculating arbitrary plane points",Window.VERBOSITY_BRUSHCREATION);
 		double planePointCoef=Window.getPlanePointCoef();
 		Vector3D[] plane=new Vector3D[3];
 		// Figure out if the plane is parallel to two of the axes. If so it can be reproduced easily

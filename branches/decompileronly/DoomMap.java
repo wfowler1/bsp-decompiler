@@ -47,44 +47,44 @@ public class DoomMap {
 
 	public void printBSPReport() {
 		try {
-			Window.println("Things lump: "+things.getLength()+" bytes, "+things.getNumElements()+" items",1);
+			Window.println("Things lump: "+things.getLength()+" bytes, "+things.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Things not yet parsed!",1);
+			Window.println("Things not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Linedefs lump: "+linedefs.getLength()+" bytes, "+linedefs.getNumElements()+" items",1);
+			Window.println("Linedefs lump: "+linedefs.getLength()+" bytes, "+linedefs.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Linedefs not yet parsed!",1);
+			Window.println("Linedefs not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Sidedefs lump: "+sidedefs.getLength()+" bytes, "+sidedefs.getNumElements()+" items",1);
+			Window.println("Sidedefs lump: "+sidedefs.getLength()+" bytes, "+sidedefs.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Sidedefs not yet parsed!",1);
+			Window.println("Sidedefs not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.getNumElements()+" items",1);
+			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Vertices not yet parsed!",1);
+			Window.println("Vertices not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Segments lump: "+segs.getLength()+" bytes, "+segs.getNumElements()+" items",1);
+			Window.println("Segments lump: "+segs.getLength()+" bytes, "+segs.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Segments not yet parsed!",1);
+			Window.println("Segments not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Subsectors lump: "+subsectors.getLength()+" bytes, "+subsectors.getNumElements()+" items",1);
+			Window.println("Subsectors lump: "+subsectors.getLength()+" bytes, "+subsectors.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Subsectors not yet parsed!",1);
+			Window.println("Subsectors not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Nodes lump: "+nodes.getLength()+" bytes, "+nodes.getNumElements()+" items",1);
+			Window.println("Nodes lump: "+nodes.getLength()+" bytes, "+nodes.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Nodes not yet parsed!",1);
+			Window.println("Nodes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Sectors lump: "+sectors.getLength()+" bytes, "+sectors.getNumElements()+" items",1);
+			Window.println("Sectors lump: "+sectors.getLength()+" bytes, "+sectors.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Sectors not yet parsed!",1);
+			Window.println("Sectors not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 	}
 	
