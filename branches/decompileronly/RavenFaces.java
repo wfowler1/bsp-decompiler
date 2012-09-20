@@ -1,35 +1,35 @@
-// SourceBrushSides class
+// RavenFaces class
 
-// Maintains and array of SourceBrushSide for a Source engine BSP.
+// Maintains and array of RavenFace for a Source engine BSP.
 
 import java.io.FileInputStream;
 import java.io.File;
 
-public class SourceBrushSides {
+public class RavenFaces {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
 	private int length;
-	private SourceBrushSide[] elements;
+	private RavenFace[] elements;
 	
-	public static final int structLength=8;
+	public static final int structLength=148;
 
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public SourceBrushSides(String in) {
-		new SourceBrushSides(new File(in));
+	public RavenFaces(String in) {
+		new RavenFaces(new File(in));
 	}
 	
 	// This one accepts the input file path as a File
-	public SourceBrushSides(File in) {
+	public RavenFaces(File in) {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
 			byte[] temp=new byte[(int)data.length()];
 			fileReader.read(temp);
-			new SourceBrushSides(temp);
+			new RavenFaces(temp);
 			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
@@ -39,16 +39,16 @@ public class SourceBrushSides {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public SourceBrushSides(byte[] in) {
+	public RavenFaces(byte[] in) {
 		int offset=0;
 		length=in.length;
-		elements=new SourceBrushSide[in.length/structLength];
+		elements=new RavenFace[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
-			elements[i]=new SourceBrushSide(bytes);
+			elements[i]=new RavenFace(bytes);
 			offset+=structLength;
 		}
 	}
@@ -71,11 +71,11 @@ public class SourceBrushSides {
 		}
 	}
 	
-	public SourceBrushSide getElement(int i) {
+	public RavenFace getElement(int i) {
 		return elements[i];
 	}
 	
-	public SourceBrushSide[] getElements() {
+	public RavenFace[] getElements() {
 		return elements;
 	}
 }

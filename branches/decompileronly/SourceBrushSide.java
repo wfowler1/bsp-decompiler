@@ -8,7 +8,7 @@ public class SourceBrushSide {
 	
 	private int plane; // Stupid Java doesn't support unsigned data. There are BSPs with over 32,767 planes, so I must use an int.
 	private short texInfo;
-	private short displacementInfo;
+	private short displacementInfo; // Unfortunately, in practice, this seems to always end up being 0.
 	// Technically, this is the Portal 2 brush side format, it isn't used this way in most
 	// forks of the engine. However, this is usually a short rather than two bytes, indicating
 	// isBevel. I can easily determine whether it's a bevel from either format regardless.
@@ -63,6 +63,10 @@ public class SourceBrushSide {
 	
 	public void setTexInfo(short in) {
 		texInfo=in;
+	}
+	
+	public boolean isDisplacement() {
+		return (displacementInfo>0);
 	}
 	
 	public short getDispInfo() {

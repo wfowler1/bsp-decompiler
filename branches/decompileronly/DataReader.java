@@ -38,6 +38,17 @@ public class DataReader {
 	public static int readInt(byte[] in) {
 		return readInt(in[0], in[1], in[2], in[3]);
 	}
+	
+	public static long readLong(byte first, byte second, byte third, byte fourth, byte fifth, byte sixth, byte seventh, byte eighth) {
+		int LSB=((eighth << 24) | ((seventh & 0xff) << 16) | ((sixth & 0xff) << 8) | (fifth & 0xff));
+		int MSB=((fourth << 24) | ((third & 0xff) << 16) | ((second & 0xff) << 8) | (first & 0xff));
+		return ((long)(LSB << 32) + (MSB & 0xFFFFFFFFL));
+	}
+	
+	public static long readLong(byte[] in) {
+		return readLong(in[0], in[1], in[2], in[3], in[4], in[5], in[6], in[7]);
+	}
+	
 	/* TODO
 	public static long readUInt(byte first, byte second, byte third, byte fourth) {
 		return ((fourth << 24) | ((third & 0xff) << 16) | ((second & 0xff) << 8) | (first & 0xff));

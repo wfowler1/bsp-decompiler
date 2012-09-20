@@ -36,7 +36,7 @@ public class SourceBSPDecompiler {
 	
 	// METHODS
 
-	// Attempt to turn the Quake 2 BSP into a .MAP file
+	// Attempt to turn the BSP into a .MAP file
 	public void decompile() throws java.io.IOException {
 		Date begin=new Date();
 		// Begin by copying all the entities into another Lump00 object. This is
@@ -154,6 +154,9 @@ public class SourceBSPDecompiler {
 		for(int i=0;i<numSides;i++) { // For each side of the brush
 			SourceBrushSide currentSide=BSP.getBrushSides().getElement(firstSide+i);
 			if(currentSide.isBevel()==0) { // Bevel sides are evil
+				if(currentSide.isDisplacement()) {
+					Window.println("Side "+i+" is displacement: "+currentSide.isDisplacement(),Window.VERBOSITY_ALWAYS);
+				}
 				Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
 				Plane currentPlane=BSP.getPlanes().getPlane(currentSide.getPlane()); // To find those three points, I must extrapolate from planes until I find a way to associate faces with brushes
 				boolean isDuplicate=false;/* TODO: We sure don't want duplicate planes (though this is already handled by the MAPBrush class). Make sure neither checked side is bevel.

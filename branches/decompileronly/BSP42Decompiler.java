@@ -61,14 +61,7 @@ public class BSP42Decompiler {
 		// could be saved back into the BSP and really mess some stuff up.
 		mapFile=new Entities(BSP42.getEntities());
 		int numTotalItems=0;
-		// Next make a list of all detail brushes.
-		boolean[] detailBrush=new boolean[BSP42.getBrushes().getNumElements()];
-		for(int i=0;i<BSP42.getBrushes().getNumElements();i++) {	// For every brush
-			if((BSP42.getBrushes().getBrush(i).getAttributes()[1] & ((byte)1 << 1)) != 0) { // This attribute seems to indicate no affect on vis
-				detailBrush[i]=true; // Flag the brush as detail
-			}
-		}
-		// Then I need to go through each entity and see if it's brush-based.
+		// I need to go through each entity and see if it's brush-based.
 		// Worldspawn is brush-based as well as any entity with model *#.
 		for(int i=0;i<BSP42.getEntities().length();i++) { // For each entity
 			Window.println("Entity "+i+": "+mapFile.getEntity(i).getAttribute("classname"),Window.VERBOSITY_ENTITIES);
@@ -94,11 +87,7 @@ public class BSP42Decompiler {
 							if(!brushesUsed[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)]) { // If the current brush has NOT been used in this entity
 								Window.print("Brush "+(k+firstBrushIndex),Window.VERBOSITY_BRUSHCREATION);
 								brushesUsed[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)]=true;
-								if(detailBrush[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)] && currentModel==0 && !Window.noDetailIsSelected()) {
-									decompileBrush(BSP42.getBrushes().getBrush(BSP42.getMarkBrushes().getInt(firstBrushIndex+k)), i, true); // Decompile the brush, as not detail
-								} else {
-									decompileBrush(BSP42.getBrushes().getBrush(BSP42.getMarkBrushes().getInt(firstBrushIndex+k)), i, false); // Decompile the brush, as detail
-								}
+								decompileBrush(BSP42.getBrushes().getBrush(BSP42.getMarkBrushes().getInt(firstBrushIndex+k)), i); // Decompile the brush
 								numBrshs++;
 								numTotalItems++;
 								Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().length(), "Decompiling...");
@@ -147,7 +136,7 @@ public class BSP42Decompiler {
 		if(Window.toRadiantMAP()) {
 			GTKRadiantMapWriter MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_radiang.map...",Window.VERBOSITY_ALWAYS);
+				Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_radiant.map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new GTKRadiantMapWriter(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_radiant",42);
 			} else {
 				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+"_radiant.map...",Window.VERBOSITY_ALWAYS);
@@ -167,12 +156,16 @@ public class BSP42Decompiler {
 	
 	// -decompileBrush(Brush, int, boolean)
 	// Decompiles the Brush and adds it to entitiy #currentEntity as .MAP data.
-	private void decompileBrush(v42Brush brush, int currentEntity, boolean isDetailBrush) {
+	private void decompileBrush(v42Brush brush, int currentEntity) {
 		double[] origin=mapFile.getEntity(currentEntity).getOrigin();
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
 		MAPBrushSide[] brushSides=new MAPBrushSide[0];
-		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, isDetailBrush);
+		boolean isDetail=false;
+		if(!Window.noDetailIsSelected() && (brush.getAttributes()[1] & ((byte)1 << 1)) != 0) {
+			isDetail=true;
+		}
+		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, isDetail);
 		int numRealFaces=0;
 		boolean containsNonClipSide=false;
 		Plane[] brushPlanes=new Plane[0];

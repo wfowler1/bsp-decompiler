@@ -1,35 +1,36 @@
-// SourceBrushSides class
+// SourceDispInfos class
 
-// Maintains and array of SourceBrushSide for a Source engine BSP.
+// Maintains and array of SourceDispInfo for a Source engine BSP.
 
 import java.io.FileInputStream;
 import java.io.File;
 
-public class SourceBrushSides {
+public class SourceDispInfos {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
 	private int length;
-	private SourceBrushSide[] elements;
+	private SourceDispInfo[] elements;
 	
-	public static final int structLength=8;
+	public int structLength=176; // Only for BSP versions 18-21 (internal lump version number is probably more important)
+	// TODO: Implement more versions of this lump, it varies wildly between games.
 
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public SourceBrushSides(String in) {
-		new SourceBrushSides(new File(in));
+	public SourceDispInfos(String in) {
+		new SourceDispInfos(new File(in));
 	}
 	
 	// This one accepts the input file path as a File
-	public SourceBrushSides(File in) {
+	public SourceDispInfos(File in) {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
 			byte[] temp=new byte[(int)data.length()];
 			fileReader.read(temp);
-			new SourceBrushSides(temp);
+			new SourceDispInfos(temp);
 			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
@@ -39,16 +40,16 @@ public class SourceBrushSides {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public SourceBrushSides(byte[] in) {
+	public SourceDispInfos(byte[] in) {
 		int offset=0;
 		length=in.length;
-		elements=new SourceBrushSide[in.length/structLength];
+		elements=new SourceDispInfo[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
-			elements[i]=new SourceBrushSide(bytes);
+			elements[i]=new SourceDispInfo(bytes);
 			offset+=structLength;
 		}
 	}
@@ -71,11 +72,11 @@ public class SourceBrushSides {
 		}
 	}
 	
-	public SourceBrushSide getElement(int i) {
+	public SourceDispInfo getElement(int i) {
 		return elements[i];
 	}
 	
-	public SourceBrushSide[] getElements() {
+	public SourceDispInfo[] getElements() {
 		return elements;
 	}
 }

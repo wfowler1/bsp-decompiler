@@ -92,11 +92,11 @@ public class v46Vertices {
 		}
 	}
 	
-	public v46Vertex getModel(int i) {
+	public v46Vertex getVertex(int i) {
 		return elements[i];
 	}
 	
-	public v46Vertex[] getModels() {
+	public v46Vertex[] getVertex() {
 		return elements;
 	}
 }

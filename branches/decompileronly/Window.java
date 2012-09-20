@@ -472,9 +472,9 @@ public class Window extends JPanel implements ActionListener {
 				file_selector = new JFileChooser(lastUsedFolder);
 			}
 			file_selector.setAcceptAllFileFilterUsed(false); // "all files". I would like this to be AFTER the others.
-			file_selector.addChoosableFileFilter(new CustomFileFilter("All supported files (*.BSP, *.WAD)", new String[] { ".BSP", ".WAD" }));
-			file_selector.addChoosableFileFilter(new CustomFileFilter("Binary Space Partition files (*.BSP)", new String[] { ".BSP" }));
-			file_selector.addChoosableFileFilter(new CustomFileFilter("WAD files (*.WAD)", new String[] { ".WAD" }));
+			file_selector.addChoosableFileFilter(new CustomFileFilter("All supported files", new String[] { "BSP", "WAD" }));
+			file_selector.addChoosableFileFilter(new CustomFileFilter("Binary Space Partition files", new String[] { "BSP" }));
+			file_selector.addChoosableFileFilter(new CustomFileFilter("WAD files", new String[] { "WAD" }));
 			file_selector.setAcceptAllFileFilterUsed(true); // Setting this false above then true here forces the "all files" filter to be last.
 			file_selector.setMultiSelectionEnabled(true);
 			int returnVal = file_selector.showOpenDialog(this);
@@ -503,7 +503,7 @@ public class Window extends JPanel implements ActionListener {
 			JFileChooser file_selector = new JFileChooser();
 			file_selector.setSelectedFile(new File("DecompilerConsole.log"));
 			file_selector.setAcceptAllFileFilterUsed(false);
-			file_selector.addChoosableFileFilter(new CustomFileFilter("Log File (*.LOG)", new String[] { ".LOG" }));
+			file_selector.addChoosableFileFilter(new CustomFileFilter("Log File", new String[] { "LOG" }));
 			file_selector.setMultiSelectionEnabled(false);
 			int returnVal = file_selector.showSaveDialog(this);
 			
@@ -1089,6 +1089,13 @@ public class Window extends JPanel implements ActionListener {
 		
 		public CustomFileFilter(String description, String[] extensions) {
 			this.description=description;
+			if(extensions.length>0) {
+				this.description+=" (*."+extensions[0];
+				for(int i=1;i<extensions.length;i++) {
+					this.description+=", *."+extensions[i];
+				}
+				this.description+=")";
+			}
 			this.extensions=extensions;
 		}
 		
@@ -1099,7 +1106,7 @@ public class Window extends JPanel implements ActionListener {
 				if (file.isFile()) {
 					for(int i=0;i<extensions.length;i++) {
 						try { // Avoid StringIndexOutOfBoundsExceptions
-							if (file.getName().substring(file.getName().length()-extensions[i].length()).equalsIgnoreCase(extensions[i])) {
+							if (file.getName().substring(file.getName().length()-extensions[i].length()-1).equalsIgnoreCase("."+extensions[i])) {
 								return true;
 							}
 						} catch(java.lang.StringIndexOutOfBoundsException e) {

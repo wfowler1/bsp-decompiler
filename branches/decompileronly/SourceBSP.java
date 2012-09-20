@@ -34,12 +34,12 @@ public class SourceBSP {
 	private ShortList markbrushes;
 	private Brushes brushes;
 	private SourceBrushSides brushSides;
-	// private SourceDisplacementInfos displacementInfos;
+	private SourceDispInfos dispInfos;
 	// private SourceFaces originalFaces;
-	// private SourceDisplacementVertices displacementVertices;
+	private SourceDispVertices dispVerts;
 	private SourceTextures textures;
 	private IntList texTable;
-	// private SourceDisplacementTriangles displacementTriangles;
+	private ShortList displacementTriangles;
 	
 	// CONSTRUCTORS
 	// This accepts a folder path and looks for the BSP there.
@@ -119,21 +119,21 @@ public class SourceBSP {
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Brush sides not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
-		/*try {
-			Window.println("Displacement info lump: "+displacementInfos.getLength()+" bytes, "+displacementInfos.length()+" items",Window.VERBOSITY_MAPSTATS);
+		try {
+			Window.println("Displacement info lump: "+dispInfos.getLength()+" bytes, "+dispInfos.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Displacement info not yet parsed!",Window.VERBOSITY_MAPSTATS);
-		}*/
+		}
 		/*try {
 			Window.println("Original Faces lump: "+originalFaces.getLength()+" bytes, "+originalFaces.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Original Faces not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}*/
-		/*try {
-			Window.println("Displacement Vertices lump: "+displacementVertices.getLength()+" bytes, "+displacementVertices.length()+" items",Window.VERBOSITY_MAPSTATS);
+		try {
+			Window.println("Displacement Vertices lump: "+dispVerts.getLength()+" bytes, "+dispVerts.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Displacement Vertices not yet parsed!",Window.VERBOSITY_MAPSTATS);
-		}*/
+		}
 		try {
 			Window.println("Textures lump: "+textures.getLength()+" bytes, "+textures.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
@@ -144,11 +144,11 @@ public class SourceBSP {
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Texture index table not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
-		/*try {
-			Window.println("Displacement Triangles lump: "+displacementTriangles.getLength()+" bytes, "+displacementTriangles.length()+" items",Window.VERBOSITY_MAPSTATS);
+		try {
+			Window.println("Displacement Triangle Tags lump: "+displacementTriangles.getLength()+" bytes, "+displacementTriangles.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Displacement Triangles not yet parsed!",Window.VERBOSITY_MAPSTATS);
-		}*/
+			Window.println("Displacement Triangle Tags not yet parsed!",Window.VERBOSITY_MAPSTATS);
+		}
 	}
 	
 	// Some code from my Quake 2 BSP format, allowing iteration through the BSP tree without
@@ -367,10 +367,24 @@ public class SourceBSP {
 	public SourceBrushSides getBrushSides() {
 		return brushSides;
 	}
+	
+	public void setDispInfos(byte[] data) {
+		dispInfos=new SourceDispInfos(data);
+	}
+	
+	public SourceDispInfos getDistInfos() {
+		return dispInfos;
+	}
 	// TODO: more accessors/mutators
-	// private SourceDisplacementInfos displacementInfos;
 	// private SourceFaces originalFaces;
-	// private SourceDisplacementVertices displacementVertices;
+	
+	public void setDispVerts(byte[] data) {
+		dispVerts=new SourceDispVertices(data);
+	}
+	
+	public SourceDispVertices getDispVerts() {
+		return dispVerts;
+	}
 	
 	public void setTextures(byte[] data) {
 		textures=new SourceTextures(data);
@@ -387,7 +401,14 @@ public class SourceBSP {
 	public IntList getTexTable() {
 		return texTable;
 	}
-	// private SourceDisplacementTriangles displacementTriangles;
+	
+	public void setDispTris(byte[] data) {
+		displacementTriangles=new ShortList(data);
+	}
+	
+	public ShortList getDispTris() {
+		return displacementTriangles;
+	}
 	
 	// INTERNAL CLASSES
 	
