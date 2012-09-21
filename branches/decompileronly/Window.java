@@ -138,7 +138,7 @@ public class Window extends JPanel implements ActionListener {
 	
 		window = new Window(frame.getContentPane());
 		print("Got a bug to report? Want to request a feature?"+LF+"Create an issue report at"+LF+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry"+LF+LF, VERBOSITY_ALWAYS);
-
+		print("Currently supported engines:"+LF+"James Bond 007: Nightfire"+LF+"Quake 2"+LF+"Quake 3 (incomplete)"+LF+"Doom WADfiles (incomplete)"+LF+"Source VBSP (incomplete)"+LF+"Star Wars: Jedi Outcast/Soldier or Fortune 2 RBSP (incomplete)"+LF, VERBOSITY_ALWAYS);
 	}
 
 	// This constructor configures and displays the GUI
@@ -176,15 +176,12 @@ public class Window extends JPanel implements ActionListener {
 		decompMAPItem = new JCheckBoxMenuItem("Output Gearcraft MAP");
 		fileMenu.add(decompMAPItem);
 		decompMAPItem.addActionListener(this);
-		decompMAPItem.setSelected(true);
 		decompMOHRadiantItem = new JCheckBoxMenuItem("Output MOHRadiant MAP");
 		fileMenu.add(decompMOHRadiantItem);
-		decompMOHRadiantItem.addActionListener(this); 
-		decompMOHRadiantItem.setSelected(true);
+		decompMOHRadiantItem.addActionListener(this);
 		decompRadiantItem = new JCheckBoxMenuItem("Output GTKRadiant MAP");
 		fileMenu.add(decompRadiantItem);
 		decompRadiantItem.addActionListener(this);
-		decompRadiantItem.setSelected(true);
 		fileMenu.addSeparator();
 		exitItem = new JMenuItem("Exit");
 		fileMenu.add(exitItem);
@@ -367,7 +364,7 @@ public class Window extends JPanel implements ActionListener {
 		consoleTableSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, console_pane, table_pane);
 		consoleTableSplitter.setPreferredSize(new Dimension(616, 390));
 		consoleTableSplitter.setOneTouchExpandable(true);
-		consoleTableSplitter.setDividerLocation(190);
+		consoleTableSplitter.setDividerLocation(225);
 		
 		GridBagConstraints consoleConstraints = new GridBagConstraints();
 		consoleConstraints.fill = GridBagConstraints.NONE;

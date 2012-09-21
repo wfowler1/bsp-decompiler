@@ -76,50 +76,7 @@ public class RavenBSPDecompiler {
 			Window.setProgress(jobnum, numTotalItems, BSP.getBrushes().getNumElements()+BSP.getEntities().length(), "Decompiling...");
 		}
 		Window.setProgress(jobnum, numTotalItems, BSP.getBrushes().getNumElements()+BSP.getEntities().length(), "Saving...");
-		if(Window.toVMF()) {
-			VMFWriter VMFMaker;
-			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP.getPath().substring(0, BSP.getPath().length()-4)+".vmf...",Window.VERBOSITY_ALWAYS);
-				VMFMaker=new VMFWriter(mapFile, BSP.getPath().substring(0, BSP.getPath().length()-4),RavenBSP.VERSION);
-			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP.getMapName().substring(0, BSP.getMapName().length()-4)+".vmf...",Window.VERBOSITY_ALWAYS);
-				VMFMaker=new VMFWriter(mapFile, Window.getOutputFolder()+"\\"+BSP.getMapName().substring(0, BSP.getMapName().length()-4),RavenBSP.VERSION);
-			}
-			VMFMaker.write();
-		}
-		if(Window.toMOH()) {
-			MOHRadiantMAPWriter MAPMaker;
-			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP.getPath().substring(0, BSP.getPath().length()-4)+"_MOH.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MOHRadiantMAPWriter(mapFile, BSP.getPath().substring(0, BSP.getPath().length()-4)+"_MOH",RavenBSP.VERSION);
-			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP.getMapName().substring(0, BSP.getMapName().length()-4)+"_MOH.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MOHRadiantMAPWriter(mapFile, Window.getOutputFolder()+"\\"+BSP.getMapName().substring(0, BSP.getMapName().length()-4)+"_MOH",RavenBSP.VERSION);
-			}
-			MAPMaker.write();
-		}
-		if(Window.toGCMAP()) {
-			MAP510Writer MAPMaker;
-			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP.getPath().substring(0, BSP.getPath().length()-4)+".map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MAP510Writer(mapFile, BSP.getPath().substring(0, BSP.getPath().length()-4),RavenBSP.VERSION);
-			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP.getMapName().substring(0, BSP.getMapName().length()-4)+".map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MAP510Writer(mapFile, Window.getOutputFolder()+"\\"+BSP.getMapName().substring(0, BSP.getMapName().length()-4),RavenBSP.VERSION);
-			}
-			MAPMaker.write();
-		}
-		if(Window.toRadiantMAP()) {
-			GTKRadiantMapWriter MAPMaker;
-			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP.getPath().substring(0, BSP.getPath().length()-4)+"_radiant.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new GTKRadiantMapWriter(mapFile, BSP.getPath().substring(0, BSP.getPath().length()-4)+"_radiant",RavenBSP.VERSION);
-			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP.getMapName().substring(0, BSP.getMapName().length()-4)+"_radiant.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new GTKRadiantMapWriter(mapFile, Window.getOutputFolder()+"\\"+BSP.getMapName().substring(0, BSP.getMapName().length()-4)+"_radiant",RavenBSP.VERSION);
-			}
-			MAPMaker.write();
-		}
+		MAPMaker.outputMaps(mapFile, BSP.getMapName(), BSP.getPath(), BSP.VERSION);
 		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {
 			Window.println("Num simple corrected brushes: "+numSimpleCorrects,Window.VERBOSITY_MAPSTATS); 
@@ -157,17 +114,16 @@ public class RavenBSPDecompiler {
 			} else {
 				currentFace=BSP.getRFaces().getElement(currentFaceIndex); // To find those three points, I can use vertices referenced by faces.
 			}
-			// TODO: Special handling of bevel faces if they even exist in this map format?
 			Plane currentPlane=BSP.getPlanes().getPlane(currentSide.getPlane());
 			Vector3D[] triangle=new Vector3D[0];
 			boolean pointsWorked=false;
 			int firstVertex=-1;
 			int numVertices=0;
-			String texture="special/nodraw";
+			String texture="noshader";
 			if(currentFace!=null) {
 				firstVertex=currentFace.getVertex();
 				numVertices=currentFace.getNumVertices();
-				texture=BSP.getTextures().getTexture(currentFace.getTexture()).getTexture();
+				texture=BSP.getTextures().getTexture(currentFace.getTexture()).getTexture(); // Use the face's referenced texture/shader if available
 				if(numVertices!=0 && !Window.planarDecompIsSelected()) { // If the face actually references a set of vertices
 					triangle=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
 					triangle[0]=new Vector3D(BSP.getRVertices().getElement(firstVertex).getVertex()); // Grab and store the first one
@@ -190,10 +146,15 @@ public class RavenBSPDecompiler {
 						}
 					}
 				}
-			} else {
+			} else { // If face information is not available, use the brush side's info instead
 				int currentTextureIndex=currentSide.getTexture();
 				if(currentTextureIndex>=0) {
 					texture=BSP.getTextures().getTexture(currentTextureIndex).getTexture();
+				} else { // If neither face or brush side has texture info, fall all the way back to brush. I don't know if this ever happens.
+					currentTextureIndex=brush.getTexture();
+					if(currentTextureIndex>=0) { // If none of them have any info, noshader
+						texture=BSP.getTextures().getTexture(currentTextureIndex).getTexture();
+					}
 				}
 			}
 			double[] textureS=new double[3];
@@ -207,15 +168,15 @@ public class RavenBSPDecompiler {
 			// In compiled maps, shorter vectors=longer textures and vice versa. This will convert their lengths back to 1. We'll use the actual scale values for length.
 			double texScaleS=1;
 			double texScaleT=1;
-			// TODO FIX THIS! This will probably smear some textures and some axes will be perpendicular to face!
-			textureS[0]=0.707;
-			textureS[1]=0.707;
-			textureS[2]=0;
+			// TODO FIX THIS! This will probably smear textures and some axes will be perpendicular to face!
+			textureS[0]=0.57735; // sqrt(3)/3
+			textureS[1]=0.57735;
+			textureS[2]=0.57735;
 			double originShiftS=0;
 			double textureShiftS=0;
-			textureT[0]=0;
-			textureT[1]=0;
-			textureT[2]=1;
+			textureT[0]=-0.57735;
+			textureT[1]=0.57735;
+			textureT[2]=0.57735;
 			double originShiftT=0;
 			double textureShiftT=0;
 			if(firstVertex>=0) {

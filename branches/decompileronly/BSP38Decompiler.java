@@ -108,50 +108,7 @@ public class BSP38Decompiler {
 			}
 		}
 		Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().length()+BSP38.getEntities().length(), "Saving...");
-		if(Window.toVMF()) {
-			VMFWriter VMFMaker;
-			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+".vmf...",Window.VERBOSITY_ALWAYS);
-				VMFMaker=new VMFWriter(mapFile, BSP38.getPath().substring(0, BSP38.getPath().length()-4),38);
-			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+".vmf...",Window.VERBOSITY_ALWAYS);
-				VMFMaker=new VMFWriter(mapFile, Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4),38);
-			}
-			VMFMaker.write();
-		}
-		if(Window.toMOH()) {
-			MOHRadiantMAPWriter MAPMaker;
-			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+"_MOH.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MOHRadiantMAPWriter(mapFile, BSP38.getPath().substring(0, BSP38.getPath().length()-4)+"_MOH",38);
-			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+"_MOH.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MOHRadiantMAPWriter(mapFile, Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+"_MOH",38);
-			}
-			MAPMaker.write();
-		}
-		if(Window.toGCMAP()) {
-			MAP510Writer MAPMaker;
-			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+".map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MAP510Writer(mapFile, BSP38.getPath().substring(0, BSP38.getPath().length()-4),38);
-			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+".map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MAP510Writer(mapFile, Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4),38);
-			}
-			MAPMaker.write();
-		}
-		if(Window.toRadiantMAP()) {
-			GTKRadiantMapWriter MAPMaker;
-			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP38.getPath().substring(0, BSP38.getPath().length()-4)+"_radiant.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new GTKRadiantMapWriter(mapFile, BSP38.getPath().substring(0, BSP38.getPath().length()-4)+"_radiant",38);
-			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+"_radiant.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new GTKRadiantMapWriter(mapFile, Window.getOutputFolder()+"\\"+BSP38.getMapName().substring(0, BSP38.getMapName().length()-4)+"_radiant",38);
-			}
-			MAPMaker.write();
-		}
+		MAPMaker.outputMaps(mapFile, BSP38.getMapName(), BSP38.getPath(), BSP38.VERSION);
 		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {
 			Window.println("Num simple corrected brushes: "+numSimpleCorrects,Window.VERBOSITY_MAPSTATS); 

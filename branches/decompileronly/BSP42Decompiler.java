@@ -100,50 +100,7 @@ public class BSP42Decompiler {
 			Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().length(), "Decompiling...");
 		}
 		Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().length(), "Saving...");
-		if(Window.toVMF()) {
-			VMFWriter VMFMaker;
-			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".vmf...",Window.VERBOSITY_ALWAYS);
-				VMFMaker=new VMFWriter(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4),42);
-			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+".vmf...",Window.VERBOSITY_ALWAYS);
-				VMFMaker=new VMFWriter(mapFile, Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4),42);
-			}
-			VMFMaker.write();
-		}
-		if(Window.toMOH()) {
-			MOHRadiantMAPWriter MAPMaker;
-			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_MOH.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MOHRadiantMAPWriter(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_MOH",42);
-			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+"_MOH.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MOHRadiantMAPWriter(mapFile, Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+"_MOH",42);
-			}
-			MAPMaker.write();
-		}
-		if(Window.toGCMAP()) {
-			MAP510Writer MAPMaker;
-			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+".map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MAP510Writer(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4),42);
-			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+".map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MAP510Writer(mapFile, Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4),42);
-			}
-			MAPMaker.write();
-		}
-		if(Window.toRadiantMAP()) {
-			GTKRadiantMapWriter MAPMaker;
-			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_radiant.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new GTKRadiantMapWriter(mapFile, BSP42.getPath().substring(0, BSP42.getPath().length()-4)+"_radiant",42);
-			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+"_radiant.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new GTKRadiantMapWriter(mapFile, Window.getOutputFolder()+"\\"+BSP42.getMapName().substring(0, BSP42.getMapName().length()-4)+"_radiant",42);
-			}
-			MAPMaker.write();
-		}
+		MAPMaker.outputMaps(mapFile, BSP42.getMapName(), BSP42.getPath(), BSP42.VERSION);
 		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {
 			Window.println("Num simple corrected brushes: "+numSimpleCorrects,Window.VERBOSITY_MAPSTATS); 

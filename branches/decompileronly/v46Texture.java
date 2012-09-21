@@ -23,7 +23,7 @@ public class v46Texture {
 			if(in[i]==0x00) {
 				break;
 			}
-			texture+=in[i];
+			texture+=(char)in[i];
 		}
 		flags=(((in[67] & 0xff) << 24) | ((in[66] & 0xff) << 16) | ((in[65] & 0xff) << 8) | (in[64] & 0xff));
 		contents=(((in[71] & 0xff) << 24) | ((in[70] & 0xff) << 16) | ((in[69] & 0xff) << 8) | (in[68] & 0xff));

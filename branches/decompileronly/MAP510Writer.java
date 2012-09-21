@@ -328,6 +328,31 @@ public class MAP510Writer {
 					;
 				}
 			}
+			if(BSPVersion==RavenBSP.VERSION) { // Is this all?
+				try {
+					if(texture.equalsIgnoreCase("textures/system/clip")) {
+						texture="special/clip";
+					} else {
+						if(texture.equalsIgnoreCase("noshader")) {
+							texture="special/nodraw";
+						} else {
+							if(texture.equalsIgnoreCase("textures/system/physics_clip")) {
+								texture="special/clip";
+							} else {
+								if(texture.equalsIgnoreCase("textures/system/caulk")) {
+									texture="liquids/!water";
+								} else {
+									if(texture.equalsIgnoreCase("textures/system/do_not_enter")) {
+										texture="special/nodraw";
+									}
+								}
+							}
+						}
+					}
+				} catch(StringIndexOutOfBoundsException e) {
+					;
+				}
+			}
 			if(Window.roundNumsIsSelected()) {
 				return "( "+fmtPoints.format((double)Math.round(triangle[0].getX()*1000000.0)/1000000.0)+" "+fmtPoints.format((double)Math.round(triangle[0].getY()*1000000.0)/1000000.0)+" "+fmtPoints.format((double)Math.round(triangle[0].getZ()*1000000.0)/1000000.0)+" ) "+
 				       "( "+fmtPoints.format((double)Math.round(triangle[1].getX()*1000000.0)/1000000.0)+" "+fmtPoints.format((double)Math.round(triangle[1].getY()*1000000.0)/1000000.0)+" "+fmtPoints.format((double)Math.round(triangle[1].getZ()*1000000.0)/1000000.0)+" ) "+

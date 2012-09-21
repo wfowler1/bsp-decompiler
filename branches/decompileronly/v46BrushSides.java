@@ -1,7 +1,6 @@
 // v46BrushSides class
 
-// Contains all information for brush sides for a BSPv38
-// Virtually identical to v46 except uses shorts instead of ints.
+// Maintains and array of v46BrushSide for a Raven engine BSP.
 
 import java.io.FileInputStream;
 import java.io.File;
@@ -11,50 +10,41 @@ public class v46BrushSides {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
-	private int numElems=0;
 	private int length;
 	private v46BrushSide[] elements;
 	
-	public static int structLength=8;
+	public static final int structLength=8;
 
 	// CONSTRUCTORS
 	
+	// Accepts a filepath as a String
 	public v46BrushSides(String in) {
-		data=new File(in);
-		length=(int)data.length();
-		try {
-			numElems=getNumElements();
-			elements=new v46BrushSide[numElems];
-			populateList();
-		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+data.getPath()+" not found!",0);
-		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",0);
-		}
+		new v46BrushSides(new File(in));
 	}
 	
 	// This one accepts the input file path as a File
 	public v46BrushSides(File in) {
 		data=in;
-		length=(int)data.length();
 		try {
-			numElems=getNumElements();
-			elements=new v46BrushSide[numElems];
-			populateList();
+			FileInputStream fileReader=new FileInputStream(data);
+			byte[] temp=new byte[(int)data.length()];
+			fileReader.read(temp);
+			new v46BrushSides(temp);
+			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+data.getPath()+" not found!",0);
+			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
 		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",0);
+			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",Window.VERBOSITY_ALWAYS);
 		}
 	}
 	
+	// Takes a byte array, as if read from a FileInputStream
 	public v46BrushSides(byte[] in) {
 		int offset=0;
 		length=in.length;
-		numElems=in.length/structLength;
-		elements=new v46BrushSide[numElems];
-		for(int i=0;i<numElems;i++) {
-			byte[] bytes=new byte[structLength];
+		elements=new v46BrushSide[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
@@ -65,18 +55,6 @@ public class v46BrushSides {
 	
 	// METHODS
 	
-	// -populateList()
-	// Uses the instance data to populate the array of v46BrushSide
-	private void populateList() throws java.io.FileNotFoundException, java.io.IOException {
-		FileInputStream reader=new FileInputStream(data);
-		for(int i=0;i<numElems;i++) {
-			byte[] datain=new byte[structLength];
-			reader.read(datain);
-			elements[i]=new v46BrushSide(datain);
-		}
-		reader.close();
-	}
-	
 	// ACCESSORS/MUTATORS
 	
 	// Returns the length (in bytes) of the lump
@@ -84,20 +62,20 @@ public class v46BrushSides {
 		return length;
 	}
 	
-	// Returns the number of Leaves.
-	public int getNumElements() {
-		if(numElems==0) {
+	// Returns the number of elements.
+	public int length() {
+		if(elements.length==0) {
 			return length/structLength;
 		} else {
-			return numElems;
+			return elements.length;
 		}
 	}
 	
-	public v46BrushSide getBrushSide(int i) {
+	public v46BrushSide getElement(int i) {
 		return elements[i];
 	}
 	
-	public v46BrushSide[] getBrushSides() {
+	public v46BrushSide[] getElements() {
 		return elements;
 	}
 }
