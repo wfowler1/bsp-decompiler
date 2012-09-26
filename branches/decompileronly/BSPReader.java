@@ -887,6 +887,7 @@ public class BSPReader {
 								BSP42.printBSPReport();
 								break;
 							case 46: // Quake 3/close derivative
+							case 47: // Will this work?
 								Window.println("BSP v46 found (id Tech 3)",Window.VERBOSITY_ALWAYS);
 								offsetReader = new FileInputStream(BSP);
 								BSP46 = new v46BSP(BSP.getPath());
@@ -956,9 +957,6 @@ public class BSPReader {
 								
 								BSP46.printBSPReport();
 								
-								break;
-							case 47: // RTC Wolfenstein, I believe it's almost identical to Q3
-								Window.println("Sorry, no Wolfenstein support (yet)!",Window.VERBOSITY_ALWAYS);
 								break;
 							default:
 								Window.println("I don't know what kind of BSP this is! Please post an issue on the bug tracker!",Window.VERBOSITY_ALWAYS);

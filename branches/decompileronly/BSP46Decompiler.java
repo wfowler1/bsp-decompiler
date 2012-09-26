@@ -94,17 +94,22 @@ public class BSP46Decompiler {
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
 		MAPBrushSide[] brushSides=new MAPBrushSide[0];
-		boolean isDetail=false; // TODO
-		//if(!Window.noDetailIsSelected() && (brush.getAttributes()[1] & ((byte)1 << 1)) != 0) {
-		//	isDetail=true;
-		//}
+		boolean isDetail=false;
+		int brushTextureIndex=brush.getTexture();
+		byte[] contents=new byte[4];
+		if(brushTextureIndex>=0) {
+			contents=BSP.getTextures().getTexture(brushTextureIndex).getContents();
+		}
+		if(!Window.noDetailIsSelected() && (contents[3] & ((byte)1 << 3)) != 0) { // This is the flag according to q3 source
+			isDetail=true; // it's the same as Q2 (and Source), but I haven't found any Q3 maps that use it, so far
+		}
 		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, isDetail);
 		int numRealFaces=0;
 		Plane[] brushPlanes=new Plane[0];
 		Window.println(": "+numSides+" sides",Window.VERBOSITY_BRUSHCREATION);
-		/*if(mapFile.getEntity(currentEntity).getAttribute("classname").equalsIgnoreCase("func_water")) {
+		if((contents[0] & ((byte)1 << 5)) != 0) {
 			mapBrush.setWater(true);
-		}*/// TODO
+		}
 		for(int i=0;i<numSides;i++) { // For each side of the brush
 			v46BrushSide currentSide=BSP.getBrushSides().getElement(firstSide+i);
 			Plane currentPlane=BSP.getPlanes().getPlane(currentSide.getPlane());
@@ -114,9 +119,8 @@ public class BSP46Decompiler {
 			if(currentTextureIndex>=0) {
 				texture=BSP.getTextures().getTexture(currentTextureIndex).getTexture();
 			} else { // If neither face or brush side has texture info, fall all the way back to brush. I don't know if this ever happens.
-				currentTextureIndex=brush.getTexture();
-				if(currentTextureIndex>=0) { // If none of them have any info, noshader
-					texture=BSP.getTextures().getTexture(currentTextureIndex).getTexture();
+				if(brushTextureIndex>=0) { // If none of them have any info, noshader
+					texture=BSP.getTextures().getTexture(brushTextureIndex).getTexture();
 				}
 			}
 			double[] textureS=new double[3];

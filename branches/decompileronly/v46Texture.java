@@ -8,11 +8,11 @@ public class v46Texture {
 	
 	private String texture="";
 	private int flags;
-	private int contents; // Q3 holds contents here?!?
+	private byte[] contents; // Q3 holds contents here?!?
 	
 	// CONSTRUCTORS
 	
-	public v46Texture(String inTexture, int inFlags, int inContents) {
+	public v46Texture(String inTexture, int inFlags, byte[] inContents) {
 		texture=inTexture;
 		flags=inFlags;
 		contents=inContents;
@@ -26,7 +26,7 @@ public class v46Texture {
 			texture+=(char)in[i];
 		}
 		flags=(((in[67] & 0xff) << 24) | ((in[66] & 0xff) << 16) | ((in[65] & 0xff) << 8) | (in[64] & 0xff));
-		contents=(((in[71] & 0xff) << 24) | ((in[70] & 0xff) << 16) | ((in[69] & 0xff) << 8) | (in[68] & 0xff));
+		contents=new byte[] { in[71], in[70], in[69], in[68] };
 	}
 	
 	// METHODS
@@ -49,11 +49,11 @@ public class v46Texture {
 		flags=in;
 	}
 	
-	public int getContents() {
+	public byte[] getContents() {
 		return contents;
 	}
 	
-	public void setContents(int in) {
+	public void setContents(byte[] in) {
 		contents=in;
 	}
 }

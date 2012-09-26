@@ -11,8 +11,6 @@
 // to be processed later on.
 
 import java.util.Scanner; // Perfect for String handling
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 
 public class Entity {
 	

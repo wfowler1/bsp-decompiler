@@ -125,8 +125,12 @@ public class BSP38Decompiler {
 		double[] origin=mapFile.getEntity(currentEntity).getOrigin();
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
+		boolean isDetail=false;
 		MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
-		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, false);
+		if(!Window.noDetailIsSelected() && (brush.getAttributes()[3] & ((byte)1 << 3)) != 0) { // According to Q2's source, this is the detail flag
+			isDetail=true;
+		}
+		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, isDetail);
 		Window.println(": "+numSides+" sides",Window.VERBOSITY_BRUSHCREATION);
 		if((brush.getAttributes()[0] & ((byte)1 << 5)) != 0) {
 			mapBrush.setWater(true);

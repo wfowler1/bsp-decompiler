@@ -59,6 +59,7 @@ public class DecompilerThread implements Runnable {
 								decompiler42.decompile();
 								break;
 							case 46:
+							case 47:
 								Window.setProgress(jobnum, 0, reader.BSP46.getBrushes().getNumElements()+reader.BSP46.getEntities().length(), "Decompiling...");
 								BSP46Decompiler decompiler46 = new BSP46Decompiler(reader.BSP46, jobnum);
 								decompiler46.decompile();
