@@ -143,11 +143,11 @@ public class SourceBSPDecompiler {
 		int numSides=brush.getNumSides();
 		MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
 		boolean isDetail=false;
-		if (currentEntity==0 && (brush.getAttributes()[3] & ((byte)1 << 3)) != 0) {
+		if (currentEntity==0 && !Window.noDetailIsSelected() && (brush.getAttributes()[3] & ((byte)1 << 3)) != 0) {
 			isDetail=true;
 		}
 		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, isDetail);
-		if (currentEntity==0 && (brush.getAttributes()[0] & ((byte)1 << 5)) != 0) {
+		if (currentEntity==0 && !Window.noWaterIsSelected() && (brush.getAttributes()[0] & ((byte)1 << 5)) != 0) {
 			mapBrush.setWater(true);
 		}
 		Window.println(": "+numSides+" sides, detail: "+isDetail,Window.VERBOSITY_BRUSHCREATION);

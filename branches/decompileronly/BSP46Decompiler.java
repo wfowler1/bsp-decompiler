@@ -21,6 +21,13 @@ public class BSP46Decompiler {
 	public static final int g = 1;
 	public static final int b = 2;
 	public static final int s = 3;
+
+	public static final Vector3D[] baseAxes = new Vector3D[] { new Vector3D(0,0,1), new Vector3D(1,0,0), new Vector3D(0,-1,0),
+	                                                           new Vector3D(0,0,-1), new Vector3D(1,0,0), new Vector3D(0,-1,0),
+	                                                           new Vector3D(1,0,0), new Vector3D(0,1,0), new Vector3D(0,0,-1),
+	                                                           new Vector3D(-1,0,0), new Vector3D(0,1,0), new Vector3D(0,0,-1),
+	                                                           new Vector3D(0,1,0), new Vector3D(1,0,0), new Vector3D(0,0,-1),
+	                                                           new Vector3D(0,-1,0), new Vector3D(1,0,0), new Vector3D(0,0,-1) };
 	
 	private int jobnum;
 	
@@ -107,7 +114,7 @@ public class BSP46Decompiler {
 		int numRealFaces=0;
 		Plane[] brushPlanes=new Plane[0];
 		Window.println(": "+numSides+" sides",Window.VERBOSITY_BRUSHCREATION);
-		if((contents[0] & ((byte)1 << 5)) != 0) {
+		if(!Window.noWaterIsSelected() && (contents[0] & ((byte)1 << 5)) != 0) {
 			mapBrush.setWater(true);
 		}
 		for(int i=0;i<numSides;i++) { // For each side of the brush
@@ -123,26 +130,16 @@ public class BSP46Decompiler {
 					texture=BSP.getTextures().getTexture(brushTextureIndex).getTexture();
 				}
 			}
-			double[] textureS=new double[3];
-			double[] textureT=new double[3];
 			// Get the lengths of the axis vectors.
-			// These are not explicitly given in the map, nor are the vectors themselves.
-			// They are somehow always parallel to the face, but damned if I know the algorithm to figure that out, with rotation.
 			// TODO figure out this bullshit
 			double UAxisLength=1;
 			double VAxisLength=1;
 			// In compiled maps, shorter vectors=longer textures and vice versa. This will convert their lengths back to 1. We'll use the actual scale values for length.
 			double texScaleS=1;
 			double texScaleT=1;
-			// TODO FIX THIS! This will probably smear textures and some axes will be perpendicular to face!
-			textureS[0]=0.57735; // sqrt(3)/3
-			textureS[1]=0.57735;
-			textureS[2]=0.57735;
+			Vector3D[] textureAxes=textureAxisFromPlane(currentPlane);
 			double originShiftS=0;
 			double textureShiftS=0;
-			textureT[0]=-0.57735;
-			textureT[1]=0.57735;
-			textureT[2]=0.57735;
 			double originShiftT=0;
 			double textureShiftT=0;
 			textureShiftS=0;
@@ -162,7 +159,7 @@ public class BSP46Decompiler {
 				newList[brushSides.length]=new MAPBrushSide(currentPlane, triangle, texture, textureS, textureShiftS, textureT, textureShiftT,
 				                                            texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
 			} else {*/
-				newList[brushSides.length]=new MAPBrushSide(currentPlane, texture, textureS, textureShiftS, textureT, textureShiftT,
+				newList[brushSides.length]=new MAPBrushSide(currentPlane, texture, textureAxes[0].getPoint(), textureShiftS, textureAxes[1].getPoint(), textureShiftT,
 				                                            texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
 			//}
 			brushSides=newList;
@@ -221,5 +218,25 @@ public class BSP46Decompiler {
 		} else {
 			mapFile.getEntity(currentEntity).addBrush(mapBrush);
 		}
+	}
+	
+	// textureAxisFromPlane, adapted from code in the Quake III Arena source code. Stolen without
+	// permission because it falls under the terms of the GPL v2 license, because I'm not making
+	// any money, just awesome tools.
+	public static Vector3D[] textureAxisFromPlane(Plane p) {
+		int bestaxis=0;
+		double dot; // Current dot product
+		double best=0; // "Best" dot product so far
+		for(int i=0; i<6; i++) { // For all possible axes, positive and negative
+			dot = Vector3D.dotProduct(p.getNormal(), baseAxes[i*3]);
+			if (dot > best) {
+				best = dot;
+				bestaxis = i;
+			}
+		}
+		Vector3D[] out=new Vector3D[2];
+		out[0]=new Vector3D(baseAxes[bestaxis*3+1]);
+		out[1]=new Vector3D(baseAxes[bestaxis*3+2]);
+		return out;
 	}
 }

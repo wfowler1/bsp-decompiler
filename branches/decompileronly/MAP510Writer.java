@@ -36,6 +36,8 @@ public class MAP510Writer {
 	private static DecimalFormat fmtPoints = new DecimalFormat("0.000000");
 	private static DecimalFormat fmtScales = new DecimalFormat("0.####");
 	
+	private static boolean ctfEnts=false;
+	
 	// CONSTRUCTORS
 	
 	public MAP510Writer(Entities from, String to, int BSPVersion) {
@@ -76,6 +78,14 @@ public class MAP510Writer {
 					if(data.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_water")) {
 						waterEntity=data.getEntity(i);
 						break;
+					} else {
+						try {
+							if(data.getEntity(i).getAttribute("classname").substring(0,8).equalsIgnoreCase("team_CTF")) {
+								ctfEnts=true;
+							}
+						} catch(java.lang.StringIndexOutOfBoundsException e) {
+							;
+						}
 					}
 				}
 				if(waterEntity==null) {
@@ -93,7 +103,7 @@ public class MAP510Writer {
 						data.getEntity(0).deleteBrush(i);
 					}
 				}
-				if(newEnt) {
+				if(newEnt && waterEntity.getBrushes().length!=0) {
 					data.add(waterEntity);
 				}
 			}
@@ -145,6 +155,10 @@ public class MAP510Writer {
 		double[] origin;
 		// Correct some attributes of entities
 		switch(BSPVersion) {
+			case v46BSP.VERSION:
+			case RavenBSP.VERSION:
+				in=ent46ToEntM510(in);
+				break;
 			case 42: // Nightfire
 				// Nightfire is good for map510
 				break;
@@ -156,12 +170,15 @@ public class MAP510Writer {
 		}
 		if(in.getAttribute("classname").equalsIgnoreCase("worldspawn")) {
 			in.setAttribute("mapversion", "510");
+			if(ctfEnts) {
+				in.setAttribute("defaultctf", "1");
+			}
 		}
 		if(in.isBrushBased()) {
 			origin=in.getOrigin();
 			in.deleteAttribute("origin");
 			in.deleteAttribute("model");
-			if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this brush uses the "origin" attribute
+			if((origin[0]!=0 || origin[1]!=0 || origin[2]!=0) && !Window.noOriginBrushesIsSelected()) { // If this brush uses the "origin" attribute
 				MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
 				in.addBrush(newOriginBrush);
 			}
@@ -266,33 +283,13 @@ public class MAP510Writer {
 			double lgtScale=in.getLgtScale();
 			double lgtRot=in.getLgtRot();
 			// Correct special textures on Q2 maps
-			if(BSPVersion==38) {
-				try {
-					if(texture.substring(texture.length()-5).equalsIgnoreCase("/hint")) {
-						if(currentEntity==0) {
-							texture="special/hint"; // Hint was not used the same way in Quake 2 as other games.
-						} else {                   // For example, a Hint brush CAN be used for a trigger in Q2 and is used as such a lot.
-							texture="special/trigger";
-						}
+			if(BSPVersion==38) { // Many of the special textures are taken care of in the decompiler method itself
+				try {             // using face flags, rather than texture names.
+					if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
+						texture="special/trigger";
 					} else {
-						if(texture.substring(texture.length()-5).equalsIgnoreCase("/skip")) {
-							texture="special/skip";
-						} else {
-							if(texture.substring(texture.length()-5).equalsIgnoreCase("/clip")) {
-								texture="special/clip";
-							} else {
-								if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
-									texture="special/trigger";
-								} else {
-									if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky1")) {
-										texture="special/sky";
-									} else {
-										if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky2")) {
-											texture="special/sky";
-										}
-									}
-								}
-							}
+						if(texture.substring(texture.length()-5).equalsIgnoreCase("/clip")) {
+							texture="special/clip";
 						}
 					}
 				} catch(StringIndexOutOfBoundsException e) {
@@ -328,29 +325,108 @@ public class MAP510Writer {
 					;
 				}
 			}
-			if(BSPVersion==RavenBSP.VERSION) { // Is this all?
+			if(BSPVersion==v46BSP.VERSION || BSPVersion==MoHAABSP.VERSION) {
 				try {
-					if(texture.equalsIgnoreCase("textures/system/clip")) {
-						texture="special/clip";
+					if(texture.substring(0,9).equalsIgnoreCase("textures/")) {
+						texture=texture.substring(9);
+					}
+				} catch(StringIndexOutOfBoundsException e) {
+					;
+				}
+				if(texture.equalsIgnoreCase("common/clip")) {
+					texture="special/clip";
+				} else {
+					if(texture.equalsIgnoreCase("common/trigger")) {
+						texture="special/trigger";
 					} else {
 						if(texture.equalsIgnoreCase("noshader")) {
 							texture="special/nodraw";
 						} else {
-							if(texture.equalsIgnoreCase("textures/system/physics_clip")) {
+							if(texture.equalsIgnoreCase("common/physics_clip")) {
 								texture="special/clip";
 							} else {
-								if(texture.equalsIgnoreCase("textures/system/caulk")) {
-									texture="liquids/!water";
+								if(texture.equalsIgnoreCase("common/caulk")) {
+									texture="special/nodraw";
 								} else {
-									if(texture.equalsIgnoreCase("textures/system/do_not_enter")) {
+									if(texture.equalsIgnoreCase("common/do_not_enter")) {
+										texture="special/nodraw";
+									} else {
+										if(texture.equalsIgnoreCase("common/caulksky")) {
+											texture="special/sky";
+										} else {
+											if(texture.equalsIgnoreCase("common/hint")) {
+												texture="special/hint";
+											} else {
+												if(texture.equalsIgnoreCase("common/nodraw")) {
+													texture="special/nodraw";
+												} else {
+													if(texture.equalsIgnoreCase("common/metalclip")) {
+														texture="special/clip";
+													} else {
+														if(texture.equalsIgnoreCase("common/grassclip")) {
+															texture="special/clip";
+														} else {
+															if(texture.equalsIgnoreCase("common/paperclip")) {
+																texture="special/clip";
+															} else {
+																if(texture.equalsIgnoreCase("common/woodclip")) {
+																	texture="special/clip";
+																} else {
+																	if(texture.equalsIgnoreCase("common/waterskip")) {
+																		texture="liquids/!water";
+																	} else {
+																		if(texture.equalsIgnoreCase("common/glassclip")) {
+																			texture="special/clip";
+																		} else {
+																			if(texture.equalsIgnoreCase("common/playerclip")) {
+																				texture="special/playerclip";
+																			}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			if(BSPVersion==RavenBSP.VERSION) {
+				try {
+					if(texture.substring(0,9).equalsIgnoreCase("textures/")) {
+						texture=texture.substring(9);
+					}
+				} catch(StringIndexOutOfBoundsException e) {
+					;
+				}
+				if(texture.equalsIgnoreCase("system/clip")) {
+					texture="special/clip";
+				} else {
+					if(texture.equalsIgnoreCase("system/trigger")) {
+						texture="special/trigger";
+					} else {
+						if(texture.equalsIgnoreCase("noshader")) {
+							texture="special/nodraw";
+						} else {
+							if(texture.equalsIgnoreCase("system/physics_clip")) {
+								texture="special/clip";
+							} else {
+								if(texture.equalsIgnoreCase("system/caulk")) {
+									texture="special/nodraw";
+								} else {
+									if(texture.equalsIgnoreCase("system/do_not_enter")) {
 										texture="special/nodraw";
 									}
 								}
 							}
 						}
 					}
-				} catch(StringIndexOutOfBoundsException e) {
-					;
 				}
 			}
 			if(Window.roundNumsIsSelected()) {
@@ -379,6 +455,102 @@ public class MAP510Writer {
 			return "";
 		}
 	}
+	
+	// Turn a Q3 entity into a Gearcraft one (generally for use with nightfire)
+	// This won't magically fix every single thing to work in Gearcraft, for example
+	// the Nightfire engine had no support for area portals. But it should save map
+	// porters some time, especially when it comes to the Capture The Flag mod.
+	public Entity ent46ToEntM510(Entity in) {
+		if(in.getAttribute("classname").equalsIgnoreCase("team_CTF_blueflag")) { // Blue flag
+			in.setAttribute("classname", "item_ctfflag");
+			in.setAttribute("skin", "1"); // 0 for PHX, 1 for MI6
+			in.setAttribute("goal_no", "1"); // 2 for PHX, 1 for MI6
+			in.setAttribute("goal_max", "16 16 72");
+			in.setAttribute("goal_min", "-16 -16 0");
+			in.setAttribute("model", "models/ctf_flag.mdl");
+			Entity flagBase=new Entity("item_ctfbase");
+			flagBase.setAttribute("origin", in.getAttribute("origin"));
+			flagBase.setAttribute("angles", in.getAttribute("angles"));
+			flagBase.setAttribute("angle", in.getAttribute("angle"));
+			flagBase.setAttribute("goal_no", "1");
+			flagBase.setAttribute("model", "models/ctf_flag_stand_mi6.mdl");
+			flagBase.setAttribute("goal_max", "16 16 72");
+			flagBase.setAttribute("goal_min", "-16 -16 0");
+			data.add(flagBase);
+		} else {
+			if(in.getAttribute("classname").equalsIgnoreCase("team_CTF_redflag")) { // Red flag
+				in.setAttribute("classname", "item_ctfflag");
+				in.setAttribute("skin", "0"); // 0 for PHX, 1 for MI6
+				in.setAttribute("goal_no", "2"); // 2 for PHX, 1 for MI6
+				in.setAttribute("goal_max", "16 16 72");
+				in.setAttribute("goal_min", "-16 -16 0");
+				in.setAttribute("model", "models/ctf_flag.mdl");
+				Entity flagBase=new Entity("item_ctfbase");
+				flagBase.setAttribute("origin", in.getAttribute("origin"));
+				flagBase.setAttribute("angles", in.getAttribute("angles"));
+				flagBase.setAttribute("angle", in.getAttribute("angle"));
+				flagBase.setAttribute("goal_no", "2");
+				flagBase.setAttribute("model", "models/ctf_flag_stand_phoenix.mdl");
+				flagBase.setAttribute("goal_max", "16 16 72");
+				flagBase.setAttribute("goal_min", "-16 -16 0");
+				data.add(flagBase);
+			} else {
+				if(in.getAttribute("classname").equalsIgnoreCase("team_CTF_redspawn")) {
+					in.setAttribute("classname", "info_ctfspawn");
+					in.setAttribute("team_no", "2");
+					double[] origin=in.getOrigin();
+					in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+24));
+				} else {
+					if(in.getAttribute("classname").equalsIgnoreCase("team_CTF_bluespawn")) {
+						in.setAttribute("classname", "info_ctfspawn");
+						in.setAttribute("team_no", "1");
+						double[] origin=in.getOrigin();
+						in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+24));
+					} else {
+						if(in.getAttribute("classname").equalsIgnoreCase("info_player_start")) {
+							double[] origin=in.getOrigin();
+							in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+24));
+						} else {
+							if(in.getAttribute("classname").equalsIgnoreCase("info_player_coop")) {
+								double[] origin=in.getOrigin();
+								in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+24));
+							} else {
+								if(in.getAttribute("classname").equalsIgnoreCase("info_player_deathmatch")) {
+									double[] origin=in.getOrigin();
+									in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+24));
+								} else {
+									if(in.getAttribute("classname").equalsIgnoreCase("light")) {
+										String color=in.getAttribute("_color");
+										String intensity=in.getAttribute("light");
+										Scanner colorScanner=new Scanner(color);
+										double[] lightNumbers=new double[4];
+										for(int j=0;j<3 && colorScanner.hasNext();j++) {
+											try {
+												lightNumbers[j]=Double.parseDouble(colorScanner.next());
+												lightNumbers[j]*=255; // Quake 3's numbers are from 0 to 1, Nightfire are from 0 to 255
+											} catch(java.lang.NumberFormatException e) {
+												;
+											}
+										}
+										try {
+											lightNumbers[s]=Double.parseDouble(intensity)/2; // Quake 3's light intensity is waaaaaay too bright
+										} catch(java.lang.NumberFormatException e) {
+											;
+										}
+										in.deleteAttribute("_color");
+										in.deleteAttribute("light");
+										in.setAttribute("_light", lightNumbers[r]+" "+lightNumbers[g]+" "+lightNumbers[b]+" "+lightNumbers[s]);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return in;
+	}
+
 	
 	// Turn a Q2 entity into a Gearcraft one (generally for use with nightfire)
 	// This won't magically fix every single thing to work in Gearcraft, for example

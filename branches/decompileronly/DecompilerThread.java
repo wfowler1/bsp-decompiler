@@ -47,23 +47,29 @@ public class DecompilerThread implements Runnable {
 						RavenBSPDecompiler decompiler = new RavenBSPDecompiler(reader.ravenBSP, jobnum);
 						decompiler.decompile();
 					} else {
-						switch(reader.getVersion()) {
-							case 38:
-								Window.setProgress(jobnum, 0, reader.BSP38.getBrushes().length()+reader.BSP38.getEntities().length(), "Decompiling...");
-								BSP38Decompiler decompiler38 = new BSP38Decompiler(reader.BSP38, jobnum);
-								decompiler38.decompile();
-								break;
-							case 42:
-								Window.setProgress(jobnum, 0, reader.BSP42.getBrushes().getNumElements()+reader.BSP42.getEntities().length(), "Decompiling...");
-								BSP42Decompiler decompiler42 = new BSP42Decompiler(reader.BSP42, jobnum);
-								decompiler42.decompile();
-								break;
-							case 46:
-							case 47:
-								Window.setProgress(jobnum, 0, reader.BSP46.getBrushes().getNumElements()+reader.BSP46.getEntities().length(), "Decompiling...");
-								BSP46Decompiler decompiler46 = new BSP46Decompiler(reader.BSP46, jobnum);
-								decompiler46.decompile();
-								break;
+						if(reader.isMOHAA()) {
+							Window.setProgress(jobnum, 0, reader.MOHAABSP.getBrushes().getNumElements()+reader.MOHAABSP.getEntities().length(), "Decompiling...");
+							MoHAABSPDecompiler MOHAAdecompiler = new MoHAABSPDecompiler(reader.MOHAABSP, jobnum);
+							MOHAAdecompiler.decompile();
+						} else {
+							switch(reader.getVersion()) {
+								case 38:
+									Window.setProgress(jobnum, 0, reader.BSP38.getBrushes().length()+reader.BSP38.getEntities().length(), "Decompiling...");
+									BSP38Decompiler decompiler38 = new BSP38Decompiler(reader.BSP38, jobnum);
+									decompiler38.decompile();
+									break;
+								case 42:
+									Window.setProgress(jobnum, 0, reader.BSP42.getBrushes().getNumElements()+reader.BSP42.getEntities().length(), "Decompiling...");
+									BSP42Decompiler decompiler42 = new BSP42Decompiler(reader.BSP42, jobnum);
+									decompiler42.decompile();
+									break;
+								case 46:
+								case 47:
+									Window.setProgress(jobnum, 0, reader.BSP46.getBrushes().getNumElements()+reader.BSP46.getEntities().length(), "Decompiling...");
+									BSP46Decompiler decompiler46 = new BSP46Decompiler(reader.BSP46, jobnum);
+									decompiler46.decompile();
+									break;
+							}
 						}
 					}
 				}
@@ -72,6 +78,12 @@ public class DecompilerThread implements Runnable {
 			Window.setProgressColor(jobnum, new Color(64, 192, 64));
 		} catch (java.lang.Exception e) {
 			Window.println(""+(char)0x0D+(char)0x0A+"Exception caught in job "+(jobnum+1)+": "+e+(char)0x0D+(char)0x0A+"Please let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/entry",Window.VERBOSITY_ALWAYS);
+			String stackTrace="";
+			StackTraceElement[] trace=e.getStackTrace();
+			for(int i=0;i<trace.length;i++) {
+				stackTrace+=trace.toString()+Window.LF;
+			}
+			Window.println(e.getMessage()+Window.LF+stackTrace,Window.VERBOSITY_WARNINGS);
 			Window.setProgress(jobnum, 1, 1, "ERROR! See log!");
 			Window.setProgressColor(jobnum, new Color(255, 128, 128));
 		}

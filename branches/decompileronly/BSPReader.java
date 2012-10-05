@@ -39,8 +39,7 @@ public class BSPReader {
 	protected v38BSP BSP38;
 	protected v42BSP BSP42;
 	protected v46BSP BSP46;
-	// protected BSPv47
-	// protected MOHAABSP
+	protected MoHAABSP MOHAABSP;
 	protected RavenBSP ravenBSP;
 	protected SourceBSP SourceBSPObject;
 	
@@ -73,7 +72,7 @@ public class BSPReader {
 			}
 		}
 	}
-////	
+	
 	// METHODS
 	
 	public void readBSP() {
@@ -85,7 +84,74 @@ public class BSPReader {
 			int offset;
 			int length;
 			if(mohaa) {
-				Window.println("Sorry, no MOHAA support (yet)!",Window.VERBOSITY_ALWAYS);
+				Window.println("MOHAA BSP found (modified id Tech 3)",Window.VERBOSITY_ALWAYS);
+				offsetReader = new FileInputStream(BSP);
+				MOHAABSP = new MoHAABSP(BSP.getPath());
+				offsetReader.skip(12); // Skip the file header, putting the reader into the offset/length pairs
+				
+				// Lump 00
+				offsetReader.read(read); // Read 4 bytes
+				offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+				offsetReader.read(read); // Read 4 more bytes
+				length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+				MOHAABSP.setMTextures(readLump(offset, length));
+				
+				// Lump 01
+				offsetReader.read(read); // Read 4 bytes
+				offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+				offsetReader.read(read); // Read 4 more bytes
+				length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+				MOHAABSP.setPlanes(readLump(offset, length));
+				
+				offsetReader.skip(64); // Do not need offset/length for lumps 2-9
+				
+				// Lump 10
+				offsetReader.read(read); // Read 4 bytes
+				offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+				offsetReader.read(read); // Read 4 more bytes
+				length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+				MOHAABSP.setTexScales(readLump(offset, length));
+				
+				// Lump 11
+				offsetReader.read(read); // Read 4 bytes
+				offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+				offsetReader.read(read); // Read 4 more bytes
+				length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+				MOHAABSP.setMBrushSides(readLump(offset, length));
+				
+				// Lump 12
+				offsetReader.read(read); // Read 4 bytes
+				offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+				offsetReader.read(read); // Read 4 more bytes
+				length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+				MOHAABSP.setBrushes(readLump(offset, length));
+				
+				// Lump 13
+				offsetReader.read(read); // Read 4 bytes
+				offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+				offsetReader.read(read); // Read 4 more bytes
+				length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+				MOHAABSP.setModels(readLump(offset, length));
+				
+				// Lump 14
+				offsetReader.read(read); // Read 4 bytes
+				offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+				offsetReader.read(read); // Read 4 more bytes
+				length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+				MOHAABSP.setEntities(readLump(offset, length));
+				
+				offsetReader.skip(80); // Do not need offset/length for lumps 15-24
+				
+				// Lump 24
+				offsetReader.read(read); // Read 4 bytes
+				offset=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+				offsetReader.read(read); // Read 4 more bytes
+				length=(read[3] << 24) | ((read[2] & 0xff) << 16) | ((read[1] & 0xff) << 8) | (read[0] & 0xff);
+				MOHAABSP.setStaticProps(readLump(offset, length));
+				
+				offsetReader.close();
+				
+				MOHAABSP.printBSPReport();
 			} else {
 				if(source) {
 					int lumpVersion=0;
@@ -93,7 +159,7 @@ public class BSPReader {
 						// Gonna handle all Source BSP formats here.
 						// Might have to deal with format differences later.
 						// For now, focus on HL2, or v19.
-						case 17: // Vampire: The Masquerade � Bloodlines
+						case 17: // Vampire: The Masquerades Bloodlines
 						case 18: // HL2 Beta
 						case 19: // HL2, CSS, DoDS
 						case 20: // HL2E1, HL2E2, Portal, L4D, TF2
@@ -887,7 +953,7 @@ public class BSPReader {
 								BSP42.printBSPReport();
 								break;
 							case 46: // Quake 3/close derivative
-							case 47: // Will this work?
+							case 47: // RTCW
 								Window.println("BSP v46 found (id Tech 3)",Window.VERBOSITY_ALWAYS);
 								offsetReader = new FileInputStream(BSP);
 								BSP46 = new v46BSP(BSP.getPath());
@@ -992,6 +1058,10 @@ public class BSPReader {
 	
 	public boolean isRaven() {
 		return raven;
+	}
+	
+	public boolean isMOHAA() {
+		return mohaa;
 	}
 	
 	public int getVersion() throws java.io.IOException {

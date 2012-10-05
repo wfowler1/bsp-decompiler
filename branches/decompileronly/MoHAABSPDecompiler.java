@@ -1,9 +1,9 @@
-// RavenBSPDecompiler
-// Decompiles a Raven Software BSP
+// MoHAABSPDecompiler
+// Decompiles a v46 BSP
 
 import java.util.Date;
 
-public class RavenBSPDecompiler {
+public class MoHAABSPDecompiler {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
@@ -30,12 +30,12 @@ public class RavenBSPDecompiler {
 	private int numAdvancedCorrects=0;
 	private int numGoodBrushes=0;
 	
-	private RavenBSP BSP;
+	private MoHAABSP BSP;
 	
 	// CONSTRUCTORS
 	
 	// This constructor sets everything according to specified settings.
-	public RavenBSPDecompiler(RavenBSP BSP, int jobnum) {
+	public MoHAABSPDecompiler(MoHAABSP BSP, int jobnum) {
 		// Set up global variables
 		this.BSP=BSP;
 		this.jobnum=jobnum;
@@ -59,7 +59,7 @@ public class RavenBSPDecompiler {
 			numBrshs=0; // Reset the brush count for each entity
 			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
 			int currentModel=mapFile.getEntity(i).getModelNumber();
-			if(currentModel!=-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
+			if(currentModel>-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
 				double[] origin=mapFile.getEntity(i).getOrigin();
 				int firstBrush=BSP.getModels().getModel(currentModel).getBrush();
 				int numBrushes=BSP.getModels().getModel(currentModel).getNumBrushes();
@@ -98,10 +98,10 @@ public class RavenBSPDecompiler {
 		int brushTextureIndex=brush.getTexture();
 		byte[] contents=new byte[4];
 		if(brushTextureIndex>=0) {
-			contents=BSP.getTextures().getTexture(brushTextureIndex).getContents();
+			contents=BSP.getMTextures().getElement(brushTextureIndex).getContents();
 		}
-		if(!Window.noDetailIsSelected() && (contents[3] & ((byte)1 << 3)) != 0) {
-			isDetail=true;
+		if(!Window.noDetailIsSelected() && (contents[3] & ((byte)1 << 3)) != 0) { // This is the flag according to q3 source
+			isDetail=true; // it's the same as Q2 (and Source)
 		}
 		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, isDetail);
 		int numRealFaces=0;
@@ -109,107 +109,107 @@ public class RavenBSPDecompiler {
 		Window.println(": "+numSides+" sides",Window.VERBOSITY_BRUSHCREATION);
 		if(!Window.noWaterIsSelected() && (contents[0] & ((byte)1 << 5)) != 0) {
 			mapBrush.setWater(true);
-		} // TODO
+		}
+		boolean isVisBrush=false;
 		for(int i=0;i<numSides;i++) { // For each side of the brush
-			RavenBrushSide currentSide=BSP.getRBrushSides().getElement(firstSide+i);
-			int currentFaceIndex=currentSide.getFace();
-			RavenFace currentFace;
-			if(currentFaceIndex<0) { // Sometimes the face index is -1 :(
-				currentFace=null;
-			} else {
-				currentFace=BSP.getRFaces().getElement(currentFaceIndex); // To find those three points, I can use vertices referenced by faces.
-			}
+			MoHAABrushSide currentSide=BSP.getMBrushSides().getElement(firstSide+i);
 			Plane currentPlane=BSP.getPlanes().getPlane(currentSide.getPlane());
 			Vector3D[] triangle=new Vector3D[0];
-			boolean pointsWorked=false;
-			int firstVertex=-1;
-			int numVertices=0;
-			String texture="noshader";
-			if(currentFace!=null) {
-				firstVertex=currentFace.getVertex();
-				numVertices=currentFace.getNumVertices();
-				texture=BSP.getTextures().getTexture(currentFace.getTexture()).getTexture(); // Use the face's referenced texture/shader if available
-				if(numVertices!=0 && !Window.planarDecompIsSelected()) { // If the face actually references a set of vertices
-					triangle=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
-					triangle[0]=new Vector3D(BSP.getRVertices().getElement(firstVertex).getVertex()); // Grab and store the first one
-					int j=1;
-					for(;j<numVertices;j++) { // For each point after the first one
-						triangle[1]=new Vector3D(BSP.getRVertices().getElement(firstVertex+j).getVertex());
-						if(!triangle[0].equals(triangle[1])) { // Make sure the point isn't the same as the first one
-							break; // If it isn't the same, this point is good
-						}
-					}
-					for(j=j+1;j<numVertices;j++) { // For each point after the previous one used
-						triangle[2]=new Vector3D(BSP.getRVertices().getElement(firstVertex+j).getVertex());
-						if(!triangle[2].equals(triangle[0]) && !triangle[2].equals(triangle[1])) { // Make sure no point is equal to the third one
-							// Make sure all three points are non collinear
-							Vector3D cr=Vector3D.crossProduct(triangle[0].subtract(triangle[1]), triangle[0].subtract(triangle[2]));
-							if(cr.length() > Window.getPrecision()) { // vector length is never negative.
-								pointsWorked=true;
-								break;
-							}
-						}
-					}
+			String texture="common/nodraw";
+			int currentTextureIndex=currentSide.getTexture();
+			boolean masked=false;
+			if(currentTextureIndex>=0) {
+				String mask=BSP.getMTextures().getElement(currentTextureIndex).getMask();
+				if(mask.equalsIgnoreCase("ignore") || mask.length()==0) {
+					texture=BSP.getMTextures().getElement(currentTextureIndex).getTexture();
+				} else {
+					texture=mask.substring(0,mask.length()-4); // Because mask includes file extensions
+					masked=true;
 				}
-			} else { // If face information is not available, use the brush side's info instead
-				int currentTextureIndex=currentSide.getTexture();
-				if(currentTextureIndex>=0 && texture.equalsIgnoreCase("noshader")) {
-					texture=BSP.getTextures().getTexture(currentTextureIndex).getTexture();
-				} else { // If neither face or brush side has texture info, fall all the way back to brush. I don't know if this ever happens.
-					currentTextureIndex=brush.getTexture();
-					if(currentTextureIndex>=0 && texture.equalsIgnoreCase("noshader")) { // If none of them have any info, noshader
-						texture=BSP.getTextures().getTexture(currentTextureIndex).getTexture();
+			} else { // If neither face or brush side has texture info, fall all the way back to brush. I don't know if this ever happens.
+				if(brushTextureIndex>=0) { // If none of them have any info, noshader
+					String mask=BSP.getMTextures().getElement(currentTextureIndex).getMask();
+					if(mask.equalsIgnoreCase("ignore") || mask.length()==0) {
+						texture=BSP.getMTextures().getElement(currentTextureIndex).getTexture();
 					} else {
-						if(currentTextureIndex<0) {
-							Window.println("WARNING: Unable to find a usable texture for entity "+currentEntity+" brush "+numBrshs, Window.VERBOSITY_WARNINGS);
-						}
+						texture=mask.substring(0,mask.length()-4); // Because mask includes file extensions
+						masked=true;
 					}
 				}
+			}
+			if(texture.equalsIgnoreCase("textures/common/vis")) {
+				isVisBrush=true;
+				break;
 			}
 			double[] textureS=new double[3];
 			double[] textureT=new double[3];
-			// Get the lengths of the axis vectors.
-			// These are not explicitly given in the map, nor are the vectors themselves.
-			// They are somehow always parallel to the face, but damned if I know the algorithm to figure that out, with rotation.
-			// TODO figure out this bullshit
-			double UAxisLength=1;
-			double VAxisLength=1;
+			double texScaleS;
+			double texScaleT;
+			double originShiftS;
+			double textureShiftS;
+			double originShiftT;
+			double textureShiftT;
+			v42TexMatrix currentTexMatrix=BSP.getTexScales().getTexMatrix(currentSide.getTexScale());
+			// Get the lengths of the axis vectors
+			double UAxisLength=Math.sqrt(Math.pow((double)currentTexMatrix.getUAxisX(),2)+Math.pow((double)currentTexMatrix.getUAxisY(),2)+Math.pow((double)currentTexMatrix.getUAxisZ(),2));
+			double VAxisLength=Math.sqrt(Math.pow((double)currentTexMatrix.getVAxisX(),2)+Math.pow((double)currentTexMatrix.getVAxisY(),2)+Math.pow((double)currentTexMatrix.getVAxisZ(),2));
 			// In compiled maps, shorter vectors=longer textures and vice versa. This will convert their lengths back to 1. We'll use the actual scale values for length.
-			double texScaleS=1;
-			double texScaleT=1;
-			Vector3D[] textureAxes=BSP46Decompiler.textureAxisFromPlane(currentPlane);
-			textureS[0]=textureAxes[0].getX();
-			textureS[1]=textureAxes[0].getY();
-			textureS[2]=textureAxes[0].getZ();
-			double originShiftS=0;
-			double textureShiftS=0;
-			textureT[0]=textureAxes[1].getX();
-			textureT[1]=textureAxes[1].getY();
-			textureT[2]=textureAxes[1].getZ();
-			double originShiftT=0;
-			double textureShiftT=0;
-			if(firstVertex>=0) {
-				textureShiftS=(double)BSP.getRVertices().getElement(firstVertex).getSurfaceTexCoordX();
-				textureShiftT=(double)BSP.getRVertices().getElement(firstVertex).getSurfaceTexCoordY();
+			if(!(UAxisLength-Window.getPrecision()<0 && UAxisLength+Window.getPrecision()>0)) {
+				texScaleS=(1/UAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
+				textureS[X]=((double)currentTexMatrix.getUAxisX()/UAxisLength);
+				textureS[Y]=((double)currentTexMatrix.getUAxisY()/UAxisLength);
+				textureS[Z]=((double)currentTexMatrix.getUAxisZ()/UAxisLength);
+				originShiftS=((textureS[X]*origin[X])+(textureS[Y]*origin[Y])+(textureS[Z]*origin[Z]))/texScaleS;
+				textureShiftS=(double)currentTexMatrix.getUShift()-originShiftS;
+			} else {
+				texScaleS=1;
+				Vector3D[] textureAxes=BSP46Decompiler.textureAxisFromPlane(currentPlane);
+				textureS[X]=textureAxes[0].getX();
+				textureS[Y]=textureAxes[0].getY();
+				textureS[Z]=textureAxes[0].getZ();
+				originShiftS=(textureS[X]*origin[X])+(textureS[Y]*origin[Y])+(textureS[Z]*origin[Z]);
+				textureShiftS=(double)currentTexMatrix.getUShift()-originShiftS;
+			}
+			if(!(VAxisLength-Window.getPrecision()<0 && VAxisLength+Window.getPrecision()>0)) {
+				texScaleT=(1/VAxisLength);
+				textureT[X]=((double)currentTexMatrix.getVAxisX()/VAxisLength);
+				textureT[Y]=((double)currentTexMatrix.getVAxisY()/VAxisLength);
+				textureT[Z]=((double)currentTexMatrix.getVAxisZ()/VAxisLength);
+				originShiftT=((textureT[X]*origin[X])+(textureT[Y]*origin[Y])+(textureT[Z]*origin[Z]))/texScaleT;
+				textureShiftT=(double)currentTexMatrix.getVShift()-originShiftT;
+			} else {
+				texScaleT=1;
+				Vector3D[] textureAxes=BSP46Decompiler.textureAxisFromPlane(currentPlane);
+				textureT[X]=textureAxes[1].getX();
+				textureT[Y]=textureAxes[1].getY();
+				textureT[Z]=textureAxes[1].getZ();
+				originShiftT=(textureT[X]*origin[X])+(textureT[Y]*origin[Y])+(textureT[Z]*origin[Z]);
+				textureShiftT=(double)currentTexMatrix.getVShift()-originShiftT;
+			}
+			String material;
+			if(masked) {
+				material="wld_masked";
+			} else {
+				material="wld_lightmap";
 			}
 			float texRot=0;
-			String material="wld_lightmap";
 			double lgtScale=16;
 			double lgtRot=0;
 			MAPBrushSide[] newList=new MAPBrushSide[brushSides.length+1];
 			for(int j=0;j<brushSides.length;j++) {
 				newList[j]=brushSides[j];
 			}
+			int flags;
 			//if(Window.noFaceFlagsIsSelected()) {
-				int flags=0;
+				flags=0;
 			//}
-			if(pointsWorked) {
+			/*if(pointsWorked) {
 				newList[brushSides.length]=new MAPBrushSide(currentPlane, triangle, texture, textureS, textureShiftS, textureT, textureShiftT,
 				                                            texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
-			} else {
+			} else {*/
 				newList[brushSides.length]=new MAPBrushSide(currentPlane, texture, textureS, textureShiftS, textureT, textureShiftT,
 				                                            texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
-			}
+			//}
 			brushSides=newList;
 			numRealFaces++;
 		}
@@ -260,11 +260,13 @@ public class RavenBSPDecompiler {
 		// the current entity as an attribute. The way I've coded
 		// this whole program and the entities parser, this shouldn't
 		// cause any issues at all.
-		if(Window.brushesToWorldIsSelected()) {
-			mapBrush.setWater(false);
-			mapFile.getEntity(0).addBrush(mapBrush);
-		} else {
-			mapFile.getEntity(currentEntity).addBrush(mapBrush);
+		if(!isVisBrush) {
+			if(Window.brushesToWorldIsSelected()) {
+				mapBrush.setWater(false);
+				mapFile.getEntity(0).addBrush(mapBrush);
+			} else {
+				mapFile.getEntity(currentEntity).addBrush(mapBrush);
+			}
 		}
 	}
 }

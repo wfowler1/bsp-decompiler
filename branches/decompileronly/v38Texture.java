@@ -10,7 +10,7 @@ public class v38Texture {
 	private float uShift;
 	private Vector3D v;
 	private float vShift;
-	private int flags;
+	private byte[] flags=new byte[4];
 	private int unknown;
 	private String texture;
 	private int next;
@@ -18,7 +18,7 @@ public class v38Texture {
 	// CONSTRUCTORS
 	
 	// Takes everything exactly as it is stored
-	public v38Texture(Vector3D inU, float inUShift, Vector3D inV, float inVShift, int inFlags, int inUnk, String inName, int inNext) {
+	public v38Texture(Vector3D inU, float inUShift, Vector3D inV, float inVShift, byte[] inFlags, int inUnk, String inName, int inNext) {
 		u=inU;
 		uShift=inUShift;
 		v=inV;
@@ -50,7 +50,10 @@ public class v38Texture {
 		v=new Vector3D(va, vb, vc);
 		datain=(in[31] << 24) | ((in[30] & 0xff) << 16) | ((in[29] & 0xff) << 8) | (in[28] & 0xff);
 		vShift=Float.intBitsToFloat(datain);
-		flags=(in[35] << 24) | ((in[34] & 0xff) << 16) | ((in[33] & 0xff) << 8) | (in[32] & 0xff);
+		flags[0]=in[32];
+		flags[1]=in[33];
+		flags[2]=in[34];
+		flags[3]=in[35];
 		unknown=(in[39] << 24) | ((in[38] & 0xff) << 16) | ((in[37] & 0xff) << 8) | (in[36] & 0xff);
 		int offset=40;
 		texture=(char)in[offset]+""; // must do this first. Doing += right away adds "null" to the beginning
@@ -98,11 +101,11 @@ public class v38Texture {
 		return vShift;
 	}
 	
-	public void setFlags(int in) {
+	public void setFlags(byte[] in) {
 		flags=in;
 	}
 	
-	public int getFlags() {
+	public byte[] getFlags() {
 		return flags;
 	}
 	

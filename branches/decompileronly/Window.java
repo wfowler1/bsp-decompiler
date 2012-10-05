@@ -70,8 +70,12 @@ public class Window extends JPanel implements ActionListener {
 	// "Debug" menu
 	private static JMenu debugMenu;
 	private static JCheckBoxMenuItem chk_brushesToWorldItem;
+	private static JCheckBoxMenuItem chk_noOriginBrushItem;
 	private static JCheckBoxMenuItem chk_noDetailsItem;
+	private static JCheckBoxMenuItem chk_noWaterItem;
 	private static JCheckBoxMenuItem chk_noFaceFlagsItem;
+	private static JCheckBoxMenuItem chk_dontCorrectEntitiesItem;
+	private static JCheckBoxMenuItem chk_dontCorrectTexturesItem;
 	private static JMenuItem setErrorItem;
 	private static JMenuItem setOriginBrushSizeItem;
 	private static JMenuItem saveLogItem;
@@ -118,7 +122,7 @@ public class Window extends JPanel implements ActionListener {
 	
 	// Global variables, can be freely set by user
 	private static int numThreads=1;
-	private static double planePointCoef=100;
+	private static double planePointCoef=32;
 	private static double originBrushSize=16;
 	private static int verbosity=0;
 	private static String outputFolder="default";
@@ -138,7 +142,7 @@ public class Window extends JPanel implements ActionListener {
 	
 		window = new Window(frame.getContentPane());
 		print("Got a bug to report? Want to request a feature?"+LF+"Create an issue report at"+LF+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry"+LF+LF, VERBOSITY_ALWAYS);
-		print("Currently supported engines:"+LF+"James Bond 007: Nightfire"+LF+"Quake 2"+LF+"Quake 3 (incomplete)"+LF+"Doom WADfiles (incomplete)"+LF+"Source VBSP (incomplete)"+LF+"Star Wars: Jedi Outcast/Soldier of Fortune 2 RBSP (incomplete)"+LF+"Return to Castle Wolfenstein {incomplete)"+LF, VERBOSITY_ALWAYS);
+		print("Currently supported engines:"+LF+"James Bond 007: Nightfire"+LF+"Quake 2"+LF+"Quake 3 (incomplete)"+LF+"Doom WADfiles (incomplete)"+LF+"Source VBSP (incomplete)"+LF+"Star Wars: Jedi Outcast/Soldier of Fortune 2 RBSP (incomplete)"+LF+"Return to Castle Wolfenstein (incomplete)"+LF, VERBOSITY_ALWAYS);
 	}
 
 	// This constructor configures and displays the GUI
@@ -230,14 +234,30 @@ public class Window extends JPanel implements ActionListener {
 		chk_brushesToWorldItem.setToolTipText("Send all brushes to world entity, rather than to their entities.");
 		chk_brushesToWorldItem.setSelected(false);
 		debugMenu.add(chk_brushesToWorldItem);
+		chk_noOriginBrushItem = new JCheckBoxMenuItem("No origin brushes");
+		chk_noOriginBrushItem.setToolTipText("Do not generate origin brushes for map formats that use them for brushbased entities with \"origin\" attributes.");
+		chk_noOriginBrushItem.setSelected(false);
+		debugMenu.add(chk_noOriginBrushItem);
 		chk_noDetailsItem = new JCheckBoxMenuItem("Ignore detail flags");
 		chk_noDetailsItem.setToolTipText("Disregard detail flags on brushes. All detail brushes will be world geometry, and will block VIS.");
 		chk_noDetailsItem.setSelected(false);
 		debugMenu.add(chk_noDetailsItem);
+		chk_noWaterItem = new JCheckBoxMenuItem("Ignore water flags");
+		chk_noWaterItem.setToolTipText("Disregard water flags on brushes. Does not affect map formats which use func_water, but won't extract water from formats which don't.");
+		chk_noWaterItem.setSelected(false);
+		debugMenu.add(chk_noWaterItem);
 		chk_noFaceFlagsItem = new JCheckBoxMenuItem("Ignore face flags");
 		chk_noFaceFlagsItem.setToolTipText("Disregard face flags (NODRAW, NOIMPACTS, etc.)");
 		chk_noFaceFlagsItem.setSelected(false);
 		debugMenu.add(chk_noFaceFlagsItem);
+		chk_dontCorrectEntitiesItem = new JCheckBoxMenuItem("Don't correct entities");
+		chk_dontCorrectEntitiesItem.setToolTipText("Don't correct entities depending on the output format. This will keep all entities as-is, rather than renaming them for the output format.");
+		chk_dontCorrectEntitiesItem.setSelected(false);
+		debugMenu.add(chk_dontCorrectEntitiesItem);
+		chk_dontCorrectTexturesItem = new JCheckBoxMenuItem("Don't correct textures");
+		chk_dontCorrectTexturesItem.setToolTipText("Don't correct texture names depending on the output format. This will keep all original texture names, instead of those used by the proper editor.");
+		chk_dontCorrectTexturesItem.setSelected(false);
+		debugMenu.add(chk_dontCorrectTexturesItem);
 		setErrorItem = new JMenuItem("Set error tolerance...");
 		setErrorItem.setToolTipText("Allows customization of error tolerance of double precision calculations.");
 		debugMenu.add(setErrorItem);
@@ -364,7 +384,7 @@ public class Window extends JPanel implements ActionListener {
 		consoleTableSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, console_pane, table_pane);
 		consoleTableSplitter.setPreferredSize(new Dimension(616, 390));
 		consoleTableSplitter.setOneTouchExpandable(true);
-		consoleTableSplitter.setDividerLocation(225);
+		consoleTableSplitter.setDividerLocation(240);
 		
 		GridBagConstraints consoleConstraints = new GridBagConstraints();
 		consoleConstraints.fill = GridBagConstraints.NONE;
@@ -752,7 +772,7 @@ public class Window extends JPanel implements ActionListener {
 	}
 	
 	protected static void println() {
-		print(""+LF,VERBOSITY_ALWAYS);
+		print(LF,VERBOSITY_ALWAYS);
 	}
 	
 	protected static void clearConsole() {
@@ -985,6 +1005,7 @@ public class Window extends JPanel implements ActionListener {
 		chk_roundNumsItem.setEnabled(in);
 		chk_brushesToWorldItem.setEnabled(in);
 		chk_noDetailsItem.setEnabled(in);
+		chk_noWaterItem.setEnabled(in);
 		chk_noFaceFlagsItem.setEnabled(in);
 		setErrorItem.setEnabled(in);
 		chk_replaceWithNull.setEnabled(in);
@@ -992,6 +1013,9 @@ public class Window extends JPanel implements ActionListener {
 		setOriginBrushSizeItem.setEnabled(in);
 		chk_dontCull.setEnabled(in);
 		chk_extractZipItem.setEnabled(in);
+		chk_dontCorrectTexturesItem.setEnabled(in);
+		chk_dontCorrectEntitiesItem.setEnabled(in);
+		chk_noOriginBrushItem.setEnabled(in);
 		if(in) {
 			chk_calcVertsItem.setEnabled(!(chk_planarItem.isSelected() && !chk_skipPlaneFlipItem.isSelected()));
 			if(chk_planarItem.isSelected() && !chk_skipPlaneFlipItem.isSelected()) {
@@ -1016,6 +1040,18 @@ public class Window extends JPanel implements ActionListener {
 	
 	public static boolean noDetailIsSelected() {
 		return chk_noDetailsItem.isSelected();
+	}
+	
+	public static boolean noWaterIsSelected() {
+		return chk_noWaterItem.isSelected();
+	}
+	
+	public static boolean noEntCorrectionsIsSelected() {
+		return chk_dontCorrectEntitiesItem.isSelected();
+	}
+	
+	public static boolean noTexCorrectionsIsSelected() {
+		return chk_dontCorrectTexturesItem.isSelected();
 	}
 	
 	public static boolean calcVertsIsSelected() {
@@ -1044,6 +1080,10 @@ public class Window extends JPanel implements ActionListener {
 	
 	public static boolean replaceWithNullIsSelected() {
 		return chk_replaceWithNull.isSelected();
+	}
+	
+	public static boolean noOriginBrushesIsSelected() {
+		return chk_noOriginBrushItem.isSelected();
 	}
 	
 	public static boolean visLeafBBoxesIsSelected() {

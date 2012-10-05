@@ -132,7 +132,7 @@ public class BSP38Decompiler {
 		}
 		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, isDetail);
 		Window.println(": "+numSides+" sides",Window.VERBOSITY_BRUSHCREATION);
-		if((brush.getAttributes()[0] & ((byte)1 << 5)) != 0) {
+		if(!Window.noWaterIsSelected() && (brush.getAttributes()[0] & ((byte)1 << 5)) != 0) {
 			mapBrush.setWater(true);
 		}
 		for(int i=0;i<numSides;i++) { // For each side of the brush
@@ -252,7 +252,24 @@ public class BSP38Decompiler {
 				} else { // Planar decomp only */
 					plane=GenericMethods.extrapPlanePoints(currentPlane);
 				// }
-				String texture=currentTexture.getTexture();
+				String texture="special/null";
+				if((currentTexture.getFlags()[0] & ((byte)1 << 2)) != 0) {
+					texture="special/sky";
+				} else {
+					if((currentTexture.getFlags()[1] & ((byte)1 << 1)) != 0) {
+						texture="special/skip";
+					} else {
+						if((currentTexture.getFlags()[1] & ((byte)1 << 0)) != 0) {
+							if(currentEntity==0) {
+								texture="special/hint"; // Hint was not used the same way in Quake 2 as other games.
+							} else {                   // For example, a Hint brush CAN be used for a trigger in Q2 and is used as such a lot.
+								texture="special/trigger";
+							}
+						} else {
+							texture=currentTexture.getTexture();
+						}
+					}
+				}
 				double[] textureS=new double[3];
 				double[] textureT=new double[3];
 				// Get the lengths of the axis vectors
@@ -333,7 +350,7 @@ public class BSP38Decompiler {
 		Vector3D V=new Vector3D(points[1].getX()-points[2].getX(), points[1].getY()-points[2].getY(), points[1].getZ()-points[2].getZ());
 		U.normalize();
 		V.normalize();
-		v38Texture currentTexture= new v38Texture(U, 0, V, 0, 0, 0, "special/clip", 0);
+		v38Texture currentTexture= new v38Texture(U, 0, V, 0, new byte[4], 0, "special/clip", 0);
 		return currentTexture;
 	} 
 }

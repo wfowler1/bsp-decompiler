@@ -258,28 +258,20 @@ public class MOHRadiantMAPWriter {
 			} else {
 				if(BSPVersion==38) {
 					try {
-						if(texture.substring(texture.length()-5).equalsIgnoreCase("/hint")) {
-							if(currentEntity==0) {
-								texture="common/hint";
-							} else {
-								texture="common/trigger";
-							}
+						if(texture.equalsIgnoreCase("special/hint")) {
+							texture="common/hint";
 						} else {
-							if(texture.substring(texture.length()-5).equalsIgnoreCase("/skip")) {
+							if(texture.equalsIgnoreCase("special/skip")) {
 								texture="common/skip";
 							} else {
-								if(texture.substring(texture.length()-5).equalsIgnoreCase("/clip")) {
-									texture="common/clip";
+								if(texture.equalsIgnoreCase("special/sky")) {
+									texture="common/skyportal";
 								} else {
 									if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
 										texture="common/trigger";
 									} else {
-										if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky1")) {
-											texture="common/skyportal";
-										} else {
-											if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky2")) {
-												texture="common/skyportal";
-											}
+										if(texture.substring(texture.length()-5).equalsIgnoreCase("/clip")) {
+											texture="common/clip";
 										}
 									}
 								}

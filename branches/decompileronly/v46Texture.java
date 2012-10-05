@@ -26,10 +26,17 @@ public class v46Texture {
 			texture+=(char)in[i];
 		}
 		flags=(((in[67] & 0xff) << 24) | ((in[66] & 0xff) << 16) | ((in[65] & 0xff) << 8) | (in[64] & 0xff));
-		contents=new byte[] { in[71], in[70], in[69], in[68] };
+		contents=new byte[] { in[68], in[69], in[70], in[71] };
 	}
 	
 	// METHODS
+	public void printIsDetail() {
+		Window.println(""+((contents[3] & ((byte)1 << 3)) != 0),Window.VERBOSITY_ALWAYS);
+	}
+	
+	public void printContents() {
+		Window.println(contents[3]+" "+contents[2]+" "+contents[1]+" "+contents[0]+" "+texture,Window.VERBOSITY_ALWAYS);
+	}
 
 	// ACCESSORS/MUTATORS
 	

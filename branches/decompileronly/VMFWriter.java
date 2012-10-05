@@ -295,28 +295,20 @@ public class VMFWriter {
 			} else {
 				if(BSPVersion==38) {
 					try {
-						if(texture.substring(texture.length()-5).equalsIgnoreCase("/hint")) {
-							if(currentEntity==0) {
-								texture="tools/toolshint";
-							} else {
-								texture="tools/toolstrigger";
-							}
+						if(texture.equalsIgnoreCase("special/hint")) {
+							texture="tools/toolshint";
 						} else {
-							if(texture.substring(texture.length()-5).equalsIgnoreCase("/skip")) {
+							if(texture.equalsIgnoreCase("special/skip")) {
 								texture="tools/toolsskip";
 							} else {
-								if(texture.substring(texture.length()-5).equalsIgnoreCase("/clip")) {
-									texture="tools/toolsclip";
+								if(texture.equalsIgnoreCase("special/sky")) {
+									texture="tools/toolsskybox";
 								} else {
 									if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
 										texture="tools/toolstrigger";
 									} else {
-										if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky1")) {
-											texture="tools/toolsskybox";
-										} else {
-											if(texture.substring(texture.length()-5).equalsIgnoreCase("/sky2")) {
-												texture="tools/toolsskybox";
-											}
+										if(texture.substring(texture.length()-5).equalsIgnoreCase("/clip")) {
+											texture="tools/toolsclip";
 										}
 									}
 								}
