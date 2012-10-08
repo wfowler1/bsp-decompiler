@@ -52,23 +52,29 @@ public class DecompilerThread implements Runnable {
 							MoHAABSPDecompiler MOHAAdecompiler = new MoHAABSPDecompiler(reader.MOHAABSP, jobnum);
 							MOHAAdecompiler.decompile();
 						} else {
-							switch(reader.getVersion()) {
-								case 38:
-									Window.setProgress(jobnum, 0, reader.BSP38.getBrushes().length()+reader.BSP38.getEntities().length(), "Decompiling...");
-									BSP38Decompiler decompiler38 = new BSP38Decompiler(reader.BSP38, jobnum);
-									decompiler38.decompile();
-									break;
-								case 42:
-									Window.setProgress(jobnum, 0, reader.BSP42.getBrushes().getNumElements()+reader.BSP42.getEntities().length(), "Decompiling...");
-									BSP42Decompiler decompiler42 = new BSP42Decompiler(reader.BSP42, jobnum);
-									decompiler42.decompile();
-									break;
-								case 46:
-								case 47:
-									Window.setProgress(jobnum, 0, reader.BSP46.getBrushes().getNumElements()+reader.BSP46.getEntities().length(), "Decompiling...");
-									BSP46Decompiler decompiler46 = new BSP46Decompiler(reader.BSP46, jobnum);
-									decompiler46.decompile();
-									break;
+							if(reader.isEF2()) {
+								Window.setProgress(jobnum, 0, reader.STEF2BSP.getBrushes().getNumElements()+reader.STEF2BSP.getEntities().length(), "Decompiling...");
+								EF2Decompiler decompiler = new EF2Decompiler(reader.STEF2BSP, jobnum);
+								decompiler.decompile();
+							} else {
+								switch(reader.getVersion()) {
+									case 38:
+										Window.setProgress(jobnum, 0, reader.BSP38.getBrushes().length()+reader.BSP38.getEntities().length(), "Decompiling...");
+										BSP38Decompiler decompiler38 = new BSP38Decompiler(reader.BSP38, jobnum);
+										decompiler38.decompile();
+										break;
+									case 42:
+										Window.setProgress(jobnum, 0, reader.BSP42.getBrushes().getNumElements()+reader.BSP42.getEntities().length(), "Decompiling...");
+										BSP42Decompiler decompiler42 = new BSP42Decompiler(reader.BSP42, jobnum);
+										decompiler42.decompile();
+										break;
+									case 46:
+									case 47:
+										Window.setProgress(jobnum, 0, reader.BSP46.getBrushes().getNumElements()+reader.BSP46.getEntities().length(), "Decompiling...");
+										BSP46Decompiler decompiler46 = new BSP46Decompiler(reader.BSP46, jobnum);
+										decompiler46.decompile();
+										break;
+								}
 							}
 						}
 					}
