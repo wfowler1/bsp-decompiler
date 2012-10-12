@@ -118,7 +118,7 @@ public class EF2Decompiler {
 			mapBrush.setWater(true);
 		}
 		for(int i=0;i<numSides;i++) { // For each side of the brush
-			v46BrushSide currentSide=BSP.getBrushSides().getElement(firstSide+i);
+			CoDBrushSide currentSide=BSP.getBrushSides().getElement(firstSide+i);
 			Plane currentPlane;
 			if(BSP.isDemo()) {
 				currentPlane=BSP.getPlanes().getPlane(currentSide.getPlane());

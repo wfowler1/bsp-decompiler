@@ -2,7 +2,7 @@
 
 // Contains all info for a brush side in a Raven map
 
-public class RavenBrushSide extends v46BrushSide {
+public class RavenBrushSide extends CoDBrushSide {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	

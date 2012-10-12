@@ -14,13 +14,6 @@ public class BSP46Decompiler {
 	public static final int X = 0;
 	public static final int Y = 1;
 	public static final int Z = 2;
-	
-	// These are lowercase so as not to conflict with A B and C
-	// Light entity attributes; red, green, blue, strength (can't use i for intensity :P)
-	public static final int r = 0;
-	public static final int g = 1;
-	public static final int b = 2;
-	public static final int s = 3;
 
 	public static final Vector3D[] baseAxes = new Vector3D[] { new Vector3D(0,0,1), new Vector3D(1,0,0), new Vector3D(0,-1,0),
 	                                                           new Vector3D(0,0,-1), new Vector3D(1,0,0), new Vector3D(0,-1,0),
@@ -118,7 +111,7 @@ public class BSP46Decompiler {
 			mapBrush.setWater(true);
 		}
 		for(int i=0;i<numSides;i++) { // For each side of the brush
-			v46BrushSide currentSide=BSP.getBrushSides().getElement(firstSide+i);
+			CoDBrushSide currentSide=BSP.getBrushSides().getElement(firstSide+i);
 			Plane currentPlane=BSP.getPlanes().getPlane(currentSide.getPlane());
 			Vector3D[] triangle=new Vector3D[0];
 			String texture="noshader";

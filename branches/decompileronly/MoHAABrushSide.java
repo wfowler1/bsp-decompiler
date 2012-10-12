@@ -2,7 +2,7 @@
 
 // Holds all necessary data for a brush side in a MoHAA BSP
 
-public class MoHAABrushSide extends v46BrushSide {
+public class MoHAABrushSide extends CoDBrushSide {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	

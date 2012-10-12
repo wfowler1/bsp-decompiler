@@ -1,35 +1,35 @@
-// v46BrushSides class
+// CoDModels class
 
-// Maintains and array of v46BrushSide for a Raven engine BSP.
+// Maintains and array of CoDModel for a Call of Duty BSP.
 
 import java.io.FileInputStream;
 import java.io.File;
 
-public class v46BrushSides {
+public class CoDModels {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
 	private int length;
-	private CoDBrushSide[] elements;
+	private CoDModel[] elements;
 	
-	public static final int structLength=8;
+	public static final int structLength=48;
 
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public v46BrushSides(String in) {
-		new v46BrushSides(new File(in));
+	public CoDModels(String in) {
+		new CoDModels(new File(in));
 	}
 	
 	// This one accepts the input file path as a File
-	public v46BrushSides(File in) {
+	public CoDModels(File in) {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
 			byte[] temp=new byte[(int)data.length()];
 			fileReader.read(temp);
-			new v46BrushSides(temp);
+			new CoDModels(temp);
 			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
@@ -39,16 +39,16 @@ public class v46BrushSides {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public v46BrushSides(byte[] in) {
+	public CoDModels(byte[] in) {
 		int offset=0;
 		length=in.length;
-		elements=new CoDBrushSide[in.length/structLength];
+		elements=new CoDModel[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
-			elements[i]=new CoDBrushSide(bytes, true);
+			elements[i]=new CoDModel(bytes);
 			offset+=structLength;
 		}
 	}
@@ -71,11 +71,11 @@ public class v46BrushSides {
 		}
 	}
 	
-	public CoDBrushSide getElement(int i) {
+	public CoDModel getElement(int i) {
 		return elements[i];
 	}
 	
-	public CoDBrushSide[] getElements() {
+	public CoDModel[] getElements() {
 		return elements;
 	}
 }

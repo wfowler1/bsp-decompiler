@@ -152,7 +152,7 @@ public class MAP510Writer {
 	// of times.
 	private byte[] entityToByteArray(Entity in, int num) {
 		byte[] out;
-		double[] origin;
+		double[] origin=in.getOrigin();
 		// Correct some attributes of entities
 		switch(BSPVersion) {
 			case v46BSP.VERSION:
@@ -160,12 +160,15 @@ public class MAP510Writer {
 				in=ent46ToEntM510(in);
 				break;
 			case 42: // Nightfire
-				// Nightfire is good for map510
+				in=ent42ToEntM510(in);
 				break;
 			case 38:
 				in=ent38ToEntM510(in);
 				break;
 			case 1: // Doom! I can use any versioning system I want!
+				break;
+			case 59:
+				in=ent59ToEntM510(in);
 				break;
 		}
 		if(in.getAttribute("classname").equalsIgnoreCase("worldspawn")) {
@@ -173,17 +176,6 @@ public class MAP510Writer {
 			if(ctfEnts) {
 				in.setAttribute("defaultctf", "1");
 			}
-		}
-		if(in.isBrushBased()) {
-			origin=in.getOrigin();
-			in.deleteAttribute("origin");
-			in.deleteAttribute("model");
-			if((origin[0]!=0 || origin[1]!=0 || origin[2]!=0) && !Window.noOriginBrushesIsSelected()) { // If this brush uses the "origin" attribute
-				MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
-				in.addBrush(newOriginBrush);
-			}
-		} else {
-			origin=new double[3];
 		}
 		int len=0;
 		// Get the lengths of all attributes together
@@ -283,103 +275,113 @@ public class MAP510Writer {
 			double lgtScale=in.getLgtScale();
 			double lgtRot=in.getLgtRot();
 			// Correct special textures on Q2 maps
-			if(BSPVersion==38) { // Many of the special textures are taken care of in the decompiler method itself
-				try {             // using face flags, rather than texture names.
-					if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
-						texture="special/trigger";
-					} else {
-						if(texture.substring(texture.length()-5).equalsIgnoreCase("/clip")) {
-							texture="special/clip";
-						}
-					}
-				} catch(StringIndexOutOfBoundsException e) {
-					;
-				}
-			}
-			if(BSPVersion==255) {
-				try {
-					if(texture.equalsIgnoreCase("tools/toolshint")) {
-						texture="special/hint";
-					} else {
-						if(texture.equalsIgnoreCase("tools/toolsskip")) {
-							texture="special/skip";
+			if(!Window.noTexCorrectionsIsSelected()) {
+				if(BSPVersion==38) { // Many of the special textures are taken care of in the decompiler method itself
+					try {             // using face flags, rather than texture names.
+						if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
+							texture="special/trigger";
 						} else {
-							if(texture.equalsIgnoreCase("tools/toolsclip")) {
+							if(texture.substring(texture.length()-5).equalsIgnoreCase("/clip")) {
 								texture="special/clip";
+							}
+						}
+					} catch(StringIndexOutOfBoundsException e) {
+						;
+					}
+				}
+				if(BSPVersion==255) {
+					try {
+						if(texture.equalsIgnoreCase("tools/toolshint")) {
+							texture="special/hint";
+						} else {
+							if(texture.equalsIgnoreCase("tools/toolsskip")) {
+								texture="special/skip";
 							} else {
-								if(texture.equalsIgnoreCase("tools/toolstrigger")) {
-									texture="special/trigger";
+								if(texture.equalsIgnoreCase("tools/toolsclip")) {
+									texture="special/clip";
 								} else {
-									if(texture.equalsIgnoreCase("tools/TOOLSSKYBOX")) {
-										texture="special/sky";
+									if(texture.equalsIgnoreCase("tools/toolstrigger")) {
+										texture="special/trigger";
 									} else {
-										if(texture.equalsIgnoreCase("tools/toolsnodraw")) {
-											texture="special/nodraw";
+										if(texture.equalsIgnoreCase("tools/TOOLSSKYBOX")) {
+											texture="special/sky";
+										} else {
+											if(texture.equalsIgnoreCase("tools/toolsnodraw")) {
+												texture="special/nodraw";
+											}
 										}
 									}
 								}
 							}
 						}
+					} catch(StringIndexOutOfBoundsException e) {
+						;
 					}
-				} catch(StringIndexOutOfBoundsException e) {
-					;
 				}
-			}
-			if(BSPVersion==v46BSP.VERSION || BSPVersion==MoHAABSP.VERSION) {
-				try {
-					if(texture.substring(0,9).equalsIgnoreCase("textures/")) {
-						texture=texture.substring(9);
+				if(BSPVersion==v46BSP.VERSION || BSPVersion==MoHAABSP.VERSION || BSPVersion==CoDBSP.VERSION) {
+					try {
+						if(texture.substring(0,9).equalsIgnoreCase("textures/")) {
+							texture=texture.substring(9);
+						}
+					} catch(StringIndexOutOfBoundsException e) {
+						;
 					}
-				} catch(StringIndexOutOfBoundsException e) {
-					;
-				}
-				if(texture.equalsIgnoreCase("common/clip")) {
-					texture="special/clip";
-				} else {
-					if(texture.equalsIgnoreCase("common/trigger")) {
-						texture="special/trigger";
+					if(texture.equalsIgnoreCase("common/clip")) {
+						texture="special/clip";
 					} else {
-						if(texture.equalsIgnoreCase("noshader")) {
-							texture="special/nodraw";
+						if(texture.equalsIgnoreCase("common/trigger")) {
+							texture="special/trigger";
 						} else {
-							if(texture.equalsIgnoreCase("common/physics_clip")) {
-								texture="special/clip";
+							if(texture.equalsIgnoreCase("noshader")) {
+								texture="special/nodraw";
 							} else {
-								if(texture.equalsIgnoreCase("common/caulk")) {
-									texture="special/nodraw";
+								if(texture.equalsIgnoreCase("common/physics_clip")) {
+									texture="special/clip";
 								} else {
-									if(texture.equalsIgnoreCase("common/do_not_enter")) {
+									if(texture.equalsIgnoreCase("common/caulk")) {
 										texture="special/nodraw";
 									} else {
-										if(texture.equalsIgnoreCase("common/caulksky")) {
-											texture="special/sky";
+										if(texture.equalsIgnoreCase("common/do_not_enter") || texture.equalsIgnoreCase("common/donotenter")) {
+											texture="special/npcclip";
 										} else {
-											if(texture.equalsIgnoreCase("common/hint")) {
-												texture="special/hint";
+											if(texture.equalsIgnoreCase("common/caulksky")) {
+												texture="special/sky";
 											} else {
-												if(texture.equalsIgnoreCase("common/nodraw")) {
-													texture="special/nodraw";
+												if(texture.equalsIgnoreCase("common/hint")) {
+													texture="special/hint";
 												} else {
-													if(texture.equalsIgnoreCase("common/metalclip")) {
-														texture="special/clip";
+													if(texture.equalsIgnoreCase("common/nodraw")) {
+														texture="special/nodraw";
 													} else {
-														if(texture.equalsIgnoreCase("common/grassclip")) {
+														if(texture.equalsIgnoreCase("common/metalclip")) {
 															texture="special/clip";
 														} else {
-															if(texture.equalsIgnoreCase("common/paperclip")) {
+															if(texture.equalsIgnoreCase("common/grassclip")) {
 																texture="special/clip";
 															} else {
-																if(texture.equalsIgnoreCase("common/woodclip")) {
+																if(texture.equalsIgnoreCase("common/paperclip")) {
 																	texture="special/clip";
 																} else {
-																	if(texture.equalsIgnoreCase("common/waterskip")) {
-																		texture="liquids/!water";
+																	if(texture.equalsIgnoreCase("common/woodclip")) {
+																		texture="special/clip";
 																	} else {
-																		if(texture.equalsIgnoreCase("common/glassclip")) {
-																			texture="special/clip";
+																		if(texture.equalsIgnoreCase("common/waterskip")) {
+																			texture="liquids/!water";
 																		} else {
-																			if(texture.equalsIgnoreCase("common/playerclip")) {
-																				texture="special/playerclip";
+																			if(texture.equalsIgnoreCase("common/glassclip")) {
+																				texture="special/clip";
+																			} else {
+																				if(texture.equalsIgnoreCase("common/playerclip")) {
+																					texture="special/playerclip";
+																				} else {
+																					if(texture.equalsIgnoreCase("common/nodrawnonsolid")) {
+																						texture="special/trigger";
+																					} else {
+																						if(texture.equalsIgnoreCase("common/clipfoliage")) {
+																							texture="special/clip";
+																						}
+																					}
+																				}
 																			}
 																		}
 																	}
@@ -396,32 +398,32 @@ public class MAP510Writer {
 						}
 					}
 				}
-			}
-			if(BSPVersion==RavenBSP.VERSION) {
-				try {
-					if(texture.substring(0,9).equalsIgnoreCase("textures/")) {
-						texture=texture.substring(9);
+				if(BSPVersion==RavenBSP.VERSION) {
+					try {
+						if(texture.substring(0,9).equalsIgnoreCase("textures/")) {
+							texture=texture.substring(9);
+						}
+					} catch(StringIndexOutOfBoundsException e) {
+						;
 					}
-				} catch(StringIndexOutOfBoundsException e) {
-					;
-				}
-				if(texture.equalsIgnoreCase("system/clip")) {
-					texture="special/clip";
-				} else {
-					if(texture.equalsIgnoreCase("system/trigger")) {
-						texture="special/trigger";
+					if(texture.equalsIgnoreCase("system/clip")) {
+						texture="special/clip";
 					} else {
-						if(texture.equalsIgnoreCase("noshader")) {
-							texture="special/nodraw";
+						if(texture.equalsIgnoreCase("system/trigger")) {
+							texture="special/trigger";
 						} else {
-							if(texture.equalsIgnoreCase("system/physics_clip")) {
-								texture="special/clip";
+							if(texture.equalsIgnoreCase("noshader")) {
+								texture="special/nodraw";
 							} else {
-								if(texture.equalsIgnoreCase("system/caulk")) {
-									texture="special/nodraw";
+								if(texture.equalsIgnoreCase("system/physics_clip")) {
+									texture="special/clip";
 								} else {
-									if(texture.equalsIgnoreCase("system/do_not_enter")) {
+									if(texture.equalsIgnoreCase("system/caulk")) {
 										texture="special/nodraw";
+									} else {
+										if(texture.equalsIgnoreCase("system/do_not_enter")) {
+											texture="special/nodraw";
+										}
 									}
 								}
 							}
@@ -454,6 +456,60 @@ public class MAP510Writer {
 			Window.println("WARNING: Side with bad data! Not exported!",Window.VERBOSITY_WARNINGS);
 			return "";
 		}
+	}
+	
+	public Entity ent42ToEntM510(Entity in) {
+		if(in.isBrushBased()) {
+			double[] origin=in.getOrigin();
+			in.deleteAttribute("origin");
+			in.deleteAttribute("model");
+			if((origin[0]!=0 || origin[1]!=0 || origin[2]!=0) && !Window.noOriginBrushesIsSelected()) { // If this brush uses the "origin" attribute
+				MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
+				in.addBrush(newOriginBrush);
+			}
+		}
+		return in;
+	}
+	
+	// Turn a CoD entity into a Gearcraft one.
+	public Entity ent59ToEntM510(Entity in) {
+		if(in.isBrushBased()) {
+			double[] origin=in.getOrigin();
+			in.deleteAttribute("origin");
+			in.deleteAttribute("model");
+			if(in.getAttribute("classname").equalsIgnoreCase("func_rotating")) { // TODO: What entities require origin brushes in CoD?
+				if((origin[0]!=0 || origin[1]!=0 || origin[2]!=0) && !Window.noOriginBrushesIsSelected()) { // If this brush uses the "origin" attribute
+					MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
+					in.addBrush(newOriginBrush);
+				}
+			}
+		} else {
+			if(in.getAttribute("classname").equalsIgnoreCase("light")) {
+				in.setAttribute("_light", "255 255 255 "+in.getAttribute("light"));
+				in.deleteAttribute("light");
+			} else {
+				if(in.getAttribute("classname").equalsIgnoreCase("mp_deathmatch_spawn")) {
+					in.setAttribute("classname", "info_player_deathmatch");
+				} else {
+					if(in.getAttribute("classname").equalsIgnoreCase("mp_teamdeathmatch_spawn")) {
+						in.setAttribute("classname", "info_player_deathmatch");
+					} else {
+						if(in.getAttribute("classname").equalsIgnoreCase("mp_searchanddestroy_spawn_allied")) {
+							in.setAttribute("classname", "info_player_ctfspawn");
+							in.setAttribute("team_no", "1");
+							in.deleteAttribute("model");
+						} else {
+							if(in.getAttribute("classname").equalsIgnoreCase("mp_searchanddestroy_spawn_axis")) {
+								in.setAttribute("classname", "info_player_ctfspawn");
+								in.setAttribute("team_no", "2");
+								in.deleteAttribute("model");
+							}
+						}
+					}
+				}
+			}
+		}
+		return in;
 	}
 	
 	// Turn a Q3 entity into a Gearcraft one (generally for use with nightfire)

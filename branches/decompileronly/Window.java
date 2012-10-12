@@ -142,7 +142,7 @@ public class Window extends JPanel implements ActionListener {
 	
 		window = new Window(frame.getContentPane());
 		print("Got a bug to report? Want to request a feature?"+LF+"Create an issue report at"+LF+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry"+LF+LF, VERBOSITY_ALWAYS);
-		print("Currently supported engines:"+LF+"James Bond 007: Nightfire"+LF+"Quake 2"+LF+"Quake 3 (incomplete)"+LF+"Doom WADfiles (incomplete)"+LF+"Source VBSP (incomplete)"+LF+"Star Wars: Jedi Outcast/Soldier of Fortune 2 RBSP (incomplete)"+LF+"Return to Castle Wolfenstein (incomplete)"+LF, VERBOSITY_ALWAYS);
+		print("Currently supported engines:"+LF+"James Bond 007: Nightfire (PC)"+LF+"Quake 2"+LF+"Quake 3 (incomplete)"+LF+"Doom WADfiles (incomplete)"+LF+"Source Engine (incomplete)"+LF+"Star Wars: Jedi Outcast/Soldier of Fortune 2 (incomplete)"+LF+"Return to Castle Wolfenstein (incomplete)"+LF+"Medal of Honor: Allied Assault, Spearhead, Breakthrough (incomplete)"+LF+"Call of Duty (1) (incomplete)"+LF, VERBOSITY_ALWAYS);
 	}
 
 	// This constructor configures and displays the GUI
@@ -202,6 +202,7 @@ public class Window extends JPanel implements ActionListener {
 		chk_planarItem.addActionListener(this);
 		chk_skipPlaneFlipItem = new JCheckBoxMenuItem("Skip plane flip");
 		chk_skipPlaneFlipItem.setToolTipText("Don't make sure brush planes are facing the right direction. Speeds up decompilation in some cases, but may cause problems.");
+		chk_skipPlaneFlipItem.setSelected(true);
 		optionsMenu.add(chk_skipPlaneFlipItem);
 		chk_skipPlaneFlipItem.addActionListener(this);
 		chk_calcVertsItem = new JCheckBoxMenuItem("Calculate brush corners");
