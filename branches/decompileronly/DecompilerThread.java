@@ -74,10 +74,12 @@ public class DecompilerThread implements Runnable {
 										BSP46Decompiler decompiler46 = new BSP46Decompiler(reader.BSP46, jobnum);
 										decompiler46.decompile();
 										break;
+									case 4:
+									case 22:
 									case 59:
-										Window.setProgress(jobnum, 0, reader.BSP59.getCBrushes().length()+reader.BSP59.getEntities().length(), "Decompiling...");
-										CoDBSPDecompiler decompiler59 = new CoDBSPDecompiler(reader.BSP59, jobnum);
-										decompiler59.decompile();
+										Window.setProgress(jobnum, 0, reader.CODBSP.getCBrushes().length()+reader.CODBSP.getEntities().length(), "Decompiling...");
+										CoDBSPDecompiler CoDdecompiler = new CoDBSPDecompiler(reader.CODBSP, jobnum);
+										CoDdecompiler.decompile();
 										break;
 								}
 							}

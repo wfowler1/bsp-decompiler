@@ -71,7 +71,7 @@ public class CoDBSPDecompiler {
 			Window.setProgress(jobnum, numTotalItems, BSP.getCBrushes().length()+BSP.getEntities().length(), "Decompiling...");
 		}
 		Window.setProgress(jobnum, numTotalItems, BSP.getCBrushes().length()+BSP.getEntities().length(), "Saving...");
-		MAPMaker.outputMaps(mapFile, BSP.getMapName(), BSP.getPath(), BSP.VERSION);
+		MAPMaker.outputMaps(mapFile, BSP.getMapNameNoExtension(), BSP.getFolder(), BSP.VERSION);
 		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {
 			Window.println("Num simple corrected brushes: "+numSimpleCorrects,Window.VERBOSITY_MAPSTATS); 

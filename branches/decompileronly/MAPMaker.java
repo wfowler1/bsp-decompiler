@@ -12,44 +12,44 @@ public class MAPMaker {
 		if(Window.toVMF()) {
 			VMFWriter VMFMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+mapfolder.substring(0, mapfolder.length()-4)+".vmf...",Window.VERBOSITY_ALWAYS);
-				VMFMaker=new VMFWriter(data, mapfolder.substring(0, mapfolder.length()-4),version);
+				Window.println("Saving "+mapfolder+mapname+".vmf...",Window.VERBOSITY_ALWAYS);
+				VMFMaker=new VMFWriter(data, mapfolder+mapname,version);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname.substring(0, mapname.length()-4)+".vmf...",Window.VERBOSITY_ALWAYS);
-				VMFMaker=new VMFWriter(data, Window.getOutputFolder()+"\\"+mapname.substring(0, mapname.length()-4),version);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname+".vmf...",Window.VERBOSITY_ALWAYS);
+				VMFMaker=new VMFWriter(data, Window.getOutputFolder()+"\\"+mapname,version);
 			}
 			VMFMaker.write();
 		}
 		if(Window.toMOH()) {
 			MOHRadiantMAPWriter MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+mapfolder.substring(0, mapfolder.length()-4)+"_MOH.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MOHRadiantMAPWriter(data, mapfolder.substring(0, mapfolder.length()-4)+"_MOH",version);
+				Window.println("Saving "+mapfolder+mapname+"_MOH.map...",Window.VERBOSITY_ALWAYS);
+				MAPMaker=new MOHRadiantMAPWriter(data, mapfolder+mapname+"_MOH",version);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname.substring(0, mapname.length()-4)+"_MOH.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MOHRadiantMAPWriter(data, Window.getOutputFolder()+"\\"+mapname.substring(0, mapname.length()-4)+"_MOH",version);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname+"_MOH.map...",Window.VERBOSITY_ALWAYS);
+				MAPMaker=new MOHRadiantMAPWriter(data, Window.getOutputFolder()+"\\"+mapname+"_MOH",version);
 			}
 			MAPMaker.write();
 		}
 		if(Window.toGCMAP()) {
 			MAP510Writer MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+mapfolder.substring(0, mapfolder.length()-4)+".map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MAP510Writer(data, mapfolder.substring(0, mapfolder.length()-4),version);
+				Window.println("Saving "+mapfolder+mapname+"_gc.map...",Window.VERBOSITY_ALWAYS);
+				MAPMaker=new MAP510Writer(data, mapfolder+mapname+"_gc",version);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname.substring(0, mapname.length()-4)+".map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MAP510Writer(data, Window.getOutputFolder()+"\\"+mapname.substring(0, mapname.length()-4),version);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname+"_gc.map...",Window.VERBOSITY_ALWAYS);
+				MAPMaker=new MAP510Writer(data, Window.getOutputFolder()+"\\"+mapname+"_gc",version);
 			}
 			MAPMaker.write();
 		}
 		if(Window.toRadiantMAP()) {
 			GTKRadiantMapWriter MAPMaker;
 			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+mapfolder.substring(0, mapfolder.length()-4)+"_radiant.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new GTKRadiantMapWriter(data, mapfolder.substring(0, mapfolder.length()-4)+"_radiant",version);
+				Window.println("Saving "+mapfolder+mapname+"_radiant.map...",Window.VERBOSITY_ALWAYS);
+				MAPMaker=new GTKRadiantMapWriter(data, mapfolder+mapname+"_radiant",version);
 			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname.substring(0, mapname.length()-4)+"_radiant.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new GTKRadiantMapWriter(data, Window.getOutputFolder()+"\\"+mapname.substring(0, mapname.length()-4)+"_radiant",version);
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname+"_radiant.map...",Window.VERBOSITY_ALWAYS);
+				MAPMaker=new GTKRadiantMapWriter(data, Window.getOutputFolder()+"\\"+mapname+"_radiant",version);
 			}
 			MAPMaker.write();
 		}

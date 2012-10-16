@@ -44,7 +44,7 @@ public class BSPReader {
 	protected MoHAABSP MOHAABSP;
 	protected RavenBSP ravenBSP;
 	protected SourceBSP SourceBSPObject;
-	protected CoDBSP BSP59;
+	protected CoDBSP CODBSP;
 	
 	// CONSTRUCTORS
 	
@@ -166,7 +166,7 @@ public class BSPReader {
 							// Left 4 Dead 2, for some reason, made the order "version, offset, length" for lump header structure,
 							// rather than the usual "offset, length, version". I guess someone at Valve got bored.
 							boolean isL4D2=false;
-							SourceBSPObject = new SourceBSP(BSP.getPath(),version);
+							SourceBSPObject = new SourceBSP(BSP.getPath(),1347633750+version);
 							offsetReader.skip(8); // Skip the VBSP and version number
 							
 							/* Needed source BSP lumps
@@ -791,6 +791,110 @@ public class BSPReader {
 									directoryReader.close();
 									offsetReader.close();
 								break;
+								case 4: // CoD2. They changed their versioning scheme but so far there's no conflicts
+									Window.println("Call of Duty 2 BSP found",Window.VERBOSITY_ALWAYS);
+									offsetReader = new FileInputStream(BSP);
+									CODBSP = new CoDBSP(BSP.getPath(), 4);
+									offsetReader.skip(8); // Skip the file header, putting the reader into the length/offset pairs
+									
+									// Lump 00
+									offsetReader.read(read); // Read 4 bytes
+									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+									offsetReader.read(read); // Read 4 more bytes
+									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+									CODBSP.setTextures(readLump(offset, length));
+									
+									offsetReader.skip(24); // skip 1,2,3
+									
+									// Lump 04
+									offsetReader.read(read); // Read 4 bytes
+									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+									offsetReader.read(read); // Read 4 more bytes
+									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+									CODBSP.setPlanes(readLump(offset, length));
+									
+									// Lump 05
+									offsetReader.read(read); // Read 4 bytes
+									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+									offsetReader.read(read); // Read 4 more bytes
+									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+									CODBSP.setCBrushSides(readLump(offset, length));
+									
+									// Lump 06
+									offsetReader.read(read); // Read 4 bytes
+									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+									offsetReader.read(read); // Read 4 more bytes
+									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+									CODBSP.setCBrushes(readLump(offset, length));
+									
+									offsetReader.skip(224); // Skip lumps 7-34
+									
+									// Lump 35
+									offsetReader.read(read); // Read 4 bytes
+									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+									offsetReader.read(read); // Read 4 more bytes
+									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+									CODBSP.setCModels(readLump(offset, length));
+									
+									offsetReader.skip(8); // Skip lump 36
+									
+									// Lump 37
+									offsetReader.read(read); // Read 4 bytes
+									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+									offsetReader.read(read); // Read 4 more bytes
+									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+									CODBSP.setEntities(readLump(offset, length));
+									
+									offsetReader.close();
+									
+									CODBSP.printBSPReport();
+
+									break;
+								case 22: // Call of Duty 4. Once again, different versioning scheme but no conflicts.
+									Window.println("Call of Duty 4 BSP found",Window.VERBOSITY_ALWAYS);
+									// CoD4 is somewhat unique, it calls for a different reader. However it's still doable.
+									offsetReader = new FileInputStream(BSP);
+									CODBSP=new CoDBSP(BSP.getPath(),22);
+									offsetReader.skip(8); // IBSP version 22
+									offsetReader.read(read);
+									int numlumps=DataReader.readInt(read[0], read[1], read[2], read[3]);
+									offset=(numlumps*8)+12;
+									for(int i=0;i<numlumps;i++) {
+										offsetReader.read(read);
+										int id=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read);
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										
+										switch(id) {
+											case 0:
+												CODBSP.setTextures(readLump(offset, length));
+												break;
+											case 4:
+												CODBSP.setPlanes(readLump(offset, length));
+												break;
+											case 5:
+												CODBSP.setCBrushSides(readLump(offset, length));
+												break;
+											case 8:
+												CODBSP.setCBrushes(readLump(offset, length));
+												break;
+											case 37:
+												CODBSP.setCModels(readLump(offset, length));
+												break;
+											case 39:
+												CODBSP.setEntities(readLump(offset, length));
+												break;
+										}
+										
+										offset+=length;
+										
+										while((double)offset/(double)4 != (int)((double)offset/(double)4)) {
+											offset++;
+										}
+									}
+									offsetReader.close();
+
+									break;
 								case 29: // Quake
 								case 30: // Half-life
 									Window.println("Sorry, no Quake/Half-life support (yet)!",Window.VERBOSITY_ALWAYS);
@@ -1086,7 +1190,7 @@ public class BSPReader {
 								case 59: // Call of Duty (1)
 									Window.println("BSP v59 found (Call of Duty)",Window.VERBOSITY_ALWAYS);
 									offsetReader = new FileInputStream(BSP);
-									BSP59 = new CoDBSP(BSP.getPath());
+									CODBSP = new CoDBSP(BSP.getPath());
 									offsetReader.skip(8); // Skip the file header, putting the reader into the length/offset pairs
 									
 									// Lump 00
@@ -1094,7 +1198,7 @@ public class BSPReader {
 									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 									offsetReader.read(read); // Read 4 more bytes
 									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSP59.setTextures(readLump(offset, length));
+									CODBSP.setTextures(readLump(offset, length));
 									
 									offsetReader.skip(8);
 									
@@ -1103,21 +1207,21 @@ public class BSPReader {
 									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 									offsetReader.read(read); // Read 4 more bytes
 									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSP59.setPlanes(readLump(offset, length));
+									CODBSP.setPlanes(readLump(offset, length));
 									
 									// Lump 03
 									offsetReader.read(read); // Read 4 bytes
 									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 									offsetReader.read(read); // Read 4 more bytes
 									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSP59.setCBrushSides(readLump(offset, length));
+									CODBSP.setCBrushSides(readLump(offset, length));
 									
 									// Lump 04
 									offsetReader.read(read); // Read 4 bytes
 									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 									offsetReader.read(read); // Read 4 more bytes
 									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSP59.setCBrushes(readLump(offset, length));
+									CODBSP.setCBrushes(readLump(offset, length));
 									
 									offsetReader.skip(176); // Skip lumps 5-26
 									
@@ -1126,7 +1230,7 @@ public class BSPReader {
 									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 									offsetReader.read(read); // Read 4 more bytes
 									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSP59.setCModels(readLump(offset, length));
+									CODBSP.setCModels(readLump(offset, length));
 									
 									offsetReader.skip(8); // Skip lumps 5-26
 									
@@ -1135,13 +1239,14 @@ public class BSPReader {
 									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 									offsetReader.read(read); // Read 4 more bytes
 									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSP59.setEntities(readLump(offset, length));
+									CODBSP.setEntities(readLump(offset, length));
 									
 									offsetReader.close();
 									
-									BSP59.printBSPReport();
+									CODBSP.printBSPReport();
 									
-									break;								default:
+									break;
+									default:
 									Window.println("I don't know what kind of BSP this is! Please post an issue on the bug tracker!",Window.VERBOSITY_ALWAYS);
 							}
 						}

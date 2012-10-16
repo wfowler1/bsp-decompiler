@@ -7,7 +7,7 @@ public class CoDBSP extends v46BSP {
 	
 	// This is the version of the BSP. This will determine the lumps order and aid in
 	// decompilation.
-	public static final int VERSION=59;
+	public int version=59;
 	
 	// Each lump has its own class for handling its specific data structures.
 	// These are the only lumps we need for decompilation.
@@ -19,6 +19,11 @@ public class CoDBSP extends v46BSP {
 	// This accepts a folder path and looks for the BSP there.
 	public CoDBSP(String in) {
 		super(in);
+	}
+	
+	public CoDBSP(String in, int version) {
+		super(in);
+		this.version=version;
 	}
 
 	public void printBSPReport() {

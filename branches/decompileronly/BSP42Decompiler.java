@@ -100,7 +100,7 @@ public class BSP42Decompiler {
 			Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().length(), "Decompiling...");
 		}
 		Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().length(), "Saving...");
-		MAPMaker.outputMaps(mapFile, BSP42.getMapName(), BSP42.getPath(), BSP42.VERSION);
+		MAPMaker.outputMaps(mapFile, BSP42.getMapNameNoExtension(), BSP42.getFolder(), BSP42.VERSION);
 		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {
 			Window.println("Num simple corrected brushes: "+numSimpleCorrects,Window.VERBOSITY_MAPSTATS); 

@@ -142,7 +142,7 @@ public class Window extends JPanel implements ActionListener {
 	
 		window = new Window(frame.getContentPane());
 		print("Got a bug to report? Want to request a feature?"+LF+"Create an issue report at"+LF+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry"+LF+LF, VERBOSITY_ALWAYS);
-		print("Currently supported engines:"+LF+"James Bond 007: Nightfire (PC)"+LF+"Quake 2"+LF+"Quake 3 (incomplete)"+LF+"Doom WADfiles (incomplete)"+LF+"Source Engine (incomplete)"+LF+"Star Wars: Jedi Outcast/Soldier of Fortune 2 (incomplete)"+LF+"Return to Castle Wolfenstein (incomplete)"+LF+"Medal of Honor: Allied Assault, Spearhead, Breakthrough (incomplete)"+LF+"Call of Duty (1) (incomplete)"+LF, VERBOSITY_ALWAYS);
+		print("Currently supported engines: James Bond 007: Nightfire (PC), Quake 2,"+LF+"Quake 3 (incomplete), Doom WADfiles (incomplete), Source Engine"+LF+"(incomplete), Star Wars: Jedi Outcast/Soldier of Fortune 2 (incomplete),"+LF+"Return to Castle Wolfenstein (incomplete), Medal of Honor (Allied Assault,"+LF+"Spearhead, Breakthrough) (incomplete), Call of Duty (incomplete), Call of"+LF+"Duty 2 (incomplete), Call of Duty 4 (incomplete)"+LF, VERBOSITY_ALWAYS);
 	}
 
 	// This constructor configures and displays the GUI
@@ -286,7 +286,7 @@ public class Window extends JPanel implements ActionListener {
 		chk_visLeafBBoxes = new JCheckBoxMenuItem("Place brushes on visleaf bounding boxes");
 		chk_visLeafBBoxes.setSelected(false);
 		specialMenu.add(chk_visLeafBBoxes);
-		chk_dontCull = new JCheckBoxMenuItem("Don't cull extra planes in Doom maps");
+		chk_dontCull = new JCheckBoxMenuItem("Don't cull extra planes in Doom or CoD maps");
 		chk_dontCull.setSelected(false);
 		specialMenu.add(chk_dontCull);
 		
@@ -490,8 +490,8 @@ public class Window extends JPanel implements ActionListener {
 				file_selector = new JFileChooser(lastUsedFolder);
 			}
 			file_selector.setAcceptAllFileFilterUsed(false); // "all files". I would like this to be AFTER the others.
-			file_selector.addChoosableFileFilter(new CustomFileFilter("All supported files", new String[] { "BSP", "WAD" }));
-			file_selector.addChoosableFileFilter(new CustomFileFilter("Binary Space Partition files", new String[] { "BSP" }));
+			file_selector.addChoosableFileFilter(new CustomFileFilter("All supported files", new String[] { "BSP", "WAD", "D3DBSP" }));
+			file_selector.addChoosableFileFilter(new CustomFileFilter("Binary Space Partition files", new String[] { "BSP", "D3DBSP" }));
 			file_selector.addChoosableFileFilter(new CustomFileFilter("WAD files", new String[] { "WAD" }));
 			file_selector.setAcceptAllFileFilterUsed(true); // Setting this false above then true here forces the "all files" filter to be last.
 			file_selector.setMultiSelectionEnabled(true);

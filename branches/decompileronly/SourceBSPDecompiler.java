@@ -64,10 +64,11 @@ public class SourceBSPDecompiler {
 					short numBrushIndices=currentLeaf.getNumMarkBrushes();
 					if(numBrushIndices>0) { // A lot of leaves reference no brushes. If this is one, this iteration of the j loop is finished
 						for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
-							if(!brushesUsed[BSP.getMarkBrushes().getShort(firstMarkBrushIndex+k)]) { // If the current brush has NOT been used in this entity
+							int currentBrushIndex=BSP.getMarkBrushes().getShort(firstMarkBrushIndex+k);
+							if(!brushesUsed[currentBrushIndex]) { // If the current brush has NOT been used in this entity
 								Window.print("Brush "+(k+numBrushIndices),Window.VERBOSITY_BRUSHCREATION);
-								brushesUsed[BSP.getMarkBrushes().getShort(firstMarkBrushIndex+k)]=true;
-								Brush brush=BSP.getBrushes().getBrush(BSP.getMarkBrushes().getShort(firstMarkBrushIndex+k));
+								brushesUsed[currentBrushIndex]=true;
+								Brush brush=BSP.getBrushes().getBrush(currentBrushIndex);
 								decompileBrush(brush, i); // Decompile the brush
 								numBrshs++;
 								numTotalItems++;
@@ -81,50 +82,7 @@ public class SourceBSPDecompiler {
 			Window.setProgress(jobnum, numTotalItems, BSP.getBrushes().length()+BSP.getEntities().length(), "Decompiling...");
 		}
 		Window.setProgress(jobnum, numTotalItems, BSP.getBrushes().length()+BSP.getEntities().length(), "Saving...");
-		if(Window.toVMF()) {
-			VMFWriter VMFMaker;
-			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP.getPath().substring(0, BSP.getPath().length()-4)+".vmf...",Window.VERBOSITY_ALWAYS);
-				VMFMaker=new VMFWriter(mapFile, BSP.getPath().substring(0, BSP.getPath().length()-4),255);
-			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP.getMapName().substring(0, BSP.getMapName().length()-4)+".vmf...",Window.VERBOSITY_ALWAYS);
-				VMFMaker=new VMFWriter(mapFile, Window.getOutputFolder()+"\\"+BSP.getMapName().substring(0, BSP.getMapName().length()-4),255);
-			}
-			VMFMaker.write();
-		}
-		if(Window.toMOH()) {
-			MOHRadiantMAPWriter MAPMaker;
-			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP.getPath().substring(0, BSP.getPath().length()-4)+"_MOH.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MOHRadiantMAPWriter(mapFile, BSP.getPath().substring(0, BSP.getPath().length()-4)+"_MOH",255);
-			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP.getMapName().substring(0, BSP.getMapName().length()-4)+"_MOH.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MOHRadiantMAPWriter(mapFile, Window.getOutputFolder()+"\\"+BSP.getMapName().substring(0, BSP.getMapName().length()-4)+"_MOH",255);
-			}
-			MAPMaker.write();
-		}
-		if(Window.toGCMAP()) {
-			MAP510Writer MAPMaker;
-			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP.getPath().substring(0, BSP.getPath().length()-4)+".map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MAP510Writer(mapFile, BSP.getPath().substring(0, BSP.getPath().length()-4),255);
-			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP.getMapName().substring(0, BSP.getMapName().length()-4)+".map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MAP510Writer(mapFile, Window.getOutputFolder()+"\\"+BSP.getMapName().substring(0, BSP.getMapName().length()-4),255);
-			}
-			MAPMaker.write();
-		}
-		if(Window.toRadiantMAP()) {
-			GTKRadiantMapWriter MAPMaker;
-			if(Window.getOutputFolder().equals("default")) {
-				Window.println("Saving "+BSP.getPath().substring(0, BSP.getPath().length()-4)+"_radiant.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new GTKRadiantMapWriter(mapFile, BSP.getPath().substring(0, BSP.getPath().length()-4)+"_radiant",255);
-			} else {
-				Window.println("Saving "+Window.getOutputFolder()+"\\"+BSP.getMapName().substring(0, BSP.getMapName().length()-4)+"_radiant.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new GTKRadiantMapWriter(mapFile, Window.getOutputFolder()+"\\"+BSP.getMapName().substring(0, BSP.getMapName().length()-4)+"_radiant",255);
-			}
-			MAPMaker.write();
-		}
+		MAPMaker.outputMaps(mapFile, BSP.getMapNameNoExtension(), BSP.getFolder(), BSP.version);
 		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {
 			Window.println("Num simple corrected brushes: "+numSimpleCorrects,Window.VERBOSITY_MAPSTATS); 

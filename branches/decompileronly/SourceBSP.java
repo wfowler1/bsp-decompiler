@@ -14,7 +14,7 @@ public class SourceBSP {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	// This is the version of the BSP.
-	private int version;
+	public int version;
 	
 	private String filepath;
 	
@@ -241,6 +241,17 @@ public class SourceBSP {
 			}
 		}
 		return filepath.substring(filepath.length()-i,filepath.length());
+	}
+	
+	public String getMapNameNoExtension() {
+		String name=getMapName();
+		int i;
+		for(i=0;i<name.length();i++) {
+			if(name.charAt(name.length()-1-i)=='.') {
+				break;
+			}
+		}
+		return name.substring(0,name.length()-1-i);
 	}
 	
 	public String getFolder() {

@@ -108,7 +108,7 @@ public class BSP38Decompiler {
 			}
 		}
 		Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().length()+BSP38.getEntities().length(), "Saving...");
-		MAPMaker.outputMaps(mapFile, BSP38.getMapName(), BSP38.getPath(), BSP38.VERSION);
+		MAPMaker.outputMaps(mapFile, BSP38.getMapNameNoExtension(), BSP38.getFolder(), BSP38.VERSION);
 		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {
 			Window.println("Num simple corrected brushes: "+numSimpleCorrects,Window.VERBOSITY_MAPSTATS); 
