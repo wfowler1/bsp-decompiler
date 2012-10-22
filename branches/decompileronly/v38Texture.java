@@ -10,7 +10,7 @@ public class v38Texture {
 	private float uShift;
 	private Vector3D v;
 	private float vShift;
-	private byte[] flags=new byte[4];
+	private byte[] flags;
 	private int unknown;
 	private String texture;
 	private int next;

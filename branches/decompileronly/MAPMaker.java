@@ -9,36 +9,46 @@ public class MAPMaker {
 	
 	// METHODS
 	public static void outputMaps(Entities data, String mapname, String mapfolder, int version) throws java.io.IOException {
+		Entities from=data;
 		if(Window.toVMF()) {
 			VMFWriter VMFMaker;
+			if(Window.toMOH() || Window.toGCMAP() || Window.toRadiantMAP()) {
+				from=new Entities(data);
+			}
 			if(Window.getOutputFolder().equals("default")) {
 				Window.println("Saving "+mapfolder+mapname+".vmf...",Window.VERBOSITY_ALWAYS);
-				VMFMaker=new VMFWriter(data, mapfolder+mapname,version);
+				VMFMaker=new VMFWriter(from, mapfolder+mapname,version);
 			} else {
 				Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname+".vmf...",Window.VERBOSITY_ALWAYS);
-				VMFMaker=new VMFWriter(data, Window.getOutputFolder()+"\\"+mapname,version);
+				VMFMaker=new VMFWriter(from, Window.getOutputFolder()+"\\"+mapname,version);
 			}
 			VMFMaker.write();
 		}
 		if(Window.toMOH()) {
 			MOHRadiantMAPWriter MAPMaker;
+			if(Window.toGCMAP() || Window.toRadiantMAP()) {
+				from=new Entities(data);
+			}
 			if(Window.getOutputFolder().equals("default")) {
 				Window.println("Saving "+mapfolder+mapname+"_MOH.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MOHRadiantMAPWriter(data, mapfolder+mapname+"_MOH",version);
+				MAPMaker=new MOHRadiantMAPWriter(from, mapfolder+mapname+"_MOH",version);
 			} else {
 				Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname+"_MOH.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MOHRadiantMAPWriter(data, Window.getOutputFolder()+"\\"+mapname+"_MOH",version);
+				MAPMaker=new MOHRadiantMAPWriter(from, Window.getOutputFolder()+"\\"+mapname+"_MOH",version);
 			}
 			MAPMaker.write();
 		}
 		if(Window.toGCMAP()) {
 			MAP510Writer MAPMaker;
+			if(Window.toRadiantMAP()) {
+				from=new Entities(data);
+			}
 			if(Window.getOutputFolder().equals("default")) {
 				Window.println("Saving "+mapfolder+mapname+"_gc.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MAP510Writer(data, mapfolder+mapname+"_gc",version);
+				MAPMaker=new MAP510Writer(from, mapfolder+mapname+"_gc",version);
 			} else {
 				Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname+"_gc.map...",Window.VERBOSITY_ALWAYS);
-				MAPMaker=new MAP510Writer(data, Window.getOutputFolder()+"\\"+mapname+"_gc",version);
+				MAPMaker=new MAP510Writer(from, Window.getOutputFolder()+"\\"+mapname+"_gc",version);
 			}
 			MAPMaker.write();
 		}

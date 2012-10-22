@@ -96,6 +96,22 @@ public class DataReader {
 	public static Vector3D readPoint3D(byte[] in) {
 		return new Vector3D(readDouble(in[0], in[1], in[2], in[3], in[4], in[5], in[6], in[7]), readDouble(in[8], in[9], in[10], in[11], in[12], in[13], in[14], in[15]), readDouble(in[16], in[17], in[18], in[19], in[20], in[21], in[22], in[23]));
 	}
+	
+	public static String readNullTerminatedString(byte[] in) {
+		String temp="";
+		for(int i=0;i<in.length;i++) {
+			if(in[i]!=0) {
+				temp+=(char)in[i];
+			} else {
+				break;
+			}
+		}
+		return temp;
+	}
+	
+	public static String readString(byte[] in) {
+		return new String(in);
+	}
 	/*
 	public static boolean bitIsSet(byte in, int bit) {
 	

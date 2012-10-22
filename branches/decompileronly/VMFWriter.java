@@ -40,7 +40,7 @@ public class VMFWriter {
 	// CONSTRUCTORS
 	
 	public VMFWriter(Entities from, String to, int BSPVersion) {
-		this.data=new Entities(from);
+		this.data=from;
 		this.path=to;
 		this.mapFile=new File(path);
 		this.BSPVersion=BSPVersion;

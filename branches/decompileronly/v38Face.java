@@ -6,7 +6,7 @@ public class v38Face {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
-	private short plane;
+	private int plane;
 	private short side;
 	private int firstEdge;
 	private short numEdges;
@@ -17,37 +17,37 @@ public class v38Face {
 	// CONSTRUCTORS
 	
 	// This constructor takes all data in their proper data types
-	public v38Face(short inPlane, short inSide, int inFirstEdge, short inNumEdges, short inTexInfo, short inLgtStyle, short inLgtMaps) {
-		short plane=inPlane;
-		short side=inSide;
-		int firstEdge=inFirstEdge;
-		short numEdges=inNumEdges;
-		short texInfo=inTexInfo;
-		int lgtStyles=inLgtStyle;
-		int lgtMaps=inLgtMaps;
+	public v38Face(int inPlane, short inSide, int inFirstEdge, short inNumEdges, short inTexInfo, int inLgtStyle, int inLgtMaps) {
+		plane=inPlane;
+		side=inSide;
+		firstEdge=inFirstEdge;
+		numEdges=inNumEdges;
+		texInfo=inTexInfo;
+		lgtStyles=inLgtStyle;
+		lgtMaps=inLgtMaps;
 	}
 	
 	// This constructor takes 20 bytes in a byte array, as though
 	// it had just been read by a FileInputStream.
 	public v38Face(byte[] in) {
-		plane=(short)((in[1] << 8) | (in[0] & 0xff));
-		side=(short)((in[3] << 8) | (in[2] & 0xff));
-		firstEdge=(in[7] << 24) | ((in[6] & 0xff) << 16) | ((in[5] & 0xff) << 8) | (in[4] & 0xff);
-		numEdges=(short)((in[9] << 8) | (in[8] & 0xff));
-		texInfo=(short)((in[11] << 8) | (in[10] & 0xff));
-		lgtStyles=(in[15] << 24) | ((in[14] & 0xff) << 16) | ((in[13] & 0xff) << 8) | (in[12] & 0xff);
-		lgtMaps=(in[19] << 24) | ((in[18] & 0xff) << 16) | ((in[17] & 0xff) << 8) | (in[16] & 0xff);
+		plane=DataReader.readUShort(in[0], in[1]);
+		side=DataReader.readShort(in[2], in[3]);
+		firstEdge=DataReader.readInt(in[4], in[5], in[6], in[7]);
+		numEdges=DataReader.readShort(in[8], in[9]);
+		texInfo=DataReader.readShort(in[10], in[11]);
+		lgtStyles=DataReader.readInt(in[12], in[13], in[14], in[15]);
+		lgtMaps=DataReader.readInt(in[16], in[17], in[18], in[19]);
 	}
 	
 	// METHODS
 	
 	// ACCESSORS/MUTATORS
 	
-	public short getPlane() {
+	public int getPlane() {
 		return plane;
 	}
 	
-	public void setPlane(short in) {
+	public void setPlane(int in) {
 		plane=in;
 	}
 	

@@ -721,7 +721,7 @@ public class Window extends JPanel implements ActionListener {
 			runMe=new DecompilerThread(job, jobNum, newThread);
 		}
 		decompilerworkers[newThread] = new Thread(runMe);
-		decompilerworkers[newThread].setName("Decompiler "+newThread+" job "+jobNum);
+		decompilerworkers[newThread].setName("Decompiler "+newThread+" job "+(jobNum+1));
 		decompilerworkers[newThread].setPriority(Thread.MIN_PRIORITY);
 		println("Starting job #"+(jobNum+1),VERBOSITY_ALWAYS);
 		decompilerworkers[newThread].start();

@@ -41,7 +41,7 @@ public class MAP510Writer {
 	// CONSTRUCTORS
 	
 	public MAP510Writer(Entities from, String to, int BSPVersion) {
-		this.data=new Entities(from);
+		this.data=from;
 		this.path=to;
 		this.mapFile=new File(path);
 		this.BSPVersion=BSPVersion;
@@ -276,13 +276,17 @@ public class MAP510Writer {
 			double lgtRot=in.getLgtRot();
 			// Correct special textures on Q2 maps
 			if(!Window.noTexCorrectionsIsSelected()) {
-				if(BSPVersion==38) { // Many of the special textures are taken care of in the decompiler method itself
+				if(BSPVersion==38 || BSPVersion==SiNBSP.VERSION) { // Many of the special textures are taken care of in the decompiler method itself
 					try {             // using face flags, rather than texture names.
 						if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
 							texture="special/trigger";
 						} else {
 							if(texture.substring(texture.length()-5).equalsIgnoreCase("/clip")) {
 								texture="special/clip";
+							} else {
+								if(texture.equalsIgnoreCase("*** unsused_texinfo ***")) {
+									texture="special/nodraw";
+								}
 							}
 						}
 					} catch(StringIndexOutOfBoundsException e) {

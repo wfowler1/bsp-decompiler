@@ -42,7 +42,7 @@ public class DecompilerThread implements Runnable {
 					SourceBSPDecompiler decompiler = new SourceBSPDecompiler(reader.SourceBSPObject, jobnum);
 					decompiler.decompile();
 				} else {
-					if(reader.isRaven()) {
+					if(reader.isRaven() && !reader.isSin()) {
 						Window.setProgress(jobnum, 0, reader.ravenBSP.getBrushes().getNumElements()+reader.ravenBSP.getEntities().length(), "Decompiling...");
 						RavenBSPDecompiler decompiler = new RavenBSPDecompiler(reader.ravenBSP, jobnum);
 						decompiler.decompile();
@@ -57,6 +57,11 @@ public class DecompilerThread implements Runnable {
 								EF2Decompiler decompiler = new EF2Decompiler(reader.STEF2BSP, jobnum);
 								decompiler.decompile();
 							} else {
+								if(reader.isSin()) {
+									Window.setProgress(jobnum, 0, reader.SINBSP.getBrushes().length()+reader.SINBSP.getEntities().length(), "Decompiling...");
+									SiNBSPDecompiler decompiler = new SiNBSPDecompiler(reader.SINBSP, jobnum);
+									decompiler.decompile();
+								}
 								switch(reader.getVersion()) {
 									case 38:
 										Window.setProgress(jobnum, 0, reader.BSP38.getBrushes().length()+reader.BSP38.getEntities().length(), "Decompiling...");

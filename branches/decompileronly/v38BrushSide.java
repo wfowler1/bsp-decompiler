@@ -6,38 +6,43 @@ public class v38BrushSide {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
-	private short plane;
-	private short texInfo;
+	private int plane;
+	private int texInfo;
 	
 	// CONSTRUCTORS
 	
 	public v38BrushSide(short inPlane, short inTexInfo) {
-		plane=inPlane;
-		texInfo=inTexInfo;
+		plane=(int)inPlane;
+		texInfo=(int)inTexInfo;
+	}
+	
+	public v38BrushSide(int plane, int texInfo) {
+		this.plane=plane;
+		this.texInfo=texInfo;
 	}
 	
 	public v38BrushSide(byte[] in) {
-		plane=(short)((in[1] << 8) | (in[0] & 0xff));
-		texInfo=(short)((in[3] << 8) | (in[2] & 0xff));
+		plane=DataReader.readUShort(in[0], in[1]);
+		texInfo=DataReader.readUShort(in[2], in[3]);
 	}
 	
 	// METHODS
 
 	// ACCESSORS/MUTATORS
 	
-	public short getPlane() {
+	public int getPlane() {
 		return plane;
 	}
 	
-	public void setPlane(short in) {
+	public void setPlane(int in) {
 		plane=in;
 	}
 	
-	public short getTexInfo() {
+	public int getTexInfo() {
 		return texInfo;
 	}
 	
-	public void setTexInfo(short in) {
+	public void setTexInfo(int in) {
 		texInfo=in;
 	}
 }
