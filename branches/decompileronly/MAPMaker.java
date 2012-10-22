@@ -9,11 +9,13 @@ public class MAPMaker {
 	
 	// METHODS
 	public static void outputMaps(Entities data, String mapname, String mapfolder, int version) throws java.io.IOException {
-		Entities from=data;
+		Entities from;
 		if(Window.toVMF()) {
 			VMFWriter VMFMaker;
 			if(Window.toMOH() || Window.toGCMAP() || Window.toRadiantMAP()) {
 				from=new Entities(data);
+			} else {
+				from=data;
 			}
 			if(Window.getOutputFolder().equals("default")) {
 				Window.println("Saving "+mapfolder+mapname+".vmf...",Window.VERBOSITY_ALWAYS);
@@ -28,6 +30,8 @@ public class MAPMaker {
 			MOHRadiantMAPWriter MAPMaker;
 			if(Window.toGCMAP() || Window.toRadiantMAP()) {
 				from=new Entities(data);
+			} else {
+				from=data;
 			}
 			if(Window.getOutputFolder().equals("default")) {
 				Window.println("Saving "+mapfolder+mapname+"_MOH.map...",Window.VERBOSITY_ALWAYS);
@@ -42,6 +46,8 @@ public class MAPMaker {
 			MAP510Writer MAPMaker;
 			if(Window.toRadiantMAP()) {
 				from=new Entities(data);
+			} else {
+				from=data;
 			}
 			if(Window.getOutputFolder().equals("default")) {
 				Window.println("Saving "+mapfolder+mapname+"_gc.map...",Window.VERBOSITY_ALWAYS);
@@ -54,6 +60,7 @@ public class MAPMaker {
 		}
 		if(Window.toRadiantMAP()) {
 			GTKRadiantMapWriter MAPMaker;
+			from=data;
 			if(Window.getOutputFolder().equals("default")) {
 				Window.println("Saving "+mapfolder+mapname+"_radiant.map...",Window.VERBOSITY_ALWAYS);
 				MAPMaker=new GTKRadiantMapWriter(data, mapfolder+mapname+"_radiant",version);

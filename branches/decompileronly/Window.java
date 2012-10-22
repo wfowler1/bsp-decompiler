@@ -142,7 +142,7 @@ public class Window extends JPanel implements ActionListener {
 	
 		window = new Window(frame.getContentPane());
 		print("Got a bug to report? Want to request a feature?"+LF+"Create an issue report at"+LF+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry"+LF+LF, VERBOSITY_ALWAYS);
-		print("Currently supported engines: James Bond 007: Nightfire (PC), Quake 2,"+LF+"Quake 3 (incomplete), Doom WADfiles (incomplete), Source Engine"+LF+"(incomplete), Star Wars: Jedi Outcast/Soldier of Fortune 2 (incomplete),"+LF+"Return to Castle Wolfenstein (incomplete), Medal of Honor (Allied Assault,"+LF+"Spearhead, Breakthrough) (incomplete), Call of Duty (incomplete), Call of"+LF+"Duty 2 (incomplete), Call of Duty 4 (incomplete)"+LF, VERBOSITY_ALWAYS);
+		print("Currently supported engines: James Bond 007: Nightfire (PC), Quake 2,"+LF+"Quake 3 (incomplete), Doom WADfiles (incomplete), Source Engine"+LF+"(incomplete), Star Wars: Jedi Outcast/Soldier of Fortune 2 (incomplete),"+LF+"Return to Castle Wolfenstein (incomplete), Medal of Honor (Allied Assault,"+LF+"Spearhead, Breakthrough) (incomplete), Call of Duty (incomplete), Call of"+LF+"Duty 2 (incomplete), Call of Duty 4 (incomplete), SiN"+LF, VERBOSITY_ALWAYS);
 	}
 
 	// This constructor configures and displays the GUI
