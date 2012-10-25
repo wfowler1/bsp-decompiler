@@ -17,9 +17,9 @@ public class v38BSP {
 	private BSPPlanes planes;
 	private Textures textures;
 	private Vertices vertices;
-	private v38Nodes nodes;
+	private Nodes nodes;
 	private v38Faces faces;
-	private v38Leaves leaves;
+	private Leaves leaves;
 	private ShortList markbrushes;
 	private Edges edges;
 	private IntList markedges;
@@ -56,7 +56,7 @@ public class v38BSP {
 			Window.println("Vertices not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Nodes lump: "+nodes.getLength()+" bytes, "+nodes.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Nodes lump: "+nodes.getLength()+" bytes, "+nodes.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Nodes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -66,7 +66,7 @@ public class v38BSP {
 			Window.println("Faces not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Leaves lump: "+leaves.getLength()+" bytes, "+leaves.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Leaves lump: "+leaves.getLength()+" bytes, "+leaves.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Leaves not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -108,16 +108,16 @@ public class v38BSP {
 	}
 	
 	// +getLeavesInModel(int)
-	// Returns an array of v38Leaf containing all the leaves referenced from
+	// Returns an array of Leaf containing all the leaves referenced from
 	// this model's head node. This array cannot be referenced by index numbers
 	// from other lumps, but if simply iterating through, getting information
 	// it'll be just fine.
-	public v38Leaf[] getLeavesInModel(int model) {
+	public Leaf[] getLeavesInModel(int model) {
 		return getLeavesInNode(models.getElement(model).getHeadNode());
 	}
 	
 	// +getLeavesInNode(int)
-	// Returns an array of v38Leaf containing all the leaves referenced from
+	// Returns an array of Leaf containing all the leaves referenced from
 	// this node. Since nodes reference other nodes, this may recurse quite
 	// some ways. Eventually every node will boil down to a set of leaves,
 	// which is what this method returns.
@@ -125,41 +125,41 @@ public class v38BSP {
 	// This is an iterative preorder traversal algorithm modified from the Wikipedia page at:
 	// http://en.wikipedia.org/wiki/Tree_traversal#Iterative_Traversal
 	// I needed an iterative algorithm because recursive ones commonly gave stack overflows.
-	public v38Leaf[] getLeavesInNode(int head) {
-		v38Node headNode;
-		v38Leaf[] nodeLeaves=new v38Leaf[0];
+	public Leaf[] getLeavesInNode(int head) {
+		Node headNode;
+		Leaf[] nodeLeaves=new Leaf[0];
 		try {
-			headNode=nodes.getNode(head);
+			headNode=nodes.getElement(head);
 		} catch(java.lang.ArrayIndexOutOfBoundsException e) {
 			return nodeLeaves;
 		}
-		v38NodeStack nodestack = new v38NodeStack();
+		NodeStack nodestack = new NodeStack();
 		nodestack.push(headNode);
  
-		v38Node currentNode;
+		Node currentNode;
 
 		while (!nodestack.isEmpty()) {
 			currentNode = nodestack.pop();
 			int right = currentNode.getChild2();
 			if (right >= 0) {
-				nodestack.push(nodes.getNode(right));
+				nodestack.push(nodes.getElement(right));
 			} else {
-				v38Leaf[] newList=new v38Leaf[nodeLeaves.length+1];
+				Leaf[] newList=new Leaf[nodeLeaves.length+1];
 				for(int i=0;i<nodeLeaves.length;i++) {
 					newList[i]=nodeLeaves[i];
 				}
-				newList[nodeLeaves.length]=leaves.getLeaf((right*(-1))-1); // Quake 2 subtracts 1 from the index
+				newList[nodeLeaves.length]=leaves.getElement((right*(-1))-1); // Quake 2 subtracts 1 from the index
 				nodeLeaves=newList;
 			}
 			int left = currentNode.getChild1();
 			if (left >= 0) {
-				nodestack.push(nodes.getNode(left));
+				nodestack.push(nodes.getElement(left));
 			} else {
-				v38Leaf[] newList=new v38Leaf[nodeLeaves.length+1];
+				Leaf[] newList=new Leaf[nodeLeaves.length+1];
 				for(int i=0;i<nodeLeaves.length;i++) {
 					newList[i]=nodeLeaves[i];
 				}
-				newList[nodeLeaves.length]=leaves.getLeaf((left*(-1))-1); // Quake 2 subtracts 1 from the index
+				newList[nodeLeaves.length]=leaves.getElement((left*(-1))-1); // Quake 2 subtracts 1 from the index
 				nodeLeaves=newList;
 			}
 		}
@@ -242,10 +242,10 @@ public class v38BSP {
 	}
 	
 	public void setNodes(byte[] data) {
-		nodes=new v38Nodes(data);
+		nodes=new Nodes(data, Node.TYPE_QUAKE2);
 	}
 	
-	public v38Nodes getNodes() {
+	public Nodes getNodes() {
 		return nodes;
 	}
 	
@@ -258,10 +258,10 @@ public class v38BSP {
 	}
 	
 	public void setLeaves(byte[] data) {
-		leaves=new v38Leaves(data);
+		leaves=new Leaves(data, Leaf.TYPE_QUAKE2);
 	}
 	
-	public v38Leaves getLeaves() {
+	public Leaves getLeaves() {
 		return leaves;
 	}
 	
@@ -325,27 +325,27 @@ public class v38BSP {
 	
 	// INTERNAL CLASSES
 	
-	// v38NodeStack class
+	// NodeStack class
 
-	// Contains a "stack" of v38Nodes. This aids greatly in the
+	// Contains a "stack" of Nodes. This aids greatly in the
 	// traversal of a BSP tree without use of recursion.
 	
-	private class v38NodeStack {
+	private class NodeStack {
 		
 		// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 		
-		v38Node[] stack;
+		Node[] stack;
 		
 		// CONSTRUCTORS
 		
-		public v38NodeStack() {
-			stack=new v38Node[0];
+		public NodeStack() {
+			stack=new Node[0];
 		}
 		
 		// METHODS
 		
-		public void push(v38Node in) {
-			v38Node[] newStack = new v38Node[stack.length+1];
+		public void push(Node in) {
+			Node[] newStack = new Node[stack.length+1];
 			for(int i=0;i<stack.length;i++) {
 				newStack[i]=stack[i];
 			}
@@ -353,9 +353,9 @@ public class v38BSP {
 			stack=newStack;
 		}
 		
-		public v38Node pop() {
-			v38Node returnme=stack[stack.length-1];
-			v38Node[] newStack=new v38Node[stack.length-1];
+		public Node pop() {
+			Node returnme=stack[stack.length-1];
+			Node[] newStack=new Node[stack.length-1];
 			for(int i=0;i<stack.length-1;i++) {
 				newStack[i]=stack[i];
 			}
@@ -363,7 +363,7 @@ public class v38BSP {
 			return returnme;
 		}
 		
-		public v38Node read() {
+		public Node read() {
 			return stack[stack.length-1];
 		}
 		

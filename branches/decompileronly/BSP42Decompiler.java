@@ -76,11 +76,11 @@ public class BSP42Decompiler {
 				boolean[] brushesUsed=new boolean[BSP42.getBrushes().getNumElements()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
 				numBrshs=0;
 				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
-					v42Leaf currentLeaf=BSP42.getLeaves().getLeaf(j+firstLeaf);
+					Leaf currentLeaf=BSP42.getLeaves().getElement(j+firstLeaf);
 					if(Window.visLeafBBoxesIsSelected()) {
-						mapFile.getEntity(0).addBrush(GenericMethods.createBrush(currentLeaf.getMins(), currentLeaf.getMaxs(), "special/hint"));
+					//	mapFile.getEntity(0).addBrush(GenericMethods.createBrush(currentLeaf.getMins(), currentLeaf.getMaxs(), "special/hint"));
 					}
-					int firstBrushIndex=currentLeaf.getMarkBrush();
+					int firstBrushIndex=currentLeaf.getFirstMarkBrush();
 					int numBrushIndices=currentLeaf.getNumMarkBrushes();
 					if(numBrushIndices>0) { // A lot of leaves reference no brushes. If this is one, this iteration of the j loop is finished
 						for(int k=0;k<numBrushIndices;k++) { // For each brush referenced

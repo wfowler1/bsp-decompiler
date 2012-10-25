@@ -24,10 +24,10 @@ public class SourceBSP {
 	private BSPPlanes planes; // Neither has plane format (in Valve games anyway)
 	private SourceTexDatas texDatas;
 	private Vertices vertices;
-	private SourceNodes nodes;
+	private Nodes nodes;
 	private SourceTexInfos texInfos;
 	// private SourceFaces faces;
-	private SourceLeaves leaves;
+	private Leaves leaves;
 	private Edges edges;
 	private IntList surfedges;
 	private Models models;
@@ -156,16 +156,16 @@ public class SourceBSP {
 	// Java, even on the comparatively smaller Quake 2 maps.
 	
 	// +getLeavesInModel(int)
-	// Returns an array of SourceLeaf containing all the leaves referenced from
+	// Returns an array of Leaf containing all the leaves referenced from
 	// this model's head node. This array cannot be referenced by index numbers
 	// from other lumps, but if simply iterating through, getting information
 	// it'll be just fine.
-	public SourceLeaf[] getLeavesInModel(int model) {
+	public Leaf[] getLeavesInModel(int model) {
 		return getLeavesInNode(models.getElement(model).getHeadNode());
 	}
 	
 	// +getLeavesInNode(int)
-	// Returns an array of SourceLeaf containing all the leaves referenced from
+	// Returns an array of Leaf containing all the leaves referenced from
 	// this node. Since nodes reference other nodes, this may recurse quite
 	// some ways. Eventually every node will boil down to a set of leaves,
 	// which is what this method returns.
@@ -173,41 +173,41 @@ public class SourceBSP {
 	// This is an iterative preorder traversal algorithm modified from the Wikipedia page at:
 	// http://en.wikipedia.org/wiki/Tree_traversal#Iterative_Traversal
 	// I needed an iterative algorithm because recursive ones commonly gave stack overflows.
-	public SourceLeaf[] getLeavesInNode(int head) {
-		SourceNode headNode;
-		SourceLeaf[] nodeLeaves=new SourceLeaf[0];
+	public Leaf[] getLeavesInNode(int head) {
+		Node headNode;
+		Leaf[] nodeLeaves=new Leaf[0];
 		try {
-			headNode=nodes.getNode(head);
+			headNode=nodes.getElement(head);
 		} catch(java.lang.ArrayIndexOutOfBoundsException e) {
 			return nodeLeaves;
 		}
-		SourceNodeStack nodestack = new SourceNodeStack();
+		NodeStack nodestack = new NodeStack();
 		nodestack.push(headNode);
  
-		SourceNode currentNode;
+		Node currentNode;
 
 		while (!nodestack.isEmpty()) {
 			currentNode = nodestack.pop();
 			int right = currentNode.getChild2();
 			if (right >= 0) {
-				nodestack.push(nodes.getNode(right));
+				nodestack.push(nodes.getElement(right));
 			} else {
-				SourceLeaf[] newList=new SourceLeaf[nodeLeaves.length+1];
+				Leaf[] newList=new Leaf[nodeLeaves.length+1];
 				for(int i=0;i<nodeLeaves.length;i++) {
 					newList[i]=nodeLeaves[i];
 				}
-				newList[nodeLeaves.length]=leaves.getLeaf((right*(-1))-1); // Source subtracts 1 from the index, like Quake 2
+				newList[nodeLeaves.length]=leaves.getElement((right*(-1))-1); // Source subtracts 1 from the index, like Quake 2
 				nodeLeaves=newList;
 			}
 			int left = currentNode.getChild1();
 			if (left >= 0) {
-				nodestack.push(nodes.getNode(left));
+				nodestack.push(nodes.getElement(left));
 			} else {
-				SourceLeaf[] newList=new SourceLeaf[nodeLeaves.length+1];
+				Leaf[] newList=new Leaf[nodeLeaves.length+1];
 				for(int i=0;i<nodeLeaves.length;i++) {
 					newList[i]=nodeLeaves[i];
 				}
-				newList[nodeLeaves.length]=leaves.getLeaf((left*(-1))-1); // Source subtracts 1 from the index, like Quake 2
+				newList[nodeLeaves.length]=leaves.getElement((left*(-1))-1); // Source subtracts 1 from the index, like Quake 2
 				nodeLeaves=newList;
 			}
 		}
@@ -300,10 +300,10 @@ public class SourceBSP {
 	}
 	
 	public void setNodes(byte[] data) {
-		nodes=new SourceNodes(data);
+		nodes=new Nodes(data, Node.TYPE_SOURCE);
 	}
 	
-	public SourceNodes getNodes() {
+	public Nodes getNodes() {
 		return nodes;
 	}
 	
@@ -324,10 +324,14 @@ public class SourceBSP {
 	}
 	*/
 	public void setLeaves(byte[] data) {
-		leaves=new SourceLeaves(data, version);
+		if(version > 17 && version < 20) {
+			leaves=new Leaves(data, Leaf.TYPE_SOURCE19);
+		} else {
+			leaves=new Leaves(data, Leaf.TYPE_SOURCE20);
+		}
 	}
 
-	public SourceLeaves getLeaves() {
+	public Leaves getLeaves() {
 		return leaves;
 	}
 	
@@ -423,27 +427,27 @@ public class SourceBSP {
 	
 	// INTERNAL CLASSES
 	
-	// SourceNodeStack class
+	// NodeStack class
 
 	// Contains a "stack" of v38Nodes. This aids greatly in the
 	// traversal of a BSP tree without use of recursion.
 	
-	private class SourceNodeStack {
+	private class NodeStack {
 		
 		// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 		
-		SourceNode[] stack;
+		Node[] stack;
 		
 		// CONSTRUCTORS
 		
-		public SourceNodeStack() {
-			stack=new SourceNode[0];
+		public NodeStack() {
+			stack=new Node[0];
 		}
 		
 		// METHODS
 		
-		public void push(SourceNode in) {
-			SourceNode[] newStack = new SourceNode[stack.length+1];
+		public void push(Node in) {
+			Node[] newStack = new Node[stack.length+1];
 			for(int i=0;i<stack.length;i++) {
 				newStack[i]=stack[i];
 			}
@@ -451,9 +455,9 @@ public class SourceBSP {
 			stack=newStack;
 		}
 		
-		public SourceNode pop() {
-			SourceNode returnme=stack[stack.length-1];
-			SourceNode[] newStack=new SourceNode[stack.length-1];
+		public Node pop() {
+			Node returnme=stack[stack.length-1];
+			Node[] newStack=new Node[stack.length-1];
 			for(int i=0;i<stack.length-1;i++) {
 				newStack[i]=stack[i];
 			}
@@ -461,7 +465,7 @@ public class SourceBSP {
 			return returnme;
 		}
 		
-		public SourceNode read() {
+		public Node read() {
 			return stack[stack.length-1];
 		}
 		

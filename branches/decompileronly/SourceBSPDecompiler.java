@@ -51,17 +51,17 @@ public class SourceBSPDecompiler {
 			int currentModel=mapFile.getEntity(i).getModelNumber();
 			if(currentModel!=-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
 				double[] origin=mapFile.getEntity(i).getOrigin();
-				SourceLeaf[] leaves=BSP.getLeavesInModel(currentModel);
+				Leaf[] leaves=BSP.getLeavesInModel(currentModel);
 				int numLeaves=leaves.length;
 				boolean[] brushesUsed=new boolean[BSP.getBrushes().length()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
 				numBrshs=0; // Reset the brush count for each entity
 				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
-					SourceLeaf currentLeaf=leaves[j];
+					Leaf currentLeaf=leaves[j];
 					if(Window.visLeafBBoxesIsSelected()) {
-						mapFile.getEntity(0).addBrush(GenericMethods.createBrush(currentLeaf.getMins(), currentLeaf.getMaxs(), "special/hint"));
+					//	mapFile.getEntity(0).addBrush(GenericMethods.createBrush(currentLeaf.getMins(), currentLeaf.getMaxs(), "special/hint"));
 					}
-					short firstMarkBrushIndex=currentLeaf.getFirstMarkBrush();
-					short numBrushIndices=currentLeaf.getNumMarkBrushes();
+					int firstMarkBrushIndex=currentLeaf.getFirstMarkBrush();
+					int numBrushIndices=currentLeaf.getNumMarkBrushes();
 					if(numBrushIndices>0) { // A lot of leaves reference no brushes. If this is one, this iteration of the j loop is finished
 						for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
 							int currentBrushIndex=BSP.getMarkBrushes().getShort(firstMarkBrushIndex+k);

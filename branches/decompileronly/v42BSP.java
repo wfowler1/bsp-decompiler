@@ -19,7 +19,7 @@ public class v42BSP {
 	private Textures materials;
 	private Vertices vertices;
 	private v42Faces faces;
-	private v42Leaves leaves;
+	private Leaves leaves;
 	private IntList markbrushes;
 	private Models models;
 	private v42Brushes brushes;
@@ -64,7 +64,7 @@ public class v42BSP {
 			Window.println("Faces not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Leaves lump: "+leaves.getLength()+" bytes, "+leaves.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Leaves lump: "+leaves.getLength()+" bytes, "+leaves.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Leaves not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -187,10 +187,10 @@ public class v42BSP {
 	}
 	
 	public void setLeaves(byte[] data) {
-		leaves=new v42Leaves(data);
+		leaves=new Leaves(data, Leaf.TYPE_NIGHTFIRE);
 	}
 	
-	public v42Leaves getLeaves() {
+	public Leaves getLeaves() {
 		return leaves;
 	}
 	
