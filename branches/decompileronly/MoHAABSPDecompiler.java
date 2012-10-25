@@ -61,8 +61,8 @@ public class MoHAABSPDecompiler {
 			int currentModel=mapFile.getEntity(i).getModelNumber();
 			if(currentModel>-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
 				double[] origin=mapFile.getEntity(i).getOrigin();
-				int firstBrush=BSP.getModels().getModel(currentModel).getBrush();
-				int numBrushes=BSP.getModels().getModel(currentModel).getNumBrushes();
+				int firstBrush=BSP.getModels().getElement(currentModel).getFirstBrush();
+				int numBrushes=BSP.getModels().getElement(currentModel).getNumBrushes();
 				numBrshs=0;
 				for(int j=0;j<numBrushes;j++) { // For each brush
 					Window.print("Brush "+(j+firstBrush),Window.VERBOSITY_BRUSHCREATION);
@@ -98,7 +98,7 @@ public class MoHAABSPDecompiler {
 		int brushTextureIndex=brush.getTexture();
 		byte[] contents=new byte[4];
 		if(brushTextureIndex>=0) {
-			contents=BSP.getMTextures().getElement(brushTextureIndex).getContents();
+			contents=BSP.getTextures().getElement(brushTextureIndex).getContents();
 		}
 		if(!Window.noDetailIsSelected() && (contents[3] & ((byte)1 << 3)) != 0) { // This is the flag according to q3 source
 			isDetail=true; // it's the same as Q2 (and Source)
@@ -119,18 +119,18 @@ public class MoHAABSPDecompiler {
 			int currentTextureIndex=currentSide.getTexture();
 			boolean masked=false;
 			if(currentTextureIndex>=0) {
-				String mask=BSP.getMTextures().getElement(currentTextureIndex).getMask();
+				String mask=BSP.getTextures().getElement(currentTextureIndex).getMask();
 				if(mask.equalsIgnoreCase("ignore") || mask.length()==0) {
-					texture=BSP.getMTextures().getElement(currentTextureIndex).getTexture();
+					texture=BSP.getTextures().getElement(currentTextureIndex).getName();
 				} else {
 					texture=mask.substring(0,mask.length()-4); // Because mask includes file extensions
 					masked=true;
 				}
 			} else { // If neither face or brush side has texture info, fall all the way back to brush. I don't know if this ever happens.
 				if(brushTextureIndex>=0) { // If none of them have any info, noshader
-					String mask=BSP.getMTextures().getElement(currentTextureIndex).getMask();
+					String mask=BSP.getTextures().getElement(currentTextureIndex).getMask();
 					if(mask.equalsIgnoreCase("ignore") || mask.length()==0) {
-						texture=BSP.getMTextures().getElement(currentTextureIndex).getTexture();
+						texture=BSP.getTextures().getElement(currentTextureIndex).getName();
 					} else {
 						texture=mask.substring(0,mask.length()-4); // Because mask includes file extensions
 						masked=true;

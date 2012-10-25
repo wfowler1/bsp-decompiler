@@ -1,35 +1,35 @@
-// SiNTextures class
+// Textures class
 
-// Maintains an array of SiNTextures.
+// Maintains an array of Textures.
 
 import java.io.FileInputStream;
 import java.io.File;
 
-public class SiNTextures {
+public class Textures {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
 	private int length;
-	private SiNTexture[] elements;
+	private Texture[] elements;
 	
-	public static final int structLength=180;
+	private int structLength;
 
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public SiNTextures(String in) {
-		new SiNTextures(new File(in));
+	public Textures(String in, int type) {
+		new Textures(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public SiNTextures(File in) {
+	public Textures(File in, int type) {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
 			byte[] temp=new byte[(int)data.length()];
 			fileReader.read(temp);
-			new SiNTextures(temp);
+			new Textures(temp, type);
 			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
@@ -39,16 +39,42 @@ public class SiNTextures {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public SiNTextures(byte[] in) {
+	public Textures(byte[] in, int type) {
+		switch(type) {
+			case Texture.TYPE_NIGHTFIRE:
+				structLength=64;
+				break;
+			case Texture.TYPE_QUAKE3:
+				structLength=72;
+				break;
+			case Texture.TYPE_QUAKE2:
+			case Texture.TYPE_EF2:
+				structLength=76;
+				break;
+			case Texture.TYPE_MOHAA:
+				structLength=140;
+				break;
+			case Texture.TYPE_SIN:
+				structLength=180;
+				break;
+			case Texture.TYPE_SOURCE:
+				; // TODO
+				break;
+			case Texture.TYPE_QUAKE:
+				; // TODO
+				break;
+			default:
+				structLength=0; // This will cause the shit to hit the fan.
+		}
 		int offset=0;
 		length=in.length;
-		elements=new SiNTexture[in.length/structLength];
+		elements=new Texture[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
-			elements[i]=new SiNTexture(bytes);
+			elements[i]=new Texture(bytes, type);
 			offset+=structLength;
 		}
 	}
@@ -71,11 +97,11 @@ public class SiNTextures {
 		}
 	}
 	
-	public SiNTexture getElement(int i) {
+	public Texture getElement(int i) {
 		return elements[i];
 	}
 	
-	public SiNTexture[] getElements() {
+	public Texture[] getElements() {
 		return elements;
 	}
 }

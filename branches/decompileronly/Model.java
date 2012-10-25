@@ -1,113 +1,76 @@
 // Model class
+// An attempt at an all-encompassing model class containing all data needed for any
+// given models lump in any given BSP. This is accomplished by throwing out all
+// unnecessary information and keeping any relevant information.
+//
+// Some BSP formats hold the relevant information in different ways, so this will
+// will handle any given format and will always be sufficient in one way or another
+// to point to all the necessary data.
 
-// Holds all the data for a model in a Quake 2 map.
-
-public class Model {
+public class Model extends LumpObject {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
+	// Use these in the constructors to specify the type of map the model is coming from
+	public static final int TYPE_QUAKE=0;
+	public static final int TYPE_QUAKE2=1;
+	public static final int TYPE_NIGHTFIRE=2;
+	public static final int TYPE_QUAKE3=3;
+	public static final int TYPE_COD=4;
 	
-	public final int X=0;
-	public final int Y=1;
-	public final int Z=2;
-	
-	private Vector3D mins;
-	private Vector3D maxs;
-	private Vector3D origin;
-	private int head; // Rather than an index/length pair, this just uses an index which
-	                  // references a node. Every child of that node is part of this model.
-	private int face;
-	private int numFaces;
+	// In general, we need to use models to find one or more leaves containing the
+	// information for the solids described by this model. Some formats do it by
+	// referencing a head node to iterate through and find the leaves. Others
+	// directly point to a set of leaves, and still others simply directly reference
+	// brushes. The ideal format simply points to brush information from here (Quake
+	// 3), but most of them don't.
+	private int headNode=-1; // Quake, Half-life, Quake 2, SiN
+	private int firstLeaf=-1; // 007 nightfire
+	private int numLeaves=-1;
+	private int firstBrush=-1; // Quake 3 and derivatives
+	private int numBrushes=-1;
 	
 	// CONSTRUCTORS
-	
-	// This constructor takes all data in their proper data types
-	public Model(Vector3D inMins, Vector3D inMaxs, Vector3D inOrigin, int inHead, int inFace, int inNumFaces) {
-		mins=inMins;
-		maxs=inMaxs;
-		origin=inOrigin;
-		head=inHead;
-		face=inFace;
-		numFaces=inNumFaces;
+	public Model(byte[] data, int type) {
+		super(data);
+		switch(type) {
+			case TYPE_QUAKE:
+			case TYPE_QUAKE2:
+				// In both these formats, the "head node" index comes after 9 floats.
+				headNode=DataReader.readInt(data[36], data[37], data[38], data[39]);
+				break;
+			case TYPE_NIGHTFIRE:
+				firstLeaf=DataReader.readInt(data[40], data[41], data[42], data[43]);
+				numLeaves=DataReader.readInt(data[44], data[45], data[46], data[47]);
+				break;
+			case TYPE_QUAKE3:
+				firstBrush=DataReader.readInt(data[32], data[33], data[34], data[35]);
+				numBrushes=DataReader.readInt(data[36], data[37], data[38], data[39]);
+				break;
+			case TYPE_COD:
+				firstBrush=DataReader.readInt(data[40], data[41], data[42], data[43]);
+				numBrushes=DataReader.readInt(data[44], data[45], data[46], data[47]);
+				break;
+		}
 	}
-	
-	// This constructor takes 48 bytes in a byte array, as though
-	// it had just been read by a FileInputStream.
-	public Model(byte[] in) {
-		float[] point=new float[3];
-		int myInt=(in[3] << 24) | ((in[2] & 0xff) << 16) | ((in[1] & 0xff) << 8) | (in[0] & 0xff);
-		point[X]=Float.intBitsToFloat(myInt);
-		myInt=(in[7] << 24) | ((in[6] & 0xff) << 16) | ((in[5] & 0xff) << 8) | (in[4] & 0xff);
-		point[Y]=Float.intBitsToFloat(myInt);
-		myInt=(in[11] << 24) | ((in[10] & 0xff) << 16) | ((in[9] & 0xff) << 8) | (in[8] & 0xff);
-		point[Z]=Float.intBitsToFloat(myInt);
-		mins=new Vector3D(point[X], point[Y], point[Z]);
-		myInt=(in[15] << 24) | ((in[14] & 0xff) << 16) | ((in[13] & 0xff) << 8) | (in[12] & 0xff);
-		point[X]=Float.intBitsToFloat(myInt);
-		myInt=(in[19] << 24) | ((in[18] & 0xff) << 16) | ((in[17] & 0xff) << 8) | (in[16] & 0xff);
-		point[Y]=Float.intBitsToFloat(myInt);
-		myInt=(in[23] << 24) | ((in[22] & 0xff) << 16) | ((in[21] & 0xff) << 8) | (in[20] & 0xff);
-		point[Z]=Float.intBitsToFloat(myInt);
-		maxs=new Vector3D(point[X], point[Y], point[Z]);
-		myInt=(in[27] << 24) | ((in[26] & 0xff) << 16) | ((in[25] & 0xff) << 8) | (in[24] & 0xff);
-		point[X]=Float.intBitsToFloat(myInt);
-		myInt=(in[31] << 24) | ((in[30] & 0xff) << 16) | ((in[29] & 0xff) << 8) | (in[28] & 0xff);
-		point[Y]=Float.intBitsToFloat(myInt);
-		myInt=(in[35] << 24) | ((in[34] & 0xff) << 16) | ((in[33] & 0xff) << 8) | (in[32] & 0xff);
-		point[Z]=Float.intBitsToFloat(myInt);
-		origin=new Vector3D(point[X], point[Y], point[Z]);
-		head=(in[39] << 24) | ((in[38] & 0xff) << 16) | ((in[37] & 0xff) << 8) | (in[36] & 0xff);
-		face=(in[43] << 24) | ((in[42] & 0xff) << 16) | ((in[41] & 0xff) << 8) | (in[40] & 0xff);
-		numFaces=(in[47] << 24) | ((in[46] & 0xff) << 16) | ((in[45] & 0xff) << 8) | (in[44] & 0xff);
-	}
-	
-	// METHODS
 	
 	// ACCESSORS/MUTATORS
-	public void setMins(Vector3D in) {
-		mins=in;
+	public int getHeadNode() {
+		return headNode;
 	}
 	
-	public Vector3D getMins() {
-		return mins;
+	public int getFirstLeaf() {
+		return firstLeaf;
 	}
 	
-	public void setMaxs(Vector3D in) {
-		maxs=in;
+	public int getNumLeaves() {
+		return numLeaves;
 	}
 	
-	public Vector3D getMaxs() {
-		return maxs;
+	public int getFirstBrush() {
+		return firstBrush;
 	}
 	
-	public void setOrigin(Vector3D in) {
-		origin=in;
-	}
-	
-	public Vector3D getOrigin() {
-		return origin;
-	}
-	
-	public int getHead() {
-		return head;
-	}
-	
-	public void setHead(int in) {
-		head=in;
-	}
-	
-	public int getFace() {
-		return face;
-	}
-	
-	public void setFace(int in) {
-		face=in;
-	}
-	
-	public int getNumFaces() {
-		return numFaces;
-	}
-	
-	public void setNumFaces(int in) {
-		numFaces=in;
+	public int getNumBrushes() {
+		return numBrushes;
 	}
 }

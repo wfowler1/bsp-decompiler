@@ -140,7 +140,7 @@ public class SiNBSPDecompiler {
 			Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
 			SiNBrushSide currentSide=BSP.getSBrushSides().getElement(firstSide+i);
 			Plane currentPlane=BSP.getPlanes().getPlane(currentSide.getPlane()); // To find those three points, I must extrapolate from planes until I find a way to associate faces with brushes
-			SiNTexture currentTexture;
+			Texture currentTexture;
 			boolean isDuplicate=false;
 			for(int j=i+1;j<numSides;j++) { // For each subsequent side of the brush
 				if(currentPlane.equals(BSP.getPlanes().getPlane(BSP.getSBrushSides().getElement(firstSide+j).getPlane()))) {
@@ -149,11 +149,7 @@ public class SiNBSPDecompiler {
 				}
 			}
 			if(!isDuplicate) {
-				if(currentSide.getTexInfo()>-1) {
-					currentTexture=BSP.getSTextures().getElement(currentSide.getTexInfo());
-				} else {
-					currentTexture=createPerpTexture(currentPlane); // Create a texture plane perpendicular to current plane's normal
-				}/*
+				/*
 				if(!Window.planarDecompIsSelected()) {
 					// Find a face whose plane and texture information corresponds to the current side
 					// It doesn't really matter if it's the actual brush's face, just as long as it provides vertices.
@@ -253,42 +249,55 @@ public class SiNBSPDecompiler {
 				} else { // Planar decomp only */
 					plane=GenericMethods.extrapPlanePoints(currentPlane);
 				// }
-				String texture="special/null";
-				if((currentTexture.getFlags()[0] & ((byte)1 << 2)) != 0) {
-					texture="special/sky";
-				} else {
-					if((currentTexture.getFlags()[1] & ((byte)1 << 1)) != 0) {
-						texture="special/skip";
-					} else {
-						if((currentTexture.getFlags()[1] & ((byte)1 << 0)) != 0) {
-							if(currentEntity==0) {
-								texture="special/hint"; // Hint was not used the same way in Quake 2 as other games.
-							} else {                   // For example, a Hint brush CAN be used for a trigger in Q2 and is used as such a lot.
-								texture="special/trigger";
-							}
-						} else {
-							texture=currentTexture.getTexture();
-						}
-					}
-				}
+				String texture="special/clip";
 				double[] textureS=new double[3];
 				double[] textureT=new double[3];
-				// Get the lengths of the axis vectors
-				double UAxisLength=Math.sqrt(Math.pow((double)currentTexture.getU().getX(),2)+Math.pow((double)currentTexture.getU().getY(),2)+Math.pow((double)currentTexture.getU().getZ(),2));
-				double VAxisLength=Math.sqrt(Math.pow((double)currentTexture.getV().getX(),2)+Math.pow((double)currentTexture.getV().getY(),2)+Math.pow((double)currentTexture.getV().getZ(),2));
-				// In compiled maps, shorter vectors=longer textures and vice versa. This will convert their lengths back to 1. We'll use the actual scale values for length.
-				double texScaleS=(1/UAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
-				double texScaleT=(1/VAxisLength);
-				textureS[0]=((double)currentTexture.getU().getX()/UAxisLength);
-				textureS[1]=((double)currentTexture.getU().getY()/UAxisLength);
-				textureS[2]=((double)currentTexture.getU().getZ()/UAxisLength);
-				double originShiftS=(((double)currentTexture.getU().getX()/UAxisLength)*origin[X]+((double)currentTexture.getU().getY()/UAxisLength)*origin[Y]+((double)currentTexture.getU().getZ()/UAxisLength)*origin[Z])/texScaleS;
-				double textureShiftS=(double)currentTexture.getUShift()-originShiftS;
-				textureT[0]=((double)currentTexture.getV().getX()/VAxisLength);
-				textureT[1]=((double)currentTexture.getV().getY()/VAxisLength);
-				textureT[2]=((double)currentTexture.getV().getZ()/VAxisLength);
-				double originShiftT=(((double)currentTexture.getV().getX()/VAxisLength)*origin[X]+((double)currentTexture.getV().getY()/VAxisLength)*origin[Y]+((double)currentTexture.getV().getZ()/VAxisLength)*origin[Z])/texScaleT;
-				double textureShiftT=(double)currentTexture.getVShift()-originShiftT;
+				double UShift=0;
+				double VShift=0;
+				double texScaleS=1;
+				double texScaleT=1;
+				if(currentSide.getTexInfo()>-1) {
+					currentTexture=BSP.getTextures().getElement(currentSide.getTexInfo());
+					if((currentTexture.getFlags()[0] & ((byte)1 << 2)) != 0) {
+						texture="special/sky";
+					} else {
+						if((currentTexture.getFlags()[1] & ((byte)1 << 1)) != 0) {
+							texture="special/skip";
+						} else {
+							if((currentTexture.getFlags()[1] & ((byte)1 << 0)) != 0) {
+								if(currentEntity==0) {
+									texture="special/hint"; // Hint was not used the same way in Quake 2 as other games.
+								} else {                   // For example, a Hint brush CAN be used for a trigger in Q2 and is used as such a lot.
+									texture="special/trigger";
+								}
+							} else {
+								texture=currentTexture.getName();
+							}
+						}
+					}
+					// Get the lengths of the axis vectors
+					double UAxisLength=Math.sqrt(Math.pow((double)currentTexture.getTexAxes().getUAxisX(),2)+Math.pow((double)currentTexture.getTexAxes().getUAxisY(),2)+Math.pow((double)currentTexture.getTexAxes().getUAxisZ(),2));
+					double VAxisLength=Math.sqrt(Math.pow((double)currentTexture.getTexAxes().getVAxisX(),2)+Math.pow((double)currentTexture.getTexAxes().getVAxisY(),2)+Math.pow((double)currentTexture.getTexAxes().getVAxisZ(),2));
+					// In compiled maps, shorter vectors=longer textures and vice versa. This will convert their lengths back to 1. We'll use the actual scale values for length.
+					texScaleS=(1/UAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
+					texScaleT=(1/VAxisLength);
+					textureS[0]=((double)currentTexture.getTexAxes().getUAxisX()/UAxisLength);
+					textureS[1]=((double)currentTexture.getTexAxes().getUAxisY()/UAxisLength);
+					textureS[2]=((double)currentTexture.getTexAxes().getUAxisZ()/UAxisLength);
+					textureT[0]=((double)currentTexture.getTexAxes().getVAxisX()/VAxisLength);
+					textureT[1]=((double)currentTexture.getTexAxes().getVAxisY()/VAxisLength);
+					textureT[2]=((double)currentTexture.getTexAxes().getVAxisZ()/VAxisLength);
+					UShift=(double)currentTexture.getTexAxes().getUShift();
+					VShift=(double)currentTexture.getTexAxes().getVShift();
+				} else {
+					Vector3D[] axes=BSP46Decompiler.textureAxisFromPlane(currentPlane);
+					textureS=axes[0].getPoint();
+					textureT=axes[1].getPoint();
+				}
+				double originShiftS=(textureS[0]*origin[X]+textureS[1]*origin[Y]+textureS[2]*origin[Z])/texScaleS;
+				double textureShiftS=UShift-originShiftS;
+				double originShiftT=(textureT[0]*origin[X]+textureT[1]*origin[Y]+textureT[2]*origin[Z])/texScaleT;
+				double textureShiftT=VShift-originShiftT;
 				float texRot=0; // In compiled maps this is calculated into the U and V axes, so set it to 0 until I can figure out a good way to determine a better value.
 				int flags=0; // Set this to 0 until we can somehow associate faces with brushes
 				String material="wld_lightmap"; // Since materials are a NightFire only thing, set this to a good default
@@ -344,14 +353,4 @@ public class SiNBSPDecompiler {
 			mapFile.getEntity(currentEntity).addBrush(mapBrush);
 		}
 	}
-	
-	public SiNTexture createPerpTexture(Plane in) {
-		Vector3D[] points=GenericMethods.extrapPlanePoints(in);
-		Vector3D U=new Vector3D(points[1].getX()-points[0].getX(), points[1].getY()-points[0].getY(), points[1].getZ()-points[0].getZ());
-		Vector3D V=new Vector3D(points[1].getX()-points[2].getX(), points[1].getY()-points[2].getY(), points[1].getZ()-points[2].getZ());
-		U.normalize();
-		V.normalize();
-		SiNTexture currentTexture=new SiNTexture(U, 0, V, 0, new byte[4], "special/clip", 0, 0, 0, 0, new float[8], new int[8]);
-		return currentTexture;
-	} 
 }

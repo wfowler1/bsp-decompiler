@@ -100,7 +100,7 @@ public class SourceBSP {
 			Window.println("Surface Edges not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Models lump: "+models.getLength()+" bytes, "+models.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Models lump: "+models.getLength()+" bytes, "+models.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Texture scales not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -161,7 +161,7 @@ public class SourceBSP {
 	// from other lumps, but if simply iterating through, getting information
 	// it'll be just fine.
 	public SourceLeaf[] getLeavesInModel(int model) {
-		return getLeavesInNode(models.getModel(model).getHead());
+		return getLeavesInNode(models.getElement(model).getHeadNode());
 	}
 	
 	// +getLeavesInNode(int)
@@ -348,7 +348,7 @@ public class SourceBSP {
 	}
 	
 	public void setModels(byte[] data) {
-		models=new Models(data);
+		models=new Models(data, Model.TYPE_QUAKE2);
 	}
 	
 	public Models getModels() {

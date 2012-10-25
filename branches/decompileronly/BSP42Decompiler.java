@@ -71,8 +71,8 @@ public class BSP42Decompiler {
 			
 			if(currentModel!=-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
 				double[] origin=mapFile.getEntity(i).getOrigin();
-				int firstLeaf=BSP42.getModels().getModel(currentModel).getLeaf();
-				int numLeaves=BSP42.getModels().getModel(currentModel).getNumLeafs();
+				int firstLeaf=BSP42.getModels().getElement(currentModel).getFirstLeaf();
+				int numLeaves=BSP42.getModels().getElement(currentModel).getNumLeaves();
 				boolean[] brushesUsed=new boolean[BSP42.getBrushes().getNumElements()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
 				numBrshs=0;
 				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
@@ -133,7 +133,7 @@ public class BSP42Decompiler {
 		for(int l=0;l<numSides;l++) { // For each side of the brush
 			v42BrushSide currentSide=BSP42.getBrushSides().getBrushSide(firstSide+l);
 			v42Face currentFace=BSP42.getFaces().getFace(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
-			String texture=BSP42.getTextures().getString(currentFace.getTexture());
+			String texture=BSP42.getTextures().getElement(currentFace.getTexture()).getName();
 			if(currentFace.getType()!=800) { // These surfaceflags (512 + 256 + 32) are set only by the compiler, on faces that need to be thrown out.
 				if(!texture.equalsIgnoreCase("special/clip") && !texture.equalsIgnoreCase("special/playerclip") && !texture.equalsIgnoreCase("special/enemyclip")) {
 					containsNonClipSide=true;
@@ -202,7 +202,7 @@ public class BSP42Decompiler {
 				int flags=currentFace.getType(); // This is actually a set of flags. Whatever.
 				String material;
 				try {
-					material=BSP42.getMaterials().getString(currentFace.getMaterial());
+					material=BSP42.getMaterials().getElement(currentFace.getMaterial()).getName();
 				} catch(java.lang.ArrayIndexOutOfBoundsException e) { // In case the BSP has some strange error making it reference nonexistant materials
 					Window.println("WARNING: Map referenced nonexistant material #"+currentFace.getMaterial()+", using wld_lightmap instead!",Window.VERBOSITY_WARNINGS);
 					material="wld_lightmap";

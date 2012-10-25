@@ -61,8 +61,8 @@ public class RavenBSPDecompiler {
 			int currentModel=mapFile.getEntity(i).getModelNumber();
 			if(currentModel!=-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
 				double[] origin=mapFile.getEntity(i).getOrigin();
-				int firstBrush=BSP.getModels().getModel(currentModel).getBrush();
-				int numBrushes=BSP.getModels().getModel(currentModel).getNumBrushes();
+				int firstBrush=BSP.getModels().getElement(currentModel).getFirstBrush();
+				int numBrushes=BSP.getModels().getElement(currentModel).getNumBrushes();
 				numBrshs=0;
 				for(int j=0;j<numBrushes;j++) { // For each brush
 					Window.print("Brush "+(j+firstBrush),Window.VERBOSITY_BRUSHCREATION);
@@ -98,7 +98,7 @@ public class RavenBSPDecompiler {
 		int brushTextureIndex=brush.getTexture();
 		byte[] contents=new byte[4];
 		if(brushTextureIndex>=0) {
-			contents=BSP.getTextures().getTexture(brushTextureIndex).getContents();
+			contents=BSP.getTextures().getElement(brushTextureIndex).getContents();
 		}
 		if(!Window.noDetailIsSelected() && (contents[3] & ((byte)1 << 3)) != 0) {
 			isDetail=true;
@@ -128,7 +128,7 @@ public class RavenBSPDecompiler {
 			if(currentFace!=null) {
 				firstVertex=currentFace.getVertex();
 				numVertices=currentFace.getNumVertices();
-				texture=BSP.getTextures().getTexture(currentFace.getTexture()).getTexture(); // Use the face's referenced texture/shader if available
+				texture=BSP.getTextures().getElement(currentFace.getTexture()).getName(); // Use the face's referenced texture/shader if available
 				if(numVertices!=0 && !Window.planarDecompIsSelected()) { // If the face actually references a set of vertices
 					triangle=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
 					triangle[0]=new Vector3D(BSP.getRVertices().getElement(firstVertex).getVertex()); // Grab and store the first one
@@ -154,11 +154,11 @@ public class RavenBSPDecompiler {
 			} else { // If face information is not available, use the brush side's info instead
 				int currentTextureIndex=currentSide.getTexture();
 				if(currentTextureIndex>=0 && texture.equalsIgnoreCase("noshader")) {
-					texture=BSP.getTextures().getTexture(currentTextureIndex).getTexture();
+					texture=BSP.getTextures().getElement(currentTextureIndex).getName();
 				} else { // If neither face or brush side has texture info, fall all the way back to brush. I don't know if this ever happens.
 					currentTextureIndex=brush.getTexture();
 					if(currentTextureIndex>=0 && texture.equalsIgnoreCase("noshader")) { // If none of them have any info, noshader
-						texture=BSP.getTextures().getTexture(currentTextureIndex).getTexture();
+						texture=BSP.getTextures().getElement(currentTextureIndex).getName();
 					} else {
 						if(currentTextureIndex<0) {
 							Window.println("WARNING: Unable to find a usable texture for entity "+currentEntity+" brush "+numBrshs, Window.VERBOSITY_WARNINGS);

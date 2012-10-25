@@ -91,7 +91,7 @@ public class BSPReader {
 				offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 				offsetReader.read(read); // Read 4 more bytes
 				length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-				MOHAABSP.setMTextures(readLump(offset, length));
+				MOHAABSP.setTextures(readLump(offset, length));
 				
 				// Lump 01
 				offsetReader.read(read); // Read 4 bytes
@@ -668,7 +668,7 @@ public class BSPReader {
 							offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.read(read); // Read 4 more bytes
 							length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-							SINBSP.setSTextures(readLump(offset, length));
+							SINBSP.setTextures(readLump(offset, length));
 							
 							// Lump 06
 							offsetReader.read(read); // Read 4 bytes
@@ -754,7 +754,7 @@ public class BSPReader {
 							offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.read(read); // Read 4 more bytes
 							length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-							STEF2BSP.setFTextures(readLump(offset, length));
+							STEF2BSP.setTextures(readLump(offset, length));
 							
 							// Lump 01
 							offsetReader.read(read); // Read 4 bytes
@@ -993,7 +993,7 @@ public class BSPReader {
 									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 									offsetReader.read(read); // Read 4 more bytes
 									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									CODBSP.setCModels(readLump(offset, length));
+									CODBSP.setModels(readLump(offset, length));
 									
 									offsetReader.skip(8); // Skip lump 36
 									
@@ -1038,7 +1038,7 @@ public class BSPReader {
 												CODBSP.setCBrushes(readLump(offset, length));
 												break;
 											case 37:
-												CODBSP.setCModels(readLump(offset, length));
+												CODBSP.setModels(readLump(offset, length));
 												break;
 											case 39:
 												CODBSP.setEntities(readLump(offset, length));
@@ -1389,7 +1389,7 @@ public class BSPReader {
 									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 									offsetReader.read(read); // Read 4 more bytes
 									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									CODBSP.setCModels(readLump(offset, length));
+									CODBSP.setModels(readLump(offset, length));
 									
 									offsetReader.skip(8); // Skip lumps 5-26
 									

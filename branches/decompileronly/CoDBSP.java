@@ -11,7 +11,7 @@ public class CoDBSP extends v46BSP {
 	
 	// Each lump has its own class for handling its specific data structures.
 	// These are the only lumps we need for decompilation.
-	private CoDModels cmodels;
+	private Models models;
 	private CoDBrushes cbrushes;
 	private CoDBrushSides cbrushSides;
 	
@@ -29,7 +29,7 @@ public class CoDBSP extends v46BSP {
 	public void printBSPReport() {
 		super.printBSPReport();
 		try {
-			Window.println("Models lump: "+cmodels.getLength()+" bytes, "+cmodels.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Models lump: "+models.getLength()+" bytes, "+models.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Models not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -47,12 +47,12 @@ public class CoDBSP extends v46BSP {
 	
 	// ACCESSORS/MUTATORS
 	
-	public void setCModels(byte[] data) {
-		cmodels=new CoDModels(data);
+	public void setModels(byte[] data) {
+		models=new Models(data, Model.TYPE_COD);
 	}
 	
-	public CoDModels getCModels() {
-		return cmodels;
+	public Models getModels() {
+		return models;
 	}
 	
 	public void setCBrushes(byte[] data) {

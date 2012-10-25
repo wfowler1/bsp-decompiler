@@ -61,8 +61,8 @@ public class BSP46Decompiler {
 			int currentModel=mapFile.getEntity(i).getModelNumber();
 			if(currentModel!=-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
 				double[] origin=mapFile.getEntity(i).getOrigin();
-				int firstBrush=BSP.getModels().getModel(currentModel).getBrush();
-				int numBrushes=BSP.getModels().getModel(currentModel).getNumBrushes();
+				int firstBrush=BSP.getModels().getElement(currentModel).getFirstBrush();
+				int numBrushes=BSP.getModels().getElement(currentModel).getNumBrushes();
 				numBrshs=0;
 				for(int j=0;j<numBrushes;j++) { // For each brush
 					Window.print("Brush "+(j+firstBrush),Window.VERBOSITY_BRUSHCREATION);
@@ -98,7 +98,7 @@ public class BSP46Decompiler {
 		int brushTextureIndex=brush.getTexture();
 		byte[] contents=new byte[4];
 		if(brushTextureIndex>=0) {
-			contents=BSP.getTextures().getTexture(brushTextureIndex).getContents();
+			contents=BSP.getTextures().getElement(brushTextureIndex).getContents();
 		}
 		if(!Window.noDetailIsSelected() && (contents[3] & ((byte)1 << 3)) != 0) { // This is the flag according to q3 source
 			isDetail=true; // it's the same as Q2 (and Source), but I haven't found any Q3 maps that use it, so far
@@ -117,10 +117,10 @@ public class BSP46Decompiler {
 			String texture="noshader";
 			int currentTextureIndex=currentSide.getTexture();
 			if(currentTextureIndex>=0) {
-				texture=BSP.getTextures().getTexture(currentTextureIndex).getTexture();
+				texture=BSP.getTextures().getElement(currentTextureIndex).getName();
 			} else { // If neither face or brush side has texture info, fall all the way back to brush. I don't know if this ever happens.
 				if(brushTextureIndex>=0) { // If none of them have any info, noshader
-					texture=BSP.getTextures().getTexture(brushTextureIndex).getTexture();
+					texture=BSP.getTextures().getElement(brushTextureIndex).getName();
 				}
 			}
 			// Get the lengths of the axis vectors.

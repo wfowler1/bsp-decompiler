@@ -13,10 +13,10 @@ public class MoHAABSP extends v46BSP {
 	
 	// Each lump has its own class for handling its specific data structures.
 	// These are the only lumps we need for decompilation.
-	MoHAATextures mtextures;
-	v42TextureMatrices textureScales; // Yes, MoHAA actually uses the same matrix format as Nightfire.
-	MoHAABrushSides mBrushSides;
-	MoHAAStaticProps staticProps;
+	private Textures textures;
+	private v42TextureMatrices textureScales; // Yes, MoHAA actually uses the same matrix format as Nightfire.
+	private MoHAABrushSides mBrushSides;
+	private MoHAAStaticProps staticProps;
 	
 	// CONSTRUCTORS
 	// This accepts a folder path and looks for the BSP there.
@@ -27,7 +27,7 @@ public class MoHAABSP extends v46BSP {
 	public void printBSPReport() {
 		super.printBSPReport();
 		try {
-			Window.println("Textures lump: "+mtextures.getLength()+" bytes, "+mtextures.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Textures lump: "+textures.getLength()+" bytes, "+textures.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Textures not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -48,12 +48,12 @@ public class MoHAABSP extends v46BSP {
 		}
 	}
 	
-	public void setMTextures(byte[] in) {
-		mtextures=new MoHAATextures(in);
+	public void setTextures(byte[] in) {
+		textures=new Textures(in, Texture.TYPE_MOHAA);
 	}
 	
-	public MoHAATextures getMTextures() {
-		return mtextures;
+	public Textures getTextures() {
+		return textures;
 	}
 	
 	public void setTexScales(byte[] in) {

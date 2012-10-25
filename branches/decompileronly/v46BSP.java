@@ -15,8 +15,8 @@ public class v46BSP {
 	// These are the only lumps we need for decompilation.
 	private Entities entities;
 	private PlaneList planes;
-	private v46Textures textures;
-	private v46Models models;
+	private Textures textures;
+	private Models models;
 	private v46Brushes brushes;
 	private v46BrushSides brushSides;
 	private v46Vertices vertices; // Probably the only BSP version to use a different vertex format
@@ -35,7 +35,7 @@ public class v46BSP {
 			Window.println("Entities not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Textures lump: "+textures.getLength()+" bytes, "+textures.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Textures lump: "+textures.getLength()+" bytes, "+textures.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Textures not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -45,7 +45,7 @@ public class v46BSP {
 			Window.println("Planes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Models lump: "+models.getLength()+" bytes, "+models.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Models lump: "+models.getLength()+" bytes, "+models.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Models not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -131,18 +131,18 @@ public class v46BSP {
 	}
 	
 	public void setTextures(byte[] data) {
-		textures=new v46Textures(data);
+		textures=new Textures(data, Texture.TYPE_QUAKE3);
 	}
 	
-	public v46Textures getTextures() {
+	public Textures getTextures() {
 		return textures;
 	}
 	
 	public void setModels(byte[] data) {
-		models=new v46Models(data);
+		models=new Models(data, Model.TYPE_QUAKE3);
 	}
 	
-	public v46Models getModels() {
+	public Models getModels() {
 		return models;
 	}
 	

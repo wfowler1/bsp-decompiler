@@ -13,7 +13,7 @@ public class EF2BSP extends v46BSP {
 	// Each lump has its own class for handling its specific data structures.
 	// These are the only lumps we need for decompilation.
 	// Many lumps are inherited from v46BSP
-	private EF2Textures ftextures;
+	private Textures textures;
 	private boolean isDemo=false;
 	
 	// CONSTRUCTORS
@@ -26,19 +26,19 @@ public class EF2BSP extends v46BSP {
 	public void printBSPReport() {
 		super.printBSPReport();
 		try {
-			Window.println("Textures lump: "+ftextures.getLength()+" bytes, "+ftextures.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Textures lump: "+textures.getLength()+" bytes, "+textures.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Textures not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 	}
 	
 	// ACCESSORS/MUTATORS
-	public void setFTextures(byte[] data) {
-		this.ftextures=new EF2Textures(data);
+	public void setTextures(byte[] data) {
+		this.textures=new Textures(data, Texture.TYPE_EF2);
 	}
 	
-	public EF2Textures getFTextures() {
-		return this.ftextures;
+	public Textures getTextures() {
+		return this.textures;
 	}
 	
 	public boolean isDemo() {

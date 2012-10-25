@@ -15,13 +15,13 @@ public class v42BSP {
 	// These are the only lumps we need for decompilation.
 	private Entities entities;
 	private BSPPlanes planes;
-	private v42Strings64 textures;
-	private v42Strings64 materials;
+	private Textures textures;
+	private Textures materials;
 	private Vertices vertices;
 	private v42Faces faces;
 	private v42Leaves leaves;
 	private IntList markbrushes;
-	private v42Models models;
+	private Models models;
 	private v42Brushes brushes;
 	private v42BrushSides brushSides;
 	private v42TextureMatrices textureMatrices;
@@ -44,12 +44,12 @@ public class v42BSP {
 			Window.println("Planes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Textures lump: "+textures.getLength()+" bytes, "+textures.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Textures lump: "+textures.getLength()+" bytes, "+textures.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Textures not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Materials lump: "+materials.getLength()+" bytes, "+materials.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Materials lump: "+materials.getLength()+" bytes, "+materials.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Materials not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -74,7 +74,7 @@ public class v42BSP {
 			Window.println("Leaf brushes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Models lump: "+models.getLength()+" bytes, "+models.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Models lump: "+models.getLength()+" bytes, "+models.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Models not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -155,18 +155,18 @@ public class v42BSP {
 	}
 	
 	public void setTextures(byte[] data) {
-		textures=new v42Strings64(data);
+		textures=new Textures(data, Texture.TYPE_NIGHTFIRE);
 	}
 	
-	public v42Strings64 getTextures() {
+	public Textures getTextures() {
 		return textures;
 	}
 	
 	public void setMaterials(byte[] data) {
-		materials=new v42Strings64(data);
+		materials=new Textures(data, Texture.TYPE_NIGHTFIRE);
 	}
 	
-	public v42Strings64 getMaterials() {
+	public Textures getMaterials() {
 		return materials;
 	}
 	
@@ -203,10 +203,10 @@ public class v42BSP {
 	}
 	
 	public void setModels(byte[] data) {
-		models=new v42Models(data);
+		models=new Models(data, Model.TYPE_NIGHTFIRE);
 	}
 	
-	public v42Models getModels() {
+	public Models getModels() {
 		return models;
 	}
 	

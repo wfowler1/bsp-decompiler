@@ -139,7 +139,7 @@ public class BSP38Decompiler {
 			Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
 			v38BrushSide currentSide=BSP38.getBrushSides().getBrushSide(firstSide+i);
 			Plane currentPlane=BSP38.getPlanes().getPlane(currentSide.getPlane()); // To find those three points, I must extrapolate from planes until I find a way to associate faces with brushes
-			v38Texture currentTexture;
+			Texture currentTexture;
 			boolean isDuplicate=false;
 			for(int j=i+1;j<numSides;j++) { // For each subsequent side of the brush
 				if(currentPlane.equals(BSP38.getPlanes().getPlane(BSP38.getBrushSides().getBrushSide(firstSide+j).getPlane()))) {
@@ -148,56 +148,52 @@ public class BSP38Decompiler {
 				}
 			}
 			if(!isDuplicate) {
-				if(currentSide.getTexInfo()>-1) {
-					currentTexture=BSP38.getTextures().getTexture(currentSide.getTexInfo());
-				} else {
-					currentTexture=createPerpTexture38(currentPlane); // Create a texture plane perpendicular to current plane's normal
-				}/*
+				/*
 				if(!Window.planarDecompIsSelected()) {
 					// Find a face whose plane and texture information corresponds to the current side
 					// It doesn't really matter if it's the actual brush's face, just as long as it provides vertices.
-					v38Face currentFace=null;
+					SiNFace currentFace=null;
 					boolean faceFound=false;
-					for(int j=0;j<BSP38.getFaces().length();j++) {
-						currentFace=BSP38.getFaces().getFace(j);
+					for(int j=0;j<BSP.getSFaces().length();j++) {
+						currentFace=BSP.getSFaces().getFace(j);
 						if(currentFace.getPlane()==currentSide.getPlane() && currentFace.getTexInfo()==currentSide.getTexInfo() && currentFace.getNumEdges()>1) {
 							faceFound=true;
 							break;
 						}
 					}
 					if(faceFound) {
-						int markEdge=BSP38.getMarkEdges().getInt(currentFace.getFirstEdge());
+						int markEdge=BSP.getMarkEdges().getInt(currentFace.getFirstEdge());
 						int currentMarkEdge=0;
 						int firstVertex;
 						int secondVertex;
 						if(markEdge>0) {
-							firstVertex=BSP38.getEdges().getEdge(markEdge).getFirstVertex();
-							secondVertex=BSP38.getEdges().getEdge(markEdge).getSecondVertex();
+							firstVertex=BSP.getEdges().getEdge(markEdge).getFirstVertex();
+							secondVertex=BSP.getEdges().getEdge(markEdge).getSecondVertex();
 						} else {
-							firstVertex=BSP38.getEdges().getEdge(-markEdge).getSecondVertex();
-							secondVertex=BSP38.getEdges().getEdge(-markEdge).getFirstVertex();
+							firstVertex=BSP.getEdges().getEdge(-markEdge).getSecondVertex();
+							secondVertex=BSP.getEdges().getEdge(-markEdge).getFirstVertex();
 						}
 						int numVertices=currentFace.getNumEdges()+1;
 						boolean pointsWorked=false;
-						plane[0]=new Vector3D(BSP38.getVertices().getVertex(firstVertex)); // Grab and store the first one
-						plane[1]=new Vector3D(BSP38.getVertices().getVertex(secondVertex)); // The second should be unique from the first
+						plane[0]=new Vector3D(BSP.getVertices().getVertex(firstVertex)); // Grab and store the first one
+						plane[1]=new Vector3D(BSP.getVertices().getVertex(secondVertex)); // The second should be unique from the first
 						boolean second=false;
 						if(plane[0].equals(plane[1])) { // If for some messed up reason they are the same
 							for(currentMarkEdge=1;currentMarkEdge<currentFace.getNumEdges();currentMarkEdge++) { // For each edge after the first one
-								markEdge=BSP38.getMarkEdges().getInt(currentFace.getFirstEdge()+currentMarkEdge);
+								markEdge=BSP.getMarkEdges().getInt(currentFace.getFirstEdge()+currentMarkEdge);
 								if(markEdge>0) {
-									plane[1]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(markEdge).getFirstVertex()));
+									plane[1]=new Vector3D(BSP.getVertices().getVertex(BSP.getEdges().getEdge(markEdge).getFirstVertex()));
 								} else {
-									plane[1]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(-markEdge).getSecondVertex()));
+									plane[1]=new Vector3D(BSP.getVertices().getVertex(BSP.getEdges().getEdge(-markEdge).getSecondVertex()));
 								}
 								if(!plane[0].equals(plane[1])) { // Make sure the point isn't the same as the first one
 									second=false;
 									break; // If it isn't the same, this point is good
 								} else {
 									if(markEdge>0) {
-										plane[1]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(markEdge).getSecondVertex()));
+										plane[1]=new Vector3D(BSP.getVertices().getVertex(BSP.getEdges().getEdge(markEdge).getSecondVertex()));
 									} else {
-										plane[1]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(-markEdge).getFirstVertex()));
+										plane[1]=new Vector3D(BSP.getVertices().getVertex(BSP.getEdges().getEdge(-markEdge).getFirstVertex()));
 									}
 									if(!plane[0].equals(plane[1])) {
 										second=true;
@@ -210,12 +206,12 @@ public class BSP38Decompiler {
 							currentMarkEdge++;
 						}
 						for(;currentMarkEdge<currentFace.getNumEdges();currentMarkEdge++) {
-							markEdge=BSP38.getMarkEdges().getInt(currentFace.getFirstEdge()+currentMarkEdge);
+							markEdge=BSP.getMarkEdges().getInt(currentFace.getFirstEdge()+currentMarkEdge);
 							if(second) {
 								if(markEdge>0) {
-									plane[2]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(markEdge).getFirstVertex()));
+									plane[2]=new Vector3D(BSP.getVertices().getVertex(BSP.getEdges().getEdge(markEdge).getFirstVertex()));
 								} else {
-									plane[2]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(-markEdge).getSecondVertex()));
+									plane[2]=new Vector3D(BSP.getVertices().getVertex(BSP.getEdges().getEdge(-markEdge).getSecondVertex()));
 								}
 								if(!plane[2].equals(plane[0]) && !plane[2].equals(plane[1])) { // Make sure no point is equal to the third one
 									if((Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || // Make sure all
@@ -228,9 +224,9 @@ public class BSP38Decompiler {
 							}
 							// if we get to here, the first vertex of the edge failed, or was already used
 							if(markEdge>0) { // use the second vertex
-								plane[2]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(markEdge).getSecondVertex()));
+								plane[2]=new Vector3D(BSP.getVertices().getVertex(BSP.getEdges().getEdge(markEdge).getSecondVertex()));
 							} else {
-								plane[2]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(-markEdge).getFirstVertex()));
+								plane[2]=new Vector3D(BSP.getVertices().getVertex(BSP.getEdges().getEdge(-markEdge).getFirstVertex()));
 							}
 							if(!plane[2].equals(plane[0]) && !plane[2].equals(plane[1])) { // Make sure no point is equal to the third one
 								if((Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || // Make sure all
@@ -252,42 +248,55 @@ public class BSP38Decompiler {
 				} else { // Planar decomp only */
 					plane=GenericMethods.extrapPlanePoints(currentPlane);
 				// }
-				String texture="special/null";
-				if((currentTexture.getFlags()[0] & ((byte)1 << 2)) != 0) {
-					texture="special/sky";
-				} else {
-					if((currentTexture.getFlags()[1] & ((byte)1 << 1)) != 0) {
-						texture="special/skip";
-					} else {
-						if((currentTexture.getFlags()[1] & ((byte)1 << 0)) != 0) {
-							if(currentEntity==0) {
-								texture="special/hint"; // Hint was not used the same way in Quake 2 as other games.
-							} else {                   // For example, a Hint brush CAN be used for a trigger in Q2 and is used as such a lot.
-								texture="special/trigger";
-							}
-						} else {
-							texture=currentTexture.getTexture();
-						}
-					}
-				}
+				String texture="special/clip";
 				double[] textureS=new double[3];
 				double[] textureT=new double[3];
-				// Get the lengths of the axis vectors
-				double UAxisLength=Math.sqrt(Math.pow((double)currentTexture.getU().getX(),2)+Math.pow((double)currentTexture.getU().getY(),2)+Math.pow((double)currentTexture.getU().getZ(),2));
-				double VAxisLength=Math.sqrt(Math.pow((double)currentTexture.getV().getX(),2)+Math.pow((double)currentTexture.getV().getY(),2)+Math.pow((double)currentTexture.getV().getZ(),2));
-				// In compiled maps, shorter vectors=longer textures and vice versa. This will convert their lengths back to 1. We'll use the actual scale values for length.
-				double texScaleS=(1/UAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
-				double texScaleT=(1/VAxisLength);
-				textureS[0]=((double)currentTexture.getU().getX()/UAxisLength);
-				textureS[1]=((double)currentTexture.getU().getY()/UAxisLength);
-				textureS[2]=((double)currentTexture.getU().getZ()/UAxisLength);
-				double originShiftS=(((double)currentTexture.getU().getX()/UAxisLength)*origin[X]+((double)currentTexture.getU().getY()/UAxisLength)*origin[Y]+((double)currentTexture.getU().getZ()/UAxisLength)*origin[Z])/texScaleS;
-				double textureShiftS=(double)currentTexture.getUShift()-originShiftS;
-				textureT[0]=((double)currentTexture.getV().getX()/VAxisLength);
-				textureT[1]=((double)currentTexture.getV().getY()/VAxisLength);
-				textureT[2]=((double)currentTexture.getV().getZ()/VAxisLength);
-				double originShiftT=(((double)currentTexture.getV().getX()/VAxisLength)*origin[X]+((double)currentTexture.getV().getY()/VAxisLength)*origin[Y]+((double)currentTexture.getV().getZ()/VAxisLength)*origin[Z])/texScaleT;
-				double textureShiftT=(double)currentTexture.getVShift()-originShiftT;
+				double UShift=0;
+				double VShift=0;
+				double texScaleS=1;
+				double texScaleT=1;
+				if(currentSide.getTexInfo()>-1) {
+					currentTexture=BSP38.getTextures().getElement(currentSide.getTexInfo());
+					if((currentTexture.getFlags()[0] & ((byte)1 << 2)) != 0) {
+						texture="special/sky";
+					} else {
+						if((currentTexture.getFlags()[1] & ((byte)1 << 1)) != 0) {
+							texture="special/skip";
+						} else {
+							if((currentTexture.getFlags()[1] & ((byte)1 << 0)) != 0) {
+								if(currentEntity==0) {
+									texture="special/hint"; // Hint was not used the same way in Quake 2 as other games.
+								} else {                   // For example, a Hint brush CAN be used for a trigger in Q2 and is used as such a lot.
+									texture="special/trigger";
+								}
+							} else {
+								texture=currentTexture.getName();
+							}
+						}
+					}
+					// Get the lengths of the axis vectors
+					double UAxisLength=Math.sqrt(Math.pow((double)currentTexture.getTexAxes().getUAxisX(),2)+Math.pow((double)currentTexture.getTexAxes().getUAxisY(),2)+Math.pow((double)currentTexture.getTexAxes().getUAxisZ(),2));
+					double VAxisLength=Math.sqrt(Math.pow((double)currentTexture.getTexAxes().getVAxisX(),2)+Math.pow((double)currentTexture.getTexAxes().getVAxisY(),2)+Math.pow((double)currentTexture.getTexAxes().getVAxisZ(),2));
+					// In compiled maps, shorter vectors=longer textures and vice versa. This will convert their lengths back to 1. We'll use the actual scale values for length.
+					texScaleS=(1/UAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
+					texScaleT=(1/VAxisLength);
+					textureS[0]=((double)currentTexture.getTexAxes().getUAxisX()/UAxisLength);
+					textureS[1]=((double)currentTexture.getTexAxes().getUAxisY()/UAxisLength);
+					textureS[2]=((double)currentTexture.getTexAxes().getUAxisZ()/UAxisLength);
+					textureT[0]=((double)currentTexture.getTexAxes().getVAxisX()/VAxisLength);
+					textureT[1]=((double)currentTexture.getTexAxes().getVAxisY()/VAxisLength);
+					textureT[2]=((double)currentTexture.getTexAxes().getVAxisZ()/VAxisLength);
+					UShift=(double)currentTexture.getTexAxes().getUShift();
+					VShift=(double)currentTexture.getTexAxes().getVShift();
+				} else {
+					Vector3D[] axes=BSP46Decompiler.textureAxisFromPlane(currentPlane);
+					textureS=axes[0].getPoint();
+					textureT=axes[1].getPoint();
+				}
+				double originShiftS=(textureS[0]*origin[X]+textureS[1]*origin[Y]+textureS[2]*origin[Z])/texScaleS;
+				double textureShiftS=UShift-originShiftS;
+				double originShiftT=(textureT[0]*origin[X]+textureT[1]*origin[Y]+textureT[2]*origin[Z])/texScaleT;
+				double textureShiftT=VShift-originShiftT;
 				float texRot=0; // In compiled maps this is calculated into the U and V axes, so set it to 0 until I can figure out a good way to determine a better value.
 				int flags=0; // Set this to 0 until we can somehow associate faces with brushes
 				String material="wld_lightmap"; // Since materials are a NightFire only thing, set this to a good default
@@ -343,14 +352,4 @@ public class BSP38Decompiler {
 			mapFile.getEntity(currentEntity).addBrush(mapBrush);
 		}
 	}
-	
-	public v38Texture createPerpTexture38(Plane in) {
-		Vector3D[] points=GenericMethods.extrapPlanePoints(in);
-		Vector3D U=new Vector3D(points[1].getX()-points[0].getX(), points[1].getY()-points[0].getY(), points[1].getZ()-points[0].getZ());
-		Vector3D V=new Vector3D(points[1].getX()-points[2].getX(), points[1].getY()-points[2].getY(), points[1].getZ()-points[2].getZ());
-		U.normalize();
-		V.normalize();
-		v38Texture currentTexture= new v38Texture(U, 0, V, 0, new byte[4], 0, "special/clip", 0);
-		return currentTexture;
-	} 
 }
