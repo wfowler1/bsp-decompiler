@@ -12,6 +12,11 @@ public class Node extends LumpObject {
 	private int child2=0; // since that would reference the head node causing an infinite loop.
 	
 	// CONSTRUCTORS
+	public Node(LumpObject in, int type) {
+		super(in.getData());
+		new Node(in.getData(), type);
+	}
+	
 	public Node(byte[] data, int type) {
 		super(data);
 		// Normally, this is where a switch(type) would go. But, for map formats that I need nodes

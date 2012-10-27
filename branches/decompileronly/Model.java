@@ -30,6 +30,11 @@ public class Model extends LumpObject {
 	private int numBrushes=-1;
 	
 	// CONSTRUCTORS
+	public Model(LumpObject in, int type) {
+		super(in.getData());
+		new Model(in.getData(), type);
+	}
+
 	public Model(byte[] data, int type) {
 		super(data);
 		switch(type) {

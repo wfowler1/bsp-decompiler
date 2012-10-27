@@ -1,44 +1,36 @@
 // Brushes class
 
-// This class holds an array of Brush objects.
+// Maintains an array of Brushes.
 
 import java.io.FileInputStream;
 import java.io.File;
 
 public class Brushes {
-
+	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
 	private int length;
-	private int numBrshs=0;
-	private Brush[] brushes;
+	private Brush[] elements;
 	
+	private int structLength;
+
 	// CONSTRUCTORS
 	
-	// This one accepts the lump path as a String
-	public Brushes(String in) {
-		data=new File(in);
-		length=(int)data.length();
-		try {
-			numBrshs=length();
-			brushes=new Brush[numBrshs];
-			populateBrushList();
-		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
-		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",Window.VERBOSITY_ALWAYS);
-		}
+	// Accepts a filepath as a String
+	public Brushes(String in, int type) {
+		new Brushes(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public Brushes(File in) {
+	public Brushes(File in, int type) {
 		data=in;
-		length=(int)data.length();
 		try {
-			numBrshs=length();
-			brushes=new Brush[numBrshs];
-			populateBrushList();
+			FileInputStream fileReader=new FileInputStream(data);
+			byte[] temp=new byte[(int)data.length()];
+			fileReader.read(temp);
+			new Brushes(temp, type);
+			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
 		} catch(java.io.IOException e) {
@@ -46,35 +38,34 @@ public class Brushes {
 		}
 	}
 	
-	public Brushes(byte[] in) {
+	// Takes a byte array, as if read from a FileInputStream
+	public Brushes(byte[] in, int type) {
+		switch(type) {
+			case Brush.TYPE_QUAKE2:
+			case Brush.TYPE_NIGHTFIRE:
+			case Brush.TYPE_QUAKE3:
+				structLength=12;
+				break;
+			case Brush.TYPE_COD:
+				structLength=4;
+				break;
+			default:
+				structLength=0; // This will cause the shit to hit the fan.
+		}
 		int offset=0;
-		numBrshs=in.length/12;
 		length=in.length;
-		brushes=new Brush[numBrshs];
-		for(int i=0;i<numBrshs;i++) {
-			byte[] brushBytes=new byte[12];
-			for(int j=0;j<12;j++) {
-				brushBytes[j]=in[offset+j];
+		elements=new Brush[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			for(int j=0;j<structLength;j++) {
+				bytes[j]=in[offset+j];
 			}
-			brushes[i]=new Brush(brushBytes);
-			offset+=12;
+			elements[i]=new Brush(bytes, type);
+			offset+=structLength;
 		}
 	}
 	
 	// METHODS
-	
-	// -populateBrushList()
-	// Uses the data file in the instance data to populate the array
-	// of Brush objects
-	private void populateBrushList() throws java.io.FileNotFoundException, java.io.IOException {
-		FileInputStream reader=new FileInputStream(data);
-		for(int i=0;i<numBrshs;i++) {
-			byte[] datain=new byte[12];
-			reader.read(datain);
-			brushes[i]=new Brush(datain);
-		}
-		reader.close();
-	}
 	
 	// ACCESSORS/MUTATORS
 	
@@ -83,24 +74,20 @@ public class Brushes {
 		return length;
 	}
 	
-	// Returns the number of brushes.
+	// Returns the number of elements.
 	public int length() {
-		if(numBrshs==0) {
-			return length/12;
+		if(elements.length==0) {
+			return length/structLength;
 		} else {
-			return numBrshs;
+			return elements.length;
 		}
 	}
 	
-	public Brush getBrush(int i) {
-		return brushes[i];
+	public Brush getElement(int i) {
+		return elements[i];
 	}
 	
-	public Brush[] getBrushes() {
-		return brushes;
-	}
-	
-	public void setBrush(int i, Brush in) {
-		brushes[i]=in;
+	public Brush[] getElements() {
+		return elements;
 	}
 }

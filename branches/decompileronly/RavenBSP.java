@@ -13,7 +13,7 @@ public class RavenBSP extends v46BSP {
 	// Each lump has its own class for handling its specific data structures.
 	// These are the only lumps we need for decompilation.
 	// Many lumps are inherited from v46BSP
-	private RavenBrushSides rbrushSides;
+	private BrushSides brushSides;
 	private RavenVertices rvertices;
 	private RavenFaces rfaces;
 	
@@ -27,7 +27,7 @@ public class RavenBSP extends v46BSP {
 	public void printBSPReport() {
 		super.printBSPReport();
 		try {
-			Window.println("Brush sides lump: "+rbrushSides.getLength()+" bytes, "+rbrushSides.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Brush sides lump: "+brushSides.getLength()+" bytes, "+brushSides.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Brush sides not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -44,12 +44,12 @@ public class RavenBSP extends v46BSP {
 	}
 	
 	// ACCESSORS/MUTATORS
-	public void setRBrushSides(byte[] data) {
-		this.rbrushSides=new RavenBrushSides(data);
+	public void setBrushSides(byte[] data) {
+		this.brushSides=new BrushSides(data, BrushSide.TYPE_RAVEN);
 	}
 	
-	public RavenBrushSides getRBrushSides() {
-		return this.rbrushSides;
+	public BrushSides getBrushSides() {
+		return this.brushSides;
 	}
 	
 	public void setRVertices(byte[] data) {

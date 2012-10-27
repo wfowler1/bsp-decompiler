@@ -1,35 +1,35 @@
-// SiNBrushSides class
+// BrushSides class
 
-// Maintains an array of SiNBrushSides.
+// Maintains an array of BrushSides.
 
 import java.io.FileInputStream;
 import java.io.File;
 
-public class SiNBrushSides {
+public class BrushSides {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
 	private int length;
-	private SiNBrushSide[] elements;
+	private BrushSide[] elements;
 	
-	public static final int structLength=8;
+	private int structLength;
 
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public SiNBrushSides(String in) {
-		new SiNBrushSides(new File(in));
+	public BrushSides(String in, int type) {
+		new BrushSides(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public SiNBrushSides(File in) {
+	public BrushSides(File in, int type) {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
 			byte[] temp=new byte[(int)data.length()];
 			fileReader.read(temp);
-			new SiNBrushSides(temp);
+			new BrushSides(temp, type);
 			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
@@ -39,16 +39,34 @@ public class SiNBrushSides {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public SiNBrushSides(byte[] in) {
+	public BrushSides(byte[] in, int type) {
+		switch(type) {
+			case BrushSide.TYPE_QUAKE2:
+				structLength=4;
+				break;
+			case BrushSide.TYPE_COD:
+			case BrushSide.TYPE_SIN:
+			case BrushSide.TYPE_NIGHTFIRE:
+			case BrushSide.TYPE_QUAKE3:
+			case BrushSide.TYPE_SOURCE:
+				structLength=8;
+				break;
+			case BrushSide.TYPE_MOHAA:
+			case BrushSide.TYPE_RAVEN:
+				structLength=12;
+				break;
+			default:
+				structLength=0; // This will cause the shit to hit the fan.
+		}
 		int offset=0;
 		length=in.length;
-		elements=new SiNBrushSide[in.length/structLength];
+		elements=new BrushSide[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
-			elements[i]=new SiNBrushSide(bytes);
+			elements[i]=new BrushSide(bytes, type);
 			offset+=structLength;
 		}
 	}
@@ -71,11 +89,11 @@ public class SiNBrushSides {
 		}
 	}
 	
-	public SiNBrushSide getElement(int i) {
+	public BrushSide getElement(int i) {
 		return elements[i];
 	}
 	
-	public SiNBrushSide[] getElements() {
+	public BrushSide[] getElements() {
 		return elements;
 	}
 }

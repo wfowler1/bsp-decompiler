@@ -68,7 +68,7 @@ public class SourceBSPDecompiler {
 							if(!brushesUsed[currentBrushIndex]) { // If the current brush has NOT been used in this entity
 								Window.print("Brush "+(k+numBrushIndices),Window.VERBOSITY_BRUSHCREATION);
 								brushesUsed[currentBrushIndex]=true;
-								Brush brush=BSP.getBrushes().getBrush(currentBrushIndex);
+								Brush brush=BSP.getBrushes().getElement(currentBrushIndex);
 								decompileBrush(brush, i); // Decompile the brush
 								numBrshs++;
 								numTotalItems++;
@@ -101,20 +101,17 @@ public class SourceBSPDecompiler {
 		int numSides=brush.getNumSides();
 		MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
 		boolean isDetail=false;
-		if (currentEntity==0 && !Window.noDetailIsSelected() && (brush.getAttributes()[3] & ((byte)1 << 3)) != 0) {
+		if (currentEntity==0 && !Window.noDetailIsSelected() && (brush.getContents()[3] & ((byte)1 << 3)) != 0) {
 			isDetail=true;
 		}
 		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, isDetail);
-		if (currentEntity==0 && !Window.noWaterIsSelected() && (brush.getAttributes()[0] & ((byte)1 << 5)) != 0) {
+		if (currentEntity==0 && !Window.noWaterIsSelected() && (brush.getContents()[0] & ((byte)1 << 5)) != 0) {
 			mapBrush.setWater(true);
 		}
 		Window.println(": "+numSides+" sides, detail: "+isDetail,Window.VERBOSITY_BRUSHCREATION);
 		for(int i=0;i<numSides;i++) { // For each side of the brush
-			SourceBrushSide currentSide=BSP.getBrushSides().getElement(firstSide+i);
+			BrushSide currentSide=BSP.getBrushSides().getElement(firstSide+i);
 			if(currentSide.isBevel()==0) { // Bevel sides are evil
-				if(currentSide.isDisplacement()) {
-					Window.println("Side "+i+" is displacement: "+currentSide.isDisplacement(),Window.VERBOSITY_ALWAYS);
-				}
 				Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
 				Plane currentPlane=BSP.getPlanes().getPlane(currentSide.getPlane()); // To find those three points, I must extrapolate from planes until I find a way to associate faces with brushes
 				boolean isDuplicate=false;/* TODO: We sure don't want duplicate planes (though this is already handled by the MAPBrush class). Make sure neither checked side is bevel.
@@ -126,8 +123,8 @@ public class SourceBSPDecompiler {
 				}*/
 				if(!isDuplicate) {
 					SourceTexInfo currentTexInfo;
-					if(currentSide.getTexInfo()>-1) {
-						currentTexInfo=BSP.getTexInfos().getElement(currentSide.getTexInfo());
+					if(currentSide.getTexture()>-1) {
+						currentTexInfo=BSP.getTexInfos().getElement(currentSide.getTexture());
 					} else {
 						currentTexInfo=createPerpTexInfo(currentPlane); // Create a texture plane perpendicular to current plane's normal
 					}

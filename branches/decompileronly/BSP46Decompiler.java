@@ -66,16 +66,16 @@ public class BSP46Decompiler {
 				numBrshs=0;
 				for(int j=0;j<numBrushes;j++) { // For each brush
 					Window.print("Brush "+(j+firstBrush),Window.VERBOSITY_BRUSHCREATION);
-					decompileBrush(BSP.getBrushes().getBrush(j+firstBrush), i); // Decompile the brush
+					decompileBrush(BSP.getBrushes().getElement(j+firstBrush), i); // Decompile the brush
 					numBrshs++;
 					numTotalItems++;
-					Window.setProgress(jobnum, numTotalItems, BSP.getBrushes().getNumElements()+BSP.getEntities().length(), "Decompiling...");
+					Window.setProgress(jobnum, numTotalItems, BSP.getBrushes().length()+BSP.getEntities().length(), "Decompiling...");
 				}
 			}
 			numTotalItems++;
-			Window.setProgress(jobnum, numTotalItems, BSP.getBrushes().getNumElements()+BSP.getEntities().length(), "Decompiling...");
+			Window.setProgress(jobnum, numTotalItems, BSP.getBrushes().length()+BSP.getEntities().length(), "Decompiling...");
 		}
-		Window.setProgress(jobnum, numTotalItems, BSP.getBrushes().getNumElements()+BSP.getEntities().length(), "Saving...");
+		Window.setProgress(jobnum, numTotalItems, BSP.getBrushes().length()+BSP.getEntities().length(), "Saving...");
 		MAPMaker.outputMaps(mapFile, BSP.getMapNameNoExtension(), BSP.getFolder(), BSP.VERSION);
 		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {
@@ -89,7 +89,7 @@ public class BSP46Decompiler {
 	
 	// -decompileBrush(Brush, int)
 	// Decompiles the Brush and adds it to entitiy #currentEntity as MAPBrush classes.
-	private void decompileBrush(v46Brush brush, int currentEntity) {
+	private void decompileBrush(Brush brush, int currentEntity) {
 		double[] origin=mapFile.getEntity(currentEntity).getOrigin();
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
@@ -111,7 +111,7 @@ public class BSP46Decompiler {
 			mapBrush.setWater(true);
 		}
 		for(int i=0;i<numSides;i++) { // For each side of the brush
-			CoDBrushSide currentSide=BSP.getBrushSides().getElement(firstSide+i);
+			BrushSide currentSide=BSP.getBrushSides().getElement(firstSide+i);
 			Plane currentPlane=BSP.getPlanes().getPlane(currentSide.getPlane());
 			Vector3D[] triangle=new Vector3D[0];
 			String texture="noshader";

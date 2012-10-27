@@ -11,7 +11,7 @@ public class SiNBSP extends v38BSP {
 	// Each lump has its own class for handling its specific data structures.
 	// These are the only lumps we need for decompilation.
 	// Many lumps are inherited from v38BSP
-	private SiNBrushSides sbrushSides;
+	private BrushSides brushSides;
 	private Textures textures;
 	private SiNFaces sfaces;
 	
@@ -25,7 +25,7 @@ public class SiNBSP extends v38BSP {
 	public void printBSPReport() {
 		super.printBSPReport();
 		try {
-			Window.println("Brush sides lump: "+sbrushSides.getLength()+" bytes, "+sbrushSides.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Brush sides lump: "+brushSides.getLength()+" bytes, "+brushSides.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Brush sides not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -42,12 +42,12 @@ public class SiNBSP extends v38BSP {
 	}
 	
 	// ACCESSORS/MUTATORS
-	public void setSBrushSides(byte[] data) {
-		this.sbrushSides=new SiNBrushSides(data);
+	public void setBrushSides(byte[] data) {
+		this.brushSides=new BrushSides(data, BrushSide.TYPE_SIN);
 	}
 	
-	public SiNBrushSides getSBrushSides() {
-		return this.sbrushSides;
+	public BrushSides getBrushSides() {
+		return this.brushSides;
 	}
 	
 	public void setTextures(byte[] data) {

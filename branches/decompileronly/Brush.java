@@ -1,73 +1,65 @@
 // Brush class
+// Tries to hold the data used by all formats of brush structure
 
-// This class holds data of a single brush. All brushes really
-// do is define their material (solid, nonsolid, water, etc.)
-// and their sides (by indexing the NEXT lump).
-
-public class Brush {
+public class Brush extends LumpObject {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
+	public static final int TYPE_QUAKE2=0;
+	public static final int TYPE_QUAKE3=1;
+	public static final int TYPE_NIGHTFIRE=2;
+	public static final int TYPE_COD=3;
 	
-	private int firstSide;
-	private int numSides;
-	private byte[] attributes=new byte[4]; // attributes is a strange animal. It's
-	                                       // probably not read as an int by the
-	                                       // game engine, it may be a set of bytes
-	                                       // or even a bunch of binary flags.
+	// All four brush formats use some of these in some way
+	private int firstSide=-1;
+	private int numSides=-1;
+	private int texture=-1;
+	private byte[] contents;
 	
 	// CONSTRUCTORS
-	
-	// This one takes the components separate and in the correct data type
-	public Brush(int inFirstSide, int inNumSides, byte[] inAttributes) {
-		try {
-			attributes[0]=inAttributes[0];
-			attributes[1]=inAttributes[1];
-			attributes[2]=inAttributes[2];
-			attributes[3]=inAttributes[3];
-		} catch(java.lang.ArrayIndexOutOfBoundsException e) {
-			; // Meh, there are worse crimes. Leave them at 0
-		}
-		firstSide=inFirstSide;
-		numSides=inNumSides;
+	public Brush(LumpObject in, int type) {
+		super(in.getData());
+		new Brush(in.getData(), type);
 	}
 
-	// This one takes an array of bytes (as if read directly from a file) and reads them
-	// directly into the proper data types.
-	public Brush(byte[] in) {
-		firstSide=(in[3] << 24) | ((in[2] & 0xff) << 16) | ((in[1] & 0xff) << 8) | (in[0] & 0xff);
-		numSides=(in[7] << 24) | ((in[6] & 0xff) << 16) | ((in[5] & 0xff) << 8) | (in[4] & 0xff);
-		attributes[0]=in[8];
-		attributes[1]=in[9];
-		attributes[2]=in[10];
-		attributes[3]=in[11];
-	}
-	
-	// METHODS
-	
-	// ACCESSORS/MUTATORS
-	public byte[] getAttributes() {
-		return attributes;
-	}
-	
-	public void setAttributes(byte[] in) {
-		if(in.length==4) {
-			attributes=in;
+	public Brush(byte[] data, int type) {
+		super(data);
+		switch(type) {
+			case TYPE_QUAKE2:
+				firstSide=DataReader.readInt(data[0], data[1], data[2], data[3]);
+				numSides=DataReader.readInt(data[4], data[5], data[6], data[7]);
+				contents=new byte[] { data[8], data[9], data[10], data[11] };
+				break;
+			case TYPE_NIGHTFIRE:
+				contents=new byte[] { data[0], data[1], data[2], data[3] };
+				firstSide=DataReader.readInt(data[4], data[5], data[6], data[7]);
+				numSides=DataReader.readInt(data[8], data[9], data[10], data[11]);
+				break;
+			case TYPE_QUAKE3:
+				firstSide=DataReader.readInt(data[0], data[1], data[2], data[3]);
+				numSides=DataReader.readInt(data[4], data[5], data[6], data[7]);
+				texture=DataReader.readInt(data[8], data[9], data[10], data[11]);
+				break;
+			case TYPE_COD:
+				numSides=DataReader.readUShort(data[0], data[1]);
+				texture=DataReader.readUShort(data[2], data[3]);
+				break;
 		}
 	}
 	
+	// ACCESSORS/MUTATORS
 	public int getFirstSide() {
 		return firstSide;
-	}
-	
-	public void setFirstSide(int in) {
-		firstSide=in;
 	}
 	
 	public int getNumSides() {
 		return numSides;
 	}
 	
-	public void setNumSides(int in) {
-		numSides=in;
+	public int getTexture() {
+		return texture;
+	}
+	
+	public byte[] getContents() {
+		return contents;
 	}
 }

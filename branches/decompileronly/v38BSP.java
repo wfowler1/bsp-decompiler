@@ -25,7 +25,7 @@ public class v38BSP {
 	private IntList markedges;
 	private Models models;
 	private Brushes brushes;
-	private v38BrushSides brushSides;
+	private BrushSides brushSides;
 	//private IntList areaPortals;
 	
 	// CONSTRUCTORS
@@ -96,7 +96,7 @@ public class v38BSP {
 			Window.println("Brushes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Brush sides lump: "+brushSides.getLength()+" bytes, "+brushSides.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Brush sides lump: "+brushSides.getLength()+" bytes, "+brushSides.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Brush sides not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -298,7 +298,7 @@ public class v38BSP {
 	}
 	
 	public void setBrushes(byte[] data) {
-		brushes=new Brushes(data);
+		brushes=new Brushes(data, Brush.TYPE_QUAKE2);
 	}
 	
 	public Brushes getBrushes() {
@@ -306,10 +306,10 @@ public class v38BSP {
 	}
 	
 	public void setBrushSides(byte[] data) {
-		brushSides=new v38BrushSides(data);
+		brushSides=new BrushSides(data, BrushSide.TYPE_QUAKE2);
 	}
 	
-	public v38BrushSides getBrushSides() {
+	public BrushSides getBrushSides() {
 		return brushSides;
 	}
 	

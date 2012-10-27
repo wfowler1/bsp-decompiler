@@ -75,8 +75,8 @@ public class SiNBSPDecompiler {
 							if(!brushesUsed[BSP.getMarkBrushes().getShort(firstBrushIndex+k)]) { // If the current brush has NOT been used in this entity
 								Window.print("Brush "+(k+numBrushIndices),Window.VERBOSITY_BRUSHCREATION);
 								brushesUsed[BSP.getMarkBrushes().getShort(firstBrushIndex+k)]=true;
-								Brush brush=BSP.getBrushes().getBrush(BSP.getMarkBrushes().getShort(firstBrushIndex+k));
-								if(!(brush.getAttributes()[1]==-128)) {
+								Brush brush=BSP.getBrushes().getElement(BSP.getMarkBrushes().getShort(firstBrushIndex+k));
+								if((brush.getContents()[1] & ((byte)1 << 7)) == 0) {
 									decompileBrush(brush, i); // Decompile the brush
 								} else {
 									containsAreaPortals=true;
@@ -95,10 +95,10 @@ public class SiNBSPDecompiler {
 		if(containsAreaPortals) { // If this map was found to have area portals
 			int j=0;
 			for(int i=0;i<BSP.getBrushes().length();i++) { // For each brush in this map
-				if(BSP.getBrushes().getBrush(i).getAttributes()[1]==-128) { // If the brush is an area portal brush
+				if((BSP.getBrushes().getElement(i).getContents()[1] & ((byte)1 << 7)) != 0) { // If the brush is an area portal brush
 					for(j++;j<BSP.getEntities().length();j++) { // Find an areaportal entity
 						if(BSP.getEntities().getEntity(j).getAttribute("classname").equalsIgnoreCase("func_areaportal")) {
-							decompileBrush(BSP.getBrushes().getBrush(i), j); // Add the brush to that entity
+							decompileBrush(BSP.getBrushes().getElement(i), j); // Add the brush to that entity
 							break; // And break out of the inner loop, but remember your place.
 						}
 					}
@@ -128,22 +128,22 @@ public class SiNBSPDecompiler {
 		int numSides=brush.getNumSides();
 		boolean isDetail=false;
 		MAPBrushSide[] brushSides=new MAPBrushSide[numSides];
-		if(!Window.noDetailIsSelected() && (brush.getAttributes()[3] & ((byte)1 << 3)) != 0) { // According to Q2's source, this is the detail flag
+		if(!Window.noDetailIsSelected() && (brush.getContents()[3] & ((byte)1 << 3)) != 0) { // According to Q2's source, this is the detail flag
 			isDetail=true;
 		}
 		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, isDetail);
 		Window.println(": "+numSides+" sides",Window.VERBOSITY_BRUSHCREATION);
-		if(!Window.noWaterIsSelected() && (brush.getAttributes()[0] & ((byte)1 << 5)) != 0) {
+		if(!Window.noWaterIsSelected() && (brush.getContents()[0] & ((byte)1 << 5)) != 0) {
 			mapBrush.setWater(true);
 		}
 		for(int i=0;i<numSides;i++) { // For each side of the brush
 			Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
-			SiNBrushSide currentSide=BSP.getSBrushSides().getElement(firstSide+i);
+			BrushSide currentSide=BSP.getBrushSides().getElement(firstSide+i);
 			Plane currentPlane=BSP.getPlanes().getPlane(currentSide.getPlane()); // To find those three points, I must extrapolate from planes until I find a way to associate faces with brushes
 			Texture currentTexture;
 			boolean isDuplicate=false;
 			for(int j=i+1;j<numSides;j++) { // For each subsequent side of the brush
-				if(currentPlane.equals(BSP.getPlanes().getPlane(BSP.getSBrushSides().getElement(firstSide+j).getPlane()))) {
+				if(currentPlane.equals(BSP.getPlanes().getPlane(BSP.getBrushSides().getElement(firstSide+j).getPlane()))) {
 					Window.println("WARNING: Duplicate planes in a brush, sides "+i+" and "+j,Window.VERBOSITY_WARNINGS);
 					isDuplicate=true;
 				}
@@ -256,8 +256,8 @@ public class SiNBSPDecompiler {
 				double VShift=0;
 				double texScaleS=1;
 				double texScaleT=1;
-				if(currentSide.getTexInfo()>-1) {
-					currentTexture=BSP.getTextures().getElement(currentSide.getTexInfo());
+				if(currentSide.getTexture()>-1) {
+					currentTexture=BSP.getTextures().getElement(currentSide.getTexture());
 					if((currentTexture.getFlags()[0] & ((byte)1 << 2)) != 0) {
 						texture="special/sky";
 					} else {

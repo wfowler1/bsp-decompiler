@@ -73,7 +73,7 @@ public class BSP42Decompiler {
 				double[] origin=mapFile.getEntity(i).getOrigin();
 				int firstLeaf=BSP42.getModels().getElement(currentModel).getFirstLeaf();
 				int numLeaves=BSP42.getModels().getElement(currentModel).getNumLeaves();
-				boolean[] brushesUsed=new boolean[BSP42.getBrushes().getNumElements()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
+				boolean[] brushesUsed=new boolean[BSP42.getBrushes().length()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
 				numBrshs=0;
 				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
 					Leaf currentLeaf=BSP42.getLeaves().getElement(j+firstLeaf);
@@ -87,19 +87,19 @@ public class BSP42Decompiler {
 							if(!brushesUsed[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)]) { // If the current brush has NOT been used in this entity
 								Window.print("Brush "+(k+firstBrushIndex),Window.VERBOSITY_BRUSHCREATION);
 								brushesUsed[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)]=true;
-								decompileBrush(BSP42.getBrushes().getBrush(BSP42.getMarkBrushes().getInt(firstBrushIndex+k)), i); // Decompile the brush
+								decompileBrush(BSP42.getBrushes().getElement(BSP42.getMarkBrushes().getInt(firstBrushIndex+k)), i); // Decompile the brush
 								numBrshs++;
 								numTotalItems++;
-								Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().length(), "Decompiling...");
+								Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().length()+BSP42.getEntities().length(), "Decompiling...");
 							}
 						}
 					}
 				}
 			}
 			numTotalItems++;
-			Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().length(), "Decompiling...");
+			Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().length()+BSP42.getEntities().length(), "Decompiling...");
 		}
-		Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().getNumElements()+BSP42.getEntities().length(), "Saving...");
+		Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().length()+BSP42.getEntities().length(), "Saving...");
 		MAPMaker.outputMaps(mapFile, BSP42.getMapNameNoExtension(), BSP42.getFolder(), BSP42.VERSION);
 		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {
@@ -113,13 +113,13 @@ public class BSP42Decompiler {
 	
 	// -decompileBrush(Brush, int, boolean)
 	// Decompiles the Brush and adds it to entitiy #currentEntity as .MAP data.
-	private void decompileBrush(v42Brush brush, int currentEntity) {
+	private void decompileBrush(Brush brush, int currentEntity) {
 		double[] origin=mapFile.getEntity(currentEntity).getOrigin();
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
 		MAPBrushSide[] brushSides=new MAPBrushSide[0];
 		boolean isDetail=false;
-		if(!Window.noDetailIsSelected() && (brush.getAttributes()[1] & ((byte)1 << 1)) != 0) {
+		if(!Window.noDetailIsSelected() && (brush.getContents()[1] & ((byte)1 << 1)) != 0) {
 			isDetail=true;
 		}
 		MAPBrush mapBrush = new MAPBrush(numBrshs, currentEntity, isDetail);
@@ -131,7 +131,7 @@ public class BSP42Decompiler {
 			mapBrush.setWater(true);
 		}
 		for(int l=0;l<numSides;l++) { // For each side of the brush
-			v42BrushSide currentSide=BSP42.getBrushSides().getBrushSide(firstSide+l);
+			BrushSide currentSide=BSP42.getBrushSides().getElement(firstSide+l);
 			v42Face currentFace=BSP42.getFaces().getFace(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
 			String texture=BSP42.getTextures().getElement(currentFace.getTexture()).getName();
 			if(currentFace.getType()!=800) { // These surfaceflags (512 + 256 + 32) are set only by the compiler, on faces that need to be thrown out.

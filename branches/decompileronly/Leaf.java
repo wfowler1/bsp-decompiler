@@ -21,6 +21,11 @@ public class Leaf extends LumpObject {
 	private int numMarkFaces=-1;
 	
 	// CONSTRUCTORS
+	public Leaf(LumpObject in, int type) {
+		super(in.getData());
+		new Leaf(in.getData(), type);
+	}
+	
 	public Leaf(byte[] data, int type) {
 		super(data);
 		contents=new byte[] { data[0], data[1], data[2], data[3] }; // This seems universal for all formats (so far). Even Nightfire.

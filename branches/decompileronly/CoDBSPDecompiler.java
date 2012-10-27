@@ -61,16 +61,16 @@ public class CoDBSPDecompiler {
 				numBrshs=0;
 				for(int j=0;j<numBrushes;j++) { // For each brush
 					Window.print("Brush "+(j+firstBrush),Window.VERBOSITY_BRUSHCREATION);
-					decompileBrush(BSP.getCBrushes().getElement(j+firstBrush), i); // Decompile the brush
+					decompileBrush(BSP.getBrushes().getElement(j+firstBrush), i); // Decompile the brush
 					numBrshs++;
 					numTotalItems++;
-					Window.setProgress(jobnum, numTotalItems, BSP.getCBrushes().length()+BSP.getEntities().length(), "Decompiling...");
+					Window.setProgress(jobnum, numTotalItems, BSP.getBrushes().length()+BSP.getEntities().length(), "Decompiling...");
 				}
 			}
 			numTotalItems++;
-			Window.setProgress(jobnum, numTotalItems, BSP.getCBrushes().length()+BSP.getEntities().length(), "Decompiling...");
+			Window.setProgress(jobnum, numTotalItems, BSP.getBrushes().length()+BSP.getEntities().length(), "Decompiling...");
 		}
-		Window.setProgress(jobnum, numTotalItems, BSP.getCBrushes().length()+BSP.getEntities().length(), "Saving...");
+		Window.setProgress(jobnum, numTotalItems, BSP.getBrushes().length()+BSP.getEntities().length(), "Saving...");
 		MAPMaker.outputMaps(mapFile, BSP.getMapNameNoExtension(), BSP.getFolder(), BSP.VERSION);
 		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {
@@ -84,7 +84,7 @@ public class CoDBSPDecompiler {
 	
 	// -decompileBrush(Brush, int)
 	// Decompiles the Brush and adds it to entitiy #currentEntity as MAPBrush classes.
-	private void decompileBrush(CoDBrush brush, int currentEntity) {
+	private void decompileBrush(Brush brush, int currentEntity) {
 		double[] origin=mapFile.getEntity(currentEntity).getOrigin();
 		int numSides=brush.getNumSides();
 		MAPBrushSide[] brushSides=new MAPBrushSide[0];
@@ -105,33 +105,26 @@ public class CoDBSPDecompiler {
 			mapBrush.setWater(true);
 		}
 		for(int i=0;i<numSides;i++) { // For each side of the brush
-			CoDBrushSide currentSide=BSP.getCBrushSides().getElement(currentSideIndex);
+			BrushSide currentSide=BSP.getBrushSides().getElement(currentSideIndex);
 			Plane currentPlane;
 			if(i==0) { // XMin
-				currentSide.setType(CoDBrushSide.TYPE_DIST);
 				currentPlane=new Plane((double)-1, (double)0, (double)0, (double)-currentSide.getDist());
 			} else {
 				if(i==1) { // XMax
-					currentSide.setType(CoDBrushSide.TYPE_DIST);
 					currentPlane=new Plane((double)1, (double)0, (double)0, (double)currentSide.getDist());
 				} else {
 					if(i==2) { // YMin
-						currentSide.setType(CoDBrushSide.TYPE_DIST);
 						currentPlane=new Plane((double)0, (double)-1, (double)0, (double)-currentSide.getDist());
 					} else {
 						if(i==3) { // YMax
-							currentSide.setType(CoDBrushSide.TYPE_DIST);
 							currentPlane=new Plane((double)0, (double)1, (double)0, (double)currentSide.getDist());
 						} else {
 							if(i==4) { // ZMin
-								currentSide.setType(CoDBrushSide.TYPE_DIST);
 								currentPlane=new Plane((double)0, (double)0, (double)-1, (double)-currentSide.getDist());
 							} else {
 								if(i==5) { // ZMax
-									currentSide.setType(CoDBrushSide.TYPE_DIST);
 									currentPlane=new Plane((double)0, (double)0, (double)1, (double)currentSide.getDist());
 								} else {
-									currentSide.setType(CoDBrushSide.TYPE_PLANE);
 									currentPlane=BSP.getPlanes().getPlane(currentSide.getPlane());
 								}
 							}

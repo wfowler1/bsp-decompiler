@@ -26,6 +26,11 @@ public class Texture extends LumpObject {
 	private v42TexMatrix texAxes;
 	
 	// CONSTRUCTORS
+	public Texture(LumpObject in, int type) {
+		super(in.getData());
+		new Texture(in.getData(), type);
+	}
+	
 	public Texture(byte[] data, int type) {
 		super(data);
 		switch(type) {

@@ -33,7 +33,7 @@ public class SourceBSP {
 	private Models models;
 	private ShortList markbrushes;
 	private Brushes brushes;
-	private SourceBrushSides brushSides;
+	private BrushSides brushSides;
 	private SourceDispInfos dispInfos;
 	// private SourceFaces originalFaces;
 	private SourceDispVertices dispVerts;
@@ -368,7 +368,7 @@ public class SourceBSP {
 	}
 	
 	public void setBrushes(byte[] data) {
-		brushes=new Brushes(data);
+		brushes=new Brushes(data, Brush.TYPE_QUAKE2);
 	}
 	
 	public Brushes getBrushes() {
@@ -376,10 +376,10 @@ public class SourceBSP {
 	}
 	
 	public void setBrushSides(byte[] data) {
-		brushSides=new SourceBrushSides(data);
+		brushSides=new BrushSides(data, BrushSide.TYPE_SOURCE);
 	}
 	
-	public SourceBrushSides getBrushSides() {
+	public BrushSides getBrushSides() {
 		return brushSides;
 	}
 	

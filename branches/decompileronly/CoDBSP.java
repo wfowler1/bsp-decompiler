@@ -12,8 +12,8 @@ public class CoDBSP extends v46BSP {
 	// Each lump has its own class for handling its specific data structures.
 	// These are the only lumps we need for decompilation.
 	private Models models;
-	private CoDBrushes cbrushes;
-	private CoDBrushSides cbrushSides;
+	private Brushes brushes;
+	private BrushSides brushSides;
 	
 	// CONSTRUCTORS
 	// This accepts a folder path and looks for the BSP there.
@@ -34,12 +34,12 @@ public class CoDBSP extends v46BSP {
 			Window.println("Models not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Brushes lump: "+cbrushes.getLength()+" bytes, "+cbrushes.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Brushes lump: "+brushes.getLength()+" bytes, "+brushes.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Brushes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Brush sides lump: "+cbrushSides.getLength()+" bytes, "+cbrushSides.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Brush sides lump: "+brushSides.getLength()+" bytes, "+brushSides.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Brush sides not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -55,19 +55,19 @@ public class CoDBSP extends v46BSP {
 		return models;
 	}
 	
-	public void setCBrushes(byte[] data) {
-		cbrushes=new CoDBrushes(data);
+	public void setBrushes(byte[] data) {
+		brushes=new Brushes(data, Brush.TYPE_COD);
 	}
 	
-	public CoDBrushes getCBrushes() {
-		return cbrushes;
+	public Brushes getBrushes() {
+		return brushes;
 	}
 	
-	public void setCBrushSides(byte[] data) {
-		cbrushSides=new CoDBrushSides(data);
+	public void setBrushSides(byte[] data) {
+		brushSides=new BrushSides(data, BrushSide.TYPE_COD);
 	}
 	
-	public CoDBrushSides getCBrushSides() {
-		return cbrushSides;
+	public BrushSides getBrushSides() {
+		return brushSides;
 	}
 }

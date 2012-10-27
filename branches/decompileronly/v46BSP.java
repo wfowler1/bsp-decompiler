@@ -17,8 +17,8 @@ public class v46BSP {
 	private PlaneList planes;
 	private Textures textures;
 	private Models models;
-	private v46Brushes brushes;
-	private v46BrushSides brushSides;
+	private Brushes brushes;
+	private BrushSides brushSides;
 	private v46Vertices vertices; // Probably the only BSP version to use a different vertex format
 	private v46Faces faces;
 	
@@ -50,7 +50,7 @@ public class v46BSP {
 			Window.println("Models not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Brushes lump: "+brushes.getLength()+" bytes, "+brushes.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Brushes lump: "+brushes.getLength()+" bytes, "+brushes.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Brushes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -147,18 +147,18 @@ public class v46BSP {
 	}
 	
 	public void setBrushes(byte[] data) {
-		brushes=new v46Brushes(data);
+		brushes=new Brushes(data, Brush.TYPE_QUAKE3);
 	}
 	
-	public v46Brushes getBrushes() {
+	public Brushes getBrushes() {
 		return brushes;
 	}
 	
 	public void setBrushSides(byte[] data) {
-		brushSides=new v46BrushSides(data);
+		brushSides=new BrushSides(data, BrushSide.TYPE_QUAKE3);
 	}
 	
-	public v46BrushSides getBrushSides() {
+	public BrushSides getBrushSides() {
 		return brushSides;
 	}
 	

@@ -22,8 +22,8 @@ public class v42BSP {
 	private Leaves leaves;
 	private IntList markbrushes;
 	private Models models;
-	private v42Brushes brushes;
-	private v42BrushSides brushSides;
+	private Brushes brushes;
+	private BrushSides brushSides;
 	private v42TextureMatrices textureMatrices;
 	
 	// CONSTRUCTORS
@@ -79,12 +79,12 @@ public class v42BSP {
 			Window.println("Models not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Brushes lump: "+brushes.getLength()+" bytes, "+brushes.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Brushes lump: "+brushes.getLength()+" bytes, "+brushes.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Brushes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Brush sides lump: "+brushSides.getLength()+" bytes, "+brushSides.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Brush sides lump: "+brushSides.getLength()+" bytes, "+brushSides.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Brush sides not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -211,18 +211,18 @@ public class v42BSP {
 	}
 	
 	public void setBrushes(byte[] data) {
-		brushes=new v42Brushes(data);
+		brushes=new Brushes(data, Brush.TYPE_NIGHTFIRE);
 	}
 	
-	public v42Brushes getBrushes() {
+	public Brushes getBrushes() {
 		return brushes;
 	}
 	
 	public void setBrushSides(byte[] data) {
-		brushSides=new v42BrushSides(data);
+		brushSides=new BrushSides(data, BrushSide.TYPE_NIGHTFIRE);
 	}
 	
-	public v42BrushSides getBrushSides() {
+	public BrushSides getBrushSides() {
 		return brushSides;
 	}
 	
