@@ -624,7 +624,7 @@ public class BSPReader {
 							offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.read(read); // Read 4 more bytes
 							length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-							ravenBSP.setRFaces(readLump(offset, length));
+							ravenBSP.setFaces(readLump(offset, length));
 							
 							offsetReader.close();
 							
@@ -675,7 +675,7 @@ public class BSPReader {
 							offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.read(read); // Read 4 more bytes
 							length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-							SINBSP.setSFaces(readLump(offset, length));
+							SINBSP.setFaces(readLump(offset, length));
 							
 							offsetReader.skip(8); // Do not need offset/length for lump 7
 							

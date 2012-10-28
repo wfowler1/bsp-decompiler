@@ -1,35 +1,34 @@
-// SiNFaces class
+// Planes class
+// Maintains an array of Plane
 
-// Maintains an array of SiNFaces.
-
-import java.io.FileInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 
-public class SiNFaces {
+public class Planes {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
 	private int length;
-	private SiNFace[] elements;
+	private Plane[] elements;
 	
-	public static final int structLength=36;
+	private int structLength;
 
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public SiNFaces(String in) {
-		new SiNFaces(new File(in));
+	public Planes(String in, int type) {
+		new Planes(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public SiNFaces(File in) {
+	public Planes(File in, int type) {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
 			byte[] temp=new byte[(int)data.length()];
 			fileReader.read(temp);
-			new SiNFaces(temp);
+			new Planes(temp, type);
 			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
@@ -39,16 +38,26 @@ public class SiNFaces {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public SiNFaces(byte[] in) {
+	public Planes(byte[] in, int type) {
+		switch(type) {
+			case Plane.TYPE_QUAKE:
+				structLength=20;
+				break;
+			case Plane.TYPE_QUAKE3:
+				structLength=16;
+				break;
+			default:
+				structLength=0; // This will cause the shit to hit the fan.
+		}
 		int offset=0;
 		length=in.length;
-		elements=new SiNFace[in.length/structLength];
+		elements=new Plane[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
-			elements[i]=new SiNFace(bytes);
+			elements[i]=new Plane(bytes, type);
 			offset+=structLength;
 		}
 	}
@@ -71,11 +80,11 @@ public class SiNFaces {
 		}
 	}
 	
-	public SiNFace getElement(int i) {
+	public Plane getElement(int i) {
 		return elements[i];
 	}
 	
-	public SiNFace[] getElements() {
+	public Plane[] getElements() {
 		return elements;
 	}
 }

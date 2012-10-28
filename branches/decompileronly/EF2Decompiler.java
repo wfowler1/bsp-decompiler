@@ -121,9 +121,9 @@ public class EF2Decompiler {
 			BrushSide currentSide=BSP.getBrushSides().getElement(firstSide+i);
 			Plane currentPlane;
 			if(BSP.isDemo()) {
-				currentPlane=BSP.getPlanes().getPlane(currentSide.getPlane());
+				currentPlane=BSP.getPlanes().getElement(currentSide.getPlane());
 			} else {
-				currentPlane=BSP.getPlanes().getPlane(currentSide.getTexture());
+				currentPlane=BSP.getPlanes().getElement(currentSide.getTexture());
 			}
 			Vector3D[] triangle=new Vector3D[0];
 			String texture="noshader";

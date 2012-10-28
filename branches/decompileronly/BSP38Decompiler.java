@@ -94,7 +94,7 @@ public class BSP38Decompiler {
 		if(containsAreaPortals) { // If this map was found to have area portals
 			int j=0;
 			for(int i=0;i<BSP38.getBrushes().length();i++) { // For each brush in this map
-				if(BSP38.getBrushes().getElement(i).getContents()[1]==-128) { // If the brush is an area portal brush
+				if(BSP38.getBrushes().getElement(i).getContents()[1] & ((byte)1 << 7)) != 0) { // If the brush is an area portal brush
 					for(j++;j<BSP38.getEntities().length();j++) { // Find an areaportal entity
 						if(BSP38.getEntities().getEntity(j).getAttribute("classname").equalsIgnoreCase("func_areaportal")) {
 							decompileBrush(BSP38.getBrushes().getElement(i), j); // Add the brush to that entity
@@ -138,11 +138,11 @@ public class BSP38Decompiler {
 		for(int i=0;i<numSides;i++) { // For each side of the brush
 			Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
 			BrushSide currentSide=BSP38.getBrushSides().getElement(firstSide+i);
-			Plane currentPlane=BSP38.getPlanes().getPlane(currentSide.getPlane()); // To find those three points, I must extrapolate from planes until I find a way to associate faces with brushes
+			Plane currentPlane=BSP38.getPlanes().getElement(currentSide.getPlane()); // To find those three points, I must extrapolate from planes until I find a way to associate faces with brushes
 			Texture currentTexture;
 			boolean isDuplicate=false;
 			for(int j=i+1;j<numSides;j++) { // For each subsequent side of the brush
-				if(currentPlane.equals(BSP38.getPlanes().getPlane(BSP38.getBrushSides().getElement(firstSide+j).getPlane()))) {
+				if(currentPlane.equals(BSP38.getPlanes().getElement(BSP38.getBrushSides().getElement(firstSide+j).getPlane()))) {
 					Window.println("WARNING: Duplicate planes in a brush, sides "+i+" and "+j,Window.VERBOSITY_WARNINGS);
 					isDuplicate=true;
 				}

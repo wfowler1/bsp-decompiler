@@ -15,7 +15,7 @@ public class RavenBSP extends v46BSP {
 	// Many lumps are inherited from v46BSP
 	private BrushSides brushSides;
 	private RavenVertices rvertices;
-	private RavenFaces rfaces;
+	private Faces faces;
 	
 	// CONSTRUCTORS
 	public RavenBSP(String path) {
@@ -37,7 +37,7 @@ public class RavenBSP extends v46BSP {
 			Window.println("Vertices not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Faces lump: "+rfaces.getLength()+" bytes, "+rfaces.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Faces lump: "+faces.getLength()+" bytes, "+faces.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Faces not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -60,11 +60,11 @@ public class RavenBSP extends v46BSP {
 		return this.rvertices;
 	}
 	
-	public void setRFaces(byte[] data) {
-		this.rfaces=new RavenFaces(data);
+	public void setFaces(byte[] data) {
+		this.faces=new Faces(data, Face.TYPE_RAVEN);
 	}
 	
-	public RavenFaces getRFaces() {
-		return this.rfaces;
+	public Faces getFaces() {
+		return this.faces;
 	}
 }

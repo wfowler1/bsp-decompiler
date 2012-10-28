@@ -113,20 +113,20 @@ public class RavenBSPDecompiler {
 		for(int i=0;i<numSides;i++) { // For each side of the brush
 			BrushSide currentSide=BSP.getBrushSides().getElement(firstSide+i);
 			int currentFaceIndex=currentSide.getFace();
-			RavenFace currentFace;
+			Face currentFace;
 			if(currentFaceIndex<0) { // Sometimes the face index is -1 :(
 				currentFace=null;
 			} else {
-				currentFace=BSP.getRFaces().getElement(currentFaceIndex); // To find those three points, I can use vertices referenced by faces.
+				currentFace=BSP.getFaces().getElement(currentFaceIndex); // To find those three points, I can use vertices referenced by faces.
 			}
-			Plane currentPlane=BSP.getPlanes().getPlane(currentSide.getPlane());
+			Plane currentPlane=BSP.getPlanes().getElement(currentSide.getPlane());
 			Vector3D[] triangle=new Vector3D[0];
 			boolean pointsWorked=false;
 			int firstVertex=-1;
 			int numVertices=0;
 			String texture="noshader";
 			if(currentFace!=null) {
-				firstVertex=currentFace.getVertex();
+				firstVertex=currentFace.getFirstVertex();
 				numVertices=currentFace.getNumVertices();
 				texture=BSP.getTextures().getElement(currentFace.getTexture()).getName(); // Use the face's referenced texture/shader if available
 				if(numVertices!=0 && !Window.planarDecompIsSelected()) { // If the face actually references a set of vertices

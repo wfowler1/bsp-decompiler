@@ -113,7 +113,7 @@ public class SourceBSPDecompiler {
 			BrushSide currentSide=BSP.getBrushSides().getElement(firstSide+i);
 			if(currentSide.isBevel()==0) { // Bevel sides are evil
 				Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
-				Plane currentPlane=BSP.getPlanes().getPlane(currentSide.getPlane()); // To find those three points, I must extrapolate from planes until I find a way to associate faces with brushes
+				Plane currentPlane=BSP.getPlanes().getElement(currentSide.getPlane()); // To find those three points, I must extrapolate from planes until I find a way to associate faces with brushes
 				boolean isDuplicate=false;/* TODO: We sure don't want duplicate planes (though this is already handled by the MAPBrush class). Make sure neither checked side is bevel.
 				for(int j=i+1;j<numSides;j++) { // For each subsequent side of the brush
 					if(currentPlane.equals(BSP.getPlanes().getPlane(BSP.getBrushSides().getElement(firstSide+j).getPlane()))) {

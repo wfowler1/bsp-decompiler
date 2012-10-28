@@ -55,11 +55,12 @@ public class DecompilerThread implements Runnable {
 							if(reader.isEF2()) {
 								Window.setProgress(jobnum, 0, reader.STEF2BSP.getBrushes().length()+reader.STEF2BSP.getEntities().length(), "Decompiling...");
 								EF2Decompiler decompiler = new EF2Decompiler(reader.STEF2BSP, jobnum);
+							//	BSP46Decompiler decompiler = new BSP46Decompiler(reader.STEF2BSP, jobnum);
 								decompiler.decompile();
 							} else {
 								if(reader.isSin()) {
 									Window.setProgress(jobnum, 0, reader.SINBSP.getBrushes().length()+reader.SINBSP.getEntities().length(), "Decompiling...");
-									SiNBSPDecompiler decompiler = new SiNBSPDecompiler(reader.SINBSP, jobnum);
+									BSP38Decompiler decompiler = new BSP38Decompiler(reader.SINBSP, jobnum);
 									decompiler.decompile();
 								}
 								switch(reader.getVersion()) {
@@ -94,7 +95,7 @@ public class DecompilerThread implements Runnable {
 			}
 			Window.setProgress(jobnum, 1, 1, "Done!");
 			Window.setProgressColor(jobnum, new Color(64, 192, 64));
-		} catch (java.io.IOException e) {
+		} catch (java.lang.Exception e) {
 			Window.println(""+(char)0x0D+(char)0x0A+"Exception caught in job "+(jobnum+1)+": "+e+(char)0x0D+(char)0x0A+"Please let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/entry",Window.VERBOSITY_ALWAYS);
 			String stackTrace="";
 			StackTraceElement[] trace=e.getStackTrace();

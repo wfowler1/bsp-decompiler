@@ -14,11 +14,11 @@ public class v42BSP {
 	// Each lump has its own class for handling its specific data structures.
 	// These are the only lumps we need for decompilation.
 	private Entities entities;
-	private BSPPlanes planes;
+	private Planes planes;
 	private Textures textures;
 	private Textures materials;
 	private Vertices vertices;
-	private v42Faces faces;
+	private Faces faces;
 	private Leaves leaves;
 	private IntList markbrushes;
 	private Models models;
@@ -39,7 +39,7 @@ public class v42BSP {
 			Window.println("Entities not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Planes lump: "+planes.getLength()+" bytes, "+planes.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Planes lump: "+planes.getLength()+" bytes, "+planes.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Planes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -59,7 +59,7 @@ public class v42BSP {
 			Window.println("Vertices not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Faces lump: "+faces.getLength()+" bytes, "+faces.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Faces lump: "+faces.getLength()+" bytes, "+faces.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Faces not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -147,10 +147,10 @@ public class v42BSP {
 	}
 	
 	public void setPlanes(byte[] data) {
-		planes=new BSPPlanes(data);
+		planes=new Planes(data, Plane.TYPE_QUAKE);
 	}
 	
-	public BSPPlanes getPlanes() {
+	public Planes getPlanes() {
 		return planes;
 	}
 	
@@ -179,10 +179,10 @@ public class v42BSP {
 	}
 	
 	public void setFaces(byte[] data) {
-		faces=new v42Faces(data);
+		faces=new Faces(data, Face.TYPE_NIGHTFIRE);
 	}
 	
-	public v42Faces getFaces() {
+	public Faces getFaces() {
 		return faces;
 	}
 	

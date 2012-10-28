@@ -14,13 +14,13 @@ public class v46BSP {
 	// Each lump has its own class for handling its specific data structures.
 	// These are the only lumps we need for decompilation.
 	private Entities entities;
-	private PlaneList planes;
+	private Planes planes;
 	private Textures textures;
 	private Models models;
 	private Brushes brushes;
 	private BrushSides brushSides;
 	private v46Vertices vertices; // Probably the only BSP version to use a different vertex format
-	private v46Faces faces;
+	private Faces faces;
 	
 	// CONSTRUCTORS
 	// This accepts a folder path and looks for the BSP there.
@@ -40,7 +40,7 @@ public class v46BSP {
 			Window.println("Textures not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Planes lump: "+planes.getLength()+" bytes, "+planes.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Planes lump: "+planes.getLength()+" bytes, "+planes.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Planes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -65,7 +65,7 @@ public class v46BSP {
 			Window.println("Vertices not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Faces lump: "+faces.getLength()+" bytes, "+faces.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Faces lump: "+faces.getLength()+" bytes, "+faces.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Faces not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -123,10 +123,10 @@ public class v46BSP {
 	}
 	
 	public void setPlanes(byte[] data) {
-		planes=new PlaneList(data);
+		planes=new Planes(data, Plane.TYPE_QUAKE3);
 	}
 	
-	public PlaneList getPlanes() {
+	public Planes getPlanes() {
 		return planes;
 	}
 	
@@ -171,10 +171,10 @@ public class v46BSP {
 	}
 	
 	public void setFaces(byte[] data) {
-		faces=new v46Faces(data);
+		faces=new Faces(data, Face.TYPE_QUAKE3);
 	}
 	
-	public v46Faces getFaces() {
+	public Faces getFaces() {
 		return faces;
 	}
 }

@@ -132,24 +132,24 @@ public class BSP42Decompiler {
 		}
 		for(int l=0;l<numSides;l++) { // For each side of the brush
 			BrushSide currentSide=BSP42.getBrushSides().getElement(firstSide+l);
-			v42Face currentFace=BSP42.getFaces().getFace(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
+			Face currentFace=BSP42.getFaces().getElement(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
 			String texture=BSP42.getTextures().getElement(currentFace.getTexture()).getName();
-			if(currentFace.getType()!=800) { // These surfaceflags (512 + 256 + 32) are set only by the compiler, on faces that need to be thrown out.
+			if((currentFace.getFlags()[1] & ((byte)1 << 0)) == 0) { // Surfaceflags 512 + 256 + 32 are set only by the compiler, on faces that need to be thrown out.
 				if(!texture.equalsIgnoreCase("special/clip") && !texture.equalsIgnoreCase("special/playerclip") && !texture.equalsIgnoreCase("special/enemyclip")) {
 					containsNonClipSide=true;
-					if(Window.replaceWithNullIsSelected() && (currentFace.getType()==512 || currentFace.getType()==544) && !texture.equalsIgnoreCase("special/trigger")) {
+					if(Window.replaceWithNullIsSelected() && ((currentFace.getFlags()[1] & ((byte)1 << 1)) != 0) && !texture.equalsIgnoreCase("special/trigger")) {
 						texture="special/null";
-						currentFace.setType(0);
+						currentFace.setFlags(new byte[4]);
 					}
 				}
-				int firstVertex=currentFace.getVert();
-				int numVertices=currentFace.getNumVerts();
+				int firstVertex=currentFace.getFirstVertex();
+				int numVertices=currentFace.getNumVertices();
 				Plane currentPlane;
 				try { // I've only ever come across this error once or twice, but something causes it very rarely
-					currentPlane=BSP42.getPlanes().getPlane(currentSide.getPlane());
+					currentPlane=BSP42.getPlanes().getElement(currentSide.getPlane());
 				} catch(java.lang.ArrayIndexOutOfBoundsException e) {
 					try { // So try to get the plane index from somewhere else
-						currentPlane=BSP42.getPlanes().getPlane(currentFace.getPlane());
+						currentPlane=BSP42.getPlanes().getElement(currentFace.getPlane());
 					}  catch(java.lang.ArrayIndexOutOfBoundsException f) { // If that fails, BS something
 						Window.println("WARNING: BSP has error, references nonexistant plane "+currentSide.getPlane()+", bad side "+(l)+" of brush "+numBrshs+" Entity "+currentEntity,Window.VERBOSITY_WARNINGS);
 						currentPlane=new Plane((double)1, (double)0, (double)0, (double)0);
@@ -181,7 +181,7 @@ public class BSP42Decompiler {
 				}
 				double[] textureS=new double[3];
 				double[] textureT=new double[3];
-				v42TexMatrix currentTexMatrix=BSP42.getTextureMatrices().getTexMatrix(currentFace.getTexStyle());
+				v42TexMatrix currentTexMatrix=BSP42.getTextureMatrices().getTexMatrix(currentFace.getTextureScale());
 				// Get the lengths of the axis vectors
 				double UAxisLength=Math.sqrt(Math.pow((double)currentTexMatrix.getUAxisX(),2)+Math.pow((double)currentTexMatrix.getUAxisY(),2)+Math.pow((double)currentTexMatrix.getUAxisZ(),2));
 				double VAxisLength=Math.sqrt(Math.pow((double)currentTexMatrix.getVAxisX(),2)+Math.pow((double)currentTexMatrix.getVAxisY(),2)+Math.pow((double)currentTexMatrix.getVAxisZ(),2));
@@ -199,7 +199,7 @@ public class BSP42Decompiler {
 				double originShiftT=(((double)currentTexMatrix.getVAxisX()/VAxisLength)*origin[X]+((double)currentTexMatrix.getVAxisY()/VAxisLength)*origin[Y]+((double)currentTexMatrix.getVAxisZ()/VAxisLength)*origin[Z])/texScaleT;
 				double textureShiftT=(double)currentTexMatrix.getVShift()-originShiftT;
 				float texRot=0; // In compiled maps this is calculated into the U and V axes, so set it to 0 until I can figure out a good way to determine a better value.
-				int flags=currentFace.getType(); // This is actually a set of flags. Whatever.
+				int flags=DataReader.readInt(currentFace.getFlags()[0], currentFace.getFlags()[1], currentFace.getFlags()[2], currentFace.getFlags()[3]); // This is actually a set of flags. Whatever.
 				String material;
 				try {
 					material=BSP42.getMaterials().getElement(currentFace.getMaterial()).getName();

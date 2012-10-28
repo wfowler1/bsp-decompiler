@@ -21,7 +21,7 @@ public class SourceBSP {
 	// Each lump has its own class for handling its specific data structures.
 	// These are the only lumps we need for decompilation.
 	private Entities entities; // Entities format hasn't changed since the original Quake! :D
-	private BSPPlanes planes; // Neither has plane format (in Valve games anyway)
+	private Planes planes; // Neither has plane format (in Valve games anyway)
 	private SourceTexDatas texDatas;
 	private Vertices vertices;
 	private Nodes nodes;
@@ -55,7 +55,7 @@ public class SourceBSP {
 			Window.println("Entities not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Planes lump: "+planes.getLength()+" bytes, "+planes.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Planes lump: "+planes.getLength()+" bytes, "+planes.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Planes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -276,10 +276,10 @@ public class SourceBSP {
 	}
 	
 	public void setPlanes(byte[] data) {
-		planes=new BSPPlanes(data);
+		planes=new Planes(data, Plane.TYPE_QUAKE);
 	}
 	
-	public BSPPlanes getPlanes() {
+	public Planes getPlanes() {
 		return planes;
 	}
 	

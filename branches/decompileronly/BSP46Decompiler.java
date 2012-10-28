@@ -112,7 +112,7 @@ public class BSP46Decompiler {
 		}
 		for(int i=0;i<numSides;i++) { // For each side of the brush
 			BrushSide currentSide=BSP.getBrushSides().getElement(firstSide+i);
-			Plane currentPlane=BSP.getPlanes().getPlane(currentSide.getPlane());
+			Plane currentPlane=BSP.getPlanes().getElement(currentSide.getPlane());
 			Vector3D[] triangle=new Vector3D[0];
 			String texture="noshader";
 			int currentTextureIndex=currentSide.getTexture();

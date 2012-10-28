@@ -125,7 +125,7 @@ public class CoDBSPDecompiler {
 								if(i==5) { // ZMax
 									currentPlane=new Plane((double)0, (double)0, (double)1, (double)currentSide.getDist());
 								} else {
-									currentPlane=BSP.getPlanes().getPlane(currentSide.getPlane());
+									currentPlane=BSP.getPlanes().getElement(currentSide.getPlane());
 								}
 							}
 						}
