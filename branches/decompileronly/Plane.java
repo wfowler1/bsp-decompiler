@@ -4,8 +4,6 @@
 public class Plane extends LumpObject {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
-	public static final int TYPE_QUAKE=0;
-	public static final int TYPE_QUAKE3=1;
 	
 	public static final int A=0;
 	public static final int B=1;

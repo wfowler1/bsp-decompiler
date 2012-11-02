@@ -15,7 +15,6 @@ public class BrushSide extends LumpObject {
 	private int plane=-1;
 	private float dist=Float.NaN;
 	private int texture=-1; // This is a valid texture index in Quake 2. However it means "unused" there
-	private int texScale=-1;
 	private int face=-1;
 	private int displacement=-1;
 	private byte isBevel=-1;
@@ -39,7 +38,6 @@ public class BrushSide extends LumpObject {
 			case TYPE_MOHAA:
 				plane=DataReader.readInt(data[0], data[1], data[2], data[3]);
 				texture=DataReader.readInt(data[4], data[5], data[6], data[7]);
-				texScale=DataReader.readInt(data[8], data[9], data[10], data[11]);
 				break;
 			case TYPE_RAVEN:
 				plane=DataReader.readInt(data[0], data[1], data[2], data[3]);
@@ -79,10 +77,6 @@ public class BrushSide extends LumpObject {
 	
 	public int getFace() {
 		return face;
-	}
-	
-	public int getTexScale() {
-		return texScale;
 	}
 	
 	public int getDisplacement() {

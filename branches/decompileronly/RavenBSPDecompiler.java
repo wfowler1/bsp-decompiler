@@ -131,16 +131,16 @@ public class RavenBSPDecompiler {
 				texture=BSP.getTextures().getElement(currentFace.getTexture()).getName(); // Use the face's referenced texture/shader if available
 				if(numVertices!=0 && !Window.planarDecompIsSelected()) { // If the face actually references a set of vertices
 					triangle=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
-					triangle[0]=new Vector3D(BSP.getRVertices().getElement(firstVertex).getVertex()); // Grab and store the first one
+					triangle[0]=new Vector3D(BSP.getVertices().getElement(firstVertex).getVertex()); // Grab and store the first one
 					int j=1;
 					for(;j<numVertices;j++) { // For each point after the first one
-						triangle[1]=new Vector3D(BSP.getRVertices().getElement(firstVertex+j).getVertex());
+						triangle[1]=new Vector3D(BSP.getVertices().getElement(firstVertex+j).getVertex());
 						if(!triangle[0].equals(triangle[1])) { // Make sure the point isn't the same as the first one
 							break; // If it isn't the same, this point is good
 						}
 					}
 					for(j=j+1;j<numVertices;j++) { // For each point after the previous one used
-						triangle[2]=new Vector3D(BSP.getRVertices().getElement(firstVertex+j).getVertex());
+						triangle[2]=new Vector3D(BSP.getVertices().getElement(firstVertex+j).getVertex());
 						if(!triangle[2].equals(triangle[0]) && !triangle[2].equals(triangle[1])) { // Make sure no point is equal to the third one
 							// Make sure all three points are non collinear
 							Vector3D cr=Vector3D.crossProduct(triangle[0].subtract(triangle[1]), triangle[0].subtract(triangle[2]));
@@ -189,8 +189,8 @@ public class RavenBSPDecompiler {
 			double originShiftT=0;
 			double textureShiftT=0;
 			if(firstVertex>=0) {
-				textureShiftS=(double)BSP.getRVertices().getElement(firstVertex).getSurfaceTexCoordX();
-				textureShiftT=(double)BSP.getRVertices().getElement(firstVertex).getSurfaceTexCoordY();
+				textureShiftS=(double)BSP.getVertices().getElement(firstVertex).getTexCoordX();
+				textureShiftT=(double)BSP.getVertices().getElement(firstVertex).getTexCoordY();
 			}
 			float texRot=0;
 			String material="wld_lightmap";

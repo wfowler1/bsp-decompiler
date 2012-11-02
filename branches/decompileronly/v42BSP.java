@@ -24,7 +24,7 @@ public class v42BSP {
 	private Models models;
 	private Brushes brushes;
 	private BrushSides brushSides;
-	private v42TextureMatrices textureMatrices;
+	private TexInfos texInfo;
 	
 	// CONSTRUCTORS
 	// This accepts a folder path and looks for the BSP there.
@@ -54,7 +54,7 @@ public class v42BSP {
 			Window.println("Materials not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Vertices not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -89,7 +89,7 @@ public class v42BSP {
 			Window.println("Brush sides not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Texture scales lump: "+textureMatrices.getLength()+" bytes, "+textureMatrices.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Texture scales lump: "+texInfo.getLength()+" bytes, "+texInfo.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Texture scales not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -147,7 +147,7 @@ public class v42BSP {
 	}
 	
 	public void setPlanes(byte[] data) {
-		planes=new Planes(data, Plane.TYPE_QUAKE);
+		planes=new Planes(data, BSP.TYPE_NIGHTFIRE);
 	}
 	
 	public Planes getPlanes() {
@@ -155,7 +155,7 @@ public class v42BSP {
 	}
 	
 	public void setTextures(byte[] data) {
-		textures=new Textures(data, Texture.TYPE_NIGHTFIRE);
+		textures=new Textures(data, BSP.TYPE_NIGHTFIRE);
 	}
 	
 	public Textures getTextures() {
@@ -163,7 +163,7 @@ public class v42BSP {
 	}
 	
 	public void setMaterials(byte[] data) {
-		materials=new Textures(data, Texture.TYPE_NIGHTFIRE);
+		materials=new Textures(data, BSP.TYPE_NIGHTFIRE);
 	}
 	
 	public Textures getMaterials() {
@@ -171,7 +171,7 @@ public class v42BSP {
 	}
 	
 	public void setVertices(byte[] data) {
-		vertices=new Vertices(data);
+		vertices=new Vertices(data, BSP.TYPE_NIGHTFIRE);
 	}
 	
 	public Vertices getVertices() {
@@ -211,7 +211,7 @@ public class v42BSP {
 	}
 	
 	public void setBrushes(byte[] data) {
-		brushes=new Brushes(data, Brush.TYPE_NIGHTFIRE);
+		brushes=new Brushes(data, BSP.TYPE_NIGHTFIRE);
 	}
 	
 	public Brushes getBrushes() {
@@ -226,11 +226,11 @@ public class v42BSP {
 		return brushSides;
 	}
 	
-	public void setTextureMatrices(byte[] data) {
-		textureMatrices=new v42TextureMatrices(data);
+	public void setTexInfo(byte[] data) {
+		texInfo=new TexInfos(data, BSP.TYPE_NIGHTFIRE);
 	}
 	
-	public v42TextureMatrices getTextureMatrices() {
-		return textureMatrices;
+	public TexInfos getTexInfo() {
+		return texInfo;
 	}
 }

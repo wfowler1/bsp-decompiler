@@ -14,7 +14,7 @@ public class RavenBSP extends v46BSP {
 	// These are the only lumps we need for decompilation.
 	// Many lumps are inherited from v46BSP
 	private BrushSides brushSides;
-	private RavenVertices rvertices;
+	private Vertices vertices;
 	private Faces faces;
 	
 	// CONSTRUCTORS
@@ -32,7 +32,7 @@ public class RavenBSP extends v46BSP {
 			Window.println("Brush sides not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Vertices lump: "+rvertices.getLength()+" bytes, "+rvertices.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Vertices not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -52,12 +52,12 @@ public class RavenBSP extends v46BSP {
 		return this.brushSides;
 	}
 	
-	public void setRVertices(byte[] data) {
-		this.rvertices=new RavenVertices(data);
+	public void setVertices(byte[] data) {
+		this.vertices=new Vertices(data, BSP.TYPE_RAVEN);
 	}
 	
-	public RavenVertices getRVertices() {
-		return this.rvertices;
+	public Vertices getVertices() {
+		return this.vertices;
 	}
 	
 	public void setFaces(byte[] data) {

@@ -51,7 +51,7 @@ public class v38BSP {
 			Window.println("Textures not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Vertices not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -218,7 +218,7 @@ public class v38BSP {
 	}
 	
 	public void setPlanes(byte[] data) {
-		planes=new Planes(data, Plane.TYPE_QUAKE);
+		planes=new Planes(data, BSP.TYPE_QUAKE2);
 	}
 	
 	public Planes getPlanes() {
@@ -226,7 +226,7 @@ public class v38BSP {
 	}
 	
 	public void setTextures(byte[] data) {
-		textures=new Textures(data, Texture.TYPE_QUAKE2);
+		textures=new Textures(data, BSP.TYPE_QUAKE2);
 	}
 	
 	public Textures getTextures() {
@@ -234,7 +234,7 @@ public class v38BSP {
 	}
 	
 	public void setVertices(byte[] data) {
-		vertices=new Vertices(data);
+		vertices=new Vertices(data, BSP.TYPE_QUAKE2);
 	}
 	
 	public Vertices getVertices() {
@@ -242,7 +242,7 @@ public class v38BSP {
 	}
 	
 	public void setNodes(byte[] data) {
-		nodes=new Nodes(data, Node.TYPE_QUAKE2);
+		nodes=new Nodes(data, BSP.TYPE_QUAKE2);
 	}
 	
 	public Nodes getNodes() {
@@ -298,7 +298,7 @@ public class v38BSP {
 	}
 	
 	public void setBrushes(byte[] data) {
-		brushes=new Brushes(data, Brush.TYPE_QUAKE2);
+		brushes=new Brushes(data, BSP.TYPE_QUAKE2);
 	}
 	
 	public Brushes getBrushes() {

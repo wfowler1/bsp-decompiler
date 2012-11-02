@@ -149,43 +149,19 @@ public class MoHAABSPDecompiler {
 			double textureShiftS;
 			double originShiftT;
 			double textureShiftT;
-			v42TexMatrix currentTexMatrix=BSP.getTexScales().getTexMatrix(currentSide.getTexScale());
-			// Get the lengths of the axis vectors
-			double UAxisLength=Math.sqrt(Math.pow((double)currentTexMatrix.getUAxisX(),2)+Math.pow((double)currentTexMatrix.getUAxisY(),2)+Math.pow((double)currentTexMatrix.getUAxisZ(),2));
-			double VAxisLength=Math.sqrt(Math.pow((double)currentTexMatrix.getVAxisX(),2)+Math.pow((double)currentTexMatrix.getVAxisY(),2)+Math.pow((double)currentTexMatrix.getVAxisZ(),2));
-			// In compiled maps, shorter vectors=longer textures and vice versa. This will convert their lengths back to 1. We'll use the actual scale values for length.
-			if(!(UAxisLength-Window.getPrecision()<0 && UAxisLength+Window.getPrecision()>0)) {
-				texScaleS=(1/UAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
-				textureS[X]=((double)currentTexMatrix.getUAxisX()/UAxisLength);
-				textureS[Y]=((double)currentTexMatrix.getUAxisY()/UAxisLength);
-				textureS[Z]=((double)currentTexMatrix.getUAxisZ()/UAxisLength);
-				originShiftS=((textureS[X]*origin[X])+(textureS[Y]*origin[Y])+(textureS[Z]*origin[Z]))/texScaleS;
-				textureShiftS=(double)currentTexMatrix.getUShift()-originShiftS;
-			} else {
-				texScaleS=1;
-				Vector3D[] textureAxes=BSP46Decompiler.textureAxisFromPlane(currentPlane);
-				textureS[X]=textureAxes[0].getX();
-				textureS[Y]=textureAxes[0].getY();
-				textureS[Z]=textureAxes[0].getZ();
-				originShiftS=(textureS[X]*origin[X])+(textureS[Y]*origin[Y])+(textureS[Z]*origin[Z]);
-				textureShiftS=(double)currentTexMatrix.getUShift()-originShiftS;
-			}
-			if(!(VAxisLength-Window.getPrecision()<0 && VAxisLength+Window.getPrecision()>0)) {
-				texScaleT=(1/VAxisLength);
-				textureT[X]=((double)currentTexMatrix.getVAxisX()/VAxisLength);
-				textureT[Y]=((double)currentTexMatrix.getVAxisY()/VAxisLength);
-				textureT[Z]=((double)currentTexMatrix.getVAxisZ()/VAxisLength);
-				originShiftT=((textureT[X]*origin[X])+(textureT[Y]*origin[Y])+(textureT[Z]*origin[Z]))/texScaleT;
-				textureShiftT=(double)currentTexMatrix.getVShift()-originShiftT;
-			} else {
-				texScaleT=1;
-				Vector3D[] textureAxes=BSP46Decompiler.textureAxisFromPlane(currentPlane);
-				textureT[X]=textureAxes[1].getX();
-				textureT[Y]=textureAxes[1].getY();
-				textureT[Z]=textureAxes[1].getZ();
-				originShiftT=(textureT[X]*origin[X])+(textureT[Y]*origin[Y])+(textureT[Z]*origin[Z]);
-				textureShiftT=(double)currentTexMatrix.getVShift()-originShiftT;
-			}
+			texScaleS=1;
+			Vector3D[] textureAxes=BSP46Decompiler.textureAxisFromPlane(currentPlane);
+			textureS[X]=textureAxes[0].getX();
+			textureS[Y]=textureAxes[0].getY();
+			textureS[Z]=textureAxes[0].getZ();
+			originShiftS=(textureS[X]*origin[X])+(textureS[Y]*origin[Y])+(textureS[Z]*origin[Z]);
+			textureShiftS=0-originShiftS;
+			texScaleT=1;
+			textureT[X]=textureAxes[1].getX();
+			textureT[Y]=textureAxes[1].getY();
+			textureT[Z]=textureAxes[1].getZ();
+			originShiftT=(textureT[X]*origin[X])+(textureT[Y]*origin[Y])+(textureT[Z]*origin[Z]);
+			textureShiftT=0-originShiftT;
 			String material;
 			if(masked) {
 				material="wld_masked";

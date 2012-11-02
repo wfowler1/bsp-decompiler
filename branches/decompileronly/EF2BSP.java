@@ -34,7 +34,7 @@ public class EF2BSP extends v46BSP {
 	
 	// ACCESSORS/MUTATORS
 	public void setTextures(byte[] data) {
-		this.textures=new Textures(data, Texture.TYPE_EF2);
+		this.textures=new Textures(data, BSP.TYPE_STEF2);
 	}
 	
 	public Textures getTextures() {

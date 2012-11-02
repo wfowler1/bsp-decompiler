@@ -40,10 +40,25 @@ public class Planes {
 	// Takes a byte array, as if read from a FileInputStream
 	public Planes(byte[] in, int type) {
 		switch(type) {
-			case Plane.TYPE_QUAKE:
+			case BSP.TYPE_QUAKE:
+			case BSP.TYPE_NIGHTFIRE:
+			case BSP.TYPE_SIN:
+			case BSP.TYPE_SOURCE17:
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_QUAKE2:
 				structLength=20;
 				break;
-			case Plane.TYPE_QUAKE3:
+			case BSP.TYPE_STEF2:
+			case BSP.TYPE_MOHAA:
+			case BSP.TYPE_STEF2DEMO:
+			case BSP.TYPE_RAVEN:
+			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_COD:
 				structLength=16;
 				break;
 			default:

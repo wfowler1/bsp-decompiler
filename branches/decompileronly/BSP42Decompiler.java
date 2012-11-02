@@ -159,16 +159,16 @@ public class BSP42Decompiler {
 				boolean pointsWorked=false;
 				if(numVertices!=0 && !Window.planarDecompIsSelected()) { // If the face actually references a set of vertices
 					triangle=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
-					triangle[0]=new Vector3D(BSP42.getVertices().getVertex(firstVertex)); // Grab and store the first one
+					triangle[0]=new Vector3D(BSP42.getVertices().getElement(firstVertex).getVertex()); // Grab and store the first one
 					int m=1;
 					for(m=1;m<numVertices;m++) { // For each point after the first one
-						triangle[1]=new Vector3D(BSP42.getVertices().getVertex(firstVertex+m));
+						triangle[1]=new Vector3D(BSP42.getVertices().getElement(firstVertex+m).getVertex());
 						if(!triangle[0].equals(triangle[1])) { // Make sure the point isn't the same as the first one
 							break; // If it isn't the same, this point is good
 						}
 					}
 					for(m=m+1;m<numVertices;m++) { // For each point after the previous one used
-						triangle[2]=new Vector3D(BSP42.getVertices().getVertex(firstVertex+m));
+						triangle[2]=new Vector3D(BSP42.getVertices().getElement(firstVertex+m).getVertex());
 						if(!triangle[2].equals(triangle[0]) && !triangle[2].equals(triangle[1])) { // Make sure no point is equal to the third one
 							// Make sure all three points are non collinear
 							Vector3D cr=Vector3D.crossProduct(triangle[0].subtract(triangle[1]), triangle[0].subtract(triangle[2]));
@@ -179,25 +179,25 @@ public class BSP42Decompiler {
 						}
 					}
 				}
-				double[] textureS=new double[3];
-				double[] textureT=new double[3];
-				v42TexMatrix currentTexMatrix=BSP42.getTextureMatrices().getTexMatrix(currentFace.getTextureScale());
+				double[] textureU=new double[3];
+				double[] textureV=new double[3];
+				TexInfo currentTexInfo=BSP42.getTexInfo().getElement(currentFace.getTextureScale());
 				// Get the lengths of the axis vectors
-				double UAxisLength=Math.sqrt(Math.pow((double)currentTexMatrix.getUAxisX(),2)+Math.pow((double)currentTexMatrix.getUAxisY(),2)+Math.pow((double)currentTexMatrix.getUAxisZ(),2));
-				double VAxisLength=Math.sqrt(Math.pow((double)currentTexMatrix.getVAxisX(),2)+Math.pow((double)currentTexMatrix.getVAxisY(),2)+Math.pow((double)currentTexMatrix.getVAxisZ(),2));
+				double SAxisLength=Math.sqrt(Math.pow((double)currentTexInfo.getSAxis().getX(),2)+Math.pow((double)currentTexInfo.getSAxis().getY(),2)+Math.pow((double)currentTexInfo.getSAxis().getZ(),2));
+				double TAxisLength=Math.sqrt(Math.pow((double)currentTexInfo.getTAxis().getX(),2)+Math.pow((double)currentTexInfo.getTAxis().getY(),2)+Math.pow((double)currentTexInfo.getTAxis().getZ(),2));
 				// In compiled maps, shorter vectors=longer textures and vice versa. This will convert their lengths back to 1. We'll use the actual scale values for length.
-				double texScaleS=(1/UAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
-				double texScaleT=(1/VAxisLength);
-				textureS[0]=((double)currentTexMatrix.getUAxisX()/UAxisLength);
-				textureS[1]=((double)currentTexMatrix.getUAxisY()/UAxisLength);
-				textureS[2]=((double)currentTexMatrix.getUAxisZ()/UAxisLength);
-				double originShiftS=(((double)currentTexMatrix.getUAxisX()/UAxisLength)*origin[X]+((double)currentTexMatrix.getUAxisY()/UAxisLength)*origin[Y]+((double)currentTexMatrix.getUAxisZ()/UAxisLength)*origin[Z])/texScaleS;
-				double textureShiftS=(double)currentTexMatrix.getUShift()-originShiftS;
-				textureT[0]=((double)currentTexMatrix.getVAxisX()/VAxisLength);
-				textureT[1]=((double)currentTexMatrix.getVAxisY()/VAxisLength);
-				textureT[2]=((double)currentTexMatrix.getVAxisZ()/VAxisLength);
-				double originShiftT=(((double)currentTexMatrix.getVAxisX()/VAxisLength)*origin[X]+((double)currentTexMatrix.getVAxisY()/VAxisLength)*origin[Y]+((double)currentTexMatrix.getVAxisZ()/VAxisLength)*origin[Z])/texScaleT;
-				double textureShiftT=(double)currentTexMatrix.getVShift()-originShiftT;
+				double texScaleU=(1/SAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
+				double texScaleV=(1/TAxisLength);
+				textureU[0]=((double)currentTexInfo.getSAxis().getX()/SAxisLength);
+				textureU[1]=((double)currentTexInfo.getSAxis().getY()/SAxisLength);
+				textureU[2]=((double)currentTexInfo.getSAxis().getZ()/SAxisLength);
+				double originShiftU=(((double)currentTexInfo.getSAxis().getX()/SAxisLength)*origin[X]+((double)currentTexInfo.getSAxis().getY()/SAxisLength)*origin[Y]+((double)currentTexInfo.getSAxis().getZ()/SAxisLength)*origin[Z])/texScaleU;
+				double textureUhiftU=(double)currentTexInfo.getSShift()-originShiftU;
+				textureV[0]=((double)currentTexInfo.getTAxis().getX()/TAxisLength);
+				textureV[1]=((double)currentTexInfo.getTAxis().getY()/TAxisLength);
+				textureV[2]=((double)currentTexInfo.getTAxis().getZ()/TAxisLength);
+				double originShiftV=(((double)currentTexInfo.getTAxis().getX()/TAxisLength)*origin[X]+((double)currentTexInfo.getTAxis().getY()/TAxisLength)*origin[Y]+((double)currentTexInfo.getTAxis().getZ()/TAxisLength)*origin[Z])/texScaleV;
+				double textureUhiftV=(double)currentTexInfo.getTShift()-originShiftV;
 				float texRot=0; // In compiled maps this is calculated into the U and V axes, so set it to 0 until I can figure out a good way to determine a better value.
 				int flags=DataReader.readInt(currentFace.getFlags()[0], currentFace.getFlags()[1], currentFace.getFlags()[2], currentFace.getFlags()[3]); // This is actually a set of flags. Whatever.
 				String material;
@@ -217,11 +217,11 @@ public class BSP42Decompiler {
 					flags=0;
 				}
 				if(pointsWorked) {
-					newList[brushSides.length]=new MAPBrushSide(currentPlane, triangle, texture, textureS, textureShiftS, textureT, textureShiftT,
-					                                            texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
+					newList[brushSides.length]=new MAPBrushSide(currentPlane, triangle, texture, textureU, textureUhiftU, textureV, textureUhiftV,
+					                                            texRot, texScaleU, texScaleV, flags, material, lgtScale, lgtRot);
 				} else {
-					newList[brushSides.length]=new MAPBrushSide(currentPlane, texture, textureS, textureShiftS, textureT, textureShiftT,
-					                                            texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
+					newList[brushSides.length]=new MAPBrushSide(currentPlane, texture, textureU, textureUhiftU, textureV, textureUhiftV,
+					                                            texRot, texScaleU, texScaleV, flags, material, lgtScale, lgtRot);
 				}
 				brushSides=newList;
 				numRealFaces++;

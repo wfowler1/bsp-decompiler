@@ -14,7 +14,6 @@ public class MoHAABSP extends v46BSP {
 	// Each lump has its own class for handling its specific data structures.
 	// These are the only lumps we need for decompilation.
 	private Textures textures;
-	private v42TextureMatrices textureScales; // Yes, MoHAA actually uses the same matrix format as Nightfire.
 	private BrushSides brushSides;
 	private MoHAAStaticProps staticProps;
 	
@@ -32,11 +31,6 @@ public class MoHAABSP extends v46BSP {
 			Window.println("Textures not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Texture scale lump: "+textureScales.getLength()+" bytes, "+textureScales.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
-		} catch(java.lang.NullPointerException e) {
-			Window.println("Texture scales not yet parsed!",Window.VERBOSITY_MAPSTATS);
-		}
-		try {
 			Window.println("Brush sides lump: "+brushSides.getLength()+" bytes, "+brushSides.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Brush sides not yet parsed!",Window.VERBOSITY_MAPSTATS);
@@ -49,19 +43,11 @@ public class MoHAABSP extends v46BSP {
 	}
 	
 	public void setTextures(byte[] in) {
-		textures=new Textures(in, Texture.TYPE_MOHAA);
+		textures=new Textures(in, BSP.TYPE_MOHAA);
 	}
 	
 	public Textures getTextures() {
 		return textures;
-	}
-	
-	public void setTexScales(byte[] in) {
-		textureScales=new v42TextureMatrices(in);
-	}
-	
-	public v42TextureMatrices getTexScales() {
-		return textureScales;
 	}
 	
 	public void setBrushSides(byte[] in) {

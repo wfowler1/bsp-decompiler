@@ -25,7 +25,7 @@ public class SourceBSP {
 	private SourceTexDatas texDatas;
 	private Vertices vertices;
 	private Nodes nodes;
-	private SourceTexInfos texInfos;
+	private TexInfos texInfo;
 	// private SourceFaces faces;
 	private Leaves leaves;
 	private Edges edges;
@@ -37,7 +37,7 @@ public class SourceBSP {
 	private SourceDispInfos dispInfos;
 	// private SourceFaces originalFaces;
 	private SourceDispVertices dispVerts;
-	private SourceTextures textures;
+	private Textures textures;
 	private IntList texTable;
 	private ShortList displacementTriangles;
 	
@@ -65,7 +65,7 @@ public class SourceBSP {
 			Window.println("Texture data not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Vertices not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -75,7 +75,7 @@ public class SourceBSP {
 			Window.println("Nodes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Texture info lump: "+texInfos.getLength()+" bytes, "+texInfos.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Texture info lump: "+texInfo.getLength()+" bytes, "+texInfo.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Texture info not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -276,7 +276,7 @@ public class SourceBSP {
 	}
 	
 	public void setPlanes(byte[] data) {
-		planes=new Planes(data, Plane.TYPE_QUAKE);
+		planes=new Planes(data, BSP.TYPE_SOURCE17);
 	}
 	
 	public Planes getPlanes() {
@@ -292,7 +292,7 @@ public class SourceBSP {
 	}
 	
 	public void setVertices(byte[] data) {
-		vertices=new Vertices(data);
+		vertices=new Vertices(data, BSP.TYPE_SOURCE17);
 	}
 	
 	public Vertices getVertices() {
@@ -300,19 +300,19 @@ public class SourceBSP {
 	}
 	
 	public void setNodes(byte[] data) {
-		nodes=new Nodes(data, Node.TYPE_SOURCE);
+		nodes=new Nodes(data, BSP.TYPE_SOURCE17);
 	}
 	
 	public Nodes getNodes() {
 		return nodes;
 	}
 	
-	public void setTexInfos(byte[] data) {
-		texInfos=new SourceTexInfos(data);
+	public void setTexInfo(byte[] data) {
+		texInfo=new TexInfos(data, BSP.TYPE_SOURCE17);
 	}
 	
-	public SourceTexInfos getTexInfos() {
-		return texInfos;
+	public TexInfos getTexInfos() {
+		return texInfo;
 	}
 	/*
 	public void setFaces(byte[] data) {
@@ -368,7 +368,7 @@ public class SourceBSP {
 	}
 	
 	public void setBrushes(byte[] data) {
-		brushes=new Brushes(data, Brush.TYPE_QUAKE2);
+		brushes=new Brushes(data, BSP.TYPE_QUAKE2);
 	}
 	
 	public Brushes getBrushes() {
@@ -402,10 +402,10 @@ public class SourceBSP {
 	}
 	
 	public void setTextures(byte[] data) {
-		textures=new SourceTextures(data);
+		textures=new Textures(data, BSP.TYPE_SOURCE17);
 	}
 	
-	public SourceTextures getTextures() {
+	public Textures getTextures() {
 		return textures;
 	}
 	

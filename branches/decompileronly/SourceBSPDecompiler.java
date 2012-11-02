@@ -122,13 +122,13 @@ public class SourceBSPDecompiler {
 					}
 				}*/
 				if(!isDuplicate) {
-					SourceTexInfo currentTexInfo;
+					TexInfo currentTexInfo;
 					if(currentSide.getTexture()>-1) {
 						currentTexInfo=BSP.getTexInfos().getElement(currentSide.getTexture());
 					} else {
 						currentTexInfo=createPerpTexInfo(currentPlane); // Create a texture plane perpendicular to current plane's normal
 					}
-					SourceTexData currentTexData=BSP.getTexDatas().getElement(currentTexInfo.getTexData());
+					SourceTexData currentTexData=BSP.getTexDatas().getElement(currentTexInfo.getTexture());
 					/*if(!Window.planarDecompIsSelected()) {
 						// Find a face whose plane and texture information corresponds to the current side
 						// It doesn't really matter if it's the actual brush's face, just as long as it provides vertices.
@@ -229,31 +229,31 @@ public class SourceBSPDecompiler {
 					//	plane=GenericMethods.extrapPlanePoints(currentPlane);
 					// }
 					String texture=BSP.getTextures().getTextureAtOffset(BSP.getTexTable().getInt(currentTexData.getStringTableIndex()));
-					double[] textureS=new double[3];
-					double[] textureT=new double[3];
+					double[] textureU=new double[3];
+					double[] textureV=new double[3];
 					// Get the lengths of the axis vectors
-					double UAxisLength=Math.sqrt(Math.pow((double)currentTexInfo.getTextureS().getX(),2)+Math.pow((double)currentTexInfo.getTextureS().getY(),2)+Math.pow((double)currentTexInfo.getTextureS().getZ(),2));
-					double VAxisLength=Math.sqrt(Math.pow((double)currentTexInfo.getTextureT().getX(),2)+Math.pow((double)currentTexInfo.getTextureT().getY(),2)+Math.pow((double)currentTexInfo.getTextureT().getZ(),2));
+					double SAxisLength=Math.sqrt(Math.pow((double)currentTexInfo.getSAxis().getX(),2)+Math.pow((double)currentTexInfo.getSAxis().getY(),2)+Math.pow((double)currentTexInfo.getSAxis().getZ(),2));
+					double TAxisLength=Math.sqrt(Math.pow((double)currentTexInfo.getTAxis().getX(),2)+Math.pow((double)currentTexInfo.getTAxis().getY(),2)+Math.pow((double)currentTexInfo.getTAxis().getZ(),2));
 					// In compiled maps, shorter vectors=longer textures and vice versa. This will convert their lengths back to 1. We'll use the actual scale values for length.
-					double texScaleS=(1/UAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
-					double texScaleT=(1/VAxisLength);
-					textureS[0]=((double)currentTexInfo.getTextureS().getX()/UAxisLength);
-					textureS[1]=((double)currentTexInfo.getTextureS().getY()/UAxisLength);
-					textureS[2]=((double)currentTexInfo.getTextureS().getZ()/UAxisLength);
-					double originShiftS=(((double)currentTexInfo.getTextureS().getX()/UAxisLength)*origin[X]+((double)currentTexInfo.getTextureS().getY()/UAxisLength)*origin[Y]+((double)currentTexInfo.getTextureS().getZ()/UAxisLength)*origin[Z])/texScaleS;
-					double textureShiftS=(double)currentTexInfo.getTextureSShift()-originShiftS;
-					textureT[0]=((double)currentTexInfo.getTextureT().getX()/VAxisLength);
-					textureT[1]=((double)currentTexInfo.getTextureT().getY()/VAxisLength);
-					textureT[2]=((double)currentTexInfo.getTextureT().getZ()/VAxisLength);
-					double originShiftT=(((double)currentTexInfo.getTextureT().getX()/VAxisLength)*origin[X]+((double)currentTexInfo.getTextureT().getY()/VAxisLength)*origin[Y]+((double)currentTexInfo.getTextureT().getZ()/VAxisLength)*origin[Z])/texScaleT;
-					double textureShiftT=(double)currentTexInfo.getTextureTShift()-originShiftT;
+					double texScaleU=(1/SAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
+					double texScaleV=(1/TAxisLength);
+					textureU[0]=((double)currentTexInfo.getSAxis().getX()/SAxisLength);
+					textureU[1]=((double)currentTexInfo.getSAxis().getY()/SAxisLength);
+					textureU[2]=((double)currentTexInfo.getSAxis().getZ()/SAxisLength);
+					double originShiftU=(((double)currentTexInfo.getSAxis().getX()/SAxisLength)*origin[X]+((double)currentTexInfo.getSAxis().getY()/SAxisLength)*origin[Y]+((double)currentTexInfo.getSAxis().getZ()/SAxisLength)*origin[Z])/texScaleU;
+					double textureShiftU=(double)currentTexInfo.getSShift()-originShiftU;
+					textureV[0]=((double)currentTexInfo.getTAxis().getX()/TAxisLength);
+					textureV[1]=((double)currentTexInfo.getTAxis().getY()/TAxisLength);
+					textureV[2]=((double)currentTexInfo.getTAxis().getZ()/TAxisLength);
+					double originShiftV=(((double)currentTexInfo.getTAxis().getX()/TAxisLength)*origin[X]+((double)currentTexInfo.getTAxis().getY()/TAxisLength)*origin[Y]+((double)currentTexInfo.getTAxis().getZ()/TAxisLength)*origin[Z])/texScaleV;
+					double textureShiftV=(double)currentTexInfo.getTShift()-originShiftV;
 					float texRot=0; // In compiled maps this is calculated into the U and V axes, so set it to 0 until I can figure out a good way to determine a better value.
 					int flags=0; // Set this to 0 until we can somehow associate faces with brushes
 					String material="wld_lightmap"; // Since materials are a NightFire only thing, set this to a good default
 					double lgtScale=16; // These values are impossible to get from a compiled map since they
 					double lgtRot=0;    // are used by RAD for generating lightmaps, then are discarded, I believe.
-					brushSides[i]=new MAPBrushSide(currentPlane, texture, textureS, textureShiftS, textureT, textureShiftT,
-					                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
+					brushSides[i]=new MAPBrushSide(currentPlane, texture, textureU, textureShiftU, textureV, textureShiftV,
+					                               texRot, texScaleU, texScaleV, flags, material, lgtScale, lgtRot);
 					mapBrush.add(brushSides[i]);
 				}
 			}
@@ -304,13 +304,12 @@ public class SourceBSPDecompiler {
 		}
 	}
 	
-	public SourceTexInfo createPerpTexInfo(Plane in) {
+	public TexInfo createPerpTexInfo(Plane in) {
 		Vector3D[] points=GenericMethods.extrapPlanePoints(in);
 		Vector3D s=new Vector3D(points[1].getX()-points[0].getX(), points[1].getY()-points[0].getY(), points[1].getZ()-points[0].getZ());
 		Vector3D t=new Vector3D(points[1].getX()-points[2].getX(), points[1].getY()-points[2].getY(), points[1].getZ()-points[2].getZ());
 		s.normalize();
 		t.normalize();
-		SourceTexInfo currentTexInfo= new SourceTexInfo(s, 0, t, 0, s, 0, t, 0, BSP.findTexDataWithTexture("tools/toolsclip"), 0);
-		return currentTexInfo;
+		return new TexInfo(s, 0, t, 0, 0, BSP.findTexDataWithTexture("tools/toolsclip"));
 	} 
 }

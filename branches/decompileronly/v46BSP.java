@@ -19,7 +19,7 @@ public class v46BSP {
 	private Models models;
 	private Brushes brushes;
 	private BrushSides brushSides;
-	private v46Vertices vertices; // Probably the only BSP version to use a different vertex format
+	private Vertices vertices; // Probably the only BSP version to use a different vertex format
 	private Faces faces;
 	
 	// CONSTRUCTORS
@@ -60,7 +60,7 @@ public class v46BSP {
 			Window.println("Brush sides not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Vertices not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -123,7 +123,7 @@ public class v46BSP {
 	}
 	
 	public void setPlanes(byte[] data) {
-		planes=new Planes(data, Plane.TYPE_QUAKE3);
+		planes=new Planes(data, BSP.TYPE_QUAKE3);
 	}
 	
 	public Planes getPlanes() {
@@ -131,7 +131,7 @@ public class v46BSP {
 	}
 	
 	public void setTextures(byte[] data) {
-		textures=new Textures(data, Texture.TYPE_QUAKE3);
+		textures=new Textures(data, BSP.TYPE_QUAKE3);
 	}
 	
 	public Textures getTextures() {
@@ -147,7 +147,7 @@ public class v46BSP {
 	}
 	
 	public void setBrushes(byte[] data) {
-		brushes=new Brushes(data, Brush.TYPE_QUAKE3);
+		brushes=new Brushes(data, BSP.TYPE_QUAKE3);
 	}
 	
 	public Brushes getBrushes() {
@@ -163,10 +163,10 @@ public class v46BSP {
 	}
 	
 	public void setVertices(byte[] data) {
-		vertices=new v46Vertices(data);
+		vertices=new Vertices(data, BSP.TYPE_QUAKE3);
 	}
 	
-	public v46Vertices getVertices() {
+	public Vertices getVertices() {
 		return vertices;
 	}
 	

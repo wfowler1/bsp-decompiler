@@ -94,7 +94,7 @@ public class BSP38Decompiler {
 		if(containsAreaPortals) { // If this map was found to have area portals
 			int j=0;
 			for(int i=0;i<BSP38.getBrushes().length();i++) { // For each brush in this map
-				if(BSP38.getBrushes().getElement(i).getContents()[1] & ((byte)1 << 7)) != 0) { // If the brush is an area portal brush
+				if((BSP38.getBrushes().getElement(i).getContents()[1] & ((byte)1 << 7)) != 0) { // If the brush is an area portal brush
 					for(j++;j<BSP38.getEntities().length();j++) { // Find an areaportal entity
 						if(BSP38.getEntities().getEntity(j).getAttribute("classname").equalsIgnoreCase("func_areaportal")) {
 							decompileBrush(BSP38.getBrushes().getElement(i), j); // Add the brush to that entity
@@ -249,12 +249,12 @@ public class BSP38Decompiler {
 					plane=GenericMethods.extrapPlanePoints(currentPlane);
 				// }
 				String texture="special/clip";
-				double[] textureS=new double[3];
-				double[] textureT=new double[3];
+				double[] textureU=new double[3];
+				double[] textureV=new double[3];
 				double UShift=0;
 				double VShift=0;
-				double texScaleS=1;
-				double texScaleT=1;
+				double texScaleU=1;
+				double texScaleV=1;
 				if(currentSide.getTexture()>-1) {
 					currentTexture=BSP38.getTextures().getElement(currentSide.getTexture());
 					if((currentTexture.getFlags()[0] & ((byte)1 << 2)) != 0) {
@@ -275,35 +275,35 @@ public class BSP38Decompiler {
 						}
 					}
 					// Get the lengths of the axis vectors
-					double UAxisLength=Math.sqrt(Math.pow((double)currentTexture.getTexAxes().getUAxisX(),2)+Math.pow((double)currentTexture.getTexAxes().getUAxisY(),2)+Math.pow((double)currentTexture.getTexAxes().getUAxisZ(),2));
-					double VAxisLength=Math.sqrt(Math.pow((double)currentTexture.getTexAxes().getVAxisX(),2)+Math.pow((double)currentTexture.getTexAxes().getVAxisY(),2)+Math.pow((double)currentTexture.getTexAxes().getVAxisZ(),2));
+					double SAxisLength=Math.sqrt(Math.pow((double)currentTexture.getTexAxes().getSAxis().getX(),2)+Math.pow((double)currentTexture.getTexAxes().getSAxis().getY(),2)+Math.pow((double)currentTexture.getTexAxes().getSAxis().getZ(),2));
+					double TAxisLength=Math.sqrt(Math.pow((double)currentTexture.getTexAxes().getTAxis().getX(),2)+Math.pow((double)currentTexture.getTexAxes().getTAxis().getY(),2)+Math.pow((double)currentTexture.getTexAxes().getTAxis().getZ(),2));
 					// In compiled maps, shorter vectors=longer textures and vice versa. This will convert their lengths back to 1. We'll use the actual scale values for length.
-					texScaleS=(1/UAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
-					texScaleT=(1/VAxisLength);
-					textureS[0]=((double)currentTexture.getTexAxes().getUAxisX()/UAxisLength);
-					textureS[1]=((double)currentTexture.getTexAxes().getUAxisY()/UAxisLength);
-					textureS[2]=((double)currentTexture.getTexAxes().getUAxisZ()/UAxisLength);
-					textureT[0]=((double)currentTexture.getTexAxes().getVAxisX()/VAxisLength);
-					textureT[1]=((double)currentTexture.getTexAxes().getVAxisY()/VAxisLength);
-					textureT[2]=((double)currentTexture.getTexAxes().getVAxisZ()/VAxisLength);
-					UShift=(double)currentTexture.getTexAxes().getUShift();
-					VShift=(double)currentTexture.getTexAxes().getVShift();
+					texScaleU=(1/SAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
+					texScaleV=(1/TAxisLength);
+					textureU[0]=((double)currentTexture.getTexAxes().getSAxis().getX()/SAxisLength);
+					textureU[1]=((double)currentTexture.getTexAxes().getSAxis().getY()/SAxisLength);
+					textureU[2]=((double)currentTexture.getTexAxes().getSAxis().getZ()/SAxisLength);
+					textureV[0]=((double)currentTexture.getTexAxes().getTAxis().getX()/TAxisLength);
+					textureV[1]=((double)currentTexture.getTexAxes().getTAxis().getY()/TAxisLength);
+					textureV[2]=((double)currentTexture.getTexAxes().getTAxis().getZ()/TAxisLength);
+					UShift=(double)currentTexture.getTexAxes().getSShift();
+					VShift=(double)currentTexture.getTexAxes().getTShift();
 				} else {
 					Vector3D[] axes=BSP46Decompiler.textureAxisFromPlane(currentPlane);
-					textureS=axes[0].getPoint();
-					textureT=axes[1].getPoint();
+					textureU=axes[0].getPoint();
+					textureV=axes[1].getPoint();
 				}
-				double originShiftS=(textureS[0]*origin[X]+textureS[1]*origin[Y]+textureS[2]*origin[Z])/texScaleS;
-				double textureShiftS=UShift-originShiftS;
-				double originShiftT=(textureT[0]*origin[X]+textureT[1]*origin[Y]+textureT[2]*origin[Z])/texScaleT;
-				double textureShiftT=VShift-originShiftT;
+				double originShiftU=(textureU[0]*origin[X]+textureU[1]*origin[Y]+textureU[2]*origin[Z])/texScaleU;
+				double textureShiftU=UShift-originShiftU;
+				double originShiftV=(textureV[0]*origin[X]+textureV[1]*origin[Y]+textureV[2]*origin[Z])/texScaleV;
+				double textureShiftV=VShift-originShiftV;
 				float texRot=0; // In compiled maps this is calculated into the U and V axes, so set it to 0 until I can figure out a good way to determine a better value.
 				int flags=0; // Set this to 0 until we can somehow associate faces with brushes
 				String material="wld_lightmap"; // Since materials are a NightFire only thing, set this to a good default
 				double lgtScale=16; // These values are impossible to get from a compiled map since they
 				double lgtRot=0;    // are used by RAD for generating lightmaps, then are discarded, I believe.
-				brushSides[i]=new MAPBrushSide(plane, texture, textureS, textureShiftS, textureT, textureShiftT,
-				                               texRot, texScaleS, texScaleT, flags, material, lgtScale, lgtRot);
+				brushSides[i]=new MAPBrushSide(plane, texture, textureU, textureShiftU, textureV, textureShiftV,
+				                               texRot, texScaleU, texScaleV, flags, material, lgtScale, lgtRot);
 				mapBrush.add(brushSides[i]);
 			}
 		}

@@ -1,85 +1,86 @@
 // Vertices class
 
-// This class holds an array of vertices of the Vertex class. Really it's an array
-// of float3 but that's how it is for consistency's sake.
+// Maintains an array of Vertices.
 
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.File;
 
 public class Vertices {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
-	public final int X=0;
-	public final int Y=1;
-	public final int Z=2;
-	
 	private File data;
 	private int length;
-	private int numVerts=0;
-	private Vector3D[] vertices;
+	private Vertex[] elements;
 	
+	private int structLength;
+
 	// CONSTRUCTORS
 	
-	// This one accepts the lump path as a String
-	public Vertices(String in) {
-		data=new File(in);
-		try {
-			numVerts=getNumElements();
-			length=(int)data.length();
-			vertices=new Vector3D[numVerts];
-			populateVertexList();
-		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+data.getName()+" not found!",0);
-		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+data.getName()+" could not be read, ensure the file is not open in another program",0);
-		}
+	// Accepts a filepath as a String
+	public Vertices(String in, int type) {
+		new Vertices(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public Vertices(File in) {
+	public Vertices(File in, int type) {
 		data=in;
 		try {
-			numVerts=getNumElements();
-			length=(int)data.length();
-			vertices=new Vector3D[numVerts];
-			populateVertexList();
+			FileInputStream fileReader=new FileInputStream(data);
+			byte[] temp=new byte[(int)data.length()];
+			fileReader.read(temp);
+			new Vertices(temp, type);
+			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+data.getName()+" not found!",0);
+			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
 		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+data.getName()+" could not be read, ensure the file is not open in another program",0);
+			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",Window.VERBOSITY_ALWAYS);
 		}
 	}
 	
-	public Vertices(byte[] in) {
+	// Takes a byte array, as if read from a FileInputStream
+	public Vertices(byte[] in, int type) {
+		switch(type) {
+			case BSP.TYPE_STEF2:
+			case BSP.TYPE_MOHAA:
+			case BSP.TYPE_STEF2DEMO:
+			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_COD:
+				structLength=44;
+				break;
+			case BSP.TYPE_QUAKE:
+			case BSP.TYPE_NIGHTFIRE:
+			case BSP.TYPE_SIN:
+			case BSP.TYPE_SOURCE17:
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_QUAKE2:
+				structLength=12;
+				break;
+			case BSP.TYPE_RAVEN:
+				structLength=80;
+				break;
+			default:
+				structLength=0; // This will cause the shit to hit the fan.
+		}
 		int offset=0;
-		numVerts=in.length/12;
 		length=in.length;
-		vertices=new Vector3D[numVerts];
-		for(int i=0;i<numVerts;i++) {
-			byte[] vertexBytes=new byte[12];
-			for(int j=0;j<12;j++) {
-				vertexBytes[j]=in[offset+j];
+		elements=new Vertex[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			for(int j=0;j<structLength;j++) {
+				bytes[j]=in[offset+j];
 			}
-			vertices[i]=new Vector3D(vertexBytes);
-			offset+=12;
+			elements[i]=new Vertex(bytes, type);
+			offset+=structLength;
 		}
 	}
 	
 	// METHODS
-	
-	// +populateVertexList()
-	// Parses all data into an array of Vector3D.
-	public void populateVertexList() throws java.io.FileNotFoundException, java.io.IOException {
-		FileInputStream reader=new FileInputStream(data);
-		for(int i=0;i<numVerts;i++) {
-			byte[] datain=new byte[12];
-			reader.read(datain);
-			vertices[i]=new Vector3D(datain);
-		}
-		reader.close();
-	}
 	
 	// ACCESSORS/MUTATORS
 	
@@ -88,20 +89,20 @@ public class Vertices {
 		return length;
 	}
 	
-	// Returns the number of vertices.
-	public int getNumElements() {
-		if(numVerts==0) {
-			return length/12;
+	// Returns the number of elements.
+	public int length() {
+		if(elements.length==0) {
+			return length/structLength;
 		} else {
-			return numVerts;
+			return elements.length;
 		}
 	}
 	
-	public Vector3D getVertex(int i) {
-		return vertices[i];
+	public Vertex getElement(int i) {
+		return elements[i];
 	}
 	
-	public Vector3D[] getVertices() {
-		return vertices;
+	public Vertex[] getElements() {
+		return elements;
 	}
 }

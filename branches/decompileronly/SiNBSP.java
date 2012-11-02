@@ -51,7 +51,7 @@ public class SiNBSP extends v38BSP {
 	}
 	
 	public void setTextures(byte[] data) {
-		this.textures=new Textures(data, Texture.TYPE_SIN);
+		this.textures=new Textures(data, BSP.TYPE_SIN);
 	}
 	
 	public Textures getTextures() {

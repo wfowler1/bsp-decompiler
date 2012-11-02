@@ -41,12 +41,24 @@ public class Brushes {
 	// Takes a byte array, as if read from a FileInputStream
 	public Brushes(byte[] in, int type) {
 		switch(type) {
-			case Brush.TYPE_QUAKE2:
-			case Brush.TYPE_NIGHTFIRE:
-			case Brush.TYPE_QUAKE3:
+			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_SIN:
+			case BSP.TYPE_SOURCE17:
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_NIGHTFIRE:
+			case BSP.TYPE_STEF2:
+			case BSP.TYPE_MOHAA:
+			case BSP.TYPE_STEF2DEMO:
+			case BSP.TYPE_RAVEN:
+			case BSP.TYPE_QUAKE3:
 				structLength=12;
 				break;
-			case Brush.TYPE_COD:
+			case BSP.TYPE_COD:
 				structLength=4;
 				break;
 			default:

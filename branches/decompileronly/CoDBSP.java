@@ -56,7 +56,7 @@ public class CoDBSP extends v46BSP {
 	}
 	
 	public void setBrushes(byte[] data) {
-		brushes=new Brushes(data, Brush.TYPE_COD);
+		brushes=new Brushes(data, BSP.TYPE_COD);
 	}
 	
 	public Brushes getBrushes() {
