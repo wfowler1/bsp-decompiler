@@ -155,8 +155,8 @@ public class MAP510Writer {
 		double[] origin=in.getOrigin();
 		// Correct some attributes of entities
 		switch(BSPVersion) {
-			case v46BSP.VERSION:
-			case RavenBSP.VERSION:
+			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_RAVEN:
 				in=ent46ToEntM510(in);
 				break;
 			case 42: // Nightfire
@@ -240,7 +240,7 @@ public class MAP510Writer {
 			return new byte[0];
 		}
 		String brush="{ // Brush "+num+(char)0x0D+(char)0x0A;
-		if(in.isDetailBrush()) {
+		if(in.isDetailBrush() && currentEntity==0) {
 			brush+="\"BRUSHFLAGS\" \"DETAIL\""+(char)0x0D+(char)0x0A;
 		}
 		for(int i=0;i<in.getNumSides();i++) {
@@ -322,7 +322,7 @@ public class MAP510Writer {
 						;
 					}
 				}
-				if(BSPVersion==v46BSP.VERSION || BSPVersion==MoHAABSP.VERSION || BSPVersion==CoDBSP.VERSION) {
+				if(BSPVersion==BSP.TYPE_QUAKE3 || BSPVersion==BSP.TYPE_MOHAA || BSPVersion==BSP.TYPE_COD) {
 					try {
 						if(texture.substring(0,9).equalsIgnoreCase("textures/")) {
 							texture=texture.substring(9);
@@ -402,7 +402,7 @@ public class MAP510Writer {
 						}
 					}
 				}
-				if(BSPVersion==RavenBSP.VERSION) {
+				if(BSPVersion==BSP.TYPE_RAVEN) {
 					try {
 						if(texture.substring(0,9).equalsIgnoreCase("textures/")) {
 							texture=texture.substring(9);

@@ -36,12 +36,24 @@ public class BSP {
 	private String filePath;
 	
 	// Map structures
+	// Quake 1/GoldSrc
 	private Entities entities;
 	private Planes planes;
 	private Textures textures;
 	private Vertices vertices;
 	private Nodes nodes;
 	private TexInfos texInfo;
+	private Faces faces;
+	private Leaves leaves;
+	private ShortList markSurfaces;
+	private Edges edges;
+	private IntList surfEdges;
+	private Models models;
+	// Quake 3
+	private Brushes brushes;
+	private BrushSides brushSides;
+	// MOHAA
+	//private MoHAAStaticProps staticProps;
 	
 	// CONSTRUCTORS
 	public BSP(String filePath, int version) {
@@ -94,6 +106,10 @@ public class BSP {
 		return filePath.substring(0,filePath.length()-i);
 	}
 	
+	public int getVersion() {
+		return version;
+	}
+	
 	public Entities getEntities() {
 		return entities;
 	}
@@ -140,5 +156,69 @@ public class BSP {
 	
 	public void setTexInfo(byte[] data) {
 		texInfo=new TexInfos(data, version);
+	}
+	
+	public Faces getFaces() {
+		return faces;
+	}
+	
+	public void setFaces(byte[] data) {
+		faces=new Faces(data, version);
+	}
+	
+	public Leaves getLeaves() {
+		return leaves;
+	}
+	
+	public void setLeaves(byte[] data) {
+		leaves=new Leaves(data, version);
+	}
+	
+	public ShortList getMarkSurfaces() {
+		return markSurfaces;
+	}
+	
+	public void setMarkSurfaces(byte[] data) {
+		markSurfaces=new ShortList(data);
+	}
+	
+	public Edges getEdges() {
+		return edges;
+	}
+	
+	public void setEdges(byte[] data) {
+		edges=new Edges(data);
+	}
+	
+	public IntList getSurfEdges() {
+		return surfEdges;
+	}
+	
+	public void setSurfEdges(byte[] data) {
+		surfEdges=new IntList(data);
+	}
+	
+	public Models getModels() {
+		return models;
+	}
+	
+	public void setModels(byte[] data) {
+		models=new Models(data, version);
+	}
+	
+	public Brushes getBrushes() {
+		return brushes;
+	}
+	
+	public void setBrushes(byte[] data) {
+		brushes=new Brushes(data, version);
+	}
+	
+	public BrushSides getBrushSides() {
+		return brushSides;
+	}
+	
+	public void setBrushSides(byte[] data) {
+		brushSides=new BrushSides(data, version);
 	}
 }

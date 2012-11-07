@@ -250,7 +250,7 @@ public class v38BSP {
 	}
 	
 	public void setFaces(byte[] data) {
-		faces=new Faces(data, Face.TYPE_QUAKE);
+		faces=new Faces(data, BSP.TYPE_QUAKE2);
 	}
 	
 	public Faces getFaces() {
@@ -258,7 +258,7 @@ public class v38BSP {
 	}
 	
 	public void setLeaves(byte[] data) {
-		leaves=new Leaves(data, Leaf.TYPE_QUAKE2);
+		leaves=new Leaves(data, BSP.TYPE_QUAKE2);
 	}
 	
 	public Leaves getLeaves() {
@@ -290,7 +290,7 @@ public class v38BSP {
 	}
 	
 	public void setModels(byte[] data) {
-		models=new Models(data, Model.TYPE_QUAKE2);
+		models=new Models(data, BSP.TYPE_QUAKE2);
 	}
 	
 	public Models getModels() {
@@ -306,7 +306,7 @@ public class v38BSP {
 	}
 	
 	public void setBrushSides(byte[] data) {
-		brushSides=new BrushSides(data, BrushSide.TYPE_QUAKE2);
+		brushSides=new BrushSides(data, BSP.TYPE_QUAKE2);
 	}
 	
 	public BrushSides getBrushSides() {

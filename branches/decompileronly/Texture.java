@@ -12,7 +12,7 @@ public class Texture extends LumpObject {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private String name;
-	private String mask;
+	private String mask="ignore"; // Only used by MoHAA, and "ignore" means it's unused
 	private byte[] flags;
 	private byte[] contents;
 	private TexInfo texAxes;

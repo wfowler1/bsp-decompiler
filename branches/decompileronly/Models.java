@@ -41,18 +41,30 @@ public class Models {
 	// Takes a byte array, as if read from a FileInputStream
 	public Models(byte[] in, int type) {
 		switch(type) {
-			case Model.TYPE_QUAKE:
-				structLength=64;
+			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_RAVEN:
+			case BSP.TYPE_STEF2:
+			case BSP.TYPE_STEF2DEMO:
+			case BSP.TYPE_MOHAA:
+				structLength=40;
 				break;
-			case Model.TYPE_QUAKE2:
-			case Model.TYPE_COD:
+			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_COD:
+			case BSP.TYPE_SIN:
+			case BSP.TYPE_SOURCE17:
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
 				structLength=48;
 				break;
-			case Model.TYPE_NIGHTFIRE:
+			case BSP.TYPE_NIGHTFIRE:
 				structLength=56;
 				break;
-			case Model.TYPE_QUAKE3:
-				structLength=40;
+			case BSP.TYPE_QUAKE:
+				structLength=64;
 				break;
 			default:
 				structLength=0; // This will cause the shit to hit the fan.

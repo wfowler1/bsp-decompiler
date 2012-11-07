@@ -41,18 +41,34 @@ public class Leaves {
 	// Takes a byte array, as if read from a FileInputStream
 	public Leaves(byte[] in, int type) {
 		switch(type) {
-			case Leaf.TYPE_QUAKE:
-			case Leaf.TYPE_QUAKE2:
+			case BSP.TYPE_QUAKE:
+			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_SIN:
 				structLength=28;
 				break;
-			case Leaf.TYPE_NIGHTFIRE:
+			case BSP.TYPE_SOURCE17:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
+				structLength=32;
+				break;
+			case BSP.TYPE_COD:
+				structLength=36;
+				break;
+			case BSP.TYPE_NIGHTFIRE:
+			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_STEF2DEMO:
+			case BSP.TYPE_STEF2:
+			case BSP.TYPE_RAVEN:
 				structLength=48;
 				break;
-			case Leaf.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
 				structLength=56;
 				break;
-			case Leaf.TYPE_SOURCE20:
-				structLength=32;
+			case BSP.TYPE_MOHAA:
+				structLength=64;
 				break;
 			default:
 				structLength=0; // This will cause the shit to hit the fan.

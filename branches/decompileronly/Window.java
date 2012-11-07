@@ -137,7 +137,7 @@ public class Window extends JPanel implements ActionListener {
 		} catch(java.lang.Exception e) {
 			;
 		}
-			
+		
 		frame = new JFrame("BSP Decompiler by 005");
 	
 		window = new Window(frame.getContentPane());

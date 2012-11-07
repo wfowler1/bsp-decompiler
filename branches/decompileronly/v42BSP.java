@@ -179,7 +179,7 @@ public class v42BSP {
 	}
 	
 	public void setFaces(byte[] data) {
-		faces=new Faces(data, Face.TYPE_NIGHTFIRE);
+		faces=new Faces(data, BSP.TYPE_NIGHTFIRE);
 	}
 	
 	public Faces getFaces() {
@@ -187,7 +187,7 @@ public class v42BSP {
 	}
 	
 	public void setLeaves(byte[] data) {
-		leaves=new Leaves(data, Leaf.TYPE_NIGHTFIRE);
+		leaves=new Leaves(data, BSP.TYPE_NIGHTFIRE);
 	}
 	
 	public Leaves getLeaves() {
@@ -203,7 +203,7 @@ public class v42BSP {
 	}
 	
 	public void setModels(byte[] data) {
-		models=new Models(data, Model.TYPE_NIGHTFIRE);
+		models=new Models(data, BSP.TYPE_NIGHTFIRE);
 	}
 	
 	public Models getModels() {
@@ -219,7 +219,7 @@ public class v42BSP {
 	}
 	
 	public void setBrushSides(byte[] data) {
-		brushSides=new BrushSides(data, BrushSide.TYPE_NIGHTFIRE);
+		brushSides=new BrushSides(data, BSP.TYPE_NIGHTFIRE);
 	}
 	
 	public BrushSides getBrushSides() {

@@ -325,9 +325,9 @@ public class SourceBSP {
 	*/
 	public void setLeaves(byte[] data) {
 		if(version > 17 && version < 20) {
-			leaves=new Leaves(data, Leaf.TYPE_SOURCE19);
+			leaves=new Leaves(data, BSP.TYPE_SOURCE19);
 		} else {
-			leaves=new Leaves(data, Leaf.TYPE_SOURCE20);
+			leaves=new Leaves(data, BSP.TYPE_SOURCE20);
 		}
 	}
 
@@ -352,7 +352,7 @@ public class SourceBSP {
 	}
 	
 	public void setModels(byte[] data) {
-		models=new Models(data, Model.TYPE_QUAKE2);
+		models=new Models(data, BSP.TYPE_SOURCE17);
 	}
 	
 	public Models getModels() {
@@ -368,7 +368,7 @@ public class SourceBSP {
 	}
 	
 	public void setBrushes(byte[] data) {
-		brushes=new Brushes(data, BSP.TYPE_QUAKE2);
+		brushes=new Brushes(data, BSP.TYPE_SOURCE17);
 	}
 	
 	public Brushes getBrushes() {
@@ -376,7 +376,7 @@ public class SourceBSP {
 	}
 	
 	public void setBrushSides(byte[] data) {
-		brushSides=new BrushSides(data, BrushSide.TYPE_SOURCE);
+		brushSides=new BrushSides(data, BSP.TYPE_SOURCE17);
 	}
 	
 	public BrushSides getBrushSides() {

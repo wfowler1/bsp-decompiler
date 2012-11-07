@@ -47,10 +47,13 @@ public class Textures {
 				structLength=64;
 				break;
 			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_RAVEN:
+			case BSP.TYPE_COD:
 				structLength=72;
 				break;
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_STEF2:
+			case BSP.TYPE_STEF2DEMO:
 				structLength=76;
 				break;
 			case BSP.TYPE_MOHAA:

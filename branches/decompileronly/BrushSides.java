@@ -41,18 +41,26 @@ public class BrushSides {
 	// Takes a byte array, as if read from a FileInputStream
 	public BrushSides(byte[] in, int type) {
 		switch(type) {
-			case BrushSide.TYPE_QUAKE2:
+			case BSP.TYPE_QUAKE2:
 				structLength=4;
 				break;
-			case BrushSide.TYPE_COD:
-			case BrushSide.TYPE_SIN:
-			case BrushSide.TYPE_NIGHTFIRE:
-			case BrushSide.TYPE_QUAKE3:
-			case BrushSide.TYPE_SOURCE:
+			case BSP.TYPE_COD:
+			case BSP.TYPE_SIN:
+			case BSP.TYPE_NIGHTFIRE:
+			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_STEF2:
+			case BSP.TYPE_STEF2DEMO:
+			case BSP.TYPE_SOURCE17:
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
 				structLength=8;
 				break;
-			case BrushSide.TYPE_MOHAA:
-			case BrushSide.TYPE_RAVEN:
+			case BSP.TYPE_MOHAA:
+			case BSP.TYPE_RAVEN:
 				structLength=12;
 				break;
 			default:

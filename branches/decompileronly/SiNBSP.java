@@ -43,7 +43,7 @@ public class SiNBSP extends v38BSP {
 	
 	// ACCESSORS/MUTATORS
 	public void setBrushSides(byte[] data) {
-		this.brushSides=new BrushSides(data, BrushSide.TYPE_SIN);
+		this.brushSides=new BrushSides(data, BSP.TYPE_SIN);
 	}
 	
 	public BrushSides getBrushSides() {
@@ -59,7 +59,7 @@ public class SiNBSP extends v38BSP {
 	}
 	
 	public void setFaces(byte[] data) {
-		this.faces=new Faces(data, Face.TYPE_SIN);
+		this.faces=new Faces(data, BSP.TYPE_SIN);
 	}
 	
 	public Faces getFaces() {

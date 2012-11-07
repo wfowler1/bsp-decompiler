@@ -5,12 +5,6 @@
 public class Face extends LumpObject {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
-	public static final int TYPE_QUAKE=0;
-	public static final int TYPE_SIN=1;
-	public static final int TYPE_QUAKE3=2;
-	public static final int TYPE_SOURCE=3;
-	public static final int TYPE_NIGHTFIRE=4;
-	public static final int TYPE_RAVEN=5;
 	
 	// Faces is one of the more different lumps between versions. Some of these fields
 	// are only used by one format. However, there are some commonalities which make
@@ -39,22 +33,32 @@ public class Face extends LumpObject {
 	public Face(byte[] data, int type) {
 		super(data);
 		switch(type) {
-			case TYPE_QUAKE:
-			case TYPE_SIN:
+			case BSP.TYPE_QUAKE:
+			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_SIN:
 				plane=DataReader.readUShort(data[0], data[1]);
 				side=DataReader.readUShort(data[2], data[3]);
 				firstEdge=DataReader.readInt(data[4], data[5], data[6], data[7]);
 				numEdges=DataReader.readUShort(data[8], data[9]);
 				texture=DataReader.readUShort(data[10], data[11]);
 				break;
-			case TYPE_QUAKE3:
-			case TYPE_RAVEN:
+			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_RAVEN:
+			case BSP.TYPE_STEF2:
+			case BSP.TYPE_STEF2DEMO:
+			case BSP.TYPE_MOHAA:
 				texture=DataReader.readInt(data[0], data[1], data[2], data[3]);
 				flags=new byte[] { data[8], data[9], data[10], data[11] };
 				firstVertex=DataReader.readInt(data[12], data[13], data[14], data[15]);
 				numVertices=DataReader.readInt(data[16], data[17], data[18], data[19]);
 				break;
-			case TYPE_SOURCE:
+			case BSP.TYPE_SOURCE17:
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
 				plane=DataReader.readUShort(data[0], data[1]);
 				side=(int)data[2];
 				firstEdge=DataReader.readInt(data[4], data[5], data[6], data[7]);
@@ -63,7 +67,7 @@ public class Face extends LumpObject {
 				displacement=DataReader.readUShort(data[12], data[13]);
 				original=DataReader.readInt(data[44], data[45], data[46], data[47]);
 				break;
-			case TYPE_NIGHTFIRE:
+			case BSP.TYPE_NIGHTFIRE:
 				plane=DataReader.readInt(data[0], data[1], data[2], data[3]);
 				firstVertex=DataReader.readInt(data[4], data[5], data[6], data[7]);
 				numVertices=DataReader.readInt(data[8], data[9], data[10], data[11]);

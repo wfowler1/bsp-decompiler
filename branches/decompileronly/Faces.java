@@ -41,22 +41,36 @@ public class Faces {
 	// Takes a byte array, as if read from a FileInputStream
 	public Faces(byte[] in, int type) {
 		switch(type) {
-			case Face.TYPE_QUAKE:
+			case BSP.TYPE_QUAKE:
+			case BSP.TYPE_QUAKE2:
 				structLength=20;
 				break;
-			case Face.TYPE_SIN:
+			case BSP.TYPE_SIN:
 				structLength=36;
 				break;
-			case Face.TYPE_NIGHTFIRE:
+			case BSP.TYPE_NIGHTFIRE:
 				structLength=48;
 				break;
-			case Face.TYPE_SOURCE:
+			case BSP.TYPE_SOURCE17:
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
 				structLength=56;
 				break;
-			case Face.TYPE_QUAKE3:
+			case BSP.TYPE_QUAKE3:
 				structLength=104;
 				break;
-			case Face.TYPE_RAVEN:
+			case BSP.TYPE_MOHAA:
+				structLength=108;
+				break;
+			case BSP.TYPE_STEF2:
+			case BSP.TYPE_STEF2DEMO:
+				structLength=132;
+				break;
+			case BSP.TYPE_RAVEN:
 				structLength=148;
 				break;
 			default:

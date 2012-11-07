@@ -10,12 +10,6 @@
 public class Model extends LumpObject {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
-	// Use these in the constructors to specify the type of map the model is coming from
-	public static final int TYPE_QUAKE=0;
-	public static final int TYPE_QUAKE2=1;
-	public static final int TYPE_NIGHTFIRE=2;
-	public static final int TYPE_QUAKE3=3;
-	public static final int TYPE_COD=4;
 	
 	// In general, we need to use models to find one or more leaves containing the
 	// information for the solids described by this model. Some formats do it by
@@ -38,20 +32,32 @@ public class Model extends LumpObject {
 	public Model(byte[] data, int type) {
 		super(data);
 		switch(type) {
-			case TYPE_QUAKE:
-			case TYPE_QUAKE2:
+			case BSP.TYPE_QUAKE:
+			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_SIN:
+			case BSP.TYPE_SOURCE17:
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
 				// In both these formats, the "head node" index comes after 9 floats.
 				headNode=DataReader.readInt(data[36], data[37], data[38], data[39]);
 				break;
-			case TYPE_NIGHTFIRE:
+			case BSP.TYPE_NIGHTFIRE:
 				firstLeaf=DataReader.readInt(data[40], data[41], data[42], data[43]);
 				numLeaves=DataReader.readInt(data[44], data[45], data[46], data[47]);
 				break;
-			case TYPE_QUAKE3:
+			case BSP.TYPE_STEF2:
+			case BSP.TYPE_STEF2DEMO:
+			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_MOHAA:
+			case BSP.TYPE_RAVEN:
 				firstBrush=DataReader.readInt(data[32], data[33], data[34], data[35]);
 				numBrushes=DataReader.readInt(data[36], data[37], data[38], data[39]);
 				break;
-			case TYPE_COD:
+			case BSP.TYPE_COD:
 				firstBrush=DataReader.readInt(data[40], data[41], data[42], data[43]);
 				numBrushes=DataReader.readInt(data[44], data[45], data[46], data[47]);
 				break;

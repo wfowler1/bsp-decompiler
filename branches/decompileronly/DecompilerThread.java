@@ -43,19 +43,18 @@ public class DecompilerThread implements Runnable {
 					decompiler.decompile();
 				} else {
 					if(reader.isRaven() && !reader.isSin()) {
-						Window.setProgress(jobnum, 0, reader.ravenBSP.getBrushes().length()+reader.ravenBSP.getEntities().length(), "Decompiling...");
-						RavenBSPDecompiler decompiler = new RavenBSPDecompiler(reader.ravenBSP, jobnum);
+						Window.setProgress(jobnum, 0, reader.BSPObject.getBrushes().length()+reader.BSPObject.getEntities().length(), "Decompiling...");
+						BSP46Decompiler decompiler = new BSP46Decompiler(reader.BSPObject, jobnum);
 						decompiler.decompile();
 					} else {
 						if(reader.isMOHAA()) {
-							Window.setProgress(jobnum, 0, reader.MOHAABSP.getBrushes().length()+reader.MOHAABSP.getEntities().length(), "Decompiling...");
-							MoHAABSPDecompiler MOHAAdecompiler = new MoHAABSPDecompiler(reader.MOHAABSP, jobnum);
+							Window.setProgress(jobnum, 0, reader.BSPObject.getBrushes().length()+reader.BSPObject.getEntities().length(), "Decompiling...");
+							BSP46Decompiler MOHAAdecompiler = new BSP46Decompiler(reader.BSPObject, jobnum);
 							MOHAAdecompiler.decompile();
 						} else {
 							if(reader.isEF2()) {
-								Window.setProgress(jobnum, 0, reader.STEF2BSP.getBrushes().length()+reader.STEF2BSP.getEntities().length(), "Decompiling...");
-								EF2Decompiler decompiler = new EF2Decompiler(reader.STEF2BSP, jobnum);
-							//	BSP46Decompiler decompiler = new BSP46Decompiler(reader.STEF2BSP, jobnum);
+								Window.setProgress(jobnum, 0, reader.BSPObject.getBrushes().length()+reader.BSPObject.getEntities().length(), "Decompiling...");
+								BSP46Decompiler decompiler = new BSP46Decompiler(reader.BSPObject, jobnum);
 								decompiler.decompile();
 							} else {
 								if(reader.isSin()) {
@@ -76,15 +75,15 @@ public class DecompilerThread implements Runnable {
 										break;
 									case 46:
 									case 47:
-										Window.setProgress(jobnum, 0, reader.BSP46.getBrushes().length()+reader.BSP46.getEntities().length(), "Decompiling...");
-										BSP46Decompiler decompiler46 = new BSP46Decompiler(reader.BSP46, jobnum);
+										Window.setProgress(jobnum, 0, reader.BSPObject.getBrushes().length()+reader.BSPObject.getEntities().length(), "Decompiling...");
+										BSP46Decompiler decompiler46 = new BSP46Decompiler(reader.BSPObject, jobnum);
 										decompiler46.decompile();
 										break;
 									case 4:
 									case 22:
 									case 59:
-										Window.setProgress(jobnum, 0, reader.CODBSP.getBrushes().length()+reader.CODBSP.getEntities().length(), "Decompiling...");
-										CoDBSPDecompiler CoDdecompiler = new CoDBSPDecompiler(reader.CODBSP, jobnum);
+										Window.setProgress(jobnum, 0, reader.BSPObject.getBrushes().length()+reader.BSPObject.getEntities().length(), "Decompiling...");
+										BSP46Decompiler CoDdecompiler = new BSP46Decompiler(reader.BSPObject, jobnum);
 										CoDdecompiler.decompile();
 										break;
 								}
