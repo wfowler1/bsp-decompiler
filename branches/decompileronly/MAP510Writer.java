@@ -276,7 +276,7 @@ public class MAP510Writer {
 			double lgtRot=in.getLgtRot();
 			// Correct special textures on Q2 maps
 			if(!Window.noTexCorrectionsIsSelected()) {
-				if(BSPVersion==38 || BSPVersion==SiNBSP.VERSION) { // Many of the special textures are taken care of in the decompiler method itself
+				if(BSPVersion==BSP.TYPE_QUAKE2 || BSPVersion==BSP.TYPE_SIN) { // Many of the special textures are taken care of in the decompiler method itself
 					try {             // using face flags, rather than texture names.
 						if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
 							texture="special/trigger";

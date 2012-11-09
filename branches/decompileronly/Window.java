@@ -54,6 +54,7 @@ public class Window extends JPanel implements ActionListener {
 	private static JCheckBoxMenuItem decompMAPItem; 
 	private static JCheckBoxMenuItem decompMOHRadiantItem;
 	private static JCheckBoxMenuItem decompRadiantItem;
+	private static JCheckBoxMenuItem decompDoomEditItem;
 	private static JMenuItem exitItem;
 
 	// "Options" menu
@@ -186,6 +187,9 @@ public class Window extends JPanel implements ActionListener {
 		decompRadiantItem = new JCheckBoxMenuItem("Output GTKRadiant MAP");
 		fileMenu.add(decompRadiantItem);
 		decompRadiantItem.addActionListener(this);
+		decompDoomEditItem = new JCheckBoxMenuItem("Output DOOMEdit MAP");
+		fileMenu.add(decompDoomEditItem);
+		decompDoomEditItem.addActionListener(this);
 		fileMenu.addSeparator();
 		exitItem = new JMenuItem("Exit");
 		fileMenu.add(exitItem);
@@ -448,30 +452,9 @@ public class Window extends JPanel implements ActionListener {
 			;
 		}
 		
-		if(action.getSource() == decompMAPItem) {
-			if(!decompRadiantItem.isSelected() && !decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
-				decompMAPItem.setSelected(true);
-				println("Must output to at least one MAP format!",VERBOSITY_ALWAYS);
-			}
-		}
-		
-		if(action.getSource() == decompVMFItem) {
-			if(!decompRadiantItem.isSelected() && !decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
+		if(action.getSource() == decompMAPItem || action.getSource() == decompVMFItem || action.getSource() == decompMOHRadiantItem || action.getSource() == decompRadiantItem || action.getSource() == decompDoomEditItem) {
+			if(!decompDoomEditItem.isSelected() && !decompRadiantItem.isSelected() && !decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
 				decompVMFItem.setSelected(true);
-				println("Must output to at least one MAP format!",VERBOSITY_ALWAYS);
-			}
-		}
-		
-		if(action.getSource() == decompMOHRadiantItem) {
-			if(!decompRadiantItem.isSelected() && !decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
-				decompMOHRadiantItem.setSelected(true);
-				println("Must output to at least one MAP format!",VERBOSITY_ALWAYS);
-			}
-		}
-		
-		if(action.getSource() == decompRadiantItem) {
-			if(!decompRadiantItem.isSelected() && !decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
-				decompRadiantItem.setSelected(true);
 				println("Must output to at least one MAP format!",VERBOSITY_ALWAYS);
 			}
 		}
@@ -1113,6 +1096,10 @@ public class Window extends JPanel implements ActionListener {
 	
 	public static boolean toRadiantMAP() {
 		return decompRadiantItem.isSelected();
+	}
+	
+	public static boolean toDoomEdit() {
+		return decompDoomEditItem.isSelected();
 	}
 	
 	public static boolean toGCMAP() {

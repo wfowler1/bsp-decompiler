@@ -8,14 +8,14 @@ import java.awt.Color;
 
 public class DecompilerThread implements Runnable {
 	
-	private File BSP;
+	private File BSPFile;
 	private DoomMap doomMap;
 	private int jobnum;
 	private int threadnum;
 	
-	public DecompilerThread(File BSP, int jobnum, int threadnum) {
+	public DecompilerThread(File BSPFile, int jobnum, int threadnum) {
 		// Set up global variables
-		this.BSP=BSP;
+		this.BSPFile=BSPFile;
 		this.jobnum=jobnum;
 		this.threadnum=threadnum;
 	}
@@ -33,9 +33,9 @@ public class DecompilerThread implements Runnable {
 				WADDecompiler decompiler = new WADDecompiler(doomMap, jobnum);
 				decompiler.decompile();
 			} else {
-				Window.println("Opening file "+BSP.getAbsolutePath(),Window.VERBOSITY_ALWAYS);
+				Window.println("Opening file "+BSPFile.getAbsolutePath(),Window.VERBOSITY_ALWAYS);
 				Window.setProgress(jobnum, 0, 1, "Reading...");
-				BSPReader reader = new BSPReader(BSP);
+				BSPReader reader = new BSPReader(BSPFile);
 				reader.readBSP();
 				if(reader.isSource()) {
 					Window.setProgress(jobnum, 0, reader.SourceBSPObject.getBrushes().length()+reader.SourceBSPObject.getEntities().length(), "Decompiling...");
@@ -58,19 +58,19 @@ public class DecompilerThread implements Runnable {
 								decompiler.decompile();
 							} else {
 								if(reader.isSin()) {
-									Window.setProgress(jobnum, 0, reader.SINBSP.getBrushes().length()+reader.SINBSP.getEntities().length(), "Decompiling...");
-									BSP38Decompiler decompiler = new BSP38Decompiler(reader.SINBSP, jobnum);
+									Window.setProgress(jobnum, 0, reader.BSPObject.getBrushes().length()+reader.BSPObject.getEntities().length(), "Decompiling...");
+									BSP38Decompiler decompiler = new BSP38Decompiler(reader.BSPObject, jobnum);
 									decompiler.decompile();
 								}
 								switch(reader.getVersion()) {
 									case 38:
-										Window.setProgress(jobnum, 0, reader.BSP38.getBrushes().length()+reader.BSP38.getEntities().length(), "Decompiling...");
-										BSP38Decompiler decompiler38 = new BSP38Decompiler(reader.BSP38, jobnum);
+										Window.setProgress(jobnum, 0, reader.BSPObject.getBrushes().length()+reader.BSPObject.getEntities().length(), "Decompiling...");
+										BSP38Decompiler decompiler38 = new BSP38Decompiler(reader.BSPObject, jobnum);
 										decompiler38.decompile();
 										break;
 									case 42:
-										Window.setProgress(jobnum, 0, reader.BSP42.getBrushes().length()+reader.BSP42.getEntities().length(), "Decompiling...");
-										BSP42Decompiler decompiler42 = new BSP42Decompiler(reader.BSP42, jobnum);
+										Window.setProgress(jobnum, 0, reader.BSPObject.getBrushes().length()+reader.BSPObject.getEntities().length(), "Decompiling...");
+										BSP42Decompiler decompiler42 = new BSP42Decompiler(reader.BSPObject, jobnum);
 										decompiler42.decompile();
 										break;
 									case 46:

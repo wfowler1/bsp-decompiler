@@ -45,15 +45,18 @@ public class BSP {
 	private TexInfos texInfo;
 	private Faces faces;
 	private Leaves leaves;
-	private ShortList markSurfaces;
+	private NumList markSurfaces;
 	private Edges edges;
-	private IntList surfEdges;
+	private NumList surfEdges;
 	private Models models;
-	// Quake 3
+	// Quake 2
 	private Brushes brushes;
 	private BrushSides brushSides;
+	private NumList markBrushes;
 	// MOHAA
 	//private MoHAAStaticProps staticProps;
+	// Nightfire
+	private Textures materials;
 	
 	// CONSTRUCTORS
 	public BSP(String filePath, int version) {
@@ -62,6 +65,65 @@ public class BSP {
 	}
 	
 	// METHODS
+	
+	// +getLeavesInModel(int)
+	// Returns an array of Leaf containing all the leaves referenced from
+	// this model's head node. This array cannot be referenced by index numbers
+	// from other lumps, but if simply iterating through, getting information
+	// it'll be just fine.
+	public Leaf[] getLeavesInModel(int model) {
+		return getLeavesInNode(models.getElement(model).getHeadNode());
+	}
+	
+	// +getLeavesInNode(int)
+	// Returns an array of Leaf containing all the leaves referenced from
+	// this node. Since nodes reference other nodes, this may recurse quite
+	// some ways. Eventually every node will boil down to a set of leaves,
+	// which is what this method returns.
+	
+	// This is an iterative preorder traversal algorithm modified from the Wikipedia page at:
+	// http://en.wikipedia.org/wiki/Tree_traversal#Iterative_Traversal
+	// I needed an iterative algorithm because recursive ones commonly gave stack overflows.
+	public Leaf[] getLeavesInNode(int head) {
+		Node headNode;
+		Leaf[] nodeLeaves=new Leaf[0];
+		try {
+			headNode=nodes.getElement(head);
+		} catch(java.lang.ArrayIndexOutOfBoundsException e) {
+			return nodeLeaves;
+		}
+		NodeStack nodestack = new NodeStack();
+		nodestack.push(headNode);
+ 
+		Node currentNode;
+
+		while (!nodestack.isEmpty()) {
+			currentNode = nodestack.pop();
+			int right = currentNode.getChild2();
+			if (right >= 0) {
+				nodestack.push(nodes.getElement(right));
+			} else {
+				Leaf[] newList=new Leaf[nodeLeaves.length+1];
+				for(int i=0;i<nodeLeaves.length;i++) {
+					newList[i]=nodeLeaves[i];
+				}
+				newList[nodeLeaves.length]=leaves.getElement((right*(-1))-1); // Quake 2 subtracts 1 from the index
+				nodeLeaves=newList;
+			}
+			int left = currentNode.getChild1();
+			if (left >= 0) {
+				nodestack.push(nodes.getElement(left));
+			} else {
+				Leaf[] newList=new Leaf[nodeLeaves.length+1];
+				for(int i=0;i<nodeLeaves.length;i++) {
+					newList[i]=nodeLeaves[i];
+				}
+				newList[nodeLeaves.length]=leaves.getElement((left*(-1))-1); // Quake 2 subtracts 1 from the index
+				nodeLeaves=newList;
+			}
+		}
+		return nodeLeaves;
+	}
 	
 	// ACCESSORS/MUTATORS
 	
@@ -134,6 +196,14 @@ public class BSP {
 		textures=new Textures(data, version);
 	}
 	
+	public Textures getMaterials() {
+		return materials;
+	}
+	
+	public void setMaterials(byte[] data) {
+		materials=new Textures(data, version);
+	}
+	
 	public Vertices getVertices() {
 		return vertices;
 	}
@@ -174,12 +244,16 @@ public class BSP {
 		leaves=new Leaves(data, version);
 	}
 	
-	public ShortList getMarkSurfaces() {
+	public NumList getMarkSurfaces() {
 		return markSurfaces;
 	}
 	
 	public void setMarkSurfaces(byte[] data) {
-		markSurfaces=new ShortList(data);
+		switch(version) {
+			case TYPE_QUAKE:
+				markSurfaces=new NumList(data, NumList.TYPE_USHORT);
+				break;
+		}
 	}
 	
 	public Edges getEdges() {
@@ -190,12 +264,18 @@ public class BSP {
 		edges=new Edges(data);
 	}
 	
-	public IntList getSurfEdges() {
+	public NumList getSurfEdges() {
 		return surfEdges;
 	}
 	
 	public void setSurfEdges(byte[] data) {
-		surfEdges=new IntList(data);
+		switch(version) {
+			case TYPE_QUAKE:
+			case TYPE_QUAKE2:
+			case TYPE_SIN:
+				surfEdges=new NumList(data, NumList.TYPE_INT);
+				break;
+		}
 	}
 	
 	public Models getModels() {
@@ -220,5 +300,76 @@ public class BSP {
 	
 	public void setBrushSides(byte[] data) {
 		brushSides=new BrushSides(data, version);
+	}
+	
+	public void setMarkBrushes(byte[] data) {
+		switch(version) {
+			case TYPE_QUAKE2:
+			case TYPE_SIN:
+				markBrushes=new NumList(data, NumList.TYPE_USHORT);
+				break;
+			case TYPE_NIGHTFIRE:
+				markBrushes=new NumList(data, NumList.TYPE_UINT);
+				break;
+		}
+	}
+	
+	public NumList getMarkBrushes() {
+		return markBrushes;
+	}
+	
+	// INTERNAL CLASSES
+	
+	// NodeStack class
+
+	// Contains a "stack" of Nodes. This aids greatly in the
+	// traversal of a BSP tree without use of recursion.
+	
+	private class NodeStack {
+		
+		// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
+		
+		Node[] stack;
+		
+		// CONSTRUCTORS
+		
+		public NodeStack() {
+			stack=new Node[0];
+		}
+		
+		// METHODS
+		
+		public void push(Node in) {
+			Node[] newStack = new Node[stack.length+1];
+			for(int i=0;i<stack.length;i++) {
+				newStack[i]=stack[i];
+			}
+			newStack[newStack.length-1]=in;
+			stack=newStack;
+		}
+		
+		public Node pop() {
+			Node returnme=stack[stack.length-1];
+			Node[] newStack=new Node[stack.length-1];
+			for(int i=0;i<stack.length-1;i++) {
+				newStack[i]=stack[i];
+			}
+			stack=newStack;
+			return returnme;
+		}
+		
+		public Node read() {
+			return stack[stack.length-1];
+		}
+		
+		// ACCESSORS AND MUTATORS
+		
+		public boolean isEmpty() {
+			return stack.length==0;
+		}
+		
+		public int getSize() {
+			return stack.length;
+		}
 	}
 }

@@ -15,6 +15,10 @@ public class DataReader {
 	
 	// METHODS
 	
+	public static short readUByte(byte first) {
+		return (short)(((byte)0 << 8) | (first & 0xff));
+	}
+	
 	public static short readShort(byte first, byte second) {
 		return (short)((second << 8) | (first & 0xff));
 	}
@@ -37,6 +41,14 @@ public class DataReader {
 	
 	public static int readInt(byte[] in) {
 		return readInt(in[0], in[1], in[2], in[3]);
+	}
+	
+	public static long readUInt(byte first, byte second, byte third, byte fourth) {
+		return ((long)((int)0 << 32) + (((fourth << 24) | ((third & 0xff) << 16) | ((second & 0xff) << 8) | (first & 0xff)) & 0xFFFFFFFFL));
+	}
+	
+	public static long readUInt(byte[] in) {
+		return readUInt(in[0], in[1], in[2], in[3]);
 	}
 	
 	public static long readLong(byte first, byte second, byte third, byte fourth, byte fifth, byte sixth, byte seventh, byte eighth) {

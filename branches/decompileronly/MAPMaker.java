@@ -10,6 +10,22 @@ public class MAPMaker {
 	// METHODS
 	public static void outputMaps(Entities data, String mapname, String mapfolder, int version) throws java.io.IOException {
 		Entities from;
+		if(Window.toDoomEdit()) {
+			DoomEditMapWriter mapMaker;
+			if(Window.toVMF() || Window.toMOH() || Window.toGCMAP() || Window.toRadiantMAP()) {
+				from=new Entities(data);
+			} else {
+				from=data;
+			}
+			if(Window.getOutputFolder().equals("default")) {
+				Window.println("Saving "+mapfolder+mapname+"_doomEdit.map...",Window.VERBOSITY_ALWAYS);
+				mapMaker=new DoomEditMapWriter(from, mapfolder+mapname+"_doomEdit",version);
+			} else {
+				Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname+"_doomEdit.map...",Window.VERBOSITY_ALWAYS);
+				mapMaker=new DoomEditMapWriter(from, Window.getOutputFolder()+"\\"+mapname+"_doomEdit",version);
+			}
+			mapMaker.write();
+		}
 		if(Window.toVMF()) {
 			VMFWriter VMFMaker;
 			if(Window.toMOH() || Window.toGCMAP() || Window.toRadiantMAP()) {

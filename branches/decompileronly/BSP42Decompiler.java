@@ -30,14 +30,14 @@ public class BSP42Decompiler {
 	private int numAdvancedCorrects=0;
 	private int numGoodBrushes=0;
 	
-	private v42BSP BSP42;
+	private BSP BSPObject;
 	
 	// CONSTRUCTORS
 	
 	// This constructor sets everything according to specified settings.
-	public BSP42Decompiler(v42BSP BSP42, int jobnum) {
+	public BSP42Decompiler(BSP BSPObject, int jobnum) {
 		// Set up global variables
-		this.BSP42=BSP42;
+		this.BSPObject=BSPObject;
 		this.jobnum=jobnum;
 	}
 	
@@ -59,11 +59,11 @@ public class BSP42Decompiler {
 		// Begin by copying all the entities into another Lump00 object. This is
 		// necessary because if I just modified the current entity list then it
 		// could be saved back into the BSP and really mess some stuff up.
-		mapFile=new Entities(BSP42.getEntities());
+		mapFile=new Entities(BSPObject.getEntities());
 		int numTotalItems=0;
 		// I need to go through each entity and see if it's brush-based.
 		// Worldspawn is brush-based as well as any entity with model *#.
-		for(int i=0;i<BSP42.getEntities().length();i++) { // For each entity
+		for(int i=0;i<BSPObject.getEntities().length();i++) { // For each entity
 			Window.println("Entity "+i+": "+mapFile.getEntity(i).getAttribute("classname"),Window.VERBOSITY_ENTITIES);
 			numBrshs=0; // Reset the brush count for each entity
 			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
@@ -71,12 +71,12 @@ public class BSP42Decompiler {
 			
 			if(currentModel!=-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
 				double[] origin=mapFile.getEntity(i).getOrigin();
-				int firstLeaf=BSP42.getModels().getElement(currentModel).getFirstLeaf();
-				int numLeaves=BSP42.getModels().getElement(currentModel).getNumLeaves();
-				boolean[] brushesUsed=new boolean[BSP42.getBrushes().length()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
+				int firstLeaf=BSPObject.getModels().getElement(currentModel).getFirstLeaf();
+				int numLeaves=BSPObject.getModels().getElement(currentModel).getNumLeaves();
+				boolean[] brushesUsed=new boolean[BSPObject.getBrushes().length()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
 				numBrshs=0;
 				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
-					Leaf currentLeaf=BSP42.getLeaves().getElement(j+firstLeaf);
+					Leaf currentLeaf=BSPObject.getLeaves().getElement(j+firstLeaf);
 					if(Window.visLeafBBoxesIsSelected()) {
 					//	mapFile.getEntity(0).addBrush(GenericMethods.createBrush(currentLeaf.getMins(), currentLeaf.getMaxs(), "special/hint"));
 					}
@@ -84,23 +84,23 @@ public class BSP42Decompiler {
 					int numBrushIndices=currentLeaf.getNumMarkBrushes();
 					if(numBrushIndices>0) { // A lot of leaves reference no brushes. If this is one, this iteration of the j loop is finished
 						for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
-							if(!brushesUsed[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)]) { // If the current brush has NOT been used in this entity
+							if(!brushesUsed[(int)BSPObject.getMarkBrushes().getElement(firstBrushIndex+k)]) { // If the current brush has NOT been used in this entity
 								Window.print("Brush "+(k+firstBrushIndex),Window.VERBOSITY_BRUSHCREATION);
-								brushesUsed[BSP42.getMarkBrushes().getInt(firstBrushIndex+k)]=true;
-								decompileBrush(BSP42.getBrushes().getElement(BSP42.getMarkBrushes().getInt(firstBrushIndex+k)), i); // Decompile the brush
+								brushesUsed[(int)BSPObject.getMarkBrushes().getElement(firstBrushIndex+k)]=true;
+								decompileBrush(BSPObject.getBrushes().getElement((int)BSPObject.getMarkBrushes().getElement(firstBrushIndex+k)), i); // Decompile the brush
 								numBrshs++;
 								numTotalItems++;
-								Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().length()+BSP42.getEntities().length(), "Decompiling...");
+								Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");
 							}
 						}
 					}
 				}
 			}
 			numTotalItems++;
-			Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().length()+BSP42.getEntities().length(), "Decompiling...");
+			Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");
 		}
-		Window.setProgress(jobnum, numTotalItems, BSP42.getBrushes().length()+BSP42.getEntities().length(), "Saving...");
-		MAPMaker.outputMaps(mapFile, BSP42.getMapNameNoExtension(), BSP42.getFolder(), BSP42.VERSION);
+		Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Saving...");
+		MAPMaker.outputMaps(mapFile, BSPObject.getMapNameNoExtension(), BSPObject.getFolder(), BSPObject.getVersion());
 		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {
 			Window.println("Num simple corrected brushes: "+numSimpleCorrects,Window.VERBOSITY_MAPSTATS); 
@@ -131,9 +131,9 @@ public class BSP42Decompiler {
 			mapBrush.setWater(true);
 		}
 		for(int l=0;l<numSides;l++) { // For each side of the brush
-			BrushSide currentSide=BSP42.getBrushSides().getElement(firstSide+l);
-			Face currentFace=BSP42.getFaces().getElement(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
-			String texture=BSP42.getTextures().getElement(currentFace.getTexture()).getName();
+			BrushSide currentSide=BSPObject.getBrushSides().getElement(firstSide+l);
+			Face currentFace=BSPObject.getFaces().getElement(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
+			String texture=BSPObject.getTextures().getElement(currentFace.getTexture()).getName();
 			if((currentFace.getFlags()[1] & ((byte)1 << 0)) == 0) { // Surfaceflags 512 + 256 + 32 are set only by the compiler, on faces that need to be thrown out.
 				if(!texture.equalsIgnoreCase("special/clip") && !texture.equalsIgnoreCase("special/playerclip") && !texture.equalsIgnoreCase("special/enemyclip")) {
 					containsNonClipSide=true;
@@ -146,10 +146,10 @@ public class BSP42Decompiler {
 				int numVertices=currentFace.getNumVertices();
 				Plane currentPlane;
 				try { // I've only ever come across this error once or twice, but something causes it very rarely
-					currentPlane=BSP42.getPlanes().getElement(currentSide.getPlane());
+					currentPlane=BSPObject.getPlanes().getElement(currentSide.getPlane());
 				} catch(java.lang.ArrayIndexOutOfBoundsException e) {
 					try { // So try to get the plane index from somewhere else
-						currentPlane=BSP42.getPlanes().getElement(currentFace.getPlane());
+						currentPlane=BSPObject.getPlanes().getElement(currentFace.getPlane());
 					}  catch(java.lang.ArrayIndexOutOfBoundsException f) { // If that fails, BS something
 						Window.println("WARNING: BSP has error, references nonexistant plane "+currentSide.getPlane()+", bad side "+(l)+" of brush "+numBrshs+" Entity "+currentEntity,Window.VERBOSITY_WARNINGS);
 						currentPlane=new Plane((double)1, (double)0, (double)0, (double)0);
@@ -159,16 +159,16 @@ public class BSP42Decompiler {
 				boolean pointsWorked=false;
 				if(numVertices!=0 && !Window.planarDecompIsSelected()) { // If the face actually references a set of vertices
 					triangle=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
-					triangle[0]=new Vector3D(BSP42.getVertices().getElement(firstVertex).getVertex()); // Grab and store the first one
+					triangle[0]=new Vector3D(BSPObject.getVertices().getElement(firstVertex).getVertex()); // Grab and store the first one
 					int m=1;
 					for(m=1;m<numVertices;m++) { // For each point after the first one
-						triangle[1]=new Vector3D(BSP42.getVertices().getElement(firstVertex+m).getVertex());
+						triangle[1]=new Vector3D(BSPObject.getVertices().getElement(firstVertex+m).getVertex());
 						if(!triangle[0].equals(triangle[1])) { // Make sure the point isn't the same as the first one
 							break; // If it isn't the same, this point is good
 						}
 					}
 					for(m=m+1;m<numVertices;m++) { // For each point after the previous one used
-						triangle[2]=new Vector3D(BSP42.getVertices().getElement(firstVertex+m).getVertex());
+						triangle[2]=new Vector3D(BSPObject.getVertices().getElement(firstVertex+m).getVertex());
 						if(!triangle[2].equals(triangle[0]) && !triangle[2].equals(triangle[1])) { // Make sure no point is equal to the third one
 							// Make sure all three points are non collinear
 							Vector3D cr=Vector3D.crossProduct(triangle[0].subtract(triangle[1]), triangle[0].subtract(triangle[2]));
@@ -181,7 +181,7 @@ public class BSP42Decompiler {
 				}
 				double[] textureU=new double[3];
 				double[] textureV=new double[3];
-				TexInfo currentTexInfo=BSP42.getTexInfo().getElement(currentFace.getTextureScale());
+				TexInfo currentTexInfo=BSPObject.getTexInfo().getElement(currentFace.getTextureScale());
 				// Get the lengths of the axis vectors
 				double SAxisLength=Math.sqrt(Math.pow((double)currentTexInfo.getSAxis().getX(),2)+Math.pow((double)currentTexInfo.getSAxis().getY(),2)+Math.pow((double)currentTexInfo.getSAxis().getZ(),2));
 				double TAxisLength=Math.sqrt(Math.pow((double)currentTexInfo.getTAxis().getX(),2)+Math.pow((double)currentTexInfo.getTAxis().getY(),2)+Math.pow((double)currentTexInfo.getTAxis().getZ(),2));
@@ -202,7 +202,7 @@ public class BSP42Decompiler {
 				int flags=DataReader.readInt(currentFace.getFlags()[0], currentFace.getFlags()[1], currentFace.getFlags()[2], currentFace.getFlags()[3]); // This is actually a set of flags. Whatever.
 				String material;
 				try {
-					material=BSP42.getMaterials().getElement(currentFace.getMaterial()).getName();
+					material=BSPObject.getMaterials().getElement(currentFace.getMaterial()).getName();
 				} catch(java.lang.ArrayIndexOutOfBoundsException e) { // In case the BSP has some strange error making it reference nonexistant materials
 					Window.println("WARNING: Map referenced nonexistant material #"+currentFace.getMaterial()+", using wld_lightmap instead!",Window.VERBOSITY_WARNINGS);
 					material="wld_lightmap";

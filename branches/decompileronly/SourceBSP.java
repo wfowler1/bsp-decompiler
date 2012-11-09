@@ -29,17 +29,17 @@ public class SourceBSP {
 	// private SourceFaces faces;
 	private Leaves leaves;
 	private Edges edges;
-	private IntList surfedges;
+	private NumList surfedges;
 	private Models models;
-	private ShortList markbrushes;
+	private NumList markbrushes;
 	private Brushes brushes;
 	private BrushSides brushSides;
 	private SourceDispInfos dispInfos;
 	// private SourceFaces originalFaces;
 	private SourceDispVertices dispVerts;
 	private Textures textures;
-	private IntList texTable;
-	private ShortList displacementTriangles;
+	private NumList texTable;
+	private NumList displacementTriangles;
 	
 	// CONSTRUCTORS
 	// This accepts a folder path and looks for the BSP there.
@@ -95,7 +95,7 @@ public class SourceBSP {
 			Window.println("Edges not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Surface Edges lump: "+surfedges.getLength()+" bytes, "+surfedges.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Surface Edges lump: "+surfedges.getLength()+" bytes, "+surfedges.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Surface Edges not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -105,7 +105,7 @@ public class SourceBSP {
 			Window.println("Texture scales not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Leaf brushes lump: "+markbrushes.getLength()+" bytes, "+markbrushes.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Leaf brushes lump: "+markbrushes.getLength()+" bytes, "+markbrushes.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Leaf brushes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -140,12 +140,12 @@ public class SourceBSP {
 			Window.println("Textures not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Texture index table lump: "+texTable.getLength()+" bytes, "+texTable.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Texture index table lump: "+texTable.getLength()+" bytes, "+texTable.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Texture index table not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Displacement Triangle Tags lump: "+displacementTriangles.getLength()+" bytes, "+displacementTriangles.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Displacement Triangle Tags lump: "+displacementTriangles.getLength()+" bytes, "+displacementTriangles.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Displacement Triangle Tags not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -216,7 +216,7 @@ public class SourceBSP {
 	
 	public int findTexDataWithTexture(String texture) {
 		for(int i=0;i<texDatas.length();i++) {
-			String temp=textures.getTextureAtOffset(texTable.getInt(texDatas.getElement(i).getStringTableIndex()));
+			String temp=textures.getTextureAtOffset((int)texTable.getElement(texDatas.getElement(i).getStringTableIndex()));
 			if(temp==texture) {
 				return i;
 			}
@@ -344,10 +344,10 @@ public class SourceBSP {
 	}
 	
 	public void setSurfEdges(byte[] data) {
-		surfedges=new IntList(data);
+		surfedges=new NumList(data, NumList.TYPE_INT);
 	}
 	
-	public IntList getSurfEdges() {
+	public NumList getSurfEdges() {
 		return surfedges;
 	}
 	
@@ -360,10 +360,10 @@ public class SourceBSP {
 	}
 	
 	public void setMarkBrushes(byte[] data) {
-		markbrushes=new ShortList(data);
+		markbrushes=new NumList(data, NumList.TYPE_USHORT);
 	}
 	
-	public ShortList getMarkBrushes() {
+	public NumList getMarkBrushes() {
 		return markbrushes;
 	}
 	
@@ -410,18 +410,18 @@ public class SourceBSP {
 	}
 	
 	public void setTexTable(byte[] data) {
-		texTable=new IntList(data);
+		texTable=new NumList(data, NumList.TYPE_UINT);
 	}
 	
-	public IntList getTexTable() {
+	public NumList getTexTable() {
 		return texTable;
 	}
 	
 	public void setDispTris(byte[] data) {
-		displacementTriangles=new ShortList(data);
+		displacementTriangles=new NumList(data, NumList.TYPE_USHORT);
 	}
 	
-	public ShortList getDispTris() {
+	public NumList getDispTris() {
 		return displacementTriangles;
 	}
 	

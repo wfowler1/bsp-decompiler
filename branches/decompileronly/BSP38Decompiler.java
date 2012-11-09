@@ -23,14 +23,14 @@ public class BSP38Decompiler {
 	private int numAdvancedCorrects=0;
 	private int numGoodBrushes=0;
 	
-	private v38BSP BSP38;
+	private BSP BSPObject;
 	
 	// CONSTRUCTORS
 
 	// This constructor sets everything according to specified settings.
-	public BSP38Decompiler(v38BSP BSP38, int jobnum) {
+	public BSP38Decompiler(BSP BSPObject, int jobnum) {
 		// Set up global variables
-		this.BSP38=BSP38;
+		this.BSPObject=BSPObject;
 		this.jobnum=jobnum;
 	}
 	
@@ -42,11 +42,11 @@ public class BSP38Decompiler {
 		// Begin by copying all the entities into another Lump00 object. This is
 		// necessary because if I just modified the current entity list then it
 		// could be saved back into the BSP and really mess some stuff up.
-		mapFile=new Entities(BSP38.getEntities());
+		mapFile=new Entities(BSPObject.getEntities());
 		//int numAreaPortals=0;
 		int numTotalItems=0;
 		boolean containsAreaPortals=false;
-		for(int i=0;i<BSP38.getEntities().length();i++) { // For each entity
+		for(int i=0;i<BSPObject.getEntities().length();i++) { // For each entity
 			Window.println("Entity "+i+": "+mapFile.getEntity(i).getAttribute("classname"),Window.VERBOSITY_ENTITIES);
 			// Deal with area portals.
 			if(mapFile.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_areaportal")) {
@@ -58,9 +58,9 @@ public class BSP38Decompiler {
 			
 			if(currentModel!=-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
 				double[] origin=mapFile.getEntity(i).getOrigin();
-				Leaf[] leaves=BSP38.getLeavesInModel(currentModel);
+				Leaf[] leaves=BSPObject.getLeavesInModel(currentModel);
 				int numLeaves=leaves.length;
-				boolean[] brushesUsed=new boolean[BSP38.getBrushes().length()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
+				boolean[] brushesUsed=new boolean[BSPObject.getBrushes().length()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
 				numBrshs=0; // Reset the brush count for each entity
 				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
 					Leaf currentLeaf=leaves[j];
@@ -71,10 +71,10 @@ public class BSP38Decompiler {
 					int numBrushIndices=currentLeaf.getNumMarkBrushes();
 					if(numBrushIndices>0) { // A lot of leaves reference no brushes. If this is one, this iteration of the j loop is finished
 						for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
-							if(!brushesUsed[BSP38.getMarkBrushes().getShort(firstBrushIndex+k)]) { // If the current brush has NOT been used in this entity
+							if(!brushesUsed[(int)BSPObject.getMarkBrushes().getElement(firstBrushIndex+k)]) { // If the current brush has NOT been used in this entity
 								Window.print("Brush "+(k+numBrushIndices),Window.VERBOSITY_BRUSHCREATION);
-								brushesUsed[BSP38.getMarkBrushes().getShort(firstBrushIndex+k)]=true;
-								Brush brush=BSP38.getBrushes().getElement(BSP38.getMarkBrushes().getShort(firstBrushIndex+k));
+								brushesUsed[(int)BSPObject.getMarkBrushes().getElement(firstBrushIndex+k)]=true;
+								Brush brush=BSPObject.getBrushes().getElement((int)BSPObject.getMarkBrushes().getElement(firstBrushIndex+k));
 								if((brush.getContents()[1] & ((byte)1 << 7)) == 0) {
 									decompileBrush(brush, i); // Decompile the brush
 								} else {
@@ -82,33 +82,33 @@ public class BSP38Decompiler {
 								}
 								numBrshs++;
 								numTotalItems++;
-								Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().length()+BSP38.getEntities().length(), "Decompiling...");
+								Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");
 							}
 						}
 					}
 				}
 			}
 			numTotalItems++; // This entity
-			Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().length()+BSP38.getEntities().length(), "Decompiling...");
+			Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");
 		}
 		if(containsAreaPortals) { // If this map was found to have area portals
 			int j=0;
-			for(int i=0;i<BSP38.getBrushes().length();i++) { // For each brush in this map
-				if((BSP38.getBrushes().getElement(i).getContents()[1] & ((byte)1 << 7)) != 0) { // If the brush is an area portal brush
-					for(j++;j<BSP38.getEntities().length();j++) { // Find an areaportal entity
-						if(BSP38.getEntities().getEntity(j).getAttribute("classname").equalsIgnoreCase("func_areaportal")) {
-							decompileBrush(BSP38.getBrushes().getElement(i), j); // Add the brush to that entity
+			for(int i=0;i<BSPObject.getBrushes().length();i++) { // For each brush in this map
+				if((BSPObject.getBrushes().getElement(i).getContents()[1] & ((byte)1 << 7)) != 0) { // If the brush is an area portal brush
+					for(j++;j<BSPObject.getEntities().length();j++) { // Find an areaportal entity
+						if(BSPObject.getEntities().getEntity(j).getAttribute("classname").equalsIgnoreCase("func_areaportal")) {
+							decompileBrush(BSPObject.getBrushes().getElement(i), j); // Add the brush to that entity
 							break; // And break out of the inner loop, but remember your place.
 						}
 					}
-					if(j==BSP38.getEntities().length()) { // If we're out of entities, stop this whole thing.
+					if(j==BSPObject.getEntities().length()) { // If we're out of entities, stop this whole thing.
 						break;
 					}
 				}
 			}
 		}
-		Window.setProgress(jobnum, numTotalItems, BSP38.getBrushes().length()+BSP38.getEntities().length(), "Saving...");
-		MAPMaker.outputMaps(mapFile, BSP38.getMapNameNoExtension(), BSP38.getFolder(), BSP38.VERSION);
+		Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Saving...");
+		MAPMaker.outputMaps(mapFile, BSPObject.getMapNameNoExtension(), BSPObject.getFolder(), BSPObject.getVersion());
 		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {
 			Window.println("Num simple corrected brushes: "+numSimpleCorrects,Window.VERBOSITY_MAPSTATS); 
@@ -137,12 +137,12 @@ public class BSP38Decompiler {
 		}
 		for(int i=0;i<numSides;i++) { // For each side of the brush
 			Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
-			BrushSide currentSide=BSP38.getBrushSides().getElement(firstSide+i);
-			Plane currentPlane=BSP38.getPlanes().getElement(currentSide.getPlane()); // To find those three points, I must extrapolate from planes until I find a way to associate faces with brushes
+			BrushSide currentSide=BSPObject.getBrushSides().getElement(firstSide+i);
+			Plane currentPlane=BSPObject.getPlanes().getElement(currentSide.getPlane()); // To find those three points, I must extrapolate from planes until I find a way to associate faces with brushes
 			Texture currentTexture;
 			boolean isDuplicate=false;
 			for(int j=i+1;j<numSides;j++) { // For each subsequent side of the brush
-				if(currentPlane.equals(BSP38.getPlanes().getElement(BSP38.getBrushSides().getElement(firstSide+j).getPlane()))) {
+				if(currentPlane.equals(BSPObject.getPlanes().getElement(BSPObject.getBrushSides().getElement(firstSide+j).getPlane()))) {
 					Window.println("WARNING: Duplicate planes in a brush, sides "+i+" and "+j,Window.VERBOSITY_WARNINGS);
 					isDuplicate=true;
 				}
@@ -256,7 +256,7 @@ public class BSP38Decompiler {
 				double texScaleU=1;
 				double texScaleV=1;
 				if(currentSide.getTexture()>-1) {
-					currentTexture=BSP38.getTextures().getElement(currentSide.getTexture());
+					currentTexture=BSPObject.getTextures().getElement(currentSide.getTexture());
 					if((currentTexture.getFlags()[0] & ((byte)1 << 2)) != 0) {
 						texture="special/sky";
 					} else {

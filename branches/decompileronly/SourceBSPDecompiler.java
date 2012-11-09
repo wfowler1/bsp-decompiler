@@ -64,11 +64,11 @@ public class SourceBSPDecompiler {
 					int numBrushIndices=currentLeaf.getNumMarkBrushes();
 					if(numBrushIndices>0) { // A lot of leaves reference no brushes. If this is one, this iteration of the j loop is finished
 						for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
-							int currentBrushIndex=BSP.getMarkBrushes().getShort(firstMarkBrushIndex+k);
-							if(!brushesUsed[currentBrushIndex]) { // If the current brush has NOT been used in this entity
+							long currentBrushIndex=BSP.getMarkBrushes().getElement(firstMarkBrushIndex+k);
+							if(!brushesUsed[(int)currentBrushIndex]) { // If the current brush has NOT been used in this entity
 								Window.print("Brush "+(k+numBrushIndices),Window.VERBOSITY_BRUSHCREATION);
-								brushesUsed[currentBrushIndex]=true;
-								Brush brush=BSP.getBrushes().getElement(currentBrushIndex);
+								brushesUsed[(int)currentBrushIndex]=true;
+								Brush brush=BSP.getBrushes().getElement((int)currentBrushIndex);
 								decompileBrush(brush, i); // Decompile the brush
 								numBrshs++;
 								numTotalItems++;
@@ -228,7 +228,7 @@ public class SourceBSPDecompiler {
 					} else { // Planar decomp only */
 					//	plane=GenericMethods.extrapPlanePoints(currentPlane);
 					// }
-					String texture=BSP.getTextures().getTextureAtOffset(BSP.getTexTable().getInt(currentTexData.getStringTableIndex()));
+					String texture=BSP.getTextures().getTextureAtOffset((int)BSP.getTexTable().getElement(currentTexData.getStringTableIndex()));
 					double[] textureU=new double[3];
 					double[] textureV=new double[3];
 					// Get the lengths of the axis vectors
