@@ -38,8 +38,8 @@ public class DecompilerThread implements Runnable {
 				BSPReader reader = new BSPReader(BSPFile);
 				reader.readBSP();
 				if(reader.isSource()) {
-					Window.setProgress(jobnum, 0, reader.SourceBSPObject.getBrushes().length()+reader.SourceBSPObject.getEntities().length(), "Decompiling...");
-					SourceBSPDecompiler decompiler = new SourceBSPDecompiler(reader.SourceBSPObject, jobnum);
+					Window.setProgress(jobnum, 0, reader.BSPObject.getBrushes().length()+reader.BSPObject.getEntities().length(), "Decompiling...");
+					SourceBSPDecompiler decompiler = new SourceBSPDecompiler(reader.BSPObject, jobnum);
 					decompiler.decompile();
 				} else {
 					if(reader.isRaven() && !reader.isSin()) {

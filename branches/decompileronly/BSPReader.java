@@ -38,7 +38,7 @@ public class BSPReader {
 	// Declare all kinds of BSPs here, the one actually used will be determined by constructor
 	protected DoomMap[] doomMaps;
 	protected BSP BSPObject;
-	protected SourceBSP SourceBSPObject;
+	// protected SourceBSP SourceBSPObject;
 	// SUPERCEDED BY BSP CLASS
 	// protected v38BSP BSP38;
 	// protected v42BSP BSP42;
@@ -163,7 +163,7 @@ public class BSPReader {
 							// Left 4 Dead 2, for some reason, made the order "version, offset, length" for lump header structure,
 							// rather than the usual "offset, length, version". I guess someone at Valve got bored.
 							boolean isL4D2=false;
-							SourceBSPObject = new SourceBSP(BSPFile.getPath(),1347633750+version);
+							BSPObject = new BSP(BSPFile.getPath(),1347633750+version);
 							offsetReader.skip(8); // Skip the VBSP and version number
 							
 							/* Needed source BSP lumps
@@ -203,9 +203,9 @@ public class BSPReader {
 								isL4D2=true;   // Although unused lumps have everything set to 0 in their info, Entities are NEVER EVER UNUSED! EVER!
 							}                 // A BSP file without entities is geometry with no life, no worldspawn. That's never acceptable.
 							if(isL4D2) {
-								SourceBSPObject.setEntities(readLump(length, version));
+								BSPObject.setEntities(readLump(length, version));
 							} else {
-								SourceBSPObject.setEntities(readLump(offset, length));
+								BSPObject.setEntities(readLump(offset, length));
 							}
 							
 							// Lump 01
@@ -217,9 +217,9 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-								SourceBSPObject.setPlanes(readLump(length, version));
+								BSPObject.setPlanes(readLump(length, version));
 							} else {
-								SourceBSPObject.setPlanes(readLump(offset, length));
+								BSPObject.setPlanes(readLump(offset, length));
 							}
 							
 							// Lump 02
@@ -231,9 +231,9 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-								SourceBSPObject.setTexDatas(readLump(length, version));
+								BSPObject.setTexDatas(readLump(length, version));
 							} else {
-								SourceBSPObject.setTexDatas(readLump(offset, length));
+								BSPObject.setTexDatas(readLump(offset, length));
 							}
 							
 							// Lump 03
@@ -245,9 +245,9 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-								SourceBSPObject.setVertices(readLump(length, version));
+								BSPObject.setVertices(readLump(length, version));
 							} else {
-								SourceBSPObject.setVertices(readLump(offset, length));
+								BSPObject.setVertices(readLump(offset, length));
 							}
 							
 							offsetReader.skip(16); // Skip lump 4 data
@@ -261,9 +261,9 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-								SourceBSPObject.setNodes(readLump(length, version));
+								BSPObject.setNodes(readLump(length, version));
 							} else {
-								SourceBSPObject.setNodes(readLump(offset, length));
+								BSPObject.setNodes(readLump(offset, length));
 							}
 							
 							// Lump 06
@@ -275,9 +275,9 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-								SourceBSPObject.setTexInfo(readLump(length, version));
+								BSPObject.setTexInfo(readLump(length, version));
 							} else {
-								SourceBSPObject.setTexInfo(readLump(offset, length));
+								BSPObject.setTexInfo(readLump(offset, length));
 							}
 							
 							// Lump 07
@@ -289,9 +289,9 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-							//	SourceBSPObject.setFaces(readLump(length, version));
+							//	BSPObject.setFaces(readLump(length, version));
 							} else {
-							//	SourceBSPObject.setFaces(readLump(offset, length));
+							//	BSPObject.setFaces(readLump(offset, length));
 							}
 							
 							offsetReader.skip(32); // skip lump 8 and 9 data
@@ -305,9 +305,9 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-								SourceBSPObject.setLeaves(readLump(length, version));
+								BSPObject.setLeaves(readLump(length, version));
 							} else {
-								SourceBSPObject.setLeaves(readLump(offset, length));
+								BSPObject.setLeaves(readLump(offset, length));
 							}
 							
 							offsetReader.skip(16);
@@ -321,9 +321,9 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-								SourceBSPObject.setEdges(readLump(length, version));
+								BSPObject.setEdges(readLump(length, version));
 							} else {
-								SourceBSPObject.setEdges(readLump(offset, length));
+								BSPObject.setEdges(readLump(offset, length));
 							}
 							
 							// Lump 13
@@ -335,9 +335,9 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-								SourceBSPObject.setSurfEdges(readLump(length, version));
+								BSPObject.setSurfEdges(readLump(length, version));
 							} else {
-								SourceBSPObject.setSurfEdges(readLump(offset, length));
+								BSPObject.setSurfEdges(readLump(offset, length));
 							}
 							
 							// Lump 14
@@ -349,9 +349,9 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-								SourceBSPObject.setModels(readLump(length, version));
+								BSPObject.setModels(readLump(length, version));
 							} else {
-								SourceBSPObject.setModels(readLump(offset, length));
+								BSPObject.setModels(readLump(offset, length));
 							}
 							
 							offsetReader.skip(32); // Skip lumps 15 and 16
@@ -365,9 +365,9 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-								SourceBSPObject.setMarkBrushes(readLump(length, version));
+								BSPObject.setMarkBrushes(readLump(length, version));
 							} else {
-								SourceBSPObject.setMarkBrushes(readLump(offset, length));
+								BSPObject.setMarkBrushes(readLump(offset, length));
 							}
 							
 							// Lump 18
@@ -379,9 +379,9 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-								SourceBSPObject.setBrushes(readLump(length, version));
+								BSPObject.setBrushes(readLump(length, version));
 							} else {
-								SourceBSPObject.setBrushes(readLump(offset, length));
+								BSPObject.setBrushes(readLump(offset, length));
 							}
 							
 							// Lump 19
@@ -393,9 +393,9 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-								SourceBSPObject.setBrushSides(readLump(length, version));
+								BSPObject.setBrushSides(readLump(length, version));
 							} else {
-								SourceBSPObject.setBrushSides(readLump(offset, length));
+								BSPObject.setBrushSides(readLump(offset, length));
 							}
 							
 							offsetReader.skip(96); // Skip entries for lumps 20 21 22 23 24 25
@@ -409,9 +409,9 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-								SourceBSPObject.setDispInfos(readLump(length, version));
+								BSPObject.setDispInfos(readLump(length, version));
 							} else {
-								SourceBSPObject.setDispInfos(readLump(offset, length));
+								BSPObject.setDispInfos(readLump(offset, length));
 							}
 							
 							// Lump 27
@@ -423,9 +423,9 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-							//	SourceBSPObject.setOriginalFaces(readLump(length, version));
+							//	BSPObject.setOriginalFaces(readLump(length, version));
 							} else {
-							//	SourceBSPObject.setOriginalFaces(readLump(offset, length));
+							//	BSPObject.setOriginalFaces(readLump(offset, length));
 							}
 							
 							offsetReader.skip(80); // Lumps 28 29 30 31 32
@@ -439,9 +439,9 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-								SourceBSPObject.setDispVerts(readLump(length, version));
+								BSPObject.setDispVerts(readLump(length, version));
 							} else {
-								SourceBSPObject.setDispVerts(readLump(offset, length));
+								BSPObject.setDispVerts(readLump(offset, length));
 							}
 							
 							offsetReader.skip(96);
@@ -460,9 +460,9 @@ public class BSPReader {
 									Date begin=new Date();
 									FileOutputStream PAKWriter;
 									if(Window.getOutputFolder().equals("default")) {
-										PAKWriter=new FileOutputStream(new File(SourceBSPObject.getPath().substring(0, SourceBSPObject.getPath().length()-4)+".pak"));
+										PAKWriter=new FileOutputStream(new File(BSPObject.getPath().substring(0, BSPObject.getPath().length()-4)+".pak"));
 									} else {
-										PAKWriter=new FileOutputStream(new File(Window.getOutputFolder()+"\\"+SourceBSPObject.getMapName().substring(0, SourceBSPObject.getMapName().length()-4)+".pak"));
+										PAKWriter=new FileOutputStream(new File(Window.getOutputFolder()+"\\"+BSPObject.getMapName().substring(0, BSPObject.getMapName().length()-4)+".pak"));
 									}
 									if(isL4D2) {
 										PAKWriter.write(readLump(length, version));
@@ -490,11 +490,11 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-								SourceBSPObject.setTextures(readLump(length, version));
+								BSPObject.setTextures(readLump(length, version));
 							} else {
-								SourceBSPObject.setTextures(readLump(offset, length));
+								BSPObject.setTextures(readLump(offset, length));
 							}
-							FileOutputStream fuck=new FileOutputStream(new File(SourceBSPObject.getPath().substring(0, SourceBSPObject.getPath().length()-4)+".pak"));
+							FileOutputStream fuck=new FileOutputStream(new File(BSPObject.getPath().substring(0, BSPObject.getPath().length()-4)+".pak"));
 							if(isL4D2) {
 								fuck.write(readLump(length, version));
 							} else {
@@ -511,9 +511,9 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-								SourceBSPObject.setTexTable(readLump(length, version));
+								BSPObject.setTexTable(readLump(length, version));
 							} else {
-								SourceBSPObject.setTexTable(readLump(offset, length));
+								BSPObject.setTexTable(readLump(offset, length));
 							}
 							
 							offsetReader.skip(48);
@@ -527,14 +527,14 @@ public class BSPReader {
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							if(isL4D2) {
-								SourceBSPObject.setDispTris(readLump(length, version));
+								BSPObject.setDispTris(readLump(length, version));
 							} else {
-								SourceBSPObject.setDispTris(readLump(offset, length));
+								BSPObject.setDispTris(readLump(offset, length));
 							}
 							
 							offsetReader.close();
 							
-							SourceBSPObject.printBSPReport();
+							BSPObject.printBSPReport();
 							
 						break;
 					}

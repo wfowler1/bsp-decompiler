@@ -289,7 +289,7 @@ public class BSP38Decompiler {
 					UShift=(double)currentTexture.getTexAxes().getSShift();
 					VShift=(double)currentTexture.getTexAxes().getTShift();
 				} else {
-					Vector3D[] axes=BSP46Decompiler.textureAxisFromPlane(currentPlane);
+					Vector3D[] axes=GenericMethods.textureAxisFromPlane(currentPlane);
 					textureU=axes[0].getPoint();
 					textureV=axes[1].getPoint();
 				}

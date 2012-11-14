@@ -642,4 +642,31 @@ public class GenericMethods {
 		}
 		return newBrush;
 	}
+
+	public static final Vector3D[] baseAxes = new Vector3D[] { new Vector3D(0,0,1), new Vector3D(1,0,0), new Vector3D(0,-1,0),
+	                                                           new Vector3D(0,0,-1), new Vector3D(1,0,0), new Vector3D(0,-1,0),
+	                                                           new Vector3D(1,0,0), new Vector3D(0,1,0), new Vector3D(0,0,-1),
+	                                                           new Vector3D(-1,0,0), new Vector3D(0,1,0), new Vector3D(0,0,-1),
+	                                                           new Vector3D(0,1,0), new Vector3D(1,0,0), new Vector3D(0,0,-1),
+	                                                           new Vector3D(0,-1,0), new Vector3D(1,0,0), new Vector3D(0,0,-1) };
+	
+	// textureAxisFromPlane, adapted from code in the Quake III Arena source code. Stolen without
+	// permission because it falls under the terms of the GPL v2 license, because I'm not making
+	// any money, just awesome tools.
+	public static Vector3D[] textureAxisFromPlane(Plane p) {
+		int bestaxis=0;
+		double dot; // Current dot product
+		double best=0; // "Best" dot product so far
+		for(int i=0; i<6; i++) { // For all possible axes, positive and negative
+			dot = Vector3D.dotProduct(p.getNormal(), baseAxes[i*3]);
+			if (dot > best) {
+				best = dot;
+				bestaxis = i;
+			}
+		}
+		Vector3D[] out=new Vector3D[2];
+		out[0]=new Vector3D(baseAxes[bestaxis*3+1]);
+		out[1]=new Vector3D(baseAxes[bestaxis*3+2]);
+		return out;
+	}
 }

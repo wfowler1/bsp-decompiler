@@ -221,7 +221,7 @@ public class Window extends JPanel implements ActionListener {
 		
 		chk_extractZipItem=new JCheckBoxMenuItem("Extract internal PAK file");
 		chk_extractZipItem.setToolTipText("Source engine maps contain an internal PAK file containing map-specific files. Extraction takes a little while and creates another file.");
-		chk_extractZipItem.setSelected(true);
+		chk_extractZipItem.setSelected(false);
 		optionsMenu.add(chk_extractZipItem);
 		optionsMenu.addSeparator();
 		

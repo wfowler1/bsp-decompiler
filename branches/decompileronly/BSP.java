@@ -57,6 +57,13 @@ public class BSP {
 	//private MoHAAStaticProps staticProps;
 	// Nightfire
 	private Textures materials;
+	// Source
+	private Faces originalFaces;
+	private NumList texTable;
+	private SourceTexDatas texDatas;
+	private SourceDispInfos dispInfos;
+	private SourceDispVertices dispVerts;
+	private NumList displacementTriangles;
 	
 	// CONSTRUCTORS
 	public BSP(String filePath, int version) {
@@ -65,6 +72,99 @@ public class BSP {
 	}
 	
 	// METHODS
+
+	public void printBSPReport() {
+		// If there's a NullPointerException here, the BSPReader class didn't initialize the object and therefore
+		// this is either a BSP format which doesn't use that lump, or there's an error which will become apparent.
+		try {
+			Window.println("Entities lump: "+entities.getLength()+" bytes, "+entities.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Planes lump: "+planes.getLength()+" bytes, "+planes.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Texture lump: "+textures.getLength()+" bytes, "+textures.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Nodes lump: "+nodes.getLength()+" bytes, "+nodes.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Texture info lump: "+texInfo.getLength()+" bytes, "+texInfo.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Faces lump: "+faces.getLength()+" bytes, "+faces.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Leaves lump: "+leaves.getLength()+" bytes, "+leaves.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Mark surfaces lump: "+markSurfaces.getLength()+" bytes, "+markSurfaces.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Edges lump: "+edges.getLength()+" bytes, "+edges.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Surface Edges lump: "+surfEdges.getLength()+" bytes, "+surfEdges.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Models lump: "+models.getLength()+" bytes, "+models.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Brushes lump: "+brushes.getLength()+" bytes, "+brushes.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Brush sides lump: "+brushSides.getLength()+" bytes, "+brushSides.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Mark brushes lump: "+markBrushes.getLength()+" bytes, "+markBrushes.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		/*try {
+			Window.println("Static prop lump: "+staticProps.getLength()+" bytes, "+staticProps.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}*/
+		try {
+			Window.println("Original Faces lump: "+originalFaces.getLength()+" bytes, "+originalFaces.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Texture index table lump: "+texTable.getLength()+" bytes, "+texTable.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Textures lump: "+texDatas.getLength()+" bytes, "+texDatas.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Displacement info lump: "+dispInfos.getLength()+" bytes, "+dispInfos.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Displacement Vertices lump: "+dispVerts.getLength()+" bytes, "+dispVerts.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Displacement Triangle Tags lump: "+displacementTriangles.getLength()+" bytes, "+displacementTriangles.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+	}
 	
 	// +getLeavesInModel(int)
 	// Returns an array of Leaf containing all the leaves referenced from
@@ -123,6 +223,17 @@ public class BSP {
 			}
 		}
 		return nodeLeaves;
+	}
+	
+	// Only for Source engine.
+	public int findTexDataWithTexture(String texture) {
+		for(int i=0;i<texDatas.length();i++) {
+			String temp=textures.getTextureAtOffset((int)texTable.getElement(texDatas.getElement(i).getStringTableIndex()));
+			if(temp==texture) {
+				return i;
+			}
+		}
+		return -1;
 	}
 	
 	// ACCESSORS/MUTATORS
@@ -273,6 +384,13 @@ public class BSP {
 			case TYPE_QUAKE:
 			case TYPE_QUAKE2:
 			case TYPE_SIN:
+			case TYPE_SOURCE17:
+			case TYPE_SOURCE18:
+			case TYPE_SOURCE19:
+			case TYPE_SOURCE20:
+			case TYPE_SOURCE21:
+			case TYPE_SOURCE22:
+			case TYPE_SOURCE23:
 				surfEdges=new NumList(data, NumList.TYPE_INT);
 				break;
 		}
@@ -306,6 +424,13 @@ public class BSP {
 		switch(version) {
 			case TYPE_QUAKE2:
 			case TYPE_SIN:
+			case TYPE_SOURCE17:
+			case TYPE_SOURCE18:
+			case TYPE_SOURCE19:
+			case TYPE_SOURCE20:
+			case TYPE_SOURCE21:
+			case TYPE_SOURCE22:
+			case TYPE_SOURCE23:
 				markBrushes=new NumList(data, NumList.TYPE_USHORT);
 				break;
 			case TYPE_NIGHTFIRE:
@@ -316,6 +441,54 @@ public class BSP {
 	
 	public NumList getMarkBrushes() {
 		return markBrushes;
+	}
+	
+	public void setTexDatas(byte[] data) {
+		texDatas=new SourceTexDatas(data);
+	}
+	
+	public SourceTexDatas getTexDatas() {
+		return texDatas;
+	}
+	
+	public void setDispInfos(byte[] data) {
+		dispInfos=new SourceDispInfos(data);
+	}
+	
+	public SourceDispInfos getDistInfos() {
+		return dispInfos;
+	}
+	
+	public Faces getOriginalFaces() {
+		return originalFaces;
+	}
+	
+	public void setOriginalFaces(byte[] data) {
+		originalFaces=new Faces(data, version);
+	}
+	
+	public void setDispVerts(byte[] data) {
+		dispVerts=new SourceDispVertices(data);
+	}
+	
+	public SourceDispVertices getDispVerts() {
+		return dispVerts;
+	}
+	
+	public void setTexTable(byte[] data) {
+		texTable=new NumList(data, NumList.TYPE_UINT);
+	}
+	
+	public NumList getTexTable() {
+		return texTable;
+	}
+	
+	public void setDispTris(byte[] data) {
+		displacementTriangles=new NumList(data, NumList.TYPE_USHORT);
+	}
+	
+	public NumList getDispTris() {
+		return displacementTriangles;
 	}
 	
 	// INTERNAL CLASSES

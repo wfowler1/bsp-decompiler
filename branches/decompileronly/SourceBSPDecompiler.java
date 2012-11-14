@@ -23,14 +23,14 @@ public class SourceBSPDecompiler {
 	private int numAdvancedCorrects=0;
 	private int numGoodBrushes=0;
 	
-	private SourceBSP BSP;
+	private BSP BSPObject;
 	
 	// CONSTRUCTORS
 
 	// This constructor sets everything according to specified settings.
-	public SourceBSPDecompiler(SourceBSP BSP, int jobnum) {
+	public SourceBSPDecompiler(BSP BSPObject, int jobnum) {
 		// Set up global variables
-		this.BSP=BSP;
+		this.BSPObject=BSPObject;
 		this.jobnum=jobnum;
 	}
 	
@@ -42,18 +42,18 @@ public class SourceBSPDecompiler {
 		// Begin by copying all the entities into another Lump00 object. This is
 		// necessary because if I just modified the current entity list then it
 		// could be saved back into the BSP and really mess some stuff up.
-		mapFile=new Entities(BSP.getEntities());
+		mapFile=new Entities(BSPObject.getEntities());
 		//int numAreaPortals=0;
 		int numTotalItems=0;
-		for(int i=0;i<BSP.getEntities().length();i++) { // For each entity
+		for(int i=0;i<BSPObject.getEntities().length();i++) { // For each entity
 			Window.println("Entity "+i+": "+mapFile.getEntity(i).getAttribute("classname"),Window.VERBOSITY_ENTITIES);
 			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
 			int currentModel=mapFile.getEntity(i).getModelNumber();
 			if(currentModel!=-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
 				double[] origin=mapFile.getEntity(i).getOrigin();
-				Leaf[] leaves=BSP.getLeavesInModel(currentModel);
+				Leaf[] leaves=BSPObject.getLeavesInModel(currentModel);
 				int numLeaves=leaves.length;
-				boolean[] brushesUsed=new boolean[BSP.getBrushes().length()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
+				boolean[] brushesUsed=new boolean[BSPObject.getBrushes().length()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
 				numBrshs=0; // Reset the brush count for each entity
 				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
 					Leaf currentLeaf=leaves[j];
@@ -64,25 +64,25 @@ public class SourceBSPDecompiler {
 					int numBrushIndices=currentLeaf.getNumMarkBrushes();
 					if(numBrushIndices>0) { // A lot of leaves reference no brushes. If this is one, this iteration of the j loop is finished
 						for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
-							long currentBrushIndex=BSP.getMarkBrushes().getElement(firstMarkBrushIndex+k);
+							long currentBrushIndex=BSPObject.getMarkBrushes().getElement(firstMarkBrushIndex+k);
 							if(!brushesUsed[(int)currentBrushIndex]) { // If the current brush has NOT been used in this entity
 								Window.print("Brush "+(k+numBrushIndices),Window.VERBOSITY_BRUSHCREATION);
 								brushesUsed[(int)currentBrushIndex]=true;
-								Brush brush=BSP.getBrushes().getElement((int)currentBrushIndex);
+								Brush brush=BSPObject.getBrushes().getElement((int)currentBrushIndex);
 								decompileBrush(brush, i); // Decompile the brush
 								numBrshs++;
 								numTotalItems++;
-								Window.setProgress(jobnum, numTotalItems, BSP.getBrushes().length()+BSP.getEntities().length(), "Decompiling...");
+								Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");
 							}
 						}
 					}
 				}
 			}
 			numTotalItems++; // This entity
-			Window.setProgress(jobnum, numTotalItems, BSP.getBrushes().length()+BSP.getEntities().length(), "Decompiling...");
+			Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");
 		}
-		Window.setProgress(jobnum, numTotalItems, BSP.getBrushes().length()+BSP.getEntities().length(), "Saving...");
-		MAPMaker.outputMaps(mapFile, BSP.getMapNameNoExtension(), BSP.getFolder(), 255);
+		Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Saving...");
+		MAPMaker.outputMaps(mapFile, BSPObject.getMapNameNoExtension(), BSPObject.getFolder(), 255);
 		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {
 			Window.println("Num simple corrected brushes: "+numSimpleCorrects,Window.VERBOSITY_MAPSTATS); 
@@ -110,13 +110,13 @@ public class SourceBSPDecompiler {
 		}
 		Window.println(": "+numSides+" sides, detail: "+isDetail,Window.VERBOSITY_BRUSHCREATION);
 		for(int i=0;i<numSides;i++) { // For each side of the brush
-			BrushSide currentSide=BSP.getBrushSides().getElement(firstSide+i);
+			BrushSide currentSide=BSPObject.getBrushSides().getElement(firstSide+i);
 			if(currentSide.isBevel()==0) { // Bevel sides are evil
 				Vector3D[] plane=new Vector3D[3]; // Three points define a plane. All I have to do is find three points on that plane.
-				Plane currentPlane=BSP.getPlanes().getElement(currentSide.getPlane()); // To find those three points, I must extrapolate from planes until I find a way to associate faces with brushes
+				Plane currentPlane=BSPObject.getPlanes().getElement(currentSide.getPlane()); // To find those three points, I must extrapolate from planes until I find a way to associate faces with brushes
 				boolean isDuplicate=false;/* TODO: We sure don't want duplicate planes (though this is already handled by the MAPBrush class). Make sure neither checked side is bevel.
 				for(int j=i+1;j<numSides;j++) { // For each subsequent side of the brush
-					if(currentPlane.equals(BSP.getPlanes().getPlane(BSP.getBrushSides().getElement(firstSide+j).getPlane()))) {
+					if(currentPlane.equals(BSPObject.getPlanes().getPlane(BSPObject.getBrushSides().getElement(firstSide+j).getPlane()))) {
 						Window.println("WARNING: Duplicate planes in a brush, sides "+i+" and "+j,Window.VERBOSITY_WARNINGS);
 						isDuplicate=true;
 					}
@@ -124,11 +124,12 @@ public class SourceBSPDecompiler {
 				if(!isDuplicate) {
 					TexInfo currentTexInfo;
 					if(currentSide.getTexture()>-1) {
-						currentTexInfo=BSP.getTexInfos().getElement(currentSide.getTexture());
+						currentTexInfo=BSPObject.getTexInfo().getElement(currentSide.getTexture());
 					} else {
-						currentTexInfo=createPerpTexInfo(currentPlane); // Create a texture plane perpendicular to current plane's normal
+						Vector3D[] axes=GenericMethods.textureAxisFromPlane(currentPlane);
+						currentTexInfo=new TexInfo(axes[0], 0, axes[1], 0, 0, BSPObject.findTexDataWithTexture("tools/toolsclip"));
 					}
-					SourceTexData currentTexData=BSP.getTexDatas().getElement(currentTexInfo.getTexture());
+					SourceTexData currentTexData=BSPObject.getTexDatas().getElement(currentTexInfo.getTexture());
 					/*if(!Window.planarDecompIsSelected()) {
 						// Find a face whose plane and texture information corresponds to the current side
 						// It doesn't really matter if it's the actual brush's face, just as long as it provides vertices.
@@ -228,7 +229,13 @@ public class SourceBSPDecompiler {
 					} else { // Planar decomp only */
 					//	plane=GenericMethods.extrapPlanePoints(currentPlane);
 					// }
-					String texture=BSP.getTextures().getTextureAtOffset((int)BSP.getTexTable().getElement(currentTexData.getStringTableIndex()));
+					String texture=BSPObject.getTextures().getTextureAtOffset((int)BSPObject.getTexTable().getElement(currentTexData.getStringTableIndex()));
+					if(texture.substring(0,6).equalsIgnoreCase("tools/")) {
+						// Tools textured faces do not maintain their own texture axes. Therefore, an arbitrary axis is
+						// used in the compiled map. When decompiled, these axes might smear the texture on the face. Fix that.
+						Vector3D[] axes=GenericMethods.textureAxisFromPlane(currentPlane);
+						currentTexInfo=new TexInfo(axes[0], 0, axes[1], 0, 0, BSPObject.findTexDataWithTexture(texture));
+					}
 					double[] textureU=new double[3];
 					double[] textureV=new double[3];
 					// Get the lengths of the axis vectors
@@ -305,11 +312,7 @@ public class SourceBSPDecompiler {
 	}
 	
 	public TexInfo createPerpTexInfo(Plane in) {
-		Vector3D[] points=GenericMethods.extrapPlanePoints(in);
-		Vector3D s=new Vector3D(points[1].getX()-points[0].getX(), points[1].getY()-points[0].getY(), points[1].getZ()-points[0].getZ());
-		Vector3D t=new Vector3D(points[1].getX()-points[2].getX(), points[1].getY()-points[2].getY(), points[1].getZ()-points[2].getZ());
-		s.normalize();
-		t.normalize();
-		return new TexInfo(s, 0, t, 0, 0, BSP.findTexDataWithTexture("tools/toolsclip"));
+		Vector3D[] axes=GenericMethods.textureAxisFromPlane(in);
+		return new TexInfo(axes[0], 0, axes[1], 0, 0, BSPObject.findTexDataWithTexture("tools/toolsclip"));
 	} 
 }
