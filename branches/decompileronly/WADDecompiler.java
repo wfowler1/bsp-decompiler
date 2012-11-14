@@ -388,7 +388,7 @@ public class WADDecompiler {
 		}
 		
 		Window.setProgress(jobnum, 1, 1, "Saving...");
-		MAPMaker.outputMaps(mapFile, doomMap.getMapName(), doomMap.getFolder()+doomMap.getWadName()+"\\", doomMap.VERSION);
+		MAPMaker.outputMaps(mapFile, doomMap.getMapName(), doomMap.getFolder()+doomMap.getWadName()+"\\", DoomMap.VERSION);
 		Date end=new Date();
 		Window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,Window.VERBOSITY_ALWAYS);
 	}

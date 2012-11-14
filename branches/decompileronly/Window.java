@@ -50,12 +50,15 @@ public class Window extends JPanel implements ActionListener {
 	// "File" menu
 	private static JMenu fileMenu;
 	private static JMenuItem openItem;
+	private static JMenuItem exitItem;
+	// "MAP formats" submenu
+	private static JMenu formatsMenu;
+	private static JCheckBoxMenuItem decompAutoItem;
 	private static JCheckBoxMenuItem decompVMFItem;
 	private static JCheckBoxMenuItem decompMAPItem; 
 	private static JCheckBoxMenuItem decompMOHRadiantItem;
 	private static JCheckBoxMenuItem decompRadiantItem;
 	private static JCheckBoxMenuItem decompDoomEditItem;
-	private static JMenuItem exitItem;
 
 	// "Options" menu
 	private static JMenu optionsMenu;
@@ -174,26 +177,38 @@ public class Window extends JPanel implements ActionListener {
 		fileMenu.add(openItem);
 		openItem.addActionListener(this);
 		fileMenu.addSeparator();
-		decompVMFItem = new JCheckBoxMenuItem("Output Hammer VMF");
-		fileMenu.add(decompVMFItem);
-		decompVMFItem.addActionListener(this);
-		decompVMFItem.setSelected(true);
-		decompMAPItem = new JCheckBoxMenuItem("Output Gearcraft MAP");
-		fileMenu.add(decompMAPItem);
-		decompMAPItem.addActionListener(this);
-		decompMOHRadiantItem = new JCheckBoxMenuItem("Output MOHRadiant MAP");
-		fileMenu.add(decompMOHRadiantItem);
-		decompMOHRadiantItem.addActionListener(this);
-		decompRadiantItem = new JCheckBoxMenuItem("Output GTKRadiant MAP");
-		fileMenu.add(decompRadiantItem);
-		decompRadiantItem.addActionListener(this);
-		decompDoomEditItem = new JCheckBoxMenuItem("Output DOOMEdit MAP");
-		fileMenu.add(decompDoomEditItem);
-		decompDoomEditItem.addActionListener(this);
+		formatsMenu = new JMenu("Output formats...");
+		fileMenu.add(formatsMenu);
 		fileMenu.addSeparator();
 		exitItem = new JMenuItem("Exit");
 		fileMenu.add(exitItem);
 		exitItem.addActionListener(this);
+		
+		decompAutoItem = new JCheckBoxMenuItem("Auto");
+		formatsMenu.add(decompAutoItem);
+		decompAutoItem.setSelected(true);
+		decompAutoItem.addActionListener(this);
+		formatsMenu.addSeparator();
+		decompVMFItem = new JCheckBoxMenuItem("Output Hammer VMF");
+		decompVMFItem.setEnabled(false);
+		formatsMenu.add(decompVMFItem);
+		decompVMFItem.addActionListener(this);
+		decompMAPItem = new JCheckBoxMenuItem("Output Gearcraft MAP");
+		decompMAPItem.setEnabled(false);
+		formatsMenu.add(decompMAPItem);
+		decompMAPItem.addActionListener(this);
+		decompMOHRadiantItem = new JCheckBoxMenuItem("Output MOHRadiant MAP");
+		decompMOHRadiantItem.setEnabled(false);
+		formatsMenu.add(decompMOHRadiantItem);
+		decompMOHRadiantItem.addActionListener(this);
+		decompRadiantItem = new JCheckBoxMenuItem("Output GTKRadiant MAP");
+		decompRadiantItem.setEnabled(false);
+		formatsMenu.add(decompRadiantItem);
+		decompRadiantItem.addActionListener(this);
+		decompDoomEditItem = new JCheckBoxMenuItem("Output DOOMEdit MAP");
+		decompDoomEditItem.setEnabled(false);
+		formatsMenu.add(decompDoomEditItem);
+		decompDoomEditItem.addActionListener(this);
 		
 		// Options menu
 		setPlanePointCoefItem=new JMenuItem("Set plane point coefficient...");
@@ -450,6 +465,19 @@ public class Window extends JPanel implements ActionListener {
 			}
 		} catch(java.lang.StringIndexOutOfBoundsException f) {
 			;
+		}
+		
+		if(action.getSource() == decompAutoItem) {
+			if(!decompAutoItem.isSelected()) {
+				if(!decompDoomEditItem.isSelected() && !decompRadiantItem.isSelected() && !decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
+					decompVMFItem.setSelected(true);
+				}
+			}
+			decompMAPItem.setEnabled(!decompAutoItem.isSelected());
+			decompVMFItem.setEnabled(!decompAutoItem.isSelected());
+			decompMOHRadiantItem.setEnabled(!decompAutoItem.isSelected());
+			decompRadiantItem.setEnabled(!decompAutoItem.isSelected());
+			decompDoomEditItem.setEnabled(!decompAutoItem.isSelected());
 		}
 		
 		if(action.getSource() == decompMAPItem || action.getSource() == decompVMFItem || action.getSource() == decompMOHRadiantItem || action.getSource() == decompRadiantItem || action.getSource() == decompDoomEditItem) {
@@ -1084,6 +1112,10 @@ public class Window extends JPanel implements ActionListener {
 	
 	public static String getOutputFolder() {
 		return outputFolder;
+	}
+	
+	public static boolean toAuto() {
+		return decompAutoItem.isSelected();
 	}
 	
 	public static boolean toVMF() {
