@@ -58,6 +58,7 @@ public class Planes {
 			case BSP.TYPE_STEF2DEMO:
 			case BSP.TYPE_RAVEN:
 			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_ALICE:
 			case BSP.TYPE_COD:
 				structLength=16;
 				break;

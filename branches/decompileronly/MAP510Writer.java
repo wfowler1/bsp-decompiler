@@ -80,7 +80,7 @@ public class MAP510Writer {
 						break;
 					} else {
 						try {
-							if(data.getEntity(i).getAttribute("classname").substring(0,8).equalsIgnoreCase("team_CTF")) {
+							if(data.getEntity(i).getAttribute("classname").substring(0,8).equalsIgnoreCase("team_CTF") || data.getEntity(i).getAttribute("classname").equalsIgnoreCase("ctf_flag_hardcorps")) {
 								ctfEnts=true;
 							}
 						} catch(java.lang.StringIndexOutOfBoundsException e) {
@@ -157,17 +157,19 @@ public class MAP510Writer {
 		switch(BSPVersion) {
 			case BSP.TYPE_QUAKE3:
 			case BSP.TYPE_RAVEN:
+			case BSP.TYPE_MOHAA:
 				in=ent46ToEntM510(in);
 				break;
-			case 42: // Nightfire
+			case BSP.TYPE_NIGHTFIRE: // Nightfire
 				in=ent42ToEntM510(in);
 				break;
-			case 38:
+			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_SIN:
 				in=ent38ToEntM510(in);
 				break;
-			case 1: // Doom! I can use any versioning system I want!
+			case DoomMap.VERSION: // Doom! I can use any versioning system I want!
 				break;
-			case 59:
+			case BSP.TYPE_COD:
 				in=ent59ToEntM510(in);
 				break;
 		}
@@ -293,7 +295,7 @@ public class MAP510Writer {
 						;
 					}
 				}
-				if(BSPVersion==255) {
+				if(BSPVersion==BSP.TYPE_SOURCE17 || BSPVersion==BSP.TYPE_SOURCE18 || BSPVersion==BSP.TYPE_SOURCE19 || BSPVersion==BSP.TYPE_SOURCE20 || BSPVersion==BSP.TYPE_SOURCE21 || BSPVersion==BSP.TYPE_SOURCE22 || BSPVersion==BSP.TYPE_SOURCE23) {
 					try {
 						if(texture.equalsIgnoreCase("tools/toolshint")) {
 							texture="special/hint";
@@ -322,7 +324,7 @@ public class MAP510Writer {
 						;
 					}
 				}
-				if(BSPVersion==BSP.TYPE_QUAKE3 || BSPVersion==BSP.TYPE_MOHAA || BSPVersion==BSP.TYPE_COD) {
+				if(BSPVersion==BSP.TYPE_QUAKE3 || BSPVersion==BSP.TYPE_MOHAA || BSPVersion==BSP.TYPE_COD || BSPVersion==BSP.TYPE_STEF2 || BSPVersion==BSP.TYPE_STEF2DEMO || BSPVersion==BSP.TYPE_ALICE) {
 					try {
 						if(texture.substring(0,9).equalsIgnoreCase("textures/")) {
 							texture=texture.substring(9);
@@ -342,13 +344,13 @@ public class MAP510Writer {
 								if(texture.equalsIgnoreCase("common/physics_clip")) {
 									texture="special/clip";
 								} else {
-									if(texture.equalsIgnoreCase("common/caulk")) {
+									if(texture.equalsIgnoreCase("common/caulk") || texture.equalsIgnoreCase("common/caulkshadow")) {
 										texture="special/nodraw";
 									} else {
-										if(texture.equalsIgnoreCase("common/do_not_enter") || texture.equalsIgnoreCase("common/donotenter")) {
+										if(texture.equalsIgnoreCase("common/do_not_enter") || texture.equalsIgnoreCase("common/donotenter") || texture.equalsIgnoreCase("common/monsterclip")) {
 											texture="special/npcclip";
 										} else {
-											if(texture.equalsIgnoreCase("common/caulksky")) {
+											if(texture.equalsIgnoreCase("common/caulksky") || texture.equalsIgnoreCase("common/skyportal") || texture.substring(0,4).equalsIgnoreCase("sky/")) {
 												texture="special/sky";
 											} else {
 												if(texture.equalsIgnoreCase("common/hint")) {
@@ -383,6 +385,18 @@ public class MAP510Writer {
 																					} else {
 																						if(texture.equalsIgnoreCase("common/clipfoliage")) {
 																							texture="special/clip";
+																						} else {
+																							if(texture.equalsIgnoreCase("common/foliageclip")) {
+																								texture="special/clip";
+																							} else {
+																								if(texture.equalsIgnoreCase("common/carpetclip")) {
+																									texture="special/clip";
+																								} else {
+																									if(texture.equalsIgnoreCase("common/dirtclip")) {
+																										texture="special/clip";
+																									}
+																								}
+																							}
 																						}
 																					}
 																				}
@@ -600,6 +614,22 @@ public class MAP510Writer {
 										in.deleteAttribute("_color");
 										in.deleteAttribute("light");
 										in.setAttribute("_light", lightNumbers[r]+" "+lightNumbers[g]+" "+lightNumbers[b]+" "+lightNumbers[s]);
+									} else {
+										if(in.getAttribute("classname").equalsIgnoreCase("func_rotatingdoor")) {
+											in.setAttribute("classname", "func_door_rotating");
+											double[] origin=in.getOrigin();
+											in.deleteAttribute("origin");
+											MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
+											in.addBrush(newOriginBrush);
+										} else {
+											if(in.getAttribute("classname").equalsIgnoreCase("info_pathnode")) {
+												in.setAttribute("classname", "info_node");
+											} else {
+												if(in.getAttribute("classname").equalsIgnoreCase("trigger_ladder")) {
+													in.setAttribute("classname", "func_ladder");
+												}
+											}
+										}
 									}
 								}
 							}
@@ -626,7 +656,7 @@ public class MAP510Writer {
 				in.setAttribute("classname", "func_wall_toggle");
 			} // 2 I believe is "Start enabled" and 4 is "toggleable", or the other way around. Not sure. Could use an OR.
 		} else {
-			if(in.getAttribute("classname").equalsIgnoreCase("item_flag_team2")) { // Blue flag
+			if(in.getAttribute("classname").equalsIgnoreCase("item_flag_team2") || in.getAttribute("classname").equalsIgnoreCase("ctf_flag_hardcorps")) { // Blue flag
 				in.setAttribute("classname", "item_ctfflag");
 				in.setAttribute("skin", "1"); // 0 for PHX, 1 for MI6
 				in.setAttribute("goal_no", "1"); // 2 for PHX, 1 for MI6
@@ -642,7 +672,7 @@ public class MAP510Writer {
 				flagBase.setAttribute("goal_min", "-16 -16 0");
 				data.add(flagBase);
 			} else {
-				if(in.getAttribute("classname").equalsIgnoreCase("item_flag_team1")) { // Red flag
+				if(in.getAttribute("classname").equalsIgnoreCase("item_flag_team1") || in.getAttribute("classname").equalsIgnoreCase("ctf_flag_sintek")) { // Red flag
 					in.setAttribute("classname", "item_ctfflag");
 					in.setAttribute("skin", "0"); // 0 for PHX, 1 for MI6
 					in.setAttribute("goal_no", "2"); // 2 for PHX, 1 for MI6
@@ -658,11 +688,11 @@ public class MAP510Writer {
 					flagBase.setAttribute("goal_min", "-16 -16 0");
 					data.add(flagBase);
 				} else {
-					if(in.getAttribute("classname").equalsIgnoreCase("info_player_team1")) {
+					if(in.getAttribute("classname").equalsIgnoreCase("info_player_team1") || in.getAttribute("classname").equalsIgnoreCase("info_player_sintek")) {
 						in.setAttribute("classname", "info_ctfspawn");
 						in.setAttribute("team_no", "2");
 					} else {
-						if(in.getAttribute("classname").equalsIgnoreCase("info_player_team2")) {
+						if(in.getAttribute("classname").equalsIgnoreCase("info_player_team2") || in.getAttribute("classname").equalsIgnoreCase("info_player_hardcorps")) {
 							in.setAttribute("classname", "info_ctfspawn");
 							in.setAttribute("team_no", "1");
 						} else {

@@ -14,6 +14,7 @@ public class BSP {
 	public static final int TYPE_MOHAA=892416069;
 	// public static final int TYPE_MOHBT=1095516506; // Similar enough to MOHAA to use the same structures and algorithm
 	public static final int TYPE_STEF2DEMO=1263223129;
+	public static final int TYPE_ALICE=1263223152;
 	// public static final int TYPE_COD2=1347633741; // Uses same algorithm and structures as COD1
 	public static final int TYPE_SIN=1347633747; // The headers for SiN and Jedi Outcast are exactly the same
 	public static final int TYPE_RAVEN=1347633748;

@@ -24,6 +24,7 @@ public class BrushSide extends LumpObject {
 			                   // depending on whether or not it's one of the first six sides in a brush.
 				dist=DataReader.readFloat(data[0], data[1], data[2], data[3]);
 			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_ALICE:
 			case BSP.TYPE_STEF2DEMO:
 			case BSP.TYPE_MOHAA:
 				plane=DataReader.readInt(data[0], data[1], data[2], data[3]);

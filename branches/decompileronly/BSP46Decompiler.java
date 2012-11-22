@@ -66,6 +66,7 @@ public class BSP46Decompiler {
 					numTotalItems++;
 					Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");
 				}
+				mapFile.getEntity(i).deleteAttribute("model");
 			}
 			numTotalItems++;
 			Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");

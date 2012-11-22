@@ -45,6 +45,7 @@ public class MAPMaker {
 				case BSP.TYPE_QUAKE2:
 				case BSP.TYPE_QUAKE3:
 				case BSP.TYPE_COD:
+				case BSP.TYPE_ALICE:
 					GTKRadiantMapWriter RadMAPMaker;
 					if(Window.getOutputFolder().equals("default")) {
 						Window.println("Saving "+mapfolder+mapname+".map...",Window.VERBOSITY_ALWAYS);

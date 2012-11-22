@@ -54,6 +54,7 @@ public class Model extends LumpObject {
 			case BSP.TYPE_QUAKE3:
 			case BSP.TYPE_MOHAA:
 			case BSP.TYPE_RAVEN:
+			case BSP.TYPE_ALICE:
 				firstBrush=DataReader.readInt(data[32], data[33], data[34], data[35]);
 				numBrushes=DataReader.readInt(data[36], data[37], data[38], data[39]);
 				break;

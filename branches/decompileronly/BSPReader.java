@@ -25,6 +25,7 @@ public class BSPReader {
 	private boolean sin=false;
 	private boolean wad=false;
 	private boolean ef2=false;
+	private boolean fakk=false;
 	
 	public final int OFFSET=0;
 	public final int LENGTH=1;
@@ -801,643 +802,706 @@ public class BSPReader {
 							
 							// BSPObject.printBSPReport();
 						} else {
-							switch(version) {
-								case 1: // WAD file
-									Window.println("WAD file found",Window.VERBOSITY_ALWAYS);
-									offsetReader = new FileInputStream(BSPFile);
-									offsetReader.skip(4); // Skip the file header, putting the reader into the length and offset of the directory
-									
-									doomMaps=new DoomMap[0];
-									
-									// Find the directory
-									offsetReader.read(read); // Read 4 bytes
-									int numLumps=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									int directoryOffset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									
-									FileInputStream directoryReader = new FileInputStream(BSPFile);
-									directoryReader.skip(directoryOffset);
-									
-									byte[] readDirectory=new byte[16];
-									
-									// Read through the directory to find maps
-									for(int i=0;i<numLumps;i++) {
-										directoryReader.read(readDirectory);
-										offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
-										length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-										String lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
-										if( ( lumpName.substring(0,3).equals("MAP") && lumpName.charAt(3)>='0' && lumpName.charAt(3)<='9' && lumpName.charAt(4)>='0' && lumpName.charAt(4)<='9' ) || ( lumpName.charAt(0)=='E' && lumpName.charAt(2)=='M' && lumpName.charAt(1)>='0' && lumpName.charAt(1)<='9' && lumpName.charAt(3)>='0' && lumpName.charAt(3)<='9' ) ) {
-											String mapName=lumpName.substring(0,5); // Map names are always ExMy or MAPxx. Never more than five chars.
-											Window.println("Map: "+mapName,Window.VERBOSITY_ALWAYS);
-											// All of this code updates the maplist with a new entry
-											DoomMap[] newList=new DoomMap[doomMaps.length+1];
-											for(int j=0;j<doomMaps.length;j++) {
-												newList[j] = doomMaps[j];
-											}
-											newList[doomMaps.length]=new DoomMap(BSPFile.getPath(), mapName);
-											doomMaps=newList;
-											
-											if(length>0 && Window.extractZipIsSelected()) {
-												try {
-													Window.print("Extracting Map Header ",Window.VERBOSITY_ALWAYS);
-													Date begin=new Date();
-													FileOutputStream ScriptWriter;
-													if(Window.getOutputFolder().equals("default")) {
-														File newDir = new File(doomMaps[doomMaps.length-1].getFolder()+doomMaps[doomMaps.length-1].getWadName()+"\\");
-														if(!newDir.exists()) {
-															newDir.mkdir();
-														}
-														Window.println(doomMaps[doomMaps.length-1].getFolder()+doomMaps[doomMaps.length-1].getWadName()+"\\"+doomMaps[doomMaps.length-1].getMapName()+".hdr",Window.VERBOSITY_ALWAYS);
-														ScriptWriter=new FileOutputStream(new File(doomMaps[doomMaps.length-1].getFolder()+doomMaps[doomMaps.length-1].getWadName()+"\\"+doomMaps[doomMaps.length-1].getMapName()+".hdr"));
-													} else {
-														File newDir = new File(Window.getOutputFolder()+"\\"+doomMaps[doomMaps.length-1].getWadName()+"\\");
-														if(!newDir.exists()) {
-															newDir.mkdir();
-														}
-														Window.println(Window.getOutputFolder()+"\\"+doomMaps[doomMaps.length-1].getWadName()+"\\"+doomMaps[doomMaps.length-1].getMapName()+".hdr",Window.VERBOSITY_ALWAYS);
-														ScriptWriter=new FileOutputStream(new File(Window.getOutputFolder()+"\\"+doomMaps[doomMaps.length-1].getWadName()+"\\"+doomMaps[doomMaps.length-1].getMapName()+".hdr"));
-													}
-													ScriptWriter.write(readLump(offset, length));
-													ScriptWriter.close();
-													Date end=new Date();
-													Window.println(end.getTime()-begin.getTime()+"ms",Window.VERBOSITY_ALWAYS);
-												} catch(java.lang.Exception e) {
-													Window.println("WARNING: Unable to write header file!",Window.VERBOSITY_WARNINGS);
-												}
-											}
-											
-											FileInputStream lumpReader = new FileInputStream(BSPFile);
-											lumpReader.skip(directoryOffset+((i+1)*16));
-											
-											lumpReader.read(readDirectory);
-											
-											offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
-											length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-											lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
-											if(lumpName.substring(0,6).equalsIgnoreCase("THINGS")) {
-												doomMaps[doomMaps.length-1].setThings(readLump(offset, length));
-											}
-											
-											lumpReader.read(readDirectory);
-											
-											offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
-											length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-											lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
-											if(lumpName.equalsIgnoreCase("LINEDEFS")) {
-												doomMaps[doomMaps.length-1].setLinedefs(readLump(offset, length));
-											}
-											
-											lumpReader.read(readDirectory);
-											
-											offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
-											length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-											lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
-											if(lumpName.equalsIgnoreCase("SIDEDEFS")) {
-												doomMaps[doomMaps.length-1].setSidedefs(readLump(offset, length));
-											}
-											
-											lumpReader.read(readDirectory);
-											
-											offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
-											length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-											lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
-											if(lumpName.equalsIgnoreCase("VERTEXES")) {
-												doomMaps[doomMaps.length-1].setVertices(readLump(offset, length));
-											}
-											
-											lumpReader.read(readDirectory);
-											
-											offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
-											length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-											lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
-											if(lumpName.substring(0,4).equalsIgnoreCase("SEGS")) {
-												doomMaps[doomMaps.length-1].setSegments(readLump(offset, length));
-											}
-											
-											lumpReader.read(readDirectory);
-											
-											offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
-											length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-											lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
-											if(lumpName.equalsIgnoreCase("SSECTORS")) {
-												doomMaps[doomMaps.length-1].setSubSectors(readLump(offset, length));
-											}
-											
-											lumpReader.read(readDirectory);
-											
-											offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
-											length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-											lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
-											if(lumpName.substring(0,5).equalsIgnoreCase("NODES")) {
-												doomMaps[doomMaps.length-1].setNodes(readLump(offset, length));
-											}
-											
-											lumpReader.read(readDirectory);
-											
-											offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
-											length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-											lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
-											if(lumpName.substring(0,7).equalsIgnoreCase("SECTORS")) {
-												doomMaps[doomMaps.length-1].setSectors(readLump(offset, length));
-											}
-									
-											lumpReader.close();
-									
-											doomMaps[doomMaps.length-1].printBSPReport();
-											
-											Window.window.addJob(null, doomMaps[doomMaps.length-1]);
-										}
-									}
-									
-									directoryReader.close();
-									offsetReader.close();
-								break;
-								case 4: // CoD2. They changed their versioning scheme but so far there's no conflicts
-									Window.println("Call of Duty 2 BSP found",Window.VERBOSITY_ALWAYS);
-									offsetReader = new FileInputStream(BSPFile);
-									BSPObject = new BSP(BSPFile.getPath(), BSP.TYPE_COD);
-									offsetReader.skip(8); // Skip the file header, putting the reader into the length/offset pairs
-									
-									// Lump 00
-									offsetReader.read(read); // Read 4 bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setTextures(readLump(offset, length));
-									
-									offsetReader.skip(24); // skip 1,2,3
-									
-									// Lump 04
-									offsetReader.read(read); // Read 4 bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setPlanes(readLump(offset, length));
-									
-									// Lump 05
-									offsetReader.read(read); // Read 4 bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setBrushSides(readLump(offset, length));
-									
-									// Lump 06
-									offsetReader.read(read); // Read 4 bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setBrushes(readLump(offset, length));
-									
-									offsetReader.skip(224); // Skip lumps 7-34
-									
-									// Lump 35
-									offsetReader.read(read); // Read 4 bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setModels(readLump(offset, length));
-									
-									offsetReader.skip(8); // Skip lump 36
-									
-									// Lump 37
-									offsetReader.read(read); // Read 4 bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setEntities(readLump(offset, length));
-									
-									offsetReader.close();
-									
-									// BSPObject.printBSPReport();
-
-									break;
-								case 22: // Call of Duty 4. Once again, different versioning scheme but no conflicts.
-									Window.println("Call of Duty 4 BSP found",Window.VERBOSITY_ALWAYS);
-									// CoD4 is somewhat unique, it calls for a different reader. However it's still doable.
-									offsetReader = new FileInputStream(BSPFile);
-									BSPObject=new BSP(BSPFile.getPath(), BSP.TYPE_COD);
-									offsetReader.skip(8); // IBSP version 22
-									offsetReader.read(read);
-									int numlumps=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offset=(numlumps*8)+12;
-									for(int i=0;i<numlumps;i++) {
-										offsetReader.read(read);
-										int id=DataReader.readInt(read[0], read[1], read[2], read[3]);
-										offsetReader.read(read);
+							if(fakk) {
+								switch(version) {
+									case 12:
+									case 42:
+										Window.println("American McGee's Alice BSP Found",Window.VERBOSITY_ALWAYS);
+										BSPObject = new BSP(BSPFile.getPath(), BSP.TYPE_ALICE);
+										
+										offsetReader = new FileInputStream(BSPFile);
+										offsetReader.skip(12); // Skip the file header, putting the reader into the lump directory
+										
+										// Lump 00
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
 										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setTextures(readLump(offset, length));
 										
-										switch(id) {
-											case 0:
-												BSPObject.setTextures(readLump(offset, length));
-												break;
-											case 4:
-												BSPObject.setPlanes(readLump(offset, length));
-												break;
-											case 5:
-												BSPObject.setBrushSides(readLump(offset, length));
-												break;
-											case 8:
-												BSPObject.setBrushes(readLump(offset, length));
-												break;
-											case 37:
-												BSPObject.setModels(readLump(offset, length));
-												break;
-											case 39:
-												BSPObject.setEntities(readLump(offset, length));
-												break;
+										// Lump 01
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setPlanes(readLump(offset, length));
+										
+										offsetReader.skip(64);
+										
+										// Lump 10
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setBrushSides(readLump(offset, length));
+										
+										// Lump 11
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setBrushes(readLump(offset, length));
+										
+										offsetReader.skip(8);
+										
+										// Lump 13
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setModels(readLump(offset, length));
+										
+										// Lump 14
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setEntities(readLump(offset, length));
+										
+										BSPObject.printBSPReport();
+										offsetReader.close();
+										
+										break;
+								}
+							} else {
+								switch(version) {
+									case 1: // WAD file
+										Window.println("WAD file found",Window.VERBOSITY_ALWAYS);
+										offsetReader = new FileInputStream(BSPFile);
+										offsetReader.skip(4); // Skip the file header, putting the reader into the length and offset of the directory
+										
+										doomMaps=new DoomMap[0];
+										
+										// Find the directory
+										offsetReader.read(read); // Read 4 bytes
+										int numLumps=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										int directoryOffset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										
+										FileInputStream directoryReader = new FileInputStream(BSPFile);
+										directoryReader.skip(directoryOffset);
+										
+										byte[] readDirectory=new byte[16];
+										
+										// Read through the directory to find maps
+										for(int i=0;i<numLumps;i++) {
+											directoryReader.read(readDirectory);
+											offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+											length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+											String lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+											if( ( lumpName.substring(0,3).equals("MAP") && lumpName.charAt(3)>='0' && lumpName.charAt(3)<='9' && lumpName.charAt(4)>='0' && lumpName.charAt(4)<='9' ) || ( lumpName.charAt(0)=='E' && lumpName.charAt(2)=='M' && lumpName.charAt(1)>='0' && lumpName.charAt(1)<='9' && lumpName.charAt(3)>='0' && lumpName.charAt(3)<='9' ) ) {
+												String mapName=lumpName.substring(0,5); // Map names are always ExMy or MAPxx. Never more than five chars.
+												Window.println("Map: "+mapName,Window.VERBOSITY_ALWAYS);
+												// All of this code updates the maplist with a new entry
+												DoomMap[] newList=new DoomMap[doomMaps.length+1];
+												for(int j=0;j<doomMaps.length;j++) {
+													newList[j] = doomMaps[j];
+												}
+												newList[doomMaps.length]=new DoomMap(BSPFile.getPath(), mapName);
+												doomMaps=newList;
+												
+												if(length>0 && Window.extractZipIsSelected()) {
+													try {
+														Window.print("Extracting Map Header ",Window.VERBOSITY_ALWAYS);
+														Date begin=new Date();
+														FileOutputStream ScriptWriter;
+														if(Window.getOutputFolder().equals("default")) {
+															File newDir = new File(doomMaps[doomMaps.length-1].getFolder()+doomMaps[doomMaps.length-1].getWadName()+"\\");
+															if(!newDir.exists()) {
+																newDir.mkdir();
+															}
+															Window.println(doomMaps[doomMaps.length-1].getFolder()+doomMaps[doomMaps.length-1].getWadName()+"\\"+doomMaps[doomMaps.length-1].getMapName()+".hdr",Window.VERBOSITY_ALWAYS);
+															ScriptWriter=new FileOutputStream(new File(doomMaps[doomMaps.length-1].getFolder()+doomMaps[doomMaps.length-1].getWadName()+"\\"+doomMaps[doomMaps.length-1].getMapName()+".hdr"));
+														} else {
+															File newDir = new File(Window.getOutputFolder()+"\\"+doomMaps[doomMaps.length-1].getWadName()+"\\");
+															if(!newDir.exists()) {
+																newDir.mkdir();
+															}
+															Window.println(Window.getOutputFolder()+"\\"+doomMaps[doomMaps.length-1].getWadName()+"\\"+doomMaps[doomMaps.length-1].getMapName()+".hdr",Window.VERBOSITY_ALWAYS);
+															ScriptWriter=new FileOutputStream(new File(Window.getOutputFolder()+"\\"+doomMaps[doomMaps.length-1].getWadName()+"\\"+doomMaps[doomMaps.length-1].getMapName()+".hdr"));
+														}
+														ScriptWriter.write(readLump(offset, length));
+														ScriptWriter.close();
+														Date end=new Date();
+														Window.println(end.getTime()-begin.getTime()+"ms",Window.VERBOSITY_ALWAYS);
+													} catch(java.lang.Exception e) {
+														Window.println("WARNING: Unable to write header file!",Window.VERBOSITY_WARNINGS);
+													}
+												}
+												
+												FileInputStream lumpReader = new FileInputStream(BSPFile);
+												lumpReader.skip(directoryOffset+((i+1)*16));
+												
+												lumpReader.read(readDirectory);
+												
+												offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+												length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+												lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+												if(lumpName.substring(0,6).equalsIgnoreCase("THINGS")) {
+													doomMaps[doomMaps.length-1].setThings(readLump(offset, length));
+												}
+												
+												lumpReader.read(readDirectory);
+												
+												offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+												length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+												lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+												if(lumpName.equalsIgnoreCase("LINEDEFS")) {
+													doomMaps[doomMaps.length-1].setLinedefs(readLump(offset, length));
+												}
+												
+												lumpReader.read(readDirectory);
+												
+												offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+												length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+												lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+												if(lumpName.equalsIgnoreCase("SIDEDEFS")) {
+													doomMaps[doomMaps.length-1].setSidedefs(readLump(offset, length));
+												}
+												
+												lumpReader.read(readDirectory);
+												
+												offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+												length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+												lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+												if(lumpName.equalsIgnoreCase("VERTEXES")) {
+													doomMaps[doomMaps.length-1].setVertices(readLump(offset, length));
+												}
+												
+												lumpReader.read(readDirectory);
+												
+												offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+												length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+												lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+												if(lumpName.substring(0,4).equalsIgnoreCase("SEGS")) {
+													doomMaps[doomMaps.length-1].setSegments(readLump(offset, length));
+												}
+												
+												lumpReader.read(readDirectory);
+												
+												offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+												length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+												lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+												if(lumpName.equalsIgnoreCase("SSECTORS")) {
+													doomMaps[doomMaps.length-1].setSubSectors(readLump(offset, length));
+												}
+												
+												lumpReader.read(readDirectory);
+												
+												offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+												length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+												lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+												if(lumpName.substring(0,5).equalsIgnoreCase("NODES")) {
+													doomMaps[doomMaps.length-1].setNodes(readLump(offset, length));
+												}
+												
+												lumpReader.read(readDirectory);
+												
+												offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
+												length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
+												lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+												if(lumpName.substring(0,7).equalsIgnoreCase("SECTORS")) {
+													doomMaps[doomMaps.length-1].setSectors(readLump(offset, length));
+												}
+										
+												lumpReader.close();
+										
+												doomMaps[doomMaps.length-1].printBSPReport();
+												
+												Window.window.addJob(null, doomMaps[doomMaps.length-1]);
+											}
 										}
 										
-										offset+=length;
+										directoryReader.close();
+										offsetReader.close();
+									break;
+									case 4: // CoD2. They changed their versioning scheme but so far there's no conflicts
+										Window.println("Call of Duty 2 BSP found",Window.VERBOSITY_ALWAYS);
+										offsetReader = new FileInputStream(BSPFile);
+										BSPObject = new BSP(BSPFile.getPath(), BSP.TYPE_COD);
+										offsetReader.skip(8); // Skip the file header, putting the reader into the length/offset pairs
 										
-										while((double)offset/(double)4 != (int)((double)offset/(double)4)) {
-											offset++;
+										// Lump 00
+										offsetReader.read(read); // Read 4 bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setTextures(readLump(offset, length));
+										
+										offsetReader.skip(24); // skip 1,2,3
+										
+										// Lump 04
+										offsetReader.read(read); // Read 4 bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setPlanes(readLump(offset, length));
+										
+										// Lump 05
+										offsetReader.read(read); // Read 4 bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setBrushSides(readLump(offset, length));
+										
+										// Lump 06
+										offsetReader.read(read); // Read 4 bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setBrushes(readLump(offset, length));
+										
+										offsetReader.skip(224); // Skip lumps 7-34
+										
+										// Lump 35
+										offsetReader.read(read); // Read 4 bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setModels(readLump(offset, length));
+										
+										offsetReader.skip(8); // Skip lump 36
+										
+										// Lump 37
+										offsetReader.read(read); // Read 4 bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setEntities(readLump(offset, length));
+										
+										offsetReader.close();
+										
+										BSPObject.printBSPReport();
+	
+										break;
+									case 22: // Call of Duty 4. Once again, different versioning scheme but no conflicts.
+										Window.println("Call of Duty 4 BSP found",Window.VERBOSITY_ALWAYS);
+										// CoD4 is somewhat unique, it calls for a different reader. However it's still doable.
+										offsetReader = new FileInputStream(BSPFile);
+										BSPObject=new BSP(BSPFile.getPath(), BSP.TYPE_COD);
+										offsetReader.skip(8); // IBSP version 22
+										offsetReader.read(read);
+										int numlumps=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offset=(numlumps*8)+12;
+										for(int i=0;i<numlumps;i++) {
+											offsetReader.read(read);
+											int id=DataReader.readInt(read[0], read[1], read[2], read[3]);
+											offsetReader.read(read);
+											length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+											
+											switch(id) {
+												case 0:
+													BSPObject.setTextures(readLump(offset, length));
+													break;
+												case 4:
+													BSPObject.setPlanes(readLump(offset, length));
+													break;
+												case 5:
+													BSPObject.setBrushSides(readLump(offset, length));
+													break;
+												case 8:
+													BSPObject.setBrushes(readLump(offset, length));
+													break;
+												case 37:
+													BSPObject.setModels(readLump(offset, length));
+													break;
+												case 39:
+													BSPObject.setEntities(readLump(offset, length));
+													break;
+											}
+											
+											offset+=length;
+											
+											while((double)offset/(double)4 != (int)((double)offset/(double)4)) {
+												offset++;
+											}
 										}
-									}
-									offsetReader.close();
-									
-									// BSPObject.printBSPReport();
-
-									break;
-								case 29: // Quake
-								case 30: // Half-life
-									Window.println("Quake 1/Half-life BSP found",Window.VERBOSITY_ALWAYS);
-									offsetReader = new FileInputStream(BSPFile);
-									BSPObject = new BSP(BSPFile.getPath(), BSP.TYPE_QUAKE);
-									offsetReader.skip(4); // Skip the file header, putting the reader into the offset/length pairs
-									
-									// Lump 00
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setEntities(readLump(offset, length));
-									
-									// Lump 01
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setPlanes(readLump(offset, length));
-									
-									// Lump 02
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setTextures(readLump(offset, length));
-									
-									// TODO
-									
-									break;
-								case 38: // Quake 2
-									Window.println("BSP v38 found (Quake 2)",Window.VERBOSITY_ALWAYS);
-									offsetReader = new FileInputStream(BSPFile);
-									BSPObject = new BSP(BSPFile.getPath(), BSP.TYPE_QUAKE2);
-									offsetReader.skip(8); // Skip the file header, putting the reader into the offset/length pairs
-									
-									// Lump 00
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setEntities(readLump(offset, length));
-									
-									// Lump 01
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setPlanes(readLump(offset, length));
-									
-									// Lump 02
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setVertices(readLump(offset, length));
-									
-									offsetReader.skip(8); // Do not need offset/length for lump 3
-									
-									// Lump 04
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setNodes(readLump(offset, length));
-									
-									// Lump 05
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setTextures(readLump(offset, length));
-									
-									// Lump 06
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setFaces(readLump(offset, length));
-									
-									offsetReader.skip(8); // Do not need offset/length for lump 7
-									
-									// Lump 08
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setLeaves(readLump(offset, length));
-									
-									offsetReader.skip(8); // Do not need offset/length for lump 9
-									
-									// Lump 10
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setMarkBrushes(readLump(offset, length));
-									
-									// Lump 11
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setEdges(readLump(offset, length));
-									
-									// Lump 12
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setSurfEdges(readLump(offset, length));
-									
-									// Lump 13
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setModels(readLump(offset, length));
-									
-									// Lump 14
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setBrushes(readLump(offset, length));
-									
-									// Lump 15
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setBrushSides(readLump(offset, length));
-									/*
-									offsetReader.skip(16); // Do not need offset/length for lumps 16 or 17
-									
-									// Lump 18
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setAreaPortals(readLump(offset, length));*/
-									
-									offsetReader.close();
-									
-									// BSPObject.printBSPReport();
-									break;
-								case 42: // JBN
-									Window.println("BSP v42 found (Nightfire)",Window.VERBOSITY_ALWAYS);
-									offsetReader = new FileInputStream(BSPFile);
-									BSPObject = new BSP(BSPFile.getPath(), BSP.TYPE_NIGHTFIRE);
-									offsetReader.skip(4); // Skip the file header, putting the reader into the offset/length pairs
-									
-									// Lump 00
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setEntities(readLump(offset, length));
-									
-									// Lump 01
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setPlanes(readLump(offset, length));
-									
-									// Lump 02
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setTextures(readLump(offset, length));
-									
-									// Lump 03
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setMaterials(readLump(offset, length));
-									
-									// Lump 04
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setVertices(readLump(offset, length));
-									
-									offsetReader.skip(32); // Do not need offset/length for lumps 5-8
-									
-									// Lump 09
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setFaces(readLump(offset, length));
-									
-									offsetReader.skip(8); // Do not need offset/length for lump 10
-									
-									// Lump 11
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setLeaves(readLump(offset, length));
-									
-									offsetReader.skip(8); // Do not need offset/length for lump 12
-									
-									// Lump 13
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setMarkBrushes(readLump(offset, length));
-									
-									// Lump 14
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setModels(readLump(offset, length));
-									
-									// Lump 15
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setBrushes(readLump(offset, length));
-									
-									// Lump 16
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setBrushSides(readLump(offset, length));
-									
-									// Lump 17
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setTexInfo(readLump(offset, length));
-									
-									offsetReader.close();
-									
-									// BSPObject.printBSPReport();
-									break;
-								case 46: // Quake 3/close derivative
-								case 47: // RTCW
-									Window.println("BSP v46 found (id Tech 3)",Window.VERBOSITY_ALWAYS);
-									offsetReader = new FileInputStream(BSPFile);
-									BSPObject = new BSP(BSPFile.getPath(), BSP.TYPE_QUAKE3);
-									offsetReader.skip(8); // Skip the file header, putting the reader into the offset/length pairs
-									
-									// Lump 00
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setEntities(readLump(offset, length));
-									
-									// Lump 01
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setTextures(readLump(offset, length));
-									
-									// Lump 02
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setPlanes(readLump(offset, length));
-									
-									offsetReader.skip(32); // Do not need offset/length for lumps 3-6
-									
-									// Lump 07
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setModels(readLump(offset, length));
-									
-									// Lump 08
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setBrushes(readLump(offset, length));
-									
-									// Lump 09
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setBrushSides(readLump(offset, length));
-									
-									// Lump 10
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setVertices(readLump(offset, length));
-									
-									offsetReader.skip(16); // Do not need offset/length for lumps 11 and 12
-									
-									// Lump 13
-									offsetReader.read(read); // Read 4 bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setFaces(readLump(offset, length));
-									
-									offsetReader.close();
-									
-									//BSPObject.printBSPReport();
-									
-									break;
-								case 59: // Call of Duty (1)
-									Window.println("BSP v59 found (Call of Duty)",Window.VERBOSITY_ALWAYS);
-									offsetReader = new FileInputStream(BSPFile);
-									BSPObject = new BSP(BSPFile.getPath(), BSP.TYPE_COD);
-									offsetReader.skip(8); // Skip the file header, putting the reader into the length/offset pairs
-									
-									// Lump 00
-									offsetReader.read(read); // Read 4 bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setTextures(readLump(offset, length));
-									
-									offsetReader.skip(8);
-									
-									// Lump 02
-									offsetReader.read(read); // Read 4 bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setPlanes(readLump(offset, length));
-									
-									// Lump 03
-									offsetReader.read(read); // Read 4 bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setBrushSides(readLump(offset, length));
-									
-									// Lump 04
-									offsetReader.read(read); // Read 4 bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setBrushes(readLump(offset, length));
-									
-									offsetReader.skip(176); // Skip lumps 5-26
-									
-									// Lump 27
-									offsetReader.read(read); // Read 4 bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setModels(readLump(offset, length));
-									
-									offsetReader.skip(8); // Skip lumps 5-26
-									
-									// Lump 29
-									offsetReader.read(read); // Read 4 bytes
-									length=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									offsetReader.read(read); // Read 4 more bytes
-									offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									BSPObject.setEntities(readLump(offset, length));
-									
-									offsetReader.close();
-									
-									// BSPObject.printBSPReport();
-									
-									break;
+										offsetReader.close();
+										
+										BSPObject.printBSPReport();
+	
+										break;
+									case 29: // Quake
+									case 30: // Half-life
+										Window.println("Quake 1/Half-life BSP found",Window.VERBOSITY_ALWAYS);
+										offsetReader = new FileInputStream(BSPFile);
+										BSPObject = new BSP(BSPFile.getPath(), BSP.TYPE_QUAKE);
+										offsetReader.skip(4); // Skip the file header, putting the reader into the offset/length pairs
+										
+										// Lump 00
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setEntities(readLump(offset, length));
+										
+										// Lump 01
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setPlanes(readLump(offset, length));
+										
+										// Lump 02
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setTextures(readLump(offset, length));
+										
+										// TODO
+										
+										break;
+									case 38: // Quake 2
+										Window.println("BSP v38 found (Quake 2)",Window.VERBOSITY_ALWAYS);
+										offsetReader = new FileInputStream(BSPFile);
+										BSPObject = new BSP(BSPFile.getPath(), BSP.TYPE_QUAKE2);
+										offsetReader.skip(8); // Skip the file header, putting the reader into the offset/length pairs
+										
+										// Lump 00
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setEntities(readLump(offset, length));
+										
+										// Lump 01
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setPlanes(readLump(offset, length));
+										
+										// Lump 02
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setVertices(readLump(offset, length));
+										
+										offsetReader.skip(8); // Do not need offset/length for lump 3
+										
+										// Lump 04
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setNodes(readLump(offset, length));
+										
+										// Lump 05
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setTextures(readLump(offset, length));
+										
+										// Lump 06
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setFaces(readLump(offset, length));
+										
+										offsetReader.skip(8); // Do not need offset/length for lump 7
+										
+										// Lump 08
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setLeaves(readLump(offset, length));
+										
+										offsetReader.skip(8); // Do not need offset/length for lump 9
+										
+										// Lump 10
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setMarkBrushes(readLump(offset, length));
+										
+										// Lump 11
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setEdges(readLump(offset, length));
+										
+										// Lump 12
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setSurfEdges(readLump(offset, length));
+										
+										// Lump 13
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setModels(readLump(offset, length));
+										
+										// Lump 14
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setBrushes(readLump(offset, length));
+										
+										// Lump 15
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setBrushSides(readLump(offset, length));
+										/*
+										offsetReader.skip(16); // Do not need offset/length for lumps 16 or 17
+										
+										// Lump 18
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setAreaPortals(readLump(offset, length));*/
+										
+										offsetReader.close();
+										
+										// BSPObject.printBSPReport();
+										break;
+									case 42: // JBN
+										Window.println("BSP v42 found (Nightfire)",Window.VERBOSITY_ALWAYS);
+										offsetReader = new FileInputStream(BSPFile);
+										BSPObject = new BSP(BSPFile.getPath(), BSP.TYPE_NIGHTFIRE);
+										offsetReader.skip(4); // Skip the file header, putting the reader into the offset/length pairs
+										
+										// Lump 00
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setEntities(readLump(offset, length));
+										
+										// Lump 01
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setPlanes(readLump(offset, length));
+										
+										// Lump 02
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setTextures(readLump(offset, length));
+										
+										// Lump 03
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setMaterials(readLump(offset, length));
+										
+										// Lump 04
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setVertices(readLump(offset, length));
+										
+										offsetReader.skip(32); // Do not need offset/length for lumps 5-8
+										
+										// Lump 09
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setFaces(readLump(offset, length));
+										
+										offsetReader.skip(8); // Do not need offset/length for lump 10
+										
+										// Lump 11
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setLeaves(readLump(offset, length));
+										
+										offsetReader.skip(8); // Do not need offset/length for lump 12
+										
+										// Lump 13
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setMarkBrushes(readLump(offset, length));
+										
+										// Lump 14
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setModels(readLump(offset, length));
+										
+										// Lump 15
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setBrushes(readLump(offset, length));
+										
+										// Lump 16
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setBrushSides(readLump(offset, length));
+										
+										// Lump 17
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setTexInfo(readLump(offset, length));
+										
+										offsetReader.close();
+										
+										// BSPObject.printBSPReport();
+										break;
+									case 46: // Quake 3/close derivative
+									case 47: // RTCW
+										Window.println("BSP v46 found (id Tech 3)",Window.VERBOSITY_ALWAYS);
+										offsetReader = new FileInputStream(BSPFile);
+										BSPObject = new BSP(BSPFile.getPath(), BSP.TYPE_QUAKE3);
+										offsetReader.skip(8); // Skip the file header, putting the reader into the offset/length pairs
+										
+										// Lump 00
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setEntities(readLump(offset, length));
+										
+										// Lump 01
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setTextures(readLump(offset, length));
+										
+										// Lump 02
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setPlanes(readLump(offset, length));
+										
+										offsetReader.skip(32); // Do not need offset/length for lumps 3-6
+										
+										// Lump 07
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setModels(readLump(offset, length));
+										
+										// Lump 08
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setBrushes(readLump(offset, length));
+										
+										// Lump 09
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setBrushSides(readLump(offset, length));
+										
+										// Lump 10
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setVertices(readLump(offset, length));
+										
+										offsetReader.skip(16); // Do not need offset/length for lumps 11 and 12
+										
+										// Lump 13
+										offsetReader.read(read); // Read 4 bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setFaces(readLump(offset, length));
+										
+										offsetReader.close();
+										
+										//BSPObject.printBSPReport();
+										
+										break;
+									case 59: // Call of Duty (1)
+										Window.println("BSP v59 found (Call of Duty)",Window.VERBOSITY_ALWAYS);
+										offsetReader = new FileInputStream(BSPFile);
+										BSPObject = new BSP(BSPFile.getPath(), BSP.TYPE_COD);
+										offsetReader.skip(8); // Skip the file header, putting the reader into the length/offset pairs
+										
+										// Lump 00
+										offsetReader.read(read); // Read 4 bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setTextures(readLump(offset, length));
+										
+										offsetReader.skip(8);
+										
+										// Lump 02
+										offsetReader.read(read); // Read 4 bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setPlanes(readLump(offset, length));
+										
+										// Lump 03
+										offsetReader.read(read); // Read 4 bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setBrushSides(readLump(offset, length));
+										
+										// Lump 04
+										offsetReader.read(read); // Read 4 bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setBrushes(readLump(offset, length));
+										
+										offsetReader.skip(176); // Skip lumps 5-26
+										
+										// Lump 27
+										offsetReader.read(read); // Read 4 bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setModels(readLump(offset, length));
+										
+										offsetReader.skip(8); // Skip lumps 5-26
+										
+										// Lump 29
+										offsetReader.read(read); // Read 4 bytes
+										length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										offsetReader.read(read); // Read 4 more bytes
+										offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										BSPObject.setEntities(readLump(offset, length));
+										
+										offsetReader.close();
+										
+										// BSPObject.printBSPReport();
+										
+										break;
 									default:
-									Window.println("I don't know what kind of BSP this is! Please post an issue on the bug tracker!",Window.VERBOSITY_ALWAYS);
+										Window.println("I don't know what kind of BSP this is! Please post an issue on the bug tracker!",Window.VERBOSITY_ALWAYS);
+								}
 							}
 						}
 					}
@@ -1485,6 +1549,10 @@ public class BSPReader {
 		return ef2;
 	}
 	
+	public boolean isFAKK() {
+		return fakk;
+	}
+	
 	public int getVersion() throws java.io.IOException {
 		if(version==0) {
 			byte[] read=new byte[4];
@@ -1519,10 +1587,10 @@ public class BSPReader {
 								versionNumberReader.read(read);
 								version=DataReader.readInt(read[0], read[1], read[2], read[3]); // Probably 1
 							} else {
-								if(in == 1263223110 || in == 556942917) { // "FAKK" or "EF2!"
+								if(in == 556942917) { // "EF2!"
 									versionNumberReader.read(read);
 									version=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									if(version==19 || version==20) {
+									if(version==20) {
 										ef2=true;
 									}
 								} else {
@@ -1530,7 +1598,18 @@ public class BSPReader {
 										wad=true;
 										version=1;
 									} else {
-										version=in;
+										if(in == 1263223110) { // "FAKK"
+											versionNumberReader.read(read);
+											version=DataReader.readInt(read[0], read[1], read[2], read[3]);
+											if(version == 19) {
+												ef2=true;
+											}
+											if(version == 42 || version == 12) {
+												fakk=true;
+											}
+										} else {
+											version=in;
+										}
 									}
 								}
 							}

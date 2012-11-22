@@ -57,6 +57,7 @@ public class BrushSides {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_ALICE:
 				structLength=8;
 				break;
 			case BSP.TYPE_MOHAA:

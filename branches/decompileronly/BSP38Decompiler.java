@@ -87,6 +87,7 @@ public class BSP38Decompiler {
 						}
 					}
 				}
+				mapFile.getEntity(i).deleteAttribute("model");
 			}
 			numTotalItems++; // This entity
 			Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");

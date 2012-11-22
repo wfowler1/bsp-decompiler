@@ -56,6 +56,7 @@ public class Brushes {
 			case BSP.TYPE_STEF2DEMO:
 			case BSP.TYPE_RAVEN:
 			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_ALICE:
 				structLength=12;
 				break;
 			case BSP.TYPE_COD:

@@ -46,6 +46,7 @@ public class Models {
 			case BSP.TYPE_STEF2:
 			case BSP.TYPE_STEF2DEMO:
 			case BSP.TYPE_MOHAA:
+			case BSP.TYPE_ALICE:
 				structLength=40;
 				break;
 			case BSP.TYPE_QUAKE2:
