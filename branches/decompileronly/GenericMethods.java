@@ -591,6 +591,73 @@ public class GenericMethods {
 		return plane;
 	}
 	
+	// createFaceBrush(String, String, Vector3D, Vector3D)
+	// This creates a rectangular brush. The String is assumed to be a texture for a face, and
+	// the two vectors are a bounding box to create a plane with (mins-maxs).
+	// The second String is the texture to apply to all other sides.
+	public static MAPBrush createFaceBrush(String texture, String backTexture, Vector3D mins, Vector3D maxs) {
+		Window.println("Creating brush for face with "+texture,Window.VERBOSITY_BRUSHCREATION);
+		MAPBrush newBrush = new MAPBrush(0, 0, false);
+		Vector3D[][] planes=new Vector3D[6][3]; // Six planes for a cube brush, three vertices for each plane
+		double[][] texS=new double[6][3];
+		double[][] texT=new double[6][3];
+		
+		double sideLengthXY=Math.sqrt(Math.pow(mins.getX()-maxs.getX(), 2) + Math.pow(mins.getY()-maxs.getY(),2));
+		Vector3D diffVec1 = new Vector3D(mins.getX(), mins.getY(), maxs.getZ()).subtract(mins);
+		Vector3D diffVec2 = new Vector3D(maxs.getX(), maxs.getY(), mins.getZ()).subtract(mins);
+		Vector3D cross = Vector3D.crossProduct(diffVec2, diffVec1);
+		cross.normalize();
+		
+		// Face
+		planes[0][0]=new Vector3D(mins.getX(), mins.getY(), maxs.getZ());
+		planes[0][1]=new Vector3D(maxs.getX(), maxs.getY(), mins.getZ());
+		planes[0][2]=mins;
+		texS[0][0]=(mins.getX()-maxs.getX())/sideLengthXY;
+		texS[0][1]=(mins.getY()-maxs.getY())/sideLengthXY;
+		texT[0][2]=-1;
+		// Far
+		planes[1][0]=new Vector3D(mins.getX(), mins.getY(), maxs.getZ()).subtract(cross);
+		planes[1][1]=mins.subtract(cross);
+		planes[1][2]=new Vector3D(maxs.getX(), maxs.getY(), mins.getZ()).subtract(cross);
+		texS[1][0]=texS[0][0];
+		texS[1][1]=texS[0][1];
+		texT[1][2]=-1;
+		// Top
+		planes[2][0]=new Vector3D(mins.getX(), mins.getY(), maxs.getZ());
+		planes[2][1]=new Vector3D(mins.getX(), mins.getY(), maxs.getZ()).subtract(cross);
+		planes[2][2]=maxs;
+		texS[2][0]=1;
+		texT[2][1]=1;
+		// Bottom
+		planes[3][0]=mins;
+		planes[3][1]=new Vector3D(maxs.getX(), maxs.getY(), mins.getZ());
+		planes[3][2]=new Vector3D(maxs.getX(), maxs.getY(), mins.getZ()).subtract(cross);
+		texS[3][0]=1;
+		texT[3][1]=1;
+		// Left
+		planes[4][0]=mins;
+		planes[4][1]=mins.subtract(cross);
+		planes[4][2]=new Vector3D(mins.getX(), mins.getY(), maxs.getZ());
+		texS[4][0]=texS[0][1];
+		texS[4][1]=texS[0][0];
+		texT[4][2]=1;
+		// Right
+		planes[5][0]=maxs;
+		planes[5][1]=maxs.subtract(cross);
+		planes[5][2]=new Vector3D(maxs.getX(), maxs.getY(), mins.getZ());
+		texS[5][0]=texS[0][1];
+		texS[5][1]=texS[0][0];
+		texT[5][2]=1;
+
+		MAPBrushSide front=new MAPBrushSide(planes[0], texture, texS[0], 0, texT[0], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+		newBrush.add(front);
+		for(int i=1;i<6;i++) {
+			newBrush.add(new MAPBrushSide(planes[i], backTexture, texS[i], 0, texT[i], 0, 0, 1, 1, 32, "wld_lightmap", 16, 0));
+		}
+		
+		return newBrush;
+	}
+	
 	// Create a rectangular brush from mins to maxs, with specified texture
 	public static MAPBrush createBrush(Vector3D mins, Vector3D maxs, String texture) {
 		MAPBrush newBrush=new MAPBrush(-1, 0, false);

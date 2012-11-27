@@ -172,17 +172,17 @@ public class WADDecompiler {
 					if(!currentSidedef.getMidTexture().equals("-")) {
 						midWallTextures[othersideIndex]=doomMap.getWadName()+"/"+currentSidedef.getMidTexture();
 					} else {
-						midWallTextures[othersideIndex]="special/nodraw"+currentsidedefIndex;
+						midWallTextures[othersideIndex]="special/nodraw";
 					}
 					if(!currentSidedef.getHighTexture().equals("-")) {
 						higherWallTextures[othersideIndex]=doomMap.getWadName()+"/"+currentSidedef.getHighTexture();
 					} else {
-						higherWallTextures[othersideIndex]="special/nodraw"+currentsidedefIndex;
+						higherWallTextures[othersideIndex]="special/nodraw";
 					}
 					if(!currentSidedef.getLowTexture().equals("-")) {
 						lowerWallTextures[othersideIndex]=doomMap.getWadName()+"/"+currentSidedef.getLowTexture();
 					} else {
-						lowerWallTextures[othersideIndex]="special/nodraw"+currentsidedefIndex;
+						lowerWallTextures[othersideIndex]="special/nodraw";
 					}
 				}
 				// Sometimes a subsector seems to belong to more than one sector. I don't know why.
@@ -244,6 +244,29 @@ public class WADDecompiler {
 			foundationTexS[0]=1;
 			foundationTexT[1]=-1;
 			MAPBrushSide foundation=new MAPBrushSide(foundationPlane, "special/nodraw", foundationTexS, 0, foundationTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+
+			Vector3D[] topPlane=new Vector3D[3];
+			double[] topTexS=new double[3];
+			double[] topTexT=new double[3];
+			topPlane[0]=new Vector3D(0, Window.getPlanePointCoef(), currentSector.getCielingHeight());
+			topPlane[1]=new Vector3D(Window.getPlanePointCoef(), Window.getPlanePointCoef(), currentSector.getCielingHeight());
+			topPlane[2]=new Vector3D(Window.getPlanePointCoef(), 0, currentSector.getCielingHeight());
+			topTexS[0]=1;
+			topTexT[1]=-1;
+			MAPBrushSide top=new MAPBrushSide(topPlane, "special/nodraw", topTexS, 0, topTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+	
+			Vector3D[] bottomPlane=new Vector3D[3];
+			double[] bottomTexS=new double[3];
+			double[] bottomTexT=new double[3];
+			bottomPlane[0]=new Vector3D(0, 0, currentSector.getFloorHeight());
+			bottomPlane[1]=new Vector3D(Window.getPlanePointCoef(), 0, currentSector.getFloorHeight());
+			bottomPlane[2]=new Vector3D(Window.getPlanePointCoef(), Window.getPlanePointCoef(), currentSector.getFloorHeight());
+			bottomTexS[0]=1;
+			bottomTexT[1]=-1;
+			MAPBrushSide bottom=new MAPBrushSide(bottomPlane, "special/nodraw", bottomTexS, 0, bottomTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+
+			midBrush.add(top);
+			midBrush.add(bottom);
 			
 			cielingBrush.add(cieling);
 			cielingBrush.add(roof);
@@ -281,7 +304,7 @@ public class WADDecompiler {
 				
 				if(currentLinedef.isOneSided()) {
 					MAPBrush outsideBrush=null;
-					outsideBrush = createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], plane[0], plane[2]);
+					outsideBrush = GenericMethods.createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], "special/nodraw", plane[0], plane[2]);
 					world.addBrush(outsideBrush);
 					mid=new MAPBrushSide(plane, "special/nodraw", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				} else {
@@ -322,9 +345,9 @@ public class WADDecompiler {
 				texT[0]=0;
 				texT[1]=0;
 				texT[2]=1;
-				MAPBrushSide low=new MAPBrushSide(plane, lowerWallTextures[subsectorSidedefs[i][0]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-				MAPBrushSide high=new MAPBrushSide(plane, higherWallTextures[subsectorSidedefs[i][0]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-				MAPBrushSide mid=new MAPBrushSide(plane, midWallTextures[subsectorSidedefs[i][0]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+				MAPBrushSide low=new MAPBrushSide(plane, "special/nodraw", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+				MAPBrushSide high=new MAPBrushSide(plane, "special/nodraw", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+				MAPBrushSide mid=new MAPBrushSide(plane, "special/nodraw", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				
 				cielingBrush.add(high);
 				midBrush.add(mid);
@@ -336,12 +359,14 @@ public class WADDecompiler {
 			// Now we need to get rid of all the sides that aren't used. Get a list of
 			// the useless sides from one brush, and delete those sides from all of them,
 			// since they all have the same sides.
+			int[] badSides=new int[0];
 			if(!Window.dontCullIsSelected()) {
-				int[] badSides=GenericMethods.findUnusedPlanes(cielingBrush);
+				badSides=GenericMethods.findUnusedPlanes(cielingBrush);
 				// Need to iterate backward, since these lists go from low indices to high, and
 				// the index of all subsequent items changes when something before it is removed.
 				if(cielingBrush.getNumSides()-badSides.length<4) {
 					Window.println("WARNING: Plane cull returned less than 4 sides for subsector "+i,Window.VERBOSITY_WARNINGS);
+					badSides=new int[0];
 				} else {
 					for(int j=badSides.length-1;j>-1;j--) {
 						cielingBrush.delete(badSides[j]);
@@ -351,114 +376,27 @@ public class WADDecompiler {
 			}
 			world.addBrush(floorBrush);
 			world.addBrush(cielingBrush);
-			/*boolean containsMiddle=false; // Need to figure out how to determine this. As it is, no middle sides will come out.
+			boolean containsMiddle=false; // Need to figure out how to determine this. As it is, no middle sides will come out.
+			for(int j=0;j<midBrush.getNumSides();j++) {
+				if(!midBrush.getSide(j).getTexture().equalsIgnoreCase("special/nodraw")) {
+					containsMiddle=true;
+					break;
+				}
+			}
 			if(containsMiddle && currentSector.getCielingHeight() > currentSector.getFloorHeight()) {
 				Entity middleEnt=new Entity("func_illusionary");
-				Vector3D[] topPlane=new Vector3D[3];
-				double[] topTexS=new double[3];
-				double[] topTexT=new double[3];
-				topPlane[0]=new Vector3D(0, Window.getPlanePointCoef(), currentSector.getCielingHeight());
-				topPlane[1]=new Vector3D(Window.getPlanePointCoef(), Window.getPlanePointCoef(), currentSector.getCielingHeight());
-				topPlane[2]=new Vector3D(Window.getPlanePointCoef(), 0, currentSector.getCielingHeight());
-				topTexS[0]=1;
-				topTexT[1]=-1;
-				MAPBrushSide top=new MAPBrushSide(topPlane, doomMap.getWadName()+"/"+currentSector.getFloorTexture(), topTexS, 0, topTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-	
-				Vector3D[] bottomPlane=new Vector3D[3];
-				double[] bottomTexS=new double[3];
-				double[] bottomTexT=new double[3];
-				bottomPlane[0]=new Vector3D(0, 0, currentSector.getFloorHeight());
-				bottomPlane[1]=new Vector3D(Window.getPlanePointCoef(), 0, currentSector.getFloorHeight());
-				bottomPlane[2]=new Vector3D(Window.getPlanePointCoef(), Window.getPlanePointCoef(), currentSector.getFloorHeight());
-				bottomTexS[0]=1;
-				bottomTexT[1]=-1;
-				MAPBrushSide bottom=new MAPBrushSide(bottomPlane, doomMap.getWadName()+"/"+currentSector.getFloorTexture(), bottomTexS, 0, bottomTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-
-				midBrush.add(top);
-				midBrush.add(bottom);
-				midBrush.add(outsideLeft);
-				midBrush.add(outsideRight);
-				midBrush.add(outsideNear);
-				midBrush.add(outsideFar);
-				midBrush=GenericMethods.cullUnusedPlanes(midBrush);
+				for(int j=badSides.length-1;j>-1;j--) {
+					midBrush.delete(badSides[j]);
+				}
 				
 				middleEnt.addBrush(midBrush);
 				mapFile.add(middleEnt);
-			}*/
+			}
 			Window.setProgress(jobnum, i+1, doomMap.getSubSectors().getNumElements(), "Decompiling...");
 		}
 		Window.setProgress(jobnum, 1, 1, "Saving...");
 		MAPMaker.outputMaps(mapFile, doomMap.getMapName(), doomMap.getFolder()+doomMap.getWadName()+"\\", DoomMap.VERSION);
 		Date end=new Date();
 		Window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,Window.VERBOSITY_ALWAYS);
-	}
-	
-	// createFaceBrush(String, Vector3D, Vector3D)
-	// This creates a rectangular brush. The String is assumed to be a texture for a face, and
-	// the two vectors are a bounding box to create a plane with (mins-maxs). This can be expanded
-	// later to include passing of texture scaling and positioning vectors as well, but this is
-	// all I need right now.
-	public MAPBrush createFaceBrush(String texture, Vector3D mins, Vector3D maxs) {
-		Window.println("Creating brush for face with "+texture,Window.VERBOSITY_BRUSHCREATION);
-		MAPBrush newBrush = new MAPBrush(numBrshs++, 0, false);
-		numBrshs++;
-		Vector3D[][] planes=new Vector3D[6][3]; // Six planes for a cube brush, three vertices for each plane
-		double[][] texS=new double[6][3];
-		double[][] texT=new double[6][3];
-		
-		double sideLengthXY=Math.sqrt(Math.pow(mins.getX()-maxs.getX(), 2) + Math.pow(mins.getY()-maxs.getY(),2));
-		Vector3D diffVec1 = new Vector3D(mins.getX(), mins.getY(), maxs.getZ()).subtract(mins);
-		Vector3D diffVec2 = new Vector3D(maxs.getX(), maxs.getY(), mins.getZ()).subtract(mins);
-		Vector3D cross = Vector3D.crossProduct(diffVec2, diffVec1);
-		cross.normalize();
-		
-		// Face
-		planes[0][0]=new Vector3D(mins.getX(), mins.getY(), maxs.getZ());
-		planes[0][1]=new Vector3D(maxs.getX(), maxs.getY(), mins.getZ());
-		planes[0][2]=mins;
-		texS[0][0]=(mins.getX()-maxs.getX())/sideLengthXY;
-		texS[0][1]=(mins.getY()-maxs.getY())/sideLengthXY;
-		texT[0][2]=-1;
-		// Far
-		planes[1][0]=new Vector3D(mins.getX(), mins.getY(), maxs.getZ()).subtract(cross);
-		planes[1][1]=mins.subtract(cross);
-		planes[1][2]=new Vector3D(maxs.getX(), maxs.getY(), mins.getZ()).subtract(cross);
-		texS[1][0]=texS[0][0];
-		texS[1][1]=texS[0][1];
-		texT[1][2]=-1;
-		// Top
-		planes[2][0]=new Vector3D(mins.getX(), mins.getY(), maxs.getZ());
-		planes[2][1]=new Vector3D(mins.getX(), mins.getY(), maxs.getZ()).subtract(cross);
-		planes[2][2]=maxs;
-		texS[2][0]=1;
-		texT[2][1]=1;
-		// Bottom
-		planes[3][0]=mins;
-		planes[3][1]=new Vector3D(maxs.getX(), maxs.getY(), mins.getZ());
-		planes[3][2]=new Vector3D(maxs.getX(), maxs.getY(), mins.getZ()).subtract(cross);
-		texS[3][0]=1;
-		texT[3][1]=1;
-		// Left
-		planes[4][0]=mins;
-		planes[4][1]=mins.subtract(cross);
-		planes[4][2]=new Vector3D(mins.getX(), mins.getY(), maxs.getZ());
-		texS[4][0]=texS[0][1];
-		texS[4][1]=texS[0][0];
-		texT[4][2]=1;
-		// Right
-		planes[5][0]=maxs;
-		planes[5][1]=maxs.subtract(cross);
-		planes[5][2]=new Vector3D(maxs.getX(), maxs.getY(), mins.getZ());
-		texS[5][0]=texS[0][1];
-		texS[5][1]=texS[0][0];
-		texT[5][2]=1;
-
-		MAPBrushSide front=new MAPBrushSide(planes[0], texture, texS[0], 0, texT[0], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-		newBrush.add(front);
-		for(int i=1;i<6;i++) {
-			newBrush.add(new MAPBrushSide(planes[i], "special/nodraw", texS[i], 0, texT[i], 0, 0, 1, 1, 32, "wld_lightmap", 16, 0));
-		}
-		
-		return newBrush;
 	}
 }
