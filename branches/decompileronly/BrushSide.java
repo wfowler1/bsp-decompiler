@@ -24,7 +24,7 @@ public class BrushSide extends LumpObject {
 			                   // depending on whether or not it's one of the first six sides in a brush.
 				dist=DataReader.readFloat(data[0], data[1], data[2], data[3]);
 			case BSP.TYPE_QUAKE3:
-			case BSP.TYPE_ALICE:
+			case BSP.TYPE_FAKK:
 			case BSP.TYPE_STEF2DEMO:
 			case BSP.TYPE_MOHAA:
 				plane=DataReader.readInt(data[0], data[1], data[2], data[3]);
@@ -51,6 +51,7 @@ public class BrushSide extends LumpObject {
 				                      // and can therefore be used for all Source engine formats, Portal 2 and all.
 			case BSP.TYPE_SIN:
 			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_SOF:
 				plane=DataReader.readUShort(data[0], data[1]);
 				texture=(int)DataReader.readShort(data[2], data[3]);
 				break;

@@ -43,6 +43,7 @@ public class Planes {
 			case BSP.TYPE_QUAKE:
 			case BSP.TYPE_NIGHTFIRE:
 			case BSP.TYPE_SIN:
+			case BSP.TYPE_SOF:
 			case BSP.TYPE_SOURCE17:
 			case BSP.TYPE_SOURCE18:
 			case BSP.TYPE_SOURCE19:
@@ -58,7 +59,7 @@ public class Planes {
 			case BSP.TYPE_STEF2DEMO:
 			case BSP.TYPE_RAVEN:
 			case BSP.TYPE_QUAKE3:
-			case BSP.TYPE_ALICE:
+			case BSP.TYPE_FAKK:
 			case BSP.TYPE_COD:
 				structLength=16;
 				break;

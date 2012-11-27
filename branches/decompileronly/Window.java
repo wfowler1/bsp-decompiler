@@ -146,8 +146,8 @@ public class Window extends JPanel implements ActionListener {
 	
 		window = new Window(frame.getContentPane());
 		print("Got a bug to report? Want to request a feature?"+LF+"Create an issue report at"+LF+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry"+LF+LF, VERBOSITY_ALWAYS);
-		println("Currently supported formats: James Bond 007: Nightfire (PC), Quake 2, SiN", VERBOSITY_ALWAYS);
-		println("Partially supported formats: Quake 3, Doom/Doom 2 WADfiles, Source Engine,"+LF+"Star Wars: Jedi Outcast, Soldier of Fortune 2, Return to Castle Wolfenstein,"+LF+"Medal of Honor (Allied Assault, Spearhead, Breakthrough), Call of Duty,"+LF+"Call of Duty 2, Call of Duty 4", VERBOSITY_ALWAYS);
+		println("Currently supported formats: James Bond 007: Nightfire (PC), Quake 2, SiN,"+LF+"Soldier of Fortune", VERBOSITY_ALWAYS);
+		println("Partially supported formats: Quake 3, Doom/Doom 2 WADfiles, Source Engine,"+LF+"Star Wars: Jedi Outcast, Soldier of Fortune 2, Return to Castle Wolfenstein,"+LF+"Medal of Honor (Allied Assault, Spearhead, Breakthrough), Call of Duty,"+LF+"Call of Duty 2, Call of Duty 4, American McGee's Alice, Heavy Metal FAKK²", VERBOSITY_ALWAYS);
 	}
 
 	// This constructor configures and displays the GUI
@@ -155,7 +155,7 @@ public class Window extends JPanel implements ActionListener {
 		// Set up most of the window's properties, since we definitely have a window
 		// Good thing frame is a global object
 		// Set up frame's properties here
-		java.net.URL imageURL = Window.class.getResource("icon32x32.PNG");
+		java.net.URL imageURL = Window.class.getResource("icon256x256.PNG");
 		frame.setIconImage(new ImageIcon(imageURL).getImage());
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setPreferredSize(new Dimension(640, 460));

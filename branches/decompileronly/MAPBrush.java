@@ -50,7 +50,8 @@ public class MAPBrush {
 	public void add(MAPBrushSide in) {
 		if(in!=null) {
 			boolean duplicate=false;
-			for(int i=0;i<sides.length;i++) {
+			int i=0;
+			for(i=0;i<sides.length;i++) {
 				if(in.getPlane().equals(sides[i].getPlane())) {
 					duplicate=true;
 					break;
@@ -58,11 +59,16 @@ public class MAPBrush {
 			}
 			if(!duplicate) {
 				MAPBrushSide[] newList=new MAPBrushSide[sides.length+1];
-				for(int i=0;i<sides.length;i++) {
-					newList[i]=sides[i];
+				for(int j=0;j<sides.length;j++) {
+					newList[j]=sides[j];
 				}
 				newList[sides.length] = in;
 				sides=newList;
+			} else { // If it is a duplicate, one of them probably came form a Doom node subdivision which will always be textured "special/nodraw"
+				      // but the other one (from a segment) will have a texture which needs to be visible. Select for that one.
+				if(sides[i].getTexture().equalsIgnoreCase("special/nodraw") && !in.getTexture().equalsIgnoreCase("special/nodraw")) {
+					sides[i].setTexture(in.getTexture());
+				}
 			}
 		}
 	}

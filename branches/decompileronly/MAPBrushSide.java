@@ -290,6 +290,10 @@ public class MAPBrushSide {
 		return texture;
 	}
 	
+	public void setTexture(String in) {
+		texture=in;
+	}
+	
 	public Vector3D getTextureS() {
 		return textureS;
 	}

@@ -21,6 +21,7 @@ public class Brush extends LumpObject {
 		switch(type) {
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_SIN:
+			case BSP.TYPE_SOF:
 			case BSP.TYPE_SOURCE17:
 			case BSP.TYPE_SOURCE18:
 			case BSP.TYPE_SOURCE19:
@@ -41,7 +42,7 @@ public class Brush extends LumpObject {
 			case BSP.TYPE_STEF2DEMO:
 			case BSP.TYPE_RAVEN:
 			case BSP.TYPE_QUAKE3:
-			case BSP.TYPE_ALICE:
+			case BSP.TYPE_FAKK:
 				firstSide=DataReader.readInt(data[0], data[1], data[2], data[3]);
 				numSides=DataReader.readInt(data[4], data[5], data[6], data[7]);
 				texture=DataReader.readInt(data[8], data[9], data[10], data[11]);

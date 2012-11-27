@@ -20,17 +20,22 @@ public class Vertex extends LumpObject {
 	public Vertex(byte[] data, int type) {
 		super(data);
 		switch(type) {
+			case DoomMap.VERSION:
+				vertex=new Vector3D(DataReader.readShort(data[0], data[1]), DataReader.readShort(data[2], data[3]));
+				break;
 			case BSP.TYPE_STEF2:
 			case BSP.TYPE_MOHAA:
 			case BSP.TYPE_STEF2DEMO:
 			case BSP.TYPE_RAVEN:
 			case BSP.TYPE_QUAKE3:
 			case BSP.TYPE_COD:
+			case BSP.TYPE_FAKK:
 				texCoord[X]=DataReader.readFloat(data[12], data[13], data[14], data[15]);
 				texCoord[Y]=DataReader.readFloat(data[16], data[17], data[18], data[19]);
 			case BSP.TYPE_QUAKE:
 			case BSP.TYPE_NIGHTFIRE:
 			case BSP.TYPE_SIN:
+			case BSP.TYPE_SOF:
 			case BSP.TYPE_SOURCE17:
 			case BSP.TYPE_SOURCE18:
 			case BSP.TYPE_SOURCE19:

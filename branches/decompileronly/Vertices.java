@@ -41,16 +41,13 @@ public class Vertices {
 	// Takes a byte array, as if read from a FileInputStream
 	public Vertices(byte[] in, int type) {
 		switch(type) {
-			case BSP.TYPE_STEF2:
-			case BSP.TYPE_MOHAA:
-			case BSP.TYPE_STEF2DEMO:
-			case BSP.TYPE_QUAKE3:
-			case BSP.TYPE_COD:
-				structLength=44;
+			case DoomMap.VERSION:
+				structLength=4;
 				break;
 			case BSP.TYPE_QUAKE:
 			case BSP.TYPE_NIGHTFIRE:
 			case BSP.TYPE_SIN:
+			case BSP.TYPE_SOF:
 			case BSP.TYPE_SOURCE17:
 			case BSP.TYPE_SOURCE18:
 			case BSP.TYPE_SOURCE19:
@@ -60,6 +57,14 @@ public class Vertices {
 			case BSP.TYPE_SOURCE23:
 			case BSP.TYPE_QUAKE2:
 				structLength=12;
+				break;
+			case BSP.TYPE_STEF2:
+			case BSP.TYPE_MOHAA:
+			case BSP.TYPE_STEF2DEMO:
+			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_COD:
+			case BSP.TYPE_FAKK:
+				structLength=44;
 				break;
 			case BSP.TYPE_RAVEN:
 				structLength=80;

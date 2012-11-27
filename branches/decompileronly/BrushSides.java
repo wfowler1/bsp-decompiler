@@ -42,6 +42,7 @@ public class BrushSides {
 	public BrushSides(byte[] in, int type) {
 		switch(type) {
 			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_SOF:
 				structLength=4;
 				break;
 			case BSP.TYPE_COD:
@@ -57,7 +58,7 @@ public class BrushSides {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
-			case BSP.TYPE_ALICE:
+			case BSP.TYPE_FAKK:
 				structLength=8;
 				break;
 			case BSP.TYPE_MOHAA:

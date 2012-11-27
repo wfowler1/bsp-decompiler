@@ -26,6 +26,7 @@ public class Node extends LumpObject {
 				break;
 			// Nightfire, Source, Quake 2 and Quake 3-based engines all use the first three ints for planenum and children
 			case BSP.TYPE_SIN:
+			case BSP.TYPE_SOF:
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_NIGHTFIRE:
 			case BSP.TYPE_SOURCE17:
@@ -40,6 +41,7 @@ public class Node extends LumpObject {
 			case BSP.TYPE_STEF2DEMO:
 			case BSP.TYPE_RAVEN:
 			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_FAKK:
 			case BSP.TYPE_COD:
 				this.child1=DataReader.readInt(data[4], data[5], data[6], data[7]);
 				this.child2=DataReader.readInt(data[8], data[9], data[10], data[11]);

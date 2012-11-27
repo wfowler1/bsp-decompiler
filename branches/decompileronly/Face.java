@@ -36,6 +36,7 @@ public class Face extends LumpObject {
 			case BSP.TYPE_QUAKE:
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_SIN:
+			case BSP.TYPE_SOF:
 				plane=DataReader.readUShort(data[0], data[1]);
 				side=DataReader.readUShort(data[2], data[3]);
 				firstEdge=DataReader.readInt(data[4], data[5], data[6], data[7]);

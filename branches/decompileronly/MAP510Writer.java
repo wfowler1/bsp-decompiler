@@ -156,8 +156,11 @@ public class MAP510Writer {
 		// Correct some attributes of entities
 		switch(BSPVersion) {
 			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_FAKK:
 			case BSP.TYPE_RAVEN:
 			case BSP.TYPE_MOHAA:
+			case BSP.TYPE_STEF2:
+			case BSP.TYPE_STEF2DEMO:
 				in=ent46ToEntM510(in);
 				break;
 			case BSP.TYPE_NIGHTFIRE: // Nightfire
@@ -165,9 +168,10 @@ public class MAP510Writer {
 				break;
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_SIN:
+			case BSP.TYPE_SOF:
 				in=ent38ToEntM510(in);
 				break;
-			case DoomMap.VERSION: // Doom! I can use any versioning system I want!
+			case DoomMap.VERSION:
 				break;
 			case BSP.TYPE_COD:
 				in=ent59ToEntM510(in);
@@ -324,7 +328,7 @@ public class MAP510Writer {
 						;
 					}
 				}
-				if(BSPVersion==BSP.TYPE_QUAKE3 || BSPVersion==BSP.TYPE_MOHAA || BSPVersion==BSP.TYPE_COD || BSPVersion==BSP.TYPE_STEF2 || BSPVersion==BSP.TYPE_STEF2DEMO || BSPVersion==BSP.TYPE_ALICE) {
+				if(BSPVersion==BSP.TYPE_QUAKE3 || BSPVersion==BSP.TYPE_MOHAA || BSPVersion==BSP.TYPE_COD || BSPVersion==BSP.TYPE_STEF2 || BSPVersion==BSP.TYPE_STEF2DEMO || BSPVersion==BSP.TYPE_FAKK) {
 					try {
 						if(texture.substring(0,9).equalsIgnoreCase("textures/")) {
 							texture=texture.substring(9);
@@ -607,7 +611,7 @@ public class MAP510Writer {
 											}
 										}
 										try {
-											lightNumbers[s]=Double.parseDouble(intensity)/2; // Quake 3's light intensity is waaaaaay too bright
+											lightNumbers[s]=Double.parseDouble(intensity);
 										} catch(java.lang.NumberFormatException e) {
 											;
 										}
@@ -722,7 +726,7 @@ public class MAP510Writer {
 												}
 											}
 											try {
-												lightNumbers[s]=Double.parseDouble(intensity)/2; // Quake 2's light intensity is waaaaaay too bright
+												lightNumbers[s]=Double.parseDouble(intensity);
 											} catch(java.lang.NumberFormatException e) {
 												;
 											}

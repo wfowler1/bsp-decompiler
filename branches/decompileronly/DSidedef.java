@@ -15,8 +15,8 @@ public class DSidedef {
 	private short sector;
 	
 	public static final int HIGH=0;
-	public static final int MID=1;
-	public static final int LOW=2;
+	public static final int MID=2;
+	public static final int LOW=1;
 	
 	public static final int X=0;
 	public static final int Y=1;

@@ -26,7 +26,7 @@ public class DoomMap {
 	private DThings things;
 	private DLinedefs linedefs;
 	private DSidedefs sidedefs;
-	private DVertices vertices;
+	private Vertices vertices;
 	private DSegments segs;
 	private DSubSectors subsectors;
 	private DNodes nodes;
@@ -62,7 +62,7 @@ public class DoomMap {
 			Window.println("Sidedefs not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Vertices not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -141,10 +141,10 @@ public class DoomMap {
 	}
 	
 	public void setVertices(byte[] data) {
-		vertices=new DVertices(data);
+		vertices=new Vertices(data, VERSION);
 	}
 	
-	public DVertices getVertices() {
+	public Vertices getVertices() {
 		return vertices;
 	}
 	

@@ -41,11 +41,12 @@ public class MAPMaker {
 				case BSP.TYPE_STEF2:
 				case BSP.TYPE_STEF2DEMO:
 				case BSP.TYPE_SIN:
+				case BSP.TYPE_SOF:
 				case BSP.TYPE_RAVEN:
 				case BSP.TYPE_QUAKE2:
 				case BSP.TYPE_QUAKE3:
 				case BSP.TYPE_COD:
-				case BSP.TYPE_ALICE:
+				case BSP.TYPE_FAKK:
 					GTKRadiantMapWriter RadMAPMaker;
 					if(Window.getOutputFolder().equals("default")) {
 						Window.println("Saving "+mapfolder+mapname+".map...",Window.VERBOSITY_ALWAYS);

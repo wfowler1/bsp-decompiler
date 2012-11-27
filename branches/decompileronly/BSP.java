@@ -14,7 +14,7 @@ public class BSP {
 	public static final int TYPE_MOHAA=892416069;
 	// public static final int TYPE_MOHBT=1095516506; // Similar enough to MOHAA to use the same structures and algorithm
 	public static final int TYPE_STEF2DEMO=1263223129;
-	public static final int TYPE_ALICE=1263223152;
+	public static final int TYPE_FAKK=1263223152;
 	// public static final int TYPE_COD2=1347633741; // Uses same algorithm and structures as COD1
 	public static final int TYPE_SIN=1347633747; // The headers for SiN and Jedi Outcast are exactly the same
 	public static final int TYPE_RAVEN=1347633748;
@@ -27,6 +27,7 @@ public class BSP {
 	public static final int TYPE_SOURCE22=1347633772;
 	public static final int TYPE_SOURCE23=1347633773;
 	public static final int TYPE_QUAKE2=1347633775;
+	public static final int TYPE_SOF=1347633782; // Uses the same header as Q3.
 	public static final int TYPE_QUAKE3=1347633783;
 	// public static final int TYPE_RTCW=1347633784; // Uses same algorithm and structures as Quake 3
 	public static final int TYPE_COD=1347633796;
@@ -385,6 +386,7 @@ public class BSP {
 			case TYPE_QUAKE:
 			case TYPE_QUAKE2:
 			case TYPE_SIN:
+			case TYPE_SOF:
 			case TYPE_SOURCE17:
 			case TYPE_SOURCE18:
 			case TYPE_SOURCE19:
@@ -425,6 +427,7 @@ public class BSP {
 		switch(version) {
 			case TYPE_QUAKE2:
 			case TYPE_SIN:
+			case TYPE_SOF:
 			case TYPE_SOURCE17:
 			case TYPE_SOURCE18:
 			case TYPE_SOURCE19:

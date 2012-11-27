@@ -23,6 +23,13 @@ public class Leaf extends LumpObject {
 	public Leaf(byte[] data, int type) {
 		super(data);
 		switch(type) {
+			case BSP.TYPE_SOF:
+				contents=new byte[] { data[0], data[1], data[2], data[3] };
+				firstMarkFace=DataReader.readUShort(data[22], data[23]);
+				numMarkFaces=DataReader.readUShort(data[24], data[25]);
+				firstMarkBrush=DataReader.readUShort(data[26], data[27]);
+				numMarkBrushes=DataReader.readUShort(data[28], data[29]);
+				break;
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_SIN:
 			case BSP.TYPE_SOURCE17:
@@ -42,6 +49,7 @@ public class Leaf extends LumpObject {
 			case BSP.TYPE_NIGHTFIRE:
 				contents=new byte[] { data[0], data[1], data[2], data[3] };
 			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_FAKK:
 			case BSP.TYPE_STEF2DEMO:
 			case BSP.TYPE_STEF2:
 			case BSP.TYPE_MOHAA:

@@ -48,6 +48,9 @@ public class Faces {
 			case BSP.TYPE_SIN:
 				structLength=36;
 				break;
+			case BSP.TYPE_SOF:
+				structLength=40;
+				break;
 			case BSP.TYPE_NIGHTFIRE:
 				structLength=48;
 				break;

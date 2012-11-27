@@ -46,6 +46,7 @@ public class Nodes {
 				break;
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_SIN:
+			case BSP.TYPE_SOF:
 				structLength=28;
 				break;
 			case BSP.TYPE_SOURCE17:
@@ -58,6 +59,7 @@ public class Nodes {
 				structLength=32;
 				break;
 			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_FAKK:
 			case BSP.TYPE_COD:
 			case BSP.TYPE_STEF2:
 			case BSP.TYPE_STEF2DEMO:

@@ -43,6 +43,7 @@ public class Brushes {
 		switch(type) {
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_SIN:
+			case BSP.TYPE_SOF:
 			case BSP.TYPE_SOURCE17:
 			case BSP.TYPE_SOURCE18:
 			case BSP.TYPE_SOURCE19:
@@ -56,7 +57,7 @@ public class Brushes {
 			case BSP.TYPE_STEF2DEMO:
 			case BSP.TYPE_RAVEN:
 			case BSP.TYPE_QUAKE3:
-			case BSP.TYPE_ALICE:
+			case BSP.TYPE_FAKK:
 				structLength=12;
 				break;
 			case BSP.TYPE_COD:

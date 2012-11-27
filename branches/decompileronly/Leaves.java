@@ -51,6 +51,7 @@ public class Leaves {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_SOF:
 				structLength=32;
 				break;
 			case BSP.TYPE_COD:
@@ -58,6 +59,7 @@ public class Leaves {
 				break;
 			case BSP.TYPE_NIGHTFIRE:
 			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_FAKK:
 			case BSP.TYPE_STEF2DEMO:
 			case BSP.TYPE_STEF2:
 			case BSP.TYPE_RAVEN:

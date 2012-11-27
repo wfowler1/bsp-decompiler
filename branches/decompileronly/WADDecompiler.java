@@ -111,7 +111,7 @@ public class WADDecompiler {
 		int[] ssparents = new int[doomMap.getSubSectors().getNumElements()];
 		boolean[] ssIsLeft = new boolean[doomMap.getSubSectors().getNumElements()];
 		for(int i=0;i<doomMap.getSubSectors().getNumElements();i++) {
-			Window.println("Creating brushes for subsector "+i,Window.VERBOSITY_BRUSHCREATION);
+			Window.println("Populating texture lists for subsector "+i,Window.VERBOSITY_BRUSHCREATION);
 			// First, find the subsector's parent and whether it is the left or right child.
 			ssparents[i]=-1; // No subsector should have a -1 in here
 			for(int j=0;j<doomMap.getNodes().getNumElements();j++) {
@@ -151,7 +151,6 @@ public class WADDecompiler {
 				subsectorSidedefs[i][j]=currentsidedefIndex;
 				DSidedef currentSidedef=doomMap.getSidedefs().getSide(currentsidedefIndex);
 				if(currentlinedef.getType()!=0 && othersideIndex!=-1) { // If this is a triggering linedef
-					DSidedef otherSidedef=doomMap.getSidedefs().getSide(othersideIndex);
 					if(currentlinedef.getTag()!=0) { // If the target is not 0
 						for(int k=0;k<doomMap.getSectors().getNumElements();k++) {
 							DSector taggedsector=doomMap.getSectors().getSector(k);
@@ -163,29 +162,42 @@ public class WADDecompiler {
 						sectorType[currentSidedef.getSector()]=currentlinedef.getType();
 					}
 				}
-				if(!currentSidedef.getMidTexture().equals("-")) {
+				if(currentlinedef.isOneSided()) {
+					// A one-sided linedef should always be like this
 					midWallTextures[currentsidedefIndex]=doomMap.getWadName()+"/"+currentSidedef.getMidTexture();
-				} else {
-					midWallTextures[currentsidedefIndex]="special/nodraw";
-				}
-				if(!currentSidedef.getHighTexture().equals("-")) {
-					higherWallTextures[currentsidedefIndex]=doomMap.getWadName()+"/"+currentSidedef.getHighTexture();
-				} else {
 					higherWallTextures[currentsidedefIndex]="special/nodraw";
-				}
-				if(!currentSidedef.getLowTexture().equals("-")) {
-					lowerWallTextures[currentsidedefIndex]=doomMap.getWadName()+"/"+currentSidedef.getLowTexture();
-				} else {
 					lowerWallTextures[currentsidedefIndex]="special/nodraw";
+				} else {
+					// I don't really get why I need to apply these textures to the other side. But if it works I won't argue...
+					if(!currentSidedef.getMidTexture().equals("-")) {
+						midWallTextures[othersideIndex]=doomMap.getWadName()+"/"+currentSidedef.getMidTexture();
+					} else {
+						midWallTextures[othersideIndex]="special/nodraw"+currentsidedefIndex;
+					}
+					if(!currentSidedef.getHighTexture().equals("-")) {
+						higherWallTextures[othersideIndex]=doomMap.getWadName()+"/"+currentSidedef.getHighTexture();
+					} else {
+						higherWallTextures[othersideIndex]="special/nodraw"+currentsidedefIndex;
+					}
+					if(!currentSidedef.getLowTexture().equals("-")) {
+						lowerWallTextures[othersideIndex]=doomMap.getWadName()+"/"+currentSidedef.getLowTexture();
+					} else {
+						lowerWallTextures[othersideIndex]="special/nodraw"+currentsidedefIndex;
+					}
 				}
 				// Sometimes a subsector seems to belong to more than one sector. I don't know why.
 				if(subsectorSectors[i]!=-1 && currentSidedef.getSector()!=subsectorSectors[i]) {
 					Window.println("WARNING: Subsector "+i+" has sides defining different sectors!",Window.VERBOSITY_WARNINGS);
-					Window.println("This is probably nothing to worry about, but something might be wrong (wrong floor/cieling height)",Window.VERBOSITY_WARNINGS);
+					Window.println("This is probably nothing to worry about, but something might be wrong (floor/cieling height)",Window.VERBOSITY_WARNINGS);
 				} else {
 					subsectorSectors[i]=currentSidedef.getSector();
 				}
 			}
+		}
+		for(int i=0;i<doomMap.getSubSectors().getNumElements();i++) {
+			Window.println("Creating brushes for subsector "+i,Window.VERBOSITY_BRUSHCREATION);
+			
+			DSubSector currentsubsector=doomMap.getSubSectors().getSubSector(i);
 			
 			// Third, create a few brushes out of the geometry.
 			MAPBrush cielingBrush=new MAPBrush(numBrshs++, 0, false);
@@ -201,7 +213,7 @@ public class WADDecompiler {
 			roofPlane[2]=new Vector3D(Window.getPlanePointCoef(), 0, ZMax);
 			roofTexS[0]=1;
 			roofTexT[1]=-1;
-			MAPBrushSide roof=new MAPBrushSide(roofPlane, doomMap.getWadName()+"/"+currentSector.getCielingTexture(), roofTexS, 0, roofTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+			MAPBrushSide roof=new MAPBrushSide(roofPlane, "special/nodraw", roofTexS, 0, roofTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 			
 			Vector3D[] cileingPlane=new Vector3D[3];
 			double[] cileingTexS=new double[3];
@@ -231,7 +243,7 @@ public class WADDecompiler {
 			foundationPlane[2]=new Vector3D(Window.getPlanePointCoef(), Window.getPlanePointCoef(), ZMin);
 			foundationTexS[0]=1;
 			foundationTexT[1]=-1;
-			MAPBrushSide foundation=new MAPBrushSide(foundationPlane, doomMap.getWadName()+"/"+currentSector.getFloorTexture(), foundationTexS, 0, foundationTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+			MAPBrushSide foundation=new MAPBrushSide(foundationPlane, "special/nodraw", foundationTexS, 0, foundationTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 			
 			cielingBrush.add(cieling);
 			cielingBrush.add(roof);
@@ -244,8 +256,8 @@ public class WADDecompiler {
 
 			for(int j=0;j<subsectorSidedefs[i].length;j++) { // Iterate through the sidedefs defined by segments of this subsector
 				DSegment currentseg=doomMap.getSegments().getSegment(currentsubsector.getFirstSeg()+j);
-				Vector3D start=doomMap.getVertices().getVertex(currentseg.getStartVertex());
-				Vector3D end=doomMap.getVertices().getVertex(currentseg.getEndVertex());
+				Vector3D start=doomMap.getVertices().getElement(currentseg.getStartVertex()).getVertex();
+				Vector3D end=doomMap.getVertices().getElement(currentseg.getEndVertex()).getVertex();
 				DLinedef currentLinedef=doomMap.getLinedefs().getLinedef(currentseg.getLinedef());
 				
 				Vector3D[] plane=new Vector3D[3];
@@ -269,18 +281,7 @@ public class WADDecompiler {
 				
 				if(currentLinedef.isOneSided()) {
 					MAPBrush outsideBrush=null;
-					if(midWallTextures[subsectorSidedefs[i][j]]!="special/nodraw") {
-						outsideBrush = createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], plane[0], plane[2]);
-					} else { // If the outside sidedef uses no texture
-						for(int k=0;k<subsectorSidedefs[i].length;k++) { // That is BULL SHIT! Find a side of the subsector that uses one
-							if(midWallTextures[subsectorSidedefs[i][k]]!="special/nodraw") {
-								outsideBrush = createFaceBrush(midWallTextures[subsectorSidedefs[i][k]], plane[0], plane[2]);
-							}
-						}
-						if(outsideBrush==null) { // If no side of the subsector uses one, then fuck.
-							outsideBrush = createFaceBrush("special/nodraw", plane[0], plane[2]);
-						}
-					}
+					outsideBrush = createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], plane[0], plane[2]);
 					world.addBrush(outsideBrush);
 					mid=new MAPBrushSide(plane, "special/nodraw", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				} else {
@@ -386,7 +387,6 @@ public class WADDecompiler {
 			}*/
 			Window.setProgress(jobnum, i+1, doomMap.getSubSectors().getNumElements(), "Decompiling...");
 		}
-		
 		Window.setProgress(jobnum, 1, 1, "Saving...");
 		MAPMaker.outputMaps(mapFile, doomMap.getMapName(), doomMap.getFolder()+doomMap.getWadName()+"\\", DoomMap.VERSION);
 		Date end=new Date();
