@@ -171,7 +171,7 @@ public class MAP510Writer {
 			case BSP.TYPE_SOF:
 				in=ent38ToEntM510(in);
 				break;
-			case DoomMap.VERSION:
+			case DoomMap.TYPE_DOOM:
 				break;
 			case BSP.TYPE_COD:
 				in=ent59ToEntM510(in);

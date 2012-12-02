@@ -1,6 +1,6 @@
 // DLinedefs class
 
-// Contains all information for linedefs in a Doom map
+// Maintains an array of DLinedefs.
 
 import java.io.FileInputStream;
 import java.io.File;
@@ -10,71 +10,60 @@ public class DLinedefs {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
-	private int numElems=0;
 	private int length;
 	private DLinedef[] elements;
-
-	public static int structureLength=14;
+	
+	private int structLength;
 
 	// CONSTRUCTORS
 	
-	public DLinedefs(String in) {
-		data=new File(in);
-		length=(int)data.length();
-		try {
-			numElems=getNumElements();
-			elements=new DLinedef[numElems];
-			populateList();
-		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+data.getName()+" not found!",0);
-		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+data.getName()+" could not be read, ensure the file is not open in another program",0);
-		}
+	// Accepts a filepath as a String
+	public DLinedefs(String in, int type) {
+		new DLinedefs(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public DLinedefs(File in) {
+	public DLinedefs(File in, int type) {
 		data=in;
-		length=(int)data.length();
 		try {
-			numElems=getNumElements();
-			elements=new DLinedef[numElems];
-			populateList();
+			FileInputStream fileReader=new FileInputStream(data);
+			byte[] temp=new byte[(int)data.length()];
+			fileReader.read(temp);
+			new DLinedefs(temp, type);
+			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+data.getName()+" not found!",0);
+			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
 		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+data.getName()+" could not be read, ensure the file is not open in another program",0);
+			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",Window.VERBOSITY_ALWAYS);
 		}
 	}
 	
-	public DLinedefs(byte[] in) {
+	// Takes a byte array, as if read from a FileInputStream
+	public DLinedefs(byte[] in, int type) {
+		switch(type) {
+			case DoomMap.TYPE_DOOM:
+				structLength=14;
+				break;
+			case DoomMap.TYPE_HEXEN:
+				structLength=16;
+				break;
+			default:
+				structLength=0; // This will cause the shit to hit the fan.
+		}
 		int offset=0;
 		length=in.length;
-		numElems=in.length/structureLength;
-		elements=new DLinedef[numElems];
-		for(int i=0;i<numElems;i++) {
-			byte[] bytes=new byte[structureLength];
-			for(int j=0;j<structureLength;j++) {
+		elements=new DLinedef[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
-			elements[i]=new DLinedef(bytes);
-			offset+=structureLength;
+			elements[i]=new DLinedef(bytes, type);
+			offset+=structLength;
 		}
 	}
 	
 	// METHODS
-	
-	// -populateList()
-	// Uses the instance data to populate the array of DLinedef
-	private void populateList() throws java.io.FileNotFoundException, java.io.IOException {
-		FileInputStream reader=new FileInputStream(data);
-		for(int i=0;i<numElems;i++) {
-			byte[] datain=new byte[structureLength];
-			reader.read(datain);
-			elements[i]=new DLinedef(datain);
-		}
-		reader.close();
-	}
 	
 	// ACCESSORS/MUTATORS
 	
@@ -83,19 +72,20 @@ public class DLinedefs {
 		return length;
 	}
 	
-	public int getNumElements() {
-		if(numElems==0) {
-			return length/structureLength;
+	// Returns the number of elements.
+	public int length() {
+		if(elements.length==0) {
+			return length/structLength;
 		} else {
-			return numElems;
+			return elements.length;
 		}
 	}
 	
-	public DLinedef getLinedef(int i) {
+	public DLinedef getElement(int i) {
 		return elements[i];
 	}
 	
-	public DLinedef[] getLinedefs() {
+	public DLinedef[] getElements() {
 		return elements;
 	}
 }

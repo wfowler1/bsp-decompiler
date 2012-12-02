@@ -595,7 +595,7 @@ public class GenericMethods {
 	// This creates a rectangular brush. The String is assumed to be a texture for a face, and
 	// the two vectors are a bounding box to create a plane with (mins-maxs).
 	// The second String is the texture to apply to all other sides.
-	public static MAPBrush createFaceBrush(String texture, String backTexture, Vector3D mins, Vector3D maxs) {
+	public static MAPBrush createFaceBrush(String texture, String backTexture, Vector3D mins, Vector3D maxs, double xoff, double yoff) {
 		Window.println("Creating brush for face with "+texture,Window.VERBOSITY_BRUSHCREATION);
 		MAPBrush newBrush = new MAPBrush(0, 0, false);
 		Vector3D[][] planes=new Vector3D[6][3]; // Six planes for a cube brush, three vertices for each plane
@@ -612,8 +612,8 @@ public class GenericMethods {
 		planes[0][0]=new Vector3D(mins.getX(), mins.getY(), maxs.getZ());
 		planes[0][1]=new Vector3D(maxs.getX(), maxs.getY(), mins.getZ());
 		planes[0][2]=mins;
-		texS[0][0]=(mins.getX()-maxs.getX())/sideLengthXY;
-		texS[0][1]=(mins.getY()-maxs.getY())/sideLengthXY;
+		texS[0][0]=-(mins.getX()-maxs.getX())/sideLengthXY;
+		texS[0][1]=-(mins.getY()-maxs.getY())/sideLengthXY;
 		texT[0][2]=-1;
 		// Far
 		planes[1][0]=new Vector3D(mins.getX(), mins.getY(), maxs.getZ()).subtract(cross);
@@ -649,7 +649,7 @@ public class GenericMethods {
 		texS[5][1]=texS[0][0];
 		texT[5][2]=1;
 
-		MAPBrushSide front=new MAPBrushSide(planes[0], texture, texS[0], 0, texT[0], 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+		MAPBrushSide front=new MAPBrushSide(planes[0], texture, texS[0], xoff, texT[0], yoff, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 		newBrush.add(front);
 		for(int i=1;i<6;i++) {
 			newBrush.add(new MAPBrushSide(planes[i], backTexture, texS[i], 0, texT[i], 0, 0, 1, 1, 32, "wld_lightmap", 16, 0));

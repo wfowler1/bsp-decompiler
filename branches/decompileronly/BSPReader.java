@@ -938,8 +938,11 @@ public class BSPReader {
 												offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
 												length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
 												lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+												int thingsoffset=0;
+												int thingslength=0;
 												if(lumpName.substring(0,6).equalsIgnoreCase("THINGS")) {
-													doomMaps[doomMaps.length-1].setThings(readLump(offset, length));
+													thingsoffset=offset;
+													thingslength=length;
 												}
 												
 												lumpReader.read(readDirectory);
@@ -947,8 +950,11 @@ public class BSPReader {
 												offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
 												length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
 												lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+												int linesoffset=0;
+												int lineslength=0;
 												if(lumpName.equalsIgnoreCase("LINEDEFS")) {
-													doomMaps[doomMaps.length-1].setLinedefs(readLump(offset, length));
+													linesoffset=offset;
+													lineslength=length;
 												}
 												
 												lumpReader.read(readDirectory);
@@ -1004,7 +1010,19 @@ public class BSPReader {
 												if(lumpName.substring(0,7).equalsIgnoreCase("SECTORS")) {
 													doomMaps[doomMaps.length-1].setSectors(readLump(offset, length));
 												}
-										
+												
+												lumpReader.skip(32);
+												lumpReader.read(readDirectory);
+												
+												lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+												if(lumpName.equalsIgnoreCase("BEHAVIOR")) {
+													doomMaps[doomMaps.length-1].setThings(readLump(thingsoffset, thingslength), DoomMap.TYPE_HEXEN);
+													doomMaps[doomMaps.length-1].setLinedefs(readLump(linesoffset, lineslength), DoomMap.TYPE_HEXEN);
+												} else {
+													doomMaps[doomMaps.length-1].setThings(readLump(thingsoffset, thingslength), DoomMap.TYPE_DOOM);
+													doomMaps[doomMaps.length-1].setLinedefs(readLump(linesoffset, lineslength), DoomMap.TYPE_DOOM);
+												}
+												
 												lumpReader.close();
 										
 												doomMaps[doomMaps.length-1].printBSPReport();

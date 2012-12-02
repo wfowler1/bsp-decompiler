@@ -14,12 +14,14 @@ public class DoomMap {
 	// This is the version of the BSP. This will determine the lumps order and aid in
 	// decompilation. Since this one never had a formal version, I'll make one up. 1
 	// is the most correct version since it really was the first version...
-	public static final int VERSION=1;
+	public static final int TYPE_DOOM=1;
+	public static final int TYPE_HEXEN=2;
 	
 	// Since all Doom engine maps were incorporated into the WAD, we need to keep
 	// track of both the location of the WAD file and the internal name of the map.
 	private String wadpath;
 	private String mapName;
+	private int version;
 	
 	// Each lump has its own class for handling its specific data structures.
 	// These are the only lumps we need for decompilation.
@@ -47,12 +49,12 @@ public class DoomMap {
 
 	public void printBSPReport() {
 		try {
-			Window.println("Things lump: "+things.getLength()+" bytes, "+things.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Things lump: "+things.getLength()+" bytes, "+things.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Things not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Linedefs lump: "+linedefs.getLength()+" bytes, "+linedefs.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Linedefs lump: "+linedefs.getLength()+" bytes, "+linedefs.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Linedefs not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -90,6 +92,10 @@ public class DoomMap {
 	
 	// ACCESSORS/MUTATORS
 	
+	public int getVersion() {
+		return version;
+	}
+	
 	public String getPath() {
 		return wadpath;
 	}
@@ -116,16 +122,22 @@ public class DoomMap {
 		return newFile.getName().substring(0, newFile.getName().length()-4);
 	}
 	
-	public void setThings(byte[] data) {
-		things=new DThings(data);
+	public void setThings(byte[] data, int type) {
+		if(version==0) {
+			version=type;
+		}
+		things=new DThings(data, type);
 	}
 	
 	public DThings getThings() {
 		return things;
 	}
 	
-	public void setLinedefs(byte[] data) {
-		linedefs=new DLinedefs(data);
+	public void setLinedefs(byte[] data, int type) {
+		if(version==0) {
+			version=type;
+		}
+		linedefs=new DLinedefs(data, type);
 	}
 	
 	public DLinedefs getLinedefs() {
@@ -141,7 +153,7 @@ public class DoomMap {
 	}
 	
 	public void setVertices(byte[] data) {
-		vertices=new Vertices(data, VERSION);
+		vertices=new Vertices(data, TYPE_DOOM);
 	}
 	
 	public Vertices getVertices() {

@@ -58,7 +58,7 @@ public class WADDecompiler {
 		String[] midWallTextures=new String[doomMap.getSidedefs().getNumElements()];
 		String[] higherWallTextures=new String[doomMap.getSidedefs().getNumElements()];
 		
-		short[] sectorType=new short[doomMap.getSectors().getNumElements()];
+		short[] sectorTag=new short[doomMap.getSectors().getNumElements()];
 		
 		// Since Doom relied on sectors to define a cieling and floor height, and nothing else,
 		// need to find the minimum and maximum used Z values. This is because the Doom engine
@@ -68,6 +68,7 @@ public class WADDecompiler {
 		int ZMax=-32768; // overflows, in case the map DOES go within 32 units of these values.
 		for(int i=0;i<doomMap.getSectors().getNumElements();i++) {
 			DSector currentSector=doomMap.getSectors().getSector(i);
+			sectorTag[i]=currentSector.getTag();
 			if(currentSector.getFloorHeight()<ZMin+32) {
 				ZMin=currentSector.getFloorHeight()-32; // Can't use the actual value, because that IS the floor
 			} else {
@@ -101,6 +102,7 @@ public class WADDecompiler {
 			}
 		}
 		
+		// Keep a list of what subsectors belong to which sector
 		int[] subsectorSectors = new int[doomMap.getSubSectors().getNumElements()];
 		// Keep a list of what sidedefs belong to what subsector as well
 		int[][] subsectorSidedefs = new int[doomMap.getSubSectors().getNumElements()][];
@@ -138,7 +140,7 @@ public class WADDecompiler {
 			subsectorSidedefs[i]=new int[currentsubsector.getNumSegs()];
 			for(int j=0;j<currentsubsector.getNumSegs();j++) { // For each segment the subsector references
 				DSegment currentsegment=doomMap.getSegments().getSegment(currentsubsector.getFirstSeg()+j);
-				DLinedef currentlinedef=doomMap.getLinedefs().getLinedef(currentsegment.getLinedef());
+				DLinedef currentlinedef=doomMap.getLinedefs().getElement(currentsegment.getLinedef());
 				int currentsidedefIndex;
 				int othersideIndex;
 				if(currentsegment.getDirection()==0) {
@@ -150,18 +152,6 @@ public class WADDecompiler {
 				}
 				subsectorSidedefs[i][j]=currentsidedefIndex;
 				DSidedef currentSidedef=doomMap.getSidedefs().getSide(currentsidedefIndex);
-				if(currentlinedef.getType()!=0 && othersideIndex!=-1) { // If this is a triggering linedef
-					if(currentlinedef.getTag()!=0) { // If the target is not 0
-						for(int k=0;k<doomMap.getSectors().getNumElements();k++) {
-							DSector taggedsector=doomMap.getSectors().getSector(k);
-							if(taggedsector.getTag()==currentlinedef.getTag()) {
-								sectorType[k]=currentlinedef.getType();
-							}
-						}
-					} else {
-						sectorType[currentSidedef.getSector()]=currentlinedef.getType();
-					}
-				}
 				if(currentlinedef.isOneSided()) {
 					// A one-sided linedef should always be like this
 					midWallTextures[currentsidedefIndex]=doomMap.getWadName()+"/"+currentSidedef.getMidTexture();
@@ -194,6 +184,12 @@ public class WADDecompiler {
 				}
 			}
 		}
+		boolean[] linedefFlagsDealtWith=new boolean[doomMap.getLinedefs().length()];
+		boolean[] linedefSpecialsDealtWith=new boolean[doomMap.getLinedefs().length()];
+		
+		MAPBrush[][] sectorFloorBrushes=new MAPBrush[doomMap.getSectors().getNumElements()][0];
+		MAPBrush[][] sectorCielingBrushes=new MAPBrush[doomMap.getSectors().getNumElements()][0];
+		
 		for(int i=0;i<doomMap.getSubSectors().getNumElements();i++) {
 			Window.println("Creating brushes for subsector "+i,Window.VERBOSITY_BRUSHCREATION);
 			
@@ -213,7 +209,6 @@ public class WADDecompiler {
 			roofPlane[2]=new Vector3D(Window.getPlanePointCoef(), 0, ZMax);
 			roofTexS[0]=1;
 			roofTexT[1]=-1;
-			MAPBrushSide roof=new MAPBrushSide(roofPlane, "special/nodraw", roofTexS, 0, roofTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 			
 			Vector3D[] cileingPlane=new Vector3D[3];
 			double[] cileingTexS=new double[3];
@@ -223,7 +218,6 @@ public class WADDecompiler {
 			cileingPlane[2]=new Vector3D(Window.getPlanePointCoef(), Window.getPlanePointCoef(), currentSector.getCielingHeight());
 			cileingTexS[0]=1;
 			cileingTexT[1]=-1;
-			MAPBrushSide cieling=new MAPBrushSide(cileingPlane, doomMap.getWadName()+"/"+currentSector.getCielingTexture(), cileingTexS, 0, cileingTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 			
 			Vector3D[] floorPlane=new Vector3D[3];
 			double[] floorTexS=new double[3];
@@ -233,7 +227,6 @@ public class WADDecompiler {
 			floorPlane[2]=new Vector3D(Window.getPlanePointCoef(), 0, currentSector.getFloorHeight());
 			floorTexS[0]=1;
 			floorTexT[1]=-1;
-			MAPBrushSide floor=new MAPBrushSide(floorPlane, doomMap.getWadName()+"/"+currentSector.getFloorTexture(), floorTexS, 0, floorTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 
 			Vector3D[] foundationPlane=new Vector3D[3];
 			double[] foundationTexS=new double[3];
@@ -243,7 +236,6 @@ public class WADDecompiler {
 			foundationPlane[2]=new Vector3D(Window.getPlanePointCoef(), Window.getPlanePointCoef(), ZMin);
 			foundationTexS[0]=1;
 			foundationTexT[1]=-1;
-			MAPBrushSide foundation=new MAPBrushSide(foundationPlane, "special/nodraw", foundationTexS, 0, foundationTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 
 			Vector3D[] topPlane=new Vector3D[3];
 			double[] topTexS=new double[3];
@@ -253,7 +245,6 @@ public class WADDecompiler {
 			topPlane[2]=new Vector3D(Window.getPlanePointCoef(), 0, currentSector.getCielingHeight());
 			topTexS[0]=1;
 			topTexT[1]=-1;
-			MAPBrushSide top=new MAPBrushSide(topPlane, "special/nodraw", topTexS, 0, topTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 	
 			Vector3D[] bottomPlane=new Vector3D[3];
 			double[] bottomTexS=new double[3];
@@ -263,25 +254,16 @@ public class WADDecompiler {
 			bottomPlane[2]=new Vector3D(Window.getPlanePointCoef(), Window.getPlanePointCoef(), currentSector.getFloorHeight());
 			bottomTexS[0]=1;
 			bottomTexT[1]=-1;
-			MAPBrushSide bottom=new MAPBrushSide(bottomPlane, "special/nodraw", bottomTexS, 0, bottomTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-
-			midBrush.add(top);
-			midBrush.add(bottom);
-			
-			cielingBrush.add(cieling);
-			cielingBrush.add(roof);
-			
-			floorBrush.add(floor);
-			floorBrush.add(foundation);
 
 			int nextNode=ssparents[i];
 			boolean leftSide=ssIsLeft[i];
 
-			for(int j=0;j<subsectorSidedefs[i].length;j++) { // Iterate through the sidedefs defined by segments of this subsector
+			for(int j=0;j<currentsubsector.getNumSegs();j++) { // Iterate through the sidedefs defined by segments of this subsector
 				DSegment currentseg=doomMap.getSegments().getSegment(currentsubsector.getFirstSeg()+j);
 				Vector3D start=doomMap.getVertices().getElement(currentseg.getStartVertex()).getVertex();
 				Vector3D end=doomMap.getVertices().getElement(currentseg.getEndVertex()).getVertex();
-				DLinedef currentLinedef=doomMap.getLinedefs().getLinedef(currentseg.getLinedef());
+				DLinedef currentLinedef=doomMap.getLinedefs().getElement((int)currentseg.getLinedef());
+				DSidedef currentSidedef=doomMap.getSidedefs().getSide(subsectorSidedefs[i][j]);
 				
 				Vector3D[] plane=new Vector3D[3];
 				double[] texS=new double[3];
@@ -297,24 +279,122 @@ public class WADDecompiler {
 				texS[2]=0;
 				texT[0]=0;
 				texT[1]=0;
-				texT[2]=1;
+				texT[2]=-1;
 				MAPBrushSide low=new MAPBrushSide(plane, lowerWallTextures[subsectorSidedefs[i][j]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				MAPBrushSide high=new MAPBrushSide(plane, higherWallTextures[subsectorSidedefs[i][j]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				MAPBrushSide mid;
 				
 				if(currentLinedef.isOneSided()) {
 					MAPBrush outsideBrush=null;
-					outsideBrush = GenericMethods.createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], "special/nodraw", plane[0], plane[2]);
+					if(currentSector.getCielingHeight()<=currentSector.getFloorHeight()) {
+						outsideBrush = GenericMethods.createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], "special/nodraw", plane[0], plane[2], currentSidedef.getOffsetX(), currentSidedef.getOffsetY());
+					} else {
+						outsideBrush = GenericMethods.createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], "special/nodraw", new Vector3D(plane[0].getX(), plane[0].getY(), currentSector.getFloorHeight()), new Vector3D(plane[2].getX(), plane[2].getY(), currentSector.getCielingHeight()), currentSidedef.getOffsetX(), currentSidedef.getOffsetY());
+					}
 					world.addBrush(outsideBrush);
 					mid=new MAPBrushSide(plane, "special/nodraw", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				} else {
 					mid=new MAPBrushSide(plane, midWallTextures[subsectorSidedefs[i][j]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+					if(!linedefFlagsDealtWith[currentseg.getLinedef()]) {
+						linedefFlagsDealtWith[currentseg.getLinedef()]=true;
+						if(!((currentLinedef.getFlags()[0] & ((byte)1 << 0)) == 0)) { // Flag 0x0001 indicates "solid" but doesn't block bullets. It is assumed for all one-sided.
+							MAPBrush solidBrush = GenericMethods.createFaceBrush("special/clip", "special/clip", plane[0], plane[2],0,0);
+							world.addBrush(solidBrush);
+						} else {
+							if(!((currentLinedef.getFlags()[0] & ((byte)1 << 1)) == 0)) { // Flag 0x0002 indicates "monster clip".
+								MAPBrush solidBrush = GenericMethods.createFaceBrush("special/enemyclip", "special/enemyclip", plane[0], plane[2],0,0);
+								world.addBrush(solidBrush);
+							}
+						}
+					}
+					int othersideindex=-1;
+					if(currentLinedef.getRight()==subsectorSidedefs[i][j]) {
+						othersideindex=currentLinedef.getLeft();
+					}
+					if(currentLinedef.getLeft()==subsectorSidedefs[i][j]) {
+						othersideindex=currentLinedef.getRight();
+					}
+					DSidedef otherside=doomMap.getSidedefs().getSide(othersideindex);
+					if(currentLinedef.getAction()!=0 && !linedefSpecialsDealtWith[currentseg.getLinedef()]) {
+						linedefSpecialsDealtWith[currentseg.getLinedef()]=true;
+						if(doomMap.getVersion()==DoomMap.TYPE_HEXEN) {
+							if(currentLinedef.getAction()==70) { // Teleport
+								Entity teleporter=new Entity("trigger_teleport");
+								MAPBrush teleBrush = GenericMethods.createFaceBrush("special/trigger", "special/trigger", plane[0], plane[2],0,0);
+								teleporter.addBrush(teleBrush);
+								if(currentLinedef.getArguments()[0]!=0) {
+									teleporter.setAttribute("target", "teledest"+currentLinedef.getArguments()[0]);
+								} else {
+									teleporter.setAttribute("target", "sector"+currentLinedef.getTag()+"teledest");
+								}
+								mapFile.add(teleporter);
+							} else {
+								if(currentLinedef.getAction()==181) { // PLANE_ALIGN
+									if(!leftSide) {
+										DSidedef getsector=doomMap.getSidedefs().getSide(currentLinedef.getLeft());
+										DSector copyheight=doomMap.getSectors().getSector(getsector.getSector());
+										short newHeight=copyheight.getFloorHeight();
+										//floorPlane[0]=new Vector3D(0, Window.getPlanePointCoef(), 2000);
+										//floorPlane[1]=new Vector3D(Window.getPlanePointCoef(), Window.getPlanePointCoef(), currentSector.getFloorHeight());
+										//floorPlane[2]=new Vector3D(Window.getPlanePointCoef(), 0, currentSector.getFloorHeight());
+									} else {
+										linedefSpecialsDealtWith[currentseg.getLinedef()]=false;
+									}
+								} else {
+									if(currentLinedef.getAction()==21) { // Floor lower to lowest surrounding floor
+									}
+								}
+							}
+						} else {
+							switch(currentLinedef.getAction()) {
+								case 1: // Use Door. open, wait, close
+									sectorTag[otherside.getSector()]=-1;
+									break;
+								case 31: // Use Door. Open, stay.
+									sectorTag[otherside.getSector()]=-2;
+									break;
+								case 63:
+									Entity button=new Entity("func_button");
+									MAPBrush buttonBrush = GenericMethods.createFaceBrush("special/trigger", "special/trigger", plane[0], plane[2],0,0);
+									button.addBrush(buttonBrush);
+									button.setAttribute("target", "sector"+currentLinedef.getTag()+"door");
+									button.setAttribute("wait", "1");
+									button.setAttribute("spawnflags", "1");
+									mapFile.add(button);
+									break;
+								case 97: // Walkover retriggerable Teleport
+									Entity teleporter=new Entity("trigger_teleport");
+									MAPBrush teleBrush = GenericMethods.createFaceBrush("special/trigger", "special/trigger", plane[0], plane[2],0,0);
+									teleporter.addBrush(teleBrush);
+									teleporter.setAttribute("target", "sector"+currentLinedef.getTag()+"teledest");
+									mapFile.add(teleporter);
+									break;
+							}
+						}
+					}
 				}
 				
 				cielingBrush.add(high);
 				midBrush.add(mid);
 				floorBrush.add(low);
 			}
+			
+			MAPBrushSide roof=new MAPBrushSide(roofPlane, "special/nodraw", roofTexS, 0, roofTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+			MAPBrushSide cieling=new MAPBrushSide(cileingPlane, doomMap.getWadName()+"/"+currentSector.getCielingTexture(), cileingTexS, 0, cileingTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+			MAPBrushSide floor=new MAPBrushSide(floorPlane, doomMap.getWadName()+"/"+currentSector.getFloorTexture(), floorTexS, 0, floorTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+			MAPBrushSide foundation=new MAPBrushSide(foundationPlane, "special/nodraw", foundationTexS, 0, foundationTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+			MAPBrushSide top=new MAPBrushSide(topPlane, "special/nodraw", topTexS, 0, topTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+			MAPBrushSide bottom=new MAPBrushSide(bottomPlane, "special/nodraw", bottomTexS, 0, bottomTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+
+			midBrush.add(top);
+			midBrush.add(bottom);
+			
+			cielingBrush.add(cieling);
+			cielingBrush.add(roof);
+			
+			floorBrush.add(floor);
+			floorBrush.add(foundation);
+			
 			// Now need to add the data from node subdivisions. Neither segments nor nodes
 			// will completely define a usable brush, but both of them together will.
 			do {
@@ -374,9 +454,19 @@ public class WADDecompiler {
 					}
 				}
 			}
-			world.addBrush(floorBrush);
-			world.addBrush(cielingBrush);
-			boolean containsMiddle=false; // Need to figure out how to determine this. As it is, no middle sides will come out.
+			
+			MAPBrush[] newFloorList=new MAPBrush[sectorFloorBrushes[subsectorSectors[i]].length+1];
+			MAPBrush[] newCielingList=new MAPBrush[sectorCielingBrushes[subsectorSectors[i]].length+1];
+			for(int j=0;j<sectorFloorBrushes[subsectorSectors[i]].length;j++) {
+				newFloorList[j]=sectorFloorBrushes[subsectorSectors[i]][j];
+				newCielingList[j]=sectorCielingBrushes[subsectorSectors[i]][j];
+			}
+			newFloorList[newFloorList.length-1]=floorBrush;
+			newCielingList[newCielingList.length-1]=cielingBrush;
+			sectorFloorBrushes[subsectorSectors[i]]=newFloorList;
+			sectorCielingBrushes[subsectorSectors[i]]=newCielingList;
+			
+			boolean containsMiddle=false;
 			for(int j=0;j<midBrush.getNumSides();j++) {
 				if(!midBrush.getSide(j).getTexture().equalsIgnoreCase("special/nodraw")) {
 					containsMiddle=true;
@@ -394,8 +484,219 @@ public class WADDecompiler {
 			}
 			Window.setProgress(jobnum, i+1, doomMap.getSubSectors().getNumElements(), "Decompiling...");
 		}
+		
+		// Add the brushes to the map, as world by default, or entities if they are supported.
+		for(int i=0;i<doomMap.getSectors().getNumElements();i++) {
+			if(sectorTag[i]==0) {
+				for(int j=0;j<sectorFloorBrushes[i].length;j++) {
+					world.addBrush(sectorFloorBrushes[i][j]);
+					world.addBrush(sectorCielingBrushes[i][j]);
+				}
+			} else {
+				if(sectorTag[i]==-1 || sectorTag[i]==-2) { // I'm using this to mean a door with no tag number
+					Entity newDoor=new Entity("func_door");
+					int lowestNeighborCielingHeight=32768;
+					for(int j=0;j<doomMap.getLinedefs().length();j++) {
+						DLinedef currentLinedef=doomMap.getLinedefs().getElement(j);
+						if(!currentLinedef.isOneSided()) {
+							DSector neighbor=null;
+							if(doomMap.getSidedefs().getSide(currentLinedef.getLeft()).getSector()==i) {
+								neighbor=doomMap.getSectors().getSector(doomMap.getSidedefs().getSide(currentLinedef.getRight()).getSector());
+							} else {
+								if(doomMap.getSidedefs().getSide(currentLinedef.getRight()).getSector()==i) {
+									neighbor=doomMap.getSectors().getSector(doomMap.getSidedefs().getSide(currentLinedef.getLeft()).getSector());
+								}
+							}
+							if(neighbor!=null && neighbor.getCielingHeight()<lowestNeighborCielingHeight) {
+								lowestNeighborCielingHeight=neighbor.getCielingHeight();
+							}
+						}
+					}
+					int lip=ZMax-lowestNeighborCielingHeight+4;
+					for(int j=0;j<sectorFloorBrushes[i].length;j++) {
+						world.addBrush(sectorFloorBrushes[i][j]);
+						newDoor.addBrush(sectorCielingBrushes[i][j]);
+						newDoor.setAttribute("speed", "60");
+						newDoor.setAttribute("angles", "270 0 0");
+						newDoor.setAttribute("spawnflags", "256");
+						if(sectorTag[i]==-1) {
+							newDoor.setAttribute("wait", "4");
+						} else {
+							if(sectorTag[i]==-2) {
+								newDoor.setAttribute("wait", "-1");
+							}
+						}
+						newDoor.setAttribute("lip", ""+lip);
+					}
+					mapFile.add(newDoor);
+				} else {
+					int linedefTriggerType=0;
+					for(int j=0;j<doomMap.getLinedefs().length();j++) {
+						if(doomMap.getLinedefs().getElement(j).getTag()==sectorTag[i]) {
+							linedefTriggerType=doomMap.getLinedefs().getElement(j).getAction();
+						}
+					}
+					switch(linedefTriggerType) {
+						default: // I'd like to not use this evenutally, all the trigger types ought to be handled
+							Window.println("WARNING: Unimplemented linedef trigger type "+linedefTriggerType+" for sector "+i+" tagged "+sectorTag[i],Window.VERBOSITY_WARNINGS);
+							for(int j=0;j<sectorFloorBrushes[i].length;j++) {
+								world.addBrush(sectorFloorBrushes[i][j]);
+								world.addBrush(sectorCielingBrushes[i][j]);
+							}
+							break;
+					}
+				}
+			}
+		}
+		
+		// Convert THINGS
+		for(int i=0;i<doomMap.getThings().length();i++) {
+			DThing currentThing=doomMap.getThings().getElement(i);
+			// To find the true height of a thing, I need to iterate through nodes until I come to a subsector
+			// definition. Then I need to use the floor height of the sector that subsector belongs to.
+			Vector3D origin=currentThing.getOrigin();
+			int subsectorIndex=doomMap.getNodes().getNumElements()-1;
+			while(subsectorIndex>=0) { // Once child is negative, subsector is found
+				DNode currentNode=doomMap.getNodes().getNode(subsectorIndex);
+				Vector3D start=currentNode.getVecHead();
+				Vector3D end=currentNode.getVecHead().add(currentNode.getVecTail());
+				Plane currentPlane=new Plane(start, end, new Vector3D(start.getX(), start.getY(), 1));
+				if(currentPlane.distance(origin)<0) {
+					subsectorIndex=currentNode.getChild1();
+				} else {
+					subsectorIndex=currentNode.getChild2();
+				}
+			}
+			subsectorIndex+=32768;
+			int sectorIndex=subsectorSectors[subsectorIndex];
+			DSector thingSector=doomMap.getSectors().getSector(sectorIndex);
+			if(origin.getZ()==0) {
+				origin.setZ(thingSector.getFloorHeight());
+			}
+			
+			Entity thing=null;
+			// Things from both Doom and Hexen here
+			switch(currentThing.getClassNum()) {
+				case 1: // Single player spawn
+				case 2: // coop
+				case 3: // coop
+				case 4: // coop
+					thing=new Entity("info_player_start");
+					if(currentThing.getClassNum()>1) {
+						thing.setAttribute("targetname", "coopspawn"+currentThing.getClassNum());
+					}
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+(origin.getZ()+36));
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+				case 11: // Deathmatch spawn
+					thing=new Entity("info_player_deathmatch");
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+(origin.getZ()+36));
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+				case 14: // Teleport destination
+					thing=new Entity("info_teleport_destination");
+					if(currentThing.getID()!=0) {
+						thing.setAttribute("targetname", "teledest"+currentThing.getID());
+					} else {
+						thing.setAttribute("targetname", "sector"+thingSector.getTag()+"teledest");
+					}
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+(origin.getZ()+36));
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+				case 17: // Big cell pack
+					thing=new Entity("ammo_bondmine");
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+				case 82: // Super shotgun
+					thing=new Entity("weapon_pdw90");
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+				case 2001: // Shotgun
+					thing=new Entity("weapon_frinesi");
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+				case 2002: // Chaingun
+					thing=new Entity("weapon_minigun");
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+				case 2003: // Rocket launcher
+					thing=new Entity("weapon_rocketlauncher");
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+				case 2004: // Plasma gun
+					thing=new Entity("weapon_grenadelauncher");
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+				case 2005: // Chainsaw
+					thing=new Entity("weapon_ronin");
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+				case 2006: // BFG9000
+					thing=new Entity("weapon_laserrifle");
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+				case 2007: // Ammo clip
+					thing=new Entity("ammo_pp9");
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+				case 2008: // Shotgun shells
+					thing=new Entity("ammo_mini");
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+				case 2010: // Rocket
+					thing=new Entity("ammo_darts");
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+				case 2046: // Box of Rockets
+					thing=new Entity("ammo_rocketlauncher");
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+				case 2047: // Cell pack
+					thing=new Entity("ammo_grenadelauncher");
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+				case 2048: // Box of ammo
+					thing=new Entity("ammo_mp9");
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+				case 2049: // Box of shells
+					thing=new Entity("ammo_shotgun");
+					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
+					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
+					break;
+			}
+			
+			if(doomMap.getVersion()==DoomMap.TYPE_HEXEN) { // Hexen only
+			
+			} else { // Doom only
+				
+			}
+			
+			if(thing!=null) {
+				mapFile.add(thing);
+			}
+		}
+		
+		Entity playerequip=new Entity("game_player_equip");
+		playerequip.setAttribute("weapon_pp9", "1");
+		mapFile.add(playerequip);
+		
 		Window.setProgress(jobnum, 1, 1, "Saving...");
-		MAPMaker.outputMaps(mapFile, doomMap.getMapName(), doomMap.getFolder()+doomMap.getWadName()+"\\", DoomMap.VERSION);
+		MAPMaker.outputMaps(mapFile, doomMap.getMapName(), doomMap.getFolder()+doomMap.getWadName()+"\\", DoomMap.TYPE_DOOM);
 		Date end=new Date();
 		Window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,Window.VERBOSITY_ALWAYS);
 	}

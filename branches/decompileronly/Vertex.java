@@ -20,7 +20,7 @@ public class Vertex extends LumpObject {
 	public Vertex(byte[] data, int type) {
 		super(data);
 		switch(type) {
-			case DoomMap.VERSION:
+			case DoomMap.TYPE_DOOM:
 				vertex=new Vector3D(DataReader.readShort(data[0], data[1]), DataReader.readShort(data[2], data[3]));
 				break;
 			case BSP.TYPE_STEF2:

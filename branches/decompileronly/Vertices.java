@@ -41,7 +41,7 @@ public class Vertices {
 	// Takes a byte array, as if read from a FileInputStream
 	public Vertices(byte[] in, int type) {
 		switch(type) {
-			case DoomMap.VERSION:
+			case DoomMap.TYPE_DOOM:
 				structLength=4;
 				break;
 			case BSP.TYPE_QUAKE:

@@ -83,6 +83,7 @@ public class Window extends JPanel implements ActionListener {
 	private static JMenuItem setErrorItem;
 	private static JMenuItem setOriginBrushSizeItem;
 	private static JMenuItem saveLogItem;
+	private static JMenuItem clearLogItem;
 	// "Special requests" submenu
 	private static JMenu specialMenu;
 	private static JCheckBoxMenuItem chk_replaceWithNull;
@@ -299,6 +300,9 @@ public class Window extends JPanel implements ActionListener {
 		saveLogItem.setToolTipText("Save all text in output log to a file.");
 		saveLogItem.addActionListener(this);
 		debugMenu.add(saveLogItem);
+		clearLogItem = new JMenuItem("Clear log");
+		clearLogItem.addActionListener(this);
+		debugMenu.add(clearLogItem);
 		
 		chk_replaceWithNull = new JCheckBoxMenuItem("Replace flag 512 with special/null");
 		chk_replaceWithNull.setSelected(false);
@@ -526,6 +530,11 @@ public class Window extends JPanel implements ActionListener {
 				lastUsedFolder=files[files.length-1].getParent();
 				addJobs(files, new DoomMap[files.length]);
 			}
+		}
+		
+		// "clear log" button
+		if(action.getSource() == clearLogItem) {
+			consolebox.setText(""); // NOT THREAD SAFE
 		}
 		
 		// User clicks the "Save log" button

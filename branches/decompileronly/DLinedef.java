@@ -9,32 +9,37 @@ public class DLinedef {
 
 	private short start;
 	private short end;
-	private short flags;
-	private short type;
+	private byte[] flags;
+	private short action;
 	private short tag;
 	private short right;
 	private short left;
+	private short[] arguments=new short[5];
 	
 	// CONSTRUCTORS
 	
-	public DLinedef(short start, short end, short flags, short type, short tag, short right, short left) {
-		this.start=start;
-		this.end=end;
-		this.flags=flags;
-		this.type=type;
-		this.tag=tag;
-		this.right=right;
-		this.left=left;
-	}
-	
-	public DLinedef(byte[] in) {
+	public DLinedef(byte[] in, int type) {
 		start=DataReader.readShort(in[0], in[1]);
 		end=DataReader.readShort(in[2], in[3]);
-		flags=DataReader.readShort(in[4], in[5]);
-		type=DataReader.readShort(in[6], in[7]);
-		tag=DataReader.readShort(in[8], in[9]);
-		right=DataReader.readShort(in[10], in[11]);
-		left=DataReader.readShort(in[12], in[13]);
+		flags=new byte[] { in[4], in[5] };
+		switch(type) {
+			case DoomMap.TYPE_DOOM:
+				action=DataReader.readShort(in[6], in[7]);
+				tag=DataReader.readShort(in[8], in[9]);
+				right=DataReader.readShort(in[10], in[11]);
+				left=DataReader.readShort(in[12], in[13]);
+				break;
+			case DoomMap.TYPE_HEXEN:
+				action=DataReader.readUByte(in[6]);
+				arguments[0]=DataReader.readUByte(in[7]);
+				arguments[1]=DataReader.readUByte(in[8]);
+				arguments[2]=DataReader.readUByte(in[9]);
+				arguments[3]=DataReader.readUByte(in[10]);
+				arguments[4]=DataReader.readUByte(in[11]);
+				right=DataReader.readShort(in[12], in[13]);
+				left=DataReader.readShort(in[14], in[15]);
+				break;
+		}
 	}
 	
 	// METHODS
@@ -61,20 +66,16 @@ public class DLinedef {
 		end=in;
 	}
 	
-	public short getFlags() {
+	public byte[] getFlags() {
 		return flags;
 	}
 	
-	public void setFlags(short in) {
+	public void setFlags(byte[] in) {
 		flags=in;
 	}
 	
-	public short getType() {
-		return type;
-	}
-	
-	public void setType(short in) {
-		type=in;
+	public short getAction() {
+		return action;
 	}
 	
 	public short getTag() {
@@ -99,5 +100,9 @@ public class DLinedef {
 	
 	public void setLeft(short in) {
 		left=in;
+	}
+	
+	public short[] getArguments() {
+		return arguments;
 	}
 }

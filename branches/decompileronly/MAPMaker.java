@@ -13,7 +13,7 @@ public class MAPMaker {
 			switch(version) {
 				// Gearcraft
 				case BSP.TYPE_NIGHTFIRE:
-				case DoomMap.VERSION: // I don't know where else to put this
+				case DoomMap.TYPE_DOOM: // I don't know where else to put this
 					MAP510Writer GCMAPMaker;
 					if(Window.getOutputFolder().equals("default")) {
 						Window.println("Saving "+mapfolder+mapname+".map...",Window.VERBOSITY_ALWAYS);

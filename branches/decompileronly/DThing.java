@@ -15,20 +15,34 @@ public class DThing {
 	private short classNum;
 	private short flags;
 	
+	private short id;
+	private short action;
+	private short[] arguments=new short[5];
+	
 	// CONSTRUCTORS
 	
-	public DThing(short originX, short originY, short angle, short classNum, short flags) {
-		origin=new Vector3D(originX, originY);
-		this.angle=angle;
-		this.classNum=classNum;
-		this.flags=flags;
-	}
-	
-	public DThing(byte[] in) {
-		origin=new Vector3D(DataReader.readShort(in[0], in[1]), DataReader.readShort(in[2], in[3]));
-		this.angle=DataReader.readShort(in[4], in[5]);
-		this.classNum=DataReader.readShort(in[6], in[7]);
-		this.flags=DataReader.readShort(in[8], in[9]);
+	public DThing(byte[] in, int type) {
+		switch(type) {
+			case DoomMap.TYPE_DOOM:
+				origin=new Vector3D(DataReader.readShort(in[0], in[1]), DataReader.readShort(in[2], in[3]));
+				this.angle=DataReader.readShort(in[4], in[5]);
+				this.classNum=DataReader.readShort(in[6], in[7]);
+				this.flags=DataReader.readShort(in[8], in[9]);
+				break;
+			case DoomMap.TYPE_HEXEN:
+				id=DataReader.readShort(in[0], in[1]);
+				origin=new Vector3D(DataReader.readShort(in[2], in[3]), DataReader.readShort(in[4], in[5]), DataReader.readShort(in[6], in[7]));
+				this.angle=DataReader.readShort(in[8], in[9]);
+				this.classNum=DataReader.readShort(in[10], in[11]);
+				this.flags=DataReader.readShort(in[12], in[13]);
+				action=DataReader.readUByte(in[14]);
+				arguments[0]=DataReader.readUByte(in[15]);
+				arguments[1]=DataReader.readUByte(in[16]);
+				arguments[2]=DataReader.readUByte(in[17]);
+				arguments[3]=DataReader.readUByte(in[18]);
+				arguments[4]=DataReader.readUByte(in[19]);
+				break;
+		}
 	}
 	
 	// METHODS
@@ -91,6 +105,18 @@ public class DThing {
 	
 	public void setFlags(short in) {
 		flags=in;
+	}
+	
+	public short getID() {
+		return id;
+	}
+	
+	public short getAction() {
+		return action;
+	}
+	
+	public short[] getArguments() {
+		return arguments;
 	}
 }
 
