@@ -272,6 +272,9 @@ public class WADDecompiler {
 				plane[1]=new Vector3D(end.getX(), end.getY(), ZMin);
 				plane[2]=new Vector3D(end.getX(), end.getY(), ZMax);
 				
+				Vector3D linestart=new Vector3D(doomMap.getVertices().getElement(currentLinedef.getStart()).getVertex().getX(), doomMap.getVertices().getElement(currentLinedef.getStart()).getVertex().getY(), ZMin);
+				Vector3D lineend=new Vector3D(doomMap.getVertices().getElement(currentLinedef.getEnd()).getVertex().getX(), doomMap.getVertices().getElement(currentLinedef.getEnd()).getVertex().getY(), ZMax);
+				
 				double sideLength=Math.sqrt(Math.pow(start.getX()-end.getX(), 2) + Math.pow(start.getY()-end.getY(),2));
 				
 				texS[0]=(start.getX()-end.getX())/sideLength;
@@ -298,11 +301,11 @@ public class WADDecompiler {
 					if(!linedefFlagsDealtWith[currentseg.getLinedef()]) {
 						linedefFlagsDealtWith[currentseg.getLinedef()]=true;
 						if(!((currentLinedef.getFlags()[0] & ((byte)1 << 0)) == 0)) { // Flag 0x0001 indicates "solid" but doesn't block bullets. It is assumed for all one-sided.
-							MAPBrush solidBrush = GenericMethods.createFaceBrush("special/clip", "special/clip", plane[0], plane[2],0,0);
+							MAPBrush solidBrush = GenericMethods.createFaceBrush("special/clip", "special/clip", linestart, lineend,0,0);
 							world.addBrush(solidBrush);
 						} else {
 							if(!((currentLinedef.getFlags()[0] & ((byte)1 << 1)) == 0)) { // Flag 0x0002 indicates "monster clip".
-								MAPBrush solidBrush = GenericMethods.createFaceBrush("special/enemyclip", "special/enemyclip", plane[0], plane[2],0,0);
+								MAPBrush solidBrush = GenericMethods.createFaceBrush("special/enemyclip", "special/enemyclip", linestart, lineend,0,0);
 								world.addBrush(solidBrush);
 							}
 						}
@@ -317,19 +320,66 @@ public class WADDecompiler {
 					DSidedef otherside=doomMap.getSidedefs().getSide(othersideindex);
 					if(currentLinedef.getAction()!=0 && !linedefSpecialsDealtWith[currentseg.getLinedef()]) {
 						linedefSpecialsDealtWith[currentseg.getLinedef()]=true;
+						Entity trigger=null;
+						MAPBrush triggerBrush = GenericMethods.createFaceBrush("special/trigger", "special/trigger", linestart, lineend,0,0);
 						if(doomMap.getVersion()==DoomMap.TYPE_HEXEN) {
-							if(currentLinedef.getAction()==70) { // Teleport
-								Entity teleporter=new Entity("trigger_teleport");
-								MAPBrush teleBrush = GenericMethods.createFaceBrush("special/trigger", "special/trigger", plane[0], plane[2],0,0);
-								teleporter.addBrush(teleBrush);
-								if(currentLinedef.getArguments()[0]!=0) {
-									teleporter.setAttribute("target", "teledest"+currentLinedef.getArguments()[0]);
+							boolean[] bitset=new boolean[16];
+							for(int k=0;k<8;k++) {
+								bitset[k]=!((currentLinedef.getFlags()[0] & ((byte)k << 1)) == 0);
+							}
+							for(int k=0;k<8;k++) {
+								bitset[k+8]=!((currentLinedef.getFlags()[1] & ((byte)k << 1)) == 0);
+							}
+							if(bitset[10] && bitset[11] && !bitset[12]) { // Triggered when "Used" by player
+								trigger=new Entity("func_button");
+								trigger.setAttribute("spawnflags", "1");
+								if(bitset[9]) {
+									trigger.setAttribute("wait", "1");
 								} else {
-									teleporter.setAttribute("target", "sector"+currentLinedef.getTag()+"teledest");
+									trigger.setAttribute("wait", "-1");
 								}
-								mapFile.add(teleporter);
 							} else {
-								if(currentLinedef.getAction()==181) { // PLANE_ALIGN
+								if(bitset[9]) { // Can be activated more than once
+									trigger=new Entity("trigger_multiple");
+									trigger.setAttribute("wait", "1");
+								} else {
+									trigger=new Entity("trigger_once");
+								}
+							}
+							switch(currentLinedef.getAction()) {
+								case 21: // Floor lower to lowest surrounding floor
+								case 22: // Floor lower to next lowest surrounding floor
+									if(currentLinedef.getArguments()[0]!=0) {
+										trigger.setAttribute("target", "sector"+currentLinedef.getArguments()[0]+"lowerfloor");
+									} else {
+										trigger.setAttribute("target", "sectornum"+otherside.getSector()+"lowerfloor");
+									}
+									break;
+								case 24: // Floor raise to highest surrounding floor
+								case 25: // Floor raise to next highest surrounding floor
+									if(currentLinedef.getArguments()[0]!=0) {
+										trigger.setAttribute("target", "sector"+currentLinedef.getArguments()[0]+"raisefloor");
+									} else {
+										trigger.setAttribute("target", "sectornum"+otherside.getSector()+"raisefloor");
+									}
+									break;
+								case 70: // Teleport
+									trigger=new Entity("trigger_teleport");
+									if(currentLinedef.getArguments()[0]!=0) {
+										trigger.setAttribute("target", "teledest"+currentLinedef.getArguments()[0]);
+									} else {
+										trigger.setAttribute("target", "sector"+currentLinedef.getTag()+"teledest");
+									}
+									break;
+								case 80: // Exec script
+									// This is a toughie. I can't write a script-to-entity converter.
+									trigger.setAttribute("target", "script"+currentLinedef.getArguments()[0]);
+									trigger.setAttribute("arg0", ""+currentLinedef.getArguments()[2]);
+									trigger.setAttribute("arg1", ""+currentLinedef.getArguments()[3]);
+									trigger.setAttribute("arg2", ""+currentLinedef.getArguments()[4]);
+									break;
+								case 181: // PLANE_ALIGN
+									trigger=null;
 									if(!leftSide) {
 										DSidedef getsector=doomMap.getSidedefs().getSide(currentLinedef.getLeft());
 										DSector copyheight=doomMap.getSectors().getSector(getsector.getSector());
@@ -340,36 +390,71 @@ public class WADDecompiler {
 									} else {
 										linedefSpecialsDealtWith[currentseg.getLinedef()]=false;
 									}
-								} else {
-									if(currentLinedef.getAction()==21) { // Floor lower to lowest surrounding floor
-									}
-								}
+									break;
+								default:
+									trigger=null;
+									break;
 							}
 						} else {
 							switch(currentLinedef.getAction()) {
 								case 1: // Use Door. open, wait, close
-									sectorTag[otherside.getSector()]=-1;
-									break;
 								case 31: // Use Door. Open, stay.
-									sectorTag[otherside.getSector()]=-2;
+									trigger=new Entity("func_button");
+									trigger.setAttribute("wait", "1");
+									if(currentLinedef.getAction()==31) {
+										trigger.setAttribute("wait", "-1");
+									}
+									trigger.setAttribute("spawnflags", "1");
+									if(doomMap.getSectors().getSector(otherside.getSector()).getTag()==0) {
+										trigger.setAttribute("target", "sectornum"+otherside.getSector()+"door");
+										if(currentLinedef.getAction()==1) {
+											sectorTag[otherside.getSector()]=-1;
+										}
+										if(currentLinedef.getAction()==31) {
+											sectorTag[otherside.getSector()]=-2;
+										}
+									} else {
+										trigger.setAttribute("target", "sector"+doomMap.getSectors().getSector(otherside.getSector()).getTag()+"door");
+									}
 									break;
-								case 63:
-									Entity button=new Entity("func_button");
-									MAPBrush buttonBrush = GenericMethods.createFaceBrush("special/trigger", "special/trigger", plane[0], plane[2],0,0);
-									button.addBrush(buttonBrush);
-									button.setAttribute("target", "sector"+currentLinedef.getTag()+"door");
-									button.setAttribute("wait", "1");
-									button.setAttribute("spawnflags", "1");
-									mapFile.add(button);
+								case 36: // Floor lower to 8 above next lowest neighboring sector
+								case 38: // Floor lower to next lowest neighboring sector
+									trigger=new Entity("trigger_once");
+									trigger.setAttribute("target", "sector"+currentLinedef.getTag()+"lowerfloor");
+									break;
+								case 62: // Floor lower to next lowest neighboring sector, wait 4s, goes back up
+									trigger=new Entity("func_button");
+									trigger.setAttribute("target", "sector"+currentLinedef.getTag()+"vator");
+									trigger.setAttribute("wait", "1");
+									trigger.setAttribute("spawnflags", "1");
+									break;
+								case 63: // Door with button, retriggerable
+								case 103: // Push button, one-time door open stay open
+									trigger=new Entity("func_button");
+									trigger.setAttribute("target", "sector"+currentLinedef.getTag()+"door");
+									trigger.setAttribute("wait", "1");
+									if(currentLinedef.getAction()==103) {
+										trigger.setAttribute("wait", "-1");
+									}
+									trigger.setAttribute("spawnflags", "1");
+									break;
+								case 88: // Walkover retriggerable elevator trigger
+									trigger=new Entity("trigger_multiple");
+									trigger.setAttribute("target", "sector"+currentLinedef.getTag()+"vator");
 									break;
 								case 97: // Walkover retriggerable Teleport
-									Entity teleporter=new Entity("trigger_teleport");
-									MAPBrush teleBrush = GenericMethods.createFaceBrush("special/trigger", "special/trigger", plane[0], plane[2],0,0);
-									teleporter.addBrush(teleBrush);
-									teleporter.setAttribute("target", "sector"+currentLinedef.getTag()+"teledest");
-									mapFile.add(teleporter);
+									trigger=new Entity("trigger_teleport");
+									trigger.setAttribute("target", "sector"+currentLinedef.getTag()+"teledest");
+									break;
+								case 109: // Walkover one-time door open stay open
+									trigger=new Entity("trigger_once");
+									trigger.setAttribute("target", "sector"+currentLinedef.getTag()+"door");
 									break;
 							}
+						}
+						if(trigger!=null) {
+							trigger.addBrush(triggerBrush);
+							mapFile.add(trigger);
 						}
 					}
 				}
@@ -487,14 +572,29 @@ public class WADDecompiler {
 		
 		// Add the brushes to the map, as world by default, or entities if they are supported.
 		for(int i=0;i<doomMap.getSectors().getNumElements();i++) {
+			boolean[] floorsUsed=new boolean[sectorFloorBrushes[i].length];
+			boolean[] cielingsUsed=new boolean[sectorCielingBrushes[i].length];
 			if(sectorTag[i]==0) {
 				for(int j=0;j<sectorFloorBrushes[i].length;j++) {
 					world.addBrush(sectorFloorBrushes[i][j]);
+					floorsUsed[j]=true;
 					world.addBrush(sectorCielingBrushes[i][j]);
+					cielingsUsed[j]=true;
 				}
 			} else {
 				if(sectorTag[i]==-1 || sectorTag[i]==-2) { // I'm using this to mean a door with no tag number
 					Entity newDoor=new Entity("func_door");
+					newDoor.setAttribute("speed", "60");
+					newDoor.setAttribute("angles", "270 0 0");
+					newDoor.setAttribute("spawnflags", "256");
+					newDoor.setAttribute("targetname", "sectornum"+i+"door");
+					if(sectorTag[i]==-1) {
+						newDoor.setAttribute("wait", "4");
+					} else {
+						if(sectorTag[i]==-2) {
+							newDoor.setAttribute("wait", "-1");
+						}
+					}
 					int lowestNeighborCielingHeight=32768;
 					for(int j=0;j<doomMap.getLinedefs().length();j++) {
 						DLinedef currentLinedef=doomMap.getLinedefs().getElement(j);
@@ -513,38 +613,256 @@ public class WADDecompiler {
 						}
 					}
 					int lip=ZMax-lowestNeighborCielingHeight+4;
+					newDoor.setAttribute("lip", ""+lip);
 					for(int j=0;j<sectorFloorBrushes[i].length;j++) {
-						world.addBrush(sectorFloorBrushes[i][j]);
+						cielingsUsed[j]=true;
 						newDoor.addBrush(sectorCielingBrushes[i][j]);
-						newDoor.setAttribute("speed", "60");
-						newDoor.setAttribute("angles", "270 0 0");
-						newDoor.setAttribute("spawnflags", "256");
-						if(sectorTag[i]==-1) {
-							newDoor.setAttribute("wait", "4");
-						} else {
-							if(sectorTag[i]==-2) {
-								newDoor.setAttribute("wait", "-1");
-							}
-						}
-						newDoor.setAttribute("lip", ""+lip);
 					}
 					mapFile.add(newDoor);
 				} else {
-					int linedefTriggerType=0;
 					for(int j=0;j<doomMap.getLinedefs().length();j++) {
-						if(doomMap.getLinedefs().getElement(j).getTag()==sectorTag[i]) {
-							linedefTriggerType=doomMap.getLinedefs().getElement(j).getAction();
+						DLinedef currentLinedef=doomMap.getLinedefs().getElement(j);
+						int linedefTriggerType=currentLinedef.getAction();
+						if(doomMap.getVersion()==doomMap.TYPE_HEXEN) {
+							switch(linedefTriggerType) {
+								case 21: // Generalized Floor lower to lowest neighbor
+								case 22: // Floor lower to next lowest neighbor
+									// I don't know where retriggerability is determined, or whether or not it goes back up.
+									if(currentLinedef.getArguments()[0]==sectorTag[i]) {
+										Entity newFloor=new Entity("func_door");
+										newFloor.setAttribute("angles", "90 0 0");
+										newFloor.setAttribute("wait", "-1");
+										newFloor.setAttribute("speed", ""+currentLinedef.getArguments()[1]);
+										if(currentLinedef.getArguments()[0]==0) {
+											newFloor.setAttribute("targetname", "sectornum"+i+"lowerfloor");
+										} else {
+											newFloor.setAttribute("targetname", "sector"+currentLinedef.getArguments()[0]+"lowerfloor");
+										}
+										int lowestNeighborFloorHeight=32768;
+										for(int k=0;k<doomMap.getLinedefs().length();k++) {
+											DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
+											if(!currentSearchLinedef.isOneSided()) {
+												DSector neighbor=null;
+												if(doomMap.getSidedefs().getSide(currentSearchLinedef.getLeft()).getSector()==i) {
+													neighbor=doomMap.getSectors().getSector(doomMap.getSidedefs().getSide(currentSearchLinedef.getRight()).getSector());
+												} else {
+													if(doomMap.getSidedefs().getSide(currentSearchLinedef.getRight()).getSector()==i) {
+														neighbor=doomMap.getSectors().getSector(doomMap.getSidedefs().getSide(currentSearchLinedef.getLeft()).getSector());
+													}
+												}
+												if(linedefTriggerType==21) {
+													if(neighbor!=null && neighbor.getFloorHeight()<lowestNeighborFloorHeight) {
+														lowestNeighborFloorHeight=neighbor.getFloorHeight();
+													}
+												} else {
+													if(neighbor!=null && neighbor.getFloorHeight()<doomMap.getSectors().getSector(i).getFloorHeight() && neighbor.getFloorHeight()>lowestNeighborFloorHeight) {
+														lowestNeighborFloorHeight=neighbor.getFloorHeight();
+													}
+												}
+											}
+										}
+										if(lowestNeighborFloorHeight==32768) {
+											lowestNeighborFloorHeight=doomMap.getSectors().getSector(i).getFloorHeight();
+										}
+										int lip=ZMin-lowestNeighborFloorHeight;
+										newFloor.setAttribute("lip", ""+Math.abs(lip));
+										for(int k=0;k<sectorFloorBrushes[i].length;k++) {
+											if(!floorsUsed[k]) {
+												floorsUsed[k]=true;
+												newFloor.addBrush(sectorFloorBrushes[i][k]);
+											}
+										}
+										mapFile.add(newFloor);
+									}
+									break;
+								case 24: // Generalized Floor raise to highest neighbor
+								case 25: // Floor raise to next highest neighbor
+									// I don't know where retriggerability is determined, or whether or not it goes back up.
+									if(currentLinedef.getArguments()[0]==sectorTag[i]) {
+										Entity newFloor=new Entity("func_door");
+										newFloor.setAttribute("angles", "270 0 0");
+										newFloor.setAttribute("wait", "-1");
+										newFloor.setAttribute("speed", ""+currentLinedef.getArguments()[1]);
+										if(currentLinedef.getArguments()[0]==0) {
+											newFloor.setAttribute("targetname", "sectornum"+i+"raisefloor");
+										} else {
+											newFloor.setAttribute("targetname", "sector"+currentLinedef.getArguments()[0]+"raisefloor");
+										}
+										int highestNeighborFloorHeight=-32768;
+										for(int k=0;k<doomMap.getLinedefs().length();k++) {
+											DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
+											if(!currentSearchLinedef.isOneSided()) {
+												DSector neighbor=null;
+												if(doomMap.getSidedefs().getSide(currentSearchLinedef.getLeft()).getSector()==i) {
+													neighbor=doomMap.getSectors().getSector(doomMap.getSidedefs().getSide(currentSearchLinedef.getRight()).getSector());
+												} else {
+													if(doomMap.getSidedefs().getSide(currentSearchLinedef.getRight()).getSector()==i) {
+														neighbor=doomMap.getSectors().getSector(doomMap.getSidedefs().getSide(currentSearchLinedef.getLeft()).getSector());
+													}
+												}
+												if(linedefTriggerType==24) {
+													if(neighbor!=null && neighbor.getFloorHeight()>highestNeighborFloorHeight) {
+														highestNeighborFloorHeight=neighbor.getFloorHeight();
+													}
+												} else {
+													if(neighbor!=null && neighbor.getFloorHeight()>doomMap.getSectors().getSector(i).getFloorHeight() && neighbor.getFloorHeight()<highestNeighborFloorHeight) {
+														highestNeighborFloorHeight=neighbor.getFloorHeight();
+													}
+												}
+											}
+										}
+										if(highestNeighborFloorHeight==-32768) {
+											highestNeighborFloorHeight=doomMap.getSectors().getSector(i).getFloorHeight();
+										}
+										int lip=ZMin-highestNeighborFloorHeight;
+										newFloor.setAttribute("lip", ""+Math.abs(lip));
+										for(int k=0;k<sectorFloorBrushes[i].length;k++) {
+											if(!floorsUsed[k]) {
+												floorsUsed[k]=true;
+												newFloor.addBrush(sectorFloorBrushes[i][k]);
+											}
+										}
+										mapFile.add(newFloor);
+									}
+									break;
+							}
+						} else {
+							if(currentLinedef.getTag()==sectorTag[i]) {
+								switch(linedefTriggerType) {
+									case 36: // Line crossed, floor lowers, stays 8 above next lowest
+									case 38: // Line crossed, floor lowers, stays at next lowest
+										Entity newFloor=new Entity("func_door");
+										newFloor.setAttribute("speed", "120");
+										newFloor.setAttribute("angles", "90 0 0");
+										newFloor.setAttribute("targetname", "sector"+sectorTag[i]+"lowerfloor");
+										newFloor.setAttribute("wait", "-1");
+										int lowestNeighborFloorHeight=32768;
+										for(int k=0;k<doomMap.getLinedefs().length();k++) {
+											DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
+											if(!currentSearchLinedef.isOneSided()) {
+												DSector neighbor=null;
+												if(doomMap.getSidedefs().getSide(currentSearchLinedef.getLeft()).getSector()==i) {
+													neighbor=doomMap.getSectors().getSector(doomMap.getSidedefs().getSide(currentSearchLinedef.getRight()).getSector());
+												} else {
+													if(doomMap.getSidedefs().getSide(currentSearchLinedef.getRight()).getSector()==i) {
+														neighbor=doomMap.getSectors().getSector(doomMap.getSidedefs().getSide(currentSearchLinedef.getLeft()).getSector());
+													}
+												}
+												if(neighbor!=null && neighbor.getFloorHeight()<lowestNeighborFloorHeight) {
+													lowestNeighborFloorHeight=neighbor.getFloorHeight();
+												}
+											}
+										}
+										int lip=ZMin-lowestNeighborFloorHeight;
+										if(linedefTriggerType==36) {
+											lip-=8;
+										}
+										newFloor.setAttribute("lip", ""+Math.abs(lip));
+										for(int k=0;k<sectorFloorBrushes[i].length;k++) {
+											if(!floorsUsed[k]) {
+												floorsUsed[k]=true;
+												newFloor.addBrush(sectorFloorBrushes[i][k]);
+											}
+										}
+										mapFile.add(newFloor);
+										break;
+									case 63: // Push button, door opens, waits 4s, closes
+									case 103: // Push button, door opens, stays
+									case 109: // Cross line, door opens, stays
+										Entity newDoor=new Entity("func_door");
+										newDoor.setAttribute("speed", "60");
+										newDoor.setAttribute("angles", "270 0 0");
+										newDoor.setAttribute("targetname", "sector"+sectorTag[i]+"door");
+										newDoor.setAttribute("wait", "-1");
+										if(sectorTag[i]==63) {
+											newDoor.setAttribute("wait", "4");
+										}
+										int lowestNeighborCielingHeight=32768;
+										for(int k=0;k<doomMap.getLinedefs().length();k++) {
+											DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
+											if(!currentSearchLinedef.isOneSided()) {
+												DSector neighbor=null;
+												if(doomMap.getSidedefs().getSide(currentSearchLinedef.getLeft()).getSector()==i) {
+													neighbor=doomMap.getSectors().getSector(doomMap.getSidedefs().getSide(currentSearchLinedef.getRight()).getSector());
+												} else {
+													if(doomMap.getSidedefs().getSide(currentSearchLinedef.getRight()).getSector()==i) {
+														neighbor=doomMap.getSectors().getSector(doomMap.getSidedefs().getSide(currentSearchLinedef.getLeft()).getSector());
+													}
+												}
+												if(neighbor!=null && neighbor.getCielingHeight()<lowestNeighborCielingHeight) {
+													lowestNeighborCielingHeight=neighbor.getCielingHeight();
+												}
+											}
+										}
+										lip=ZMax-lowestNeighborCielingHeight+4;
+										newDoor.setAttribute("lip", ""+lip);
+										for(int k=0;k<sectorFloorBrushes[i].length;k++) {
+											if(!cielingsUsed[k]) {
+												cielingsUsed[k]=true;
+												newDoor.addBrush(sectorCielingBrushes[i][k]);
+											}
+										}
+										mapFile.add(newDoor);
+										break;
+									case 62: // Push button, Elevator goes down to lowest, wait 4s, goes up
+									case 88: // Elevator goes down to lowest, wait 4s, goes up
+										Entity newVator=new Entity("func_door");
+										newVator.setAttribute("speed", "120");
+										newVator.setAttribute("angles", "90 0 0");
+										newVator.setAttribute("targetname", "sector"+sectorTag[i]+"vator");
+										newVator.setAttribute("wait", "4");
+										lowestNeighborFloorHeight=32768;
+										for(int k=0;k<doomMap.getLinedefs().length();k++) {
+											DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
+											if(!currentSearchLinedef.isOneSided()) {
+												DSector neighbor=null;
+												if(doomMap.getSidedefs().getSide(currentSearchLinedef.getLeft()).getSector()==i) {
+													neighbor=doomMap.getSectors().getSector(doomMap.getSidedefs().getSide(currentSearchLinedef.getRight()).getSector());
+												} else {
+													if(doomMap.getSidedefs().getSide(currentSearchLinedef.getRight()).getSector()==i) {
+														neighbor=doomMap.getSectors().getSector(doomMap.getSidedefs().getSide(currentSearchLinedef.getLeft()).getSector());
+													}
+												}
+												if(neighbor!=null && neighbor.getFloorHeight()<lowestNeighborFloorHeight) {
+													lowestNeighborFloorHeight=neighbor.getFloorHeight();
+												}
+											}
+										}
+										lip=Math.abs(ZMin-lowestNeighborFloorHeight);
+										newVator.setAttribute("lip", ""+lip);
+										for(int k=0;k<sectorFloorBrushes[i].length;k++) {
+											if(!floorsUsed[k]) {
+												newVator.addBrush(sectorFloorBrushes[i][k]);
+												floorsUsed[k]=true;
+											}
+										}
+										mapFile.add(newVator);
+										break;
+									default: // I'd like to not use this evenutally, all the trigger types ought to be handled
+										Window.println("WARNING: Unimplemented linedef trigger type "+linedefTriggerType+" for sector "+i+" tagged "+sectorTag[i],Window.VERBOSITY_WARNINGS);
+										for(int k=0;k<sectorFloorBrushes[i].length;k++) {
+											if(!floorsUsed[k]) {
+												world.addBrush(sectorFloorBrushes[i][k]);
+												floorsUsed[k]=true;
+											}
+											if(!cielingsUsed[k]) {
+												world.addBrush(sectorCielingBrushes[i][k]);
+												cielingsUsed[k]=true;
+											}
+										}
+										break;
+								}
+							}
 						}
 					}
-					switch(linedefTriggerType) {
-						default: // I'd like to not use this evenutally, all the trigger types ought to be handled
-							Window.println("WARNING: Unimplemented linedef trigger type "+linedefTriggerType+" for sector "+i+" tagged "+sectorTag[i],Window.VERBOSITY_WARNINGS);
-							for(int j=0;j<sectorFloorBrushes[i].length;j++) {
-								world.addBrush(sectorFloorBrushes[i][j]);
-								world.addBrush(sectorCielingBrushes[i][j]);
-							}
-							break;
-					}
+				}
+			}
+			for(int j=0;j<sectorFloorBrushes[i].length;j++) {
+				if(!cielingsUsed[j]) {
+					world.addBrush(sectorCielingBrushes[i][j]);
+				}
+				if(!floorsUsed[j]) {
+					world.addBrush(sectorFloorBrushes[i][j]);
 				}
 			}
 		}

@@ -573,13 +573,13 @@ public class MAP510Writer {
 				flagBase.setAttribute("goal_min", "-16 -16 0");
 				data.add(flagBase);
 			} else {
-				if(in.getAttribute("classname").equalsIgnoreCase("team_CTF_redspawn")) {
+				if(in.getAttribute("classname").equalsIgnoreCase("team_CTF_redspawn") || in.getAttribute("classname").equalsIgnoreCase("info_player_axis")) {
 					in.setAttribute("classname", "info_ctfspawn");
 					in.setAttribute("team_no", "2");
 					double[] origin=in.getOrigin();
 					in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+24));
 				} else {
-					if(in.getAttribute("classname").equalsIgnoreCase("team_CTF_bluespawn")) {
+					if(in.getAttribute("classname").equalsIgnoreCase("team_CTF_bluespawn") || in.getAttribute("classname").equalsIgnoreCase("info_player_allied")) {
 						in.setAttribute("classname", "info_ctfspawn");
 						in.setAttribute("team_no", "1");
 						double[] origin=in.getOrigin();
@@ -631,6 +631,26 @@ public class MAP510Writer {
 											} else {
 												if(in.getAttribute("classname").equalsIgnoreCase("trigger_ladder")) {
 													in.setAttribute("classname", "func_ladder");
+												} else {
+													if(in.getAttribute("classname").equalsIgnoreCase("worldspawn")) {
+														if(!in.getAttribute("suncolor").equals("")) {
+															Entity light_environment=new Entity("light_environment");
+															light_environment.setAttribute("_light", in.getAttribute("suncolor"));
+															light_environment.setAttribute("angles", in.getAttribute("sundirection"));
+															light_environment.setAttribute("_fade", in.getAttribute("sundiffuse"));
+															in.deleteAttribute("suncolor");
+															in.deleteAttribute("sundirection");
+															in.deleteAttribute("sundiffuse");
+															in.deleteAttribute("sundiffusecolor");
+															data.add(light_environment);
+														}
+													} else {
+														if(in.getAttribute("classname").equalsIgnoreCase("trigger_use")) {
+															in.setAttribute("classname", "func_button");
+															in.setAttribute("spawnflags", "1");
+															in.setAttribute("wait", "1");
+														}
+													}
 												}
 											}
 										}

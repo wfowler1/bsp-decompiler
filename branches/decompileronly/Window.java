@@ -111,18 +111,18 @@ public class Window extends JPanel implements ActionListener {
 	private static JLabel lbl_mapName;
 	private static JProgressBar totalProgressBar;
 	private static JButton btn_abort_all;
-	private static JLabel[] mapNames;
-	private static JProgressBar[] progressBar;
-	private static JButton[] btn_abort;
+	private static volatile JLabel[] mapNames;
+	private static volatile JProgressBar[] progressBar;
+	private static volatile JButton[] btn_abort;
 	
 	// Global variables, used internally
-	private static int numJobs;
+	private static volatile int numJobs;
 	private static volatile int nextJob=0;
-	private static File[] jobs=new File[0];
-	private static DoomMap[] doomJobs=new DoomMap[0];
-	private static int[] threadNum;
+	private static volatile File[] jobs=new File[0];
+	private static volatile DoomMap[] doomJobs=new DoomMap[0];
+	private static volatile int[] threadNum;
 	private static Runnable runMe;
-	private static Thread[] decompilerworkers=null;
+	private static volatile Thread[] decompilerworkers=null;
 	private static String lastUsedFolder;
 	
 	// Global variables, can be freely set by user
@@ -732,7 +732,7 @@ public class Window extends JPanel implements ActionListener {
 	}
 	
 	// This method actually starts a thread for the specified job
-	private void startDecompilerThread(int newThread, int jobNum) {
+	private synchronized void startDecompilerThread(int newThread, int jobNum) {
 		File job=jobs[jobNum];
 		// I'd really like to use Thread.join() or something here, but the stupid thread never dies.
 		// But if somethingFinished is true, then one of the threads is telling us it's finished anyway.
@@ -770,7 +770,7 @@ public class Window extends JPanel implements ActionListener {
 		progressBar[job-1].setString("Aborted!");
 	}
 	
-	protected static void print(String out, int priority) {
+	protected static synchronized void print(String out, int priority) {
 		if(priority <= verbosity) {
 			if(consolebox!=null) {
 				int start,end;
@@ -797,7 +797,7 @@ public class Window extends JPanel implements ActionListener {
 		print(LF,VERBOSITY_ALWAYS);
 	}
 	
-	protected static void clearConsole() {
+	protected static synchronized void clearConsole() {
 		if(consolebox!=null) {
 			consolebox.replaceRange("", 0, consolebox.getText().length());
 		}
@@ -825,7 +825,7 @@ public class Window extends JPanel implements ActionListener {
 		}
 	}
 	
-	protected static void updateTotalProgress() {
+	protected static synchronized void updateTotalProgress() {
 		if(totalProgressBar!=null) {
 			int max=progressBar.length*100;
 			int progress=0;
@@ -848,7 +848,7 @@ public class Window extends JPanel implements ActionListener {
 		}
 	}
 	
-	protected void addJob(File newJob, DoomMap newDoomJob) {
+	protected synchronized void addJob(File newJob, DoomMap newDoomJob) {
 		if(newJob!=null || newDoomJob!=null) {
 			File[] newList = new File[jobs.length+1];
 			DoomMap[] newDoomList = new DoomMap[jobs.length+1];
@@ -950,7 +950,7 @@ public class Window extends JPanel implements ActionListener {
 	}
 		
 	// This method queues up the next job and makes sure to run a thread
-	protected void startNextJob(boolean somethingFinished, int threadFinished) {
+	protected synchronized void startNextJob(boolean somethingFinished, int threadFinished) {
 		int myJob=nextJob++; // Increment this right away, then use myJob. For thread safety, in case two threads are using this method at once.
 		// This isn't a perfect, or ideal solution, and it's not 100% failproof. But it is much safer.
 		if(myJob==0) {
