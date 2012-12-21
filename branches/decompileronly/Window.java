@@ -39,9 +39,6 @@ public class Window extends JPanel implements ActionListener {
 	                                                 // calling gc(). Also, it is used to execute EXEs
 	                                                 // from within the program by calling .exec(path).
 
-	// Window container
-	protected static Window window; // Window
-
 	// Inside the window we have...
 	private static JMenuBar menuBar; // Menu bar
 	private static JFrame frame; // Frame
@@ -133,9 +130,8 @@ public class Window extends JPanel implements ActionListener {
 	private static String outputFolder="default";
 	private static double precision=0.01;
 
-	// main method
-	// Creates an Object of this class and launches the GUI. Entry point to the whole program.
-	public static void main(String[] args) {
+	// This constructor configures and displays the GUI
+	public Window() {
 		UIManager myUI=new UIManager();
 		try {
 			myUI.setLookAndFeel(myUI.getSystemLookAndFeelClassName());
@@ -144,15 +140,8 @@ public class Window extends JPanel implements ActionListener {
 		}
 		
 		frame = new JFrame("BSP Decompiler by 005");
-	
-		window = new Window(frame.getContentPane());
-		print("Got a bug to report? Want to request a feature?"+LF+"Create an issue report at"+LF+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry"+LF+LF, VERBOSITY_ALWAYS);
-		println("Currently supported formats: James Bond 007: Nightfire (PC), Quake 2, SiN,"+LF+"Soldier of Fortune", VERBOSITY_ALWAYS);
-		println("Partially supported formats: Quake 3, Doom/Doom 2 WADfiles, Source Engine,"+LF+"Star Wars: Jedi Outcast, Soldier of Fortune 2, Return to Castle Wolfenstein,"+LF+"Medal of Honor (Allied Assault, Spearhead, Breakthrough), Call of Duty,"+LF+"Call of Duty 2, Call of Duty 4, American McGee's Alice, Heavy Metal FAKK²", VERBOSITY_ALWAYS);
-	}
-
-	// This constructor configures and displays the GUI
-	public Window(Container pane) {
+		Container pane = frame.getContentPane();
+		
 		// Set up most of the window's properties, since we definitely have a window
 		// Good thing frame is a global object
 		// Set up frame's properties here
@@ -358,6 +347,10 @@ public class Window extends JPanel implements ActionListener {
 		console_pane.setBackground(new Color(255,255,255));
 		
 		pnl_jobs = new JPanel(new GridBagLayout());
+	
+		print("Got a bug to report? Want to request a feature?"+LF+"Create an issue report at"+LF+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry"+LF+LF, VERBOSITY_ALWAYS);
+		println("Currently supported formats: James Bond 007: Nightfire (PC), Quake 2, SiN,"+LF+"Soldier of Fortune", VERBOSITY_ALWAYS);
+		println("Partially supported formats: Quake 3, Doom/Doom 2 WADfiles, Source Engine,"+LF+"Star Wars: Jedi Outcast, Soldier of Fortune 2, Return to Castle Wolfenstein,"+LF+"Medal of Honor (Allied Assault, Spearhead, Breakthrough), Call of Duty,"+LF+"Call of Duty 2, Call of Duty 4, American McGee's Alice, Heavy Metal FAKK²", VERBOSITY_ALWAYS);
 		
 		// Set up the initial jobs pane right here
 		JLabel lbl_jobno = new JLabel("Job no.");

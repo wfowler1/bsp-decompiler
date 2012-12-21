@@ -53,6 +53,8 @@ public class Brush extends LumpObject {
 				texture=DataReader.readInt(data[8], data[9], data[10], data[11]);
 				break;
 			case BSP.TYPE_COD:
+			case BSP.TYPE_COD2:
+			case BSP.TYPE_COD4:
 				numSides=DataReader.readUShort(data[0], data[1]);
 				texture=DataReader.readUShort(data[2], data[3]);
 				break;

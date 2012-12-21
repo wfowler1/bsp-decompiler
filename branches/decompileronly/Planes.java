@@ -61,6 +61,8 @@ public class Planes {
 			case BSP.TYPE_QUAKE3:
 			case BSP.TYPE_FAKK:
 			case BSP.TYPE_COD:
+			case BSP.TYPE_COD2:
+			case BSP.TYPE_COD4:
 				structLength=16;
 				break;
 			default:

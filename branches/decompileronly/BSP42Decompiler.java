@@ -69,7 +69,7 @@ public class BSP42Decompiler {
 			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
 			int currentModel=mapFile.getEntity(i).getModelNumber();
 			
-			if(currentModel!=-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
+			if(currentModel>-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
 				double[] origin=mapFile.getEntity(i).getOrigin();
 				int firstLeaf=BSPObject.getModels().getElement(currentModel).getFirstLeaf();
 				int numLeaves=BSPObject.getModels().getElement(currentModel).getNumLeaves();

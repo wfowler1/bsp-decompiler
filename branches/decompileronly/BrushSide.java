@@ -22,6 +22,8 @@ public class BrushSide extends LumpObject {
 		switch(type) {
 			case BSP.TYPE_COD: // Call of Duty's format sucks. The first field is either a float or an int
 			                   // depending on whether or not it's one of the first six sides in a brush.
+			case BSP.TYPE_COD2:
+			case BSP.TYPE_COD4:
 				dist=DataReader.readFloat(data[0], data[1], data[2], data[3]);
 			case BSP.TYPE_QUAKE3:
 			case BSP.TYPE_FAKK:

@@ -61,6 +61,8 @@ public class Brushes {
 				structLength=12;
 				break;
 			case BSP.TYPE_COD:
+			case BSP.TYPE_COD2:
+			case BSP.TYPE_COD4:
 				structLength=4;
 				break;
 			default:

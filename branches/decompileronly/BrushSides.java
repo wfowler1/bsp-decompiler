@@ -46,6 +46,8 @@ public class BrushSides {
 				structLength=4;
 				break;
 			case BSP.TYPE_COD:
+			case BSP.TYPE_COD2:
+			case BSP.TYPE_COD4:
 			case BSP.TYPE_SIN:
 			case BSP.TYPE_NIGHTFIRE:
 			case BSP.TYPE_QUAKE3:

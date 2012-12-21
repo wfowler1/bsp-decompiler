@@ -60,6 +60,8 @@ public class Model extends LumpObject {
 				numBrushes=DataReader.readInt(data[36], data[37], data[38], data[39]);
 				break;
 			case BSP.TYPE_COD:
+			case BSP.TYPE_COD2:
+			case BSP.TYPE_COD4:
 				firstBrush=DataReader.readInt(data[40], data[41], data[42], data[43]);
 				numBrushes=DataReader.readInt(data[44], data[45], data[46], data[47]);
 				break;

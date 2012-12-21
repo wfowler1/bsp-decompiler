@@ -71,6 +71,11 @@ public class MAP510Writer {
 			}
 			
 			// Preprocessing entity corrections
+			for(int i=0;i<data.length();i++) {
+				if(data.getEntity(i).isBrushBased()) {
+					data.getEntity(i).deleteAttribute("model");
+				}
+			}
 			if(BSPVersion!=42) {
 				Entity waterEntity=null;
 				boolean newEnt=false;
@@ -354,7 +359,7 @@ public class MAP510Writer {
 										if(texture.equalsIgnoreCase("common/do_not_enter") || texture.equalsIgnoreCase("common/donotenter") || texture.equalsIgnoreCase("common/monsterclip")) {
 											texture="special/npcclip";
 										} else {
-											if(texture.equalsIgnoreCase("common/caulksky") || texture.equalsIgnoreCase("common/skyportal") || texture.substring(0,4).equalsIgnoreCase("sky/")) {
+											if(texture.equalsIgnoreCase("common/caulksky") || texture.equalsIgnoreCase("common/skyportal")) {
 												texture="special/sky";
 											} else {
 												if(texture.equalsIgnoreCase("common/hint")) {
@@ -398,6 +403,14 @@ public class MAP510Writer {
 																								} else {
 																									if(texture.equalsIgnoreCase("common/dirtclip")) {
 																										texture="special/clip";
+																									} else {
+																										try {
+																											if(texture.substring(0,4).equalsIgnoreCase("sky/")) {
+																												texture="special/sky";
+																											}
+																										} catch(java.lang.StringIndexOutOfBoundsException e) {
+																											; // I couldn't give a fuck
+																										}
 																									}
 																								}
 																							}
@@ -484,7 +497,6 @@ public class MAP510Writer {
 		if(in.isBrushBased()) {
 			double[] origin=in.getOrigin();
 			in.deleteAttribute("origin");
-			in.deleteAttribute("model");
 			if((origin[0]!=0 || origin[1]!=0 || origin[2]!=0) && !Window.noOriginBrushesIsSelected()) { // If this brush uses the "origin" attribute
 				MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
 				in.addBrush(newOriginBrush);
@@ -498,7 +510,6 @@ public class MAP510Writer {
 		if(in.isBrushBased()) {
 			double[] origin=in.getOrigin();
 			in.deleteAttribute("origin");
-			in.deleteAttribute("model");
 			if(in.getAttribute("classname").equalsIgnoreCase("func_rotating")) { // TODO: What entities require origin brushes in CoD?
 				if((origin[0]!=0 || origin[1]!=0 || origin[2]!=0) && !Window.noOriginBrushesIsSelected()) { // If this brush uses the "origin" attribute
 					MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
