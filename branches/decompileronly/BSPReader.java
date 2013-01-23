@@ -41,11 +41,13 @@ public class BSPReader {
 	// that is the BSP and its name minus the .BSP extension is assumed to be the folder.
 	// See comments below for clarification. Case does not matter on the extension, so it
 	// could be .BSP, .bsp, etc.
-	public BSPReader(String in) {
-		new BSPReader(new File(in));
+	
+	public BSPReader(String in, int readAs) {
+		new BSPReader(new File(in), readAs);
 	}
 	
-	public BSPReader(File in) {
+	public BSPReader(File in, int readAs) {
+		this.readAs=readAs;
 		BSPFile=in;
 		if(!BSPFile.exists()) {
 			Window.println("Unable to open BSP file; file not found.",Window.VERBOSITY_ALWAYS);
@@ -57,26 +59,15 @@ public class BSPReader {
 		}
 	}
 	
-	public BSPReader(String in, int readAs) {
-		this.readAs=readAs;
-		new BSPReader(new File(in));
-	}
-	
-	public BSPReader(File in, int readAs) {
-		this.readAs=readAs;
-		new BSPReader(in);
-	}
-	
 	// METHODS
 	
 	public void readBSP() {
 		try {
-			int version=getVersion();	
-			FileInputStream offsetReader;
+			version=getVersion();
 			byte[] read=new byte[4];
 			int offset;
 			int length;
-			offsetReader = new FileInputStream(BSPFile);
+			FileInputStream offsetReader = new FileInputStream(BSPFile);
 			if(wad) {
 				Window.println("WAD file found",Window.VERBOSITY_ALWAYS);
 				offsetReader.skip(4); // Skip the file header, putting the reader into the length and offset of the directory
@@ -245,7 +236,7 @@ public class BSPReader {
 				BSPObject = new BSP(BSPFile.getPath(), version);
 				switch(version) {
 					case BSP.TYPE_QUAKE:
-						Window.println("Quake 1/Half-life BSP found",Window.VERBOSITY_ALWAYS);
+						Window.println("Quake 1/Half-life BSP",Window.VERBOSITY_ALWAYS);
 						offsetReader.skip(4); // Skip the file header, putting the reader into the offset/length pairs
 						
 						// Lump 00
@@ -337,7 +328,7 @@ public class BSPReader {
 						BSPObject.setModels(readLump(offset, length));
 						break;
 					case BSP.TYPE_NIGHTFIRE:
-						Window.println("BSP v42 found (Nightfire)",Window.VERBOSITY_ALWAYS);
+						Window.println("BSP v42 (Nightfire)",Window.VERBOSITY_ALWAYS);
 						offsetReader.skip(4); // Skip the file header, putting the reader into the offset/length pairs
 						
 						// Lump 00
@@ -432,7 +423,7 @@ public class BSPReader {
 						break;
 					case BSP.TYPE_STEF2:
 					case BSP.TYPE_STEF2DEMO:
-						Window.println("Star Trek Elite Force 2 BSP Found",Window.VERBOSITY_ALWAYS);
+						Window.println("Star Trek Elite Force 2 BSP",Window.VERBOSITY_ALWAYS);
 						offsetReader.skip(12); // Skip the file header, putting the reader into the lump directory
 						
 						// Lump 00
@@ -482,7 +473,7 @@ public class BSPReader {
 						BSPObject.setEntities(readLump(offset, length));
 						break;
 					case BSP.TYPE_MOHAA:
-						Window.println("MOHAA BSP found (modified id Tech 3)",Window.VERBOSITY_ALWAYS);
+						Window.println("MOHAA BSP (modified id Tech 3)",Window.VERBOSITY_ALWAYS);
 						offsetReader.skip(12); // Skip the file header, putting the reader into the offset/length pairs
 						
 						// Lump 00
@@ -540,7 +531,7 @@ public class BSPReader {
 						BSPObject.setStaticProps(readLump(offset, length));*/
 						break;
 					case BSP.TYPE_FAKK:
-						Window.println("Heavy Metal FAKK² BSP Found",Window.VERBOSITY_ALWAYS);
+						Window.println("Heavy Metal FAKK² BSP",Window.VERBOSITY_ALWAYS);
 						offsetReader.skip(12); // Skip the file header, putting the reader into the lump directory
 						
 						// Lump 00
@@ -590,7 +581,7 @@ public class BSPReader {
 						BSPObject.setEntities(readLump(offset, length));
 						break;
 					case BSP.TYPE_SIN:
-						Window.println("SiN BSP found (Modified Quake 2)",Window.VERBOSITY_ALWAYS);
+						Window.println("SiN BSP (Modified Quake 2)",Window.VERBOSITY_ALWAYS);
 						offsetReader.skip(8); // Skip the file header, putting the reader into the offset/length pairs
 						
 						// Lump 00
@@ -691,7 +682,7 @@ public class BSPReader {
 						BSPObject.setBrushSides(readLump(offset, length));
 						break;
 					case BSP.TYPE_RAVEN:
-						Window.println("Raven Software BSP found (Modified id Tech 3)",Window.VERBOSITY_ALWAYS);
+						Window.println("Raven Software BSP (Modified id Tech 3)",Window.VERBOSITY_ALWAYS);
 						offsetReader.skip(8); // Skip the file header, putting the reader into the offset/length pairs
 						
 						// Lump 00
@@ -761,7 +752,7 @@ public class BSPReader {
 					case BSP.TYPE_SOURCE21:
 					case BSP.TYPE_SOURCE22:
 					case BSP.TYPE_SOURCE23:
-						Window.println("Source BSP found",Window.VERBOSITY_ALWAYS);
+						Window.println("Source BSP",Window.VERBOSITY_ALWAYS);
 						// Left 4 Dead 2, for some reason, made the order "version, offset, length" for lump header structure,
 						// rather than the usual "offset, length, version". I guess someone at Valve got bored.
 						boolean isL4D2=false;
@@ -1128,7 +1119,7 @@ public class BSPReader {
 						}
 						break;
 					case BSP.TYPE_QUAKE2:
-						Window.println("BSP v38 found (Quake 2)",Window.VERBOSITY_ALWAYS);
+						Window.println("BSP v38 (Quake 2)",Window.VERBOSITY_ALWAYS);
 						offsetReader.skip(8); // Skip the file header, putting the reader into the offset/length pairs
 						
 						// Lump 00
@@ -1238,7 +1229,7 @@ public class BSPReader {
 						BSPObject.setAreaPortals(readLump(offset, length));*/
 						break;
 					case BSP.TYPE_SOF: // Uses the same header as Q3.
-						Window.println("Soldier of Fortune BSP found (modified id Tech 2)",Window.VERBOSITY_ALWAYS);
+						Window.println("Soldier of Fortune BSP (modified id Tech 2)",Window.VERBOSITY_ALWAYS);
 						offsetReader.skip(8); // Skip the file header, putting the reader into the offset/length pairs
 										
 						// Lump 00
@@ -1339,7 +1330,7 @@ public class BSPReader {
 						BSPObject.setBrushSides(readLump(offset, length));
 						break;
 					case BSP.TYPE_QUAKE3:
-						Window.println("BSP v46 found (id Tech 3)",Window.VERBOSITY_ALWAYS);
+						Window.println("BSP v46 (id Tech 3)",Window.VERBOSITY_ALWAYS);
 						offsetReader.skip(8);
 						
 						// Lump 00
@@ -1403,7 +1394,7 @@ public class BSPReader {
 						BSPObject.setFaces(readLump(offset, length));
 						break;
 					case BSP.TYPE_COD:
-						Window.println("BSP v59 found (Call of Duty)",Window.VERBOSITY_ALWAYS);
+						Window.println("BSP v59 (Call of Duty)",Window.VERBOSITY_ALWAYS);
 						offsetReader.skip(8); // Skip the file header, putting the reader into the length/offset pairs
 						
 						// Lump 00
@@ -1455,7 +1446,7 @@ public class BSPReader {
 						BSPObject.setEntities(readLump(offset, length));
 						break;
 					case BSP.TYPE_COD2:
-						Window.println("Call of Duty 2 BSP found",Window.VERBOSITY_ALWAYS);
+						Window.println("Call of Duty 2 BSP",Window.VERBOSITY_ALWAYS);
 						offsetReader.skip(8); // Skip the file header, putting the reader into the length/offset pairs
 						
 						// Lump 00
@@ -1507,7 +1498,7 @@ public class BSPReader {
 						BSPObject.setEntities(readLump(offset, length));
 						break;
 					case BSP.TYPE_COD4:
-						Window.println("Call of Duty 4 BSP found",Window.VERBOSITY_ALWAYS);
+						Window.println("Call of Duty 4 BSP",Window.VERBOSITY_ALWAYS);
 						// CoD4 is somewhat unique, it calls for a different reader. However it's still doable.
 						offsetReader.skip(8); // IBSP version 22
 						offsetReader.read(read);
@@ -1584,6 +1575,9 @@ public class BSPReader {
 	}
 	
 	public int getVersion() throws java.io.IOException {
+		if(readAs!=-1) {
+			return readAs;
+		}
 		if(version==0) {
 			byte[] read=new byte[4];
 			FileInputStream versionNumberReader=new FileInputStream(BSPFile); // This filestream will be used to read version number only

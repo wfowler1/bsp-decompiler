@@ -56,6 +56,31 @@ public class Window extends JPanel implements ActionListener {
 	private static JCheckBoxMenuItem decompMOHRadiantItem;
 	private static JCheckBoxMenuItem decompRadiantItem;
 	private static JCheckBoxMenuItem decompDoomEditItem;
+	// "Open As..." submenu
+	private static JMenu openAsMenu;
+	private static ButtonGroup openAsGroup;
+	private static JRadioButtonMenuItem openAuto;
+	private static JRadioButtonMenuItem openAsQuake;
+	private static JRadioButtonMenuItem openAsNightfire;
+	private static JRadioButtonMenuItem openAsSTEF2;
+	private static JRadioButtonMenuItem openAsMoHAA;
+	private static JRadioButtonMenuItem openAsSTEF2Demo;
+	private static JRadioButtonMenuItem openAsFAKK;
+	private static JRadioButtonMenuItem openAsCoD2;
+	private static JRadioButtonMenuItem openAsSiN;
+	private static JRadioButtonMenuItem openAsRaven;
+	private static JRadioButtonMenuItem openAsCoD4;
+	private static JRadioButtonMenuItem openAsSource17;
+	private static JRadioButtonMenuItem openAsSource18;
+	private static JRadioButtonMenuItem openAsSource19;
+	private static JRadioButtonMenuItem openAsSource20;
+	private static JRadioButtonMenuItem openAsSource21;
+	private static JRadioButtonMenuItem openAsSource22;
+	private static JRadioButtonMenuItem openAsSource23;
+	private static JRadioButtonMenuItem openAsQuake2;
+	private static JRadioButtonMenuItem openAsSoF;
+	private static JRadioButtonMenuItem openAsQuake3;
+	private static JRadioButtonMenuItem openAsCoD;
 
 	// "Options" menu
 	private static JMenu optionsMenu;
@@ -167,6 +192,8 @@ public class Window extends JPanel implements ActionListener {
 		openItem = new JMenuItem("Open map...");
 		fileMenu.add(openItem);
 		openItem.addActionListener(this);
+		openAsMenu=new JMenu("Open as...");
+		fileMenu.add(openAsMenu);
 		fileMenu.addSeparator();
 		formatsMenu = new JMenu("Output format...");
 		fileMenu.add(formatsMenu);
@@ -174,6 +201,81 @@ public class Window extends JPanel implements ActionListener {
 		exitItem = new JMenuItem("Exit");
 		fileMenu.add(exitItem);
 		exitItem.addActionListener(this);
+		
+		// "Open As..." submenu
+		openAsGroup=new ButtonGroup();
+		openAuto=new JRadioButtonMenuItem("Auto");
+		openAuto.setSelected(true);
+		openAsGroup.add(openAuto);
+		openAsMenu.add(openAuto);
+		openAsMenu.addSeparator();
+		openAsQuake=new JRadioButtonMenuItem("Quake/GoldSrc");
+		openAsGroup.add(openAsQuake);
+		openAsMenu.add(openAsQuake);
+		openAsNightfire=new JRadioButtonMenuItem("007: NightFire");
+		openAsGroup.add(openAsNightfire);
+		openAsMenu.add(openAsNightfire);
+		openAsMenu.addSeparator();
+		openAsQuake2=new JRadioButtonMenuItem("Quake 2");
+		openAsGroup.add(openAsQuake2);
+		openAsMenu.add(openAsQuake2);
+		openAsSiN=new JRadioButtonMenuItem("SiN");
+		openAsGroup.add(openAsSiN);
+		openAsMenu.add(openAsSiN);
+		openAsSoF=new JRadioButtonMenuItem("Soldier of Fortune");
+		openAsGroup.add(openAsSoF);
+		openAsMenu.add(openAsSoF);
+		openAsMenu.addSeparator();
+		openAsQuake3=new JRadioButtonMenuItem("Quake 3/Return to Castle Wolfenstein/Star Trek Elite Force");
+		openAsGroup.add(openAsQuake3);
+		openAsMenu.add(openAsQuake3);
+		openAsFAKK=new JRadioButtonMenuItem("Heavy Metal FAKK²/American McGee's Alice");
+		openAsGroup.add(openAsFAKK);
+		openAsMenu.add(openAsFAKK);
+		openAsRaven=new JRadioButtonMenuItem("Star Wars Jedi Knight 2/3/Soldier of Fortune 2");
+		openAsGroup.add(openAsRaven);
+		openAsMenu.add(openAsRaven);
+		openAsMoHAA=new JRadioButtonMenuItem("Medal of Honor: Allied Assault/Spearhead/Breakthrough");
+		openAsGroup.add(openAsMoHAA);
+		openAsMenu.add(openAsMoHAA);
+		openAsSTEF2=new JRadioButtonMenuItem("Star Trek Elite Force 2");
+		openAsGroup.add(openAsSTEF2);
+		openAsMenu.add(openAsSTEF2);
+		openAsSTEF2Demo=new JRadioButtonMenuItem("Star Trek Elite Force 2 Demo");
+		openAsGroup.add(openAsSTEF2Demo);
+		openAsMenu.add(openAsSTEF2Demo);
+		openAsMenu.addSeparator();
+		openAsCoD=new JRadioButtonMenuItem("Call of Duty");
+		openAsGroup.add(openAsCoD);
+		openAsMenu.add(openAsCoD);
+		openAsCoD2=new JRadioButtonMenuItem("Call of Duty 2");
+		openAsGroup.add(openAsCoD2);
+		openAsMenu.add(openAsCoD2);
+		openAsCoD4=new JRadioButtonMenuItem("Call of Duty 4");
+		openAsGroup.add(openAsCoD4);
+		openAsMenu.add(openAsCoD4);
+		openAsMenu.addSeparator();
+		openAsSource17=new JRadioButtonMenuItem("Source Engine v17");
+		openAsGroup.add(openAsSource17);
+		openAsMenu.add(openAsSource17);
+		openAsSource18=new JRadioButtonMenuItem("Source Engine v18");
+		openAsGroup.add(openAsSource18);
+		openAsMenu.add(openAsSource18);
+		openAsSource19=new JRadioButtonMenuItem("Source Engine v19");
+		openAsGroup.add(openAsSource19);
+		openAsMenu.add(openAsSource19);
+		openAsSource20=new JRadioButtonMenuItem("Source Engine v20");
+		openAsGroup.add(openAsSource20);
+		openAsMenu.add(openAsSource20);
+		openAsSource21=new JRadioButtonMenuItem("Source Engine v21");
+		openAsGroup.add(openAsSource21);
+		openAsMenu.add(openAsSource21);
+		openAsSource22=new JRadioButtonMenuItem("Source Engine v22");
+		openAsGroup.add(openAsSource22);
+		openAsMenu.add(openAsSource22);
+		openAsSource23=new JRadioButtonMenuItem("Source Engine v23");
+		openAsGroup.add(openAsSource23);
+		openAsMenu.add(openAsSource23);
 		
 		decompAutoItem = new JCheckBoxMenuItem("Auto");
 		formatsMenu.add(decompAutoItem);
@@ -732,7 +834,77 @@ public class Window extends JPanel implements ActionListener {
 		if(doomJobs[jobNum]!=null) {
 			runMe=new DecompilerThread(doomJobs[jobNum], jobNum, newThread);
 		} else {
-			runMe=new DecompilerThread(job, jobNum, newThread);
+			if(openAuto.isSelected()) {
+				runMe=new DecompilerThread(job, jobNum, newThread);
+			} else {
+				if(openAsQuake.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_QUAKE);
+				}
+				if(openAsNightfire.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_NIGHTFIRE);
+				}
+				if(openAsSTEF2.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_STEF2);
+				}
+				if(openAsMoHAA.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_MOHAA);
+				}
+				if(openAsSTEF2Demo.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_STEF2DEMO);
+				}
+				if(openAsFAKK.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_FAKK);
+				}
+				if(openAsCoD2.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_COD2);
+				}
+				if(openAsSiN.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_SIN);
+				}
+				if(openAsRaven.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_RAVEN);
+				}
+				if(openAsCoD4.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_COD4);
+				}
+				if(openAsSource17.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_SOURCE17);
+				}
+				if(openAsSource18.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_SOURCE18);
+				}
+				if(openAsSource19.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_SOURCE19);
+				}
+				if(openAsSource20.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_SOURCE20);
+				}
+				if(openAsSource21.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_SOURCE21);
+				}
+				if(openAsSource22.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_SOURCE22);
+				}
+				if(openAsSource23.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_SOURCE23);
+				}
+				if(openAsQuake2.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_QUAKE2);
+				}
+				if(openAsSoF.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_SOF);
+				}
+				if(openAsQuake3.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_QUAKE3);
+				}
+				if(openAsCoD.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_COD);
+				}
+				if(runMe==null) {
+					println("ERROR: Null decompiler thread! Probably because of some issue with the menu. Defaulting to Auto.",VERBOSITY_ALWAYS);
+					runMe=new DecompilerThread(job, jobNum, newThread);
+				}
+			}
 		}
 		decompilerworkers[newThread] = new Thread(runMe);
 		decompilerworkers[newThread].setName("Decompiler "+newThread+" job "+(jobNum+1));

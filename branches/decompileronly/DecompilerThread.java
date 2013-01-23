@@ -12,12 +12,21 @@ public class DecompilerThread implements Runnable {
 	private DoomMap doomMap;
 	private int jobnum;
 	private int threadnum;
+	private int openAs=-1;
 	
 	public DecompilerThread(File BSPFile, int jobnum, int threadnum) {
 		// Set up global variables
 		this.BSPFile=BSPFile;
 		this.jobnum=jobnum;
 		this.threadnum=threadnum;
+	}
+	
+	public DecompilerThread(File BSPFile, int jobnum, int threadnum, int openAs) {
+		// Set up global variables
+		this.BSPFile=BSPFile;
+		this.jobnum=jobnum;
+		this.threadnum=threadnum;
+		this.openAs=openAs;
 	}
 	
 	public DecompilerThread(File BSPFile) {
@@ -42,7 +51,7 @@ public class DecompilerThread implements Runnable {
 			} else {
 				Window.println("Opening file "+BSPFile.getAbsolutePath(),Window.VERBOSITY_ALWAYS);
 				Window.setProgress(jobnum, 0, 1, "Reading...");
-				BSPReader reader = new BSPReader(BSPFile);
+				BSPReader reader = new BSPReader(BSPFile, openAs);
 				reader.readBSP();
 				if(!reader.isWAD()) {
 					try {
@@ -94,14 +103,26 @@ public class DecompilerThread implements Runnable {
 			}
 			Window.setProgress(jobnum, 1, 1, "Done!");
 			Window.setProgressColor(jobnum, new Color(64, 192, 64));
-		} catch (java.io.IOException e) {
-			Window.println(""+(char)0x0D+(char)0x0A+"Exception caught in job "+(jobnum+1)+": "+e+(char)0x0D+(char)0x0A+"Please let me know on the issue tracker!\nhttp://code.google.com/p/jbn-bsp-lump-tools/issues/entry",Window.VERBOSITY_ALWAYS);
+		} catch (java.lang.Exception e) {
+			if(openAs!=-1) {
+				Window.println(""+(char)0x0D+(char)0x0A+"Exception caught in job "+(jobnum+1)+": "+e+(char)0x0D+(char)0x0A+"Are you using \"Open as...\" with the wrong game?"+(char)0x0D+(char)0x0A+"If not, please let me know on the issue tracker!"+(char)0x0D+(char)0x0A+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry",Window.VERBOSITY_ALWAYS);
+			} else {
+				Window.println(""+(char)0x0D+(char)0x0A+"Exception caught in job "+(jobnum+1)+": "+e+(char)0x0D+(char)0x0A+"Please let me know on the issue tracker!"+(char)0x0D+(char)0x0A+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry",Window.VERBOSITY_ALWAYS);
+			}
 			String stackTrace="";
 			StackTraceElement[] trace=e.getStackTrace();
 			for(int i=0;i<trace.length;i++) {
 				stackTrace+=trace.toString()+Window.LF;
 			}
 			Window.println(e.getMessage()+Window.LF+stackTrace,Window.VERBOSITY_WARNINGS);
+			Window.setProgress(jobnum, 1, 1, "ERROR! See log!");
+			Window.setProgressColor(jobnum, new Color(255, 128, 128));
+		} catch(java.lang.OutOfMemoryError e) {
+			if(openAs!=-1) {
+				Window.println("VM ran out of memory on job "+(jobnum+1)+". Are you using \"Open as...\" with the wrong game?"+(char)0x0D+(char)0x0A+"If not, please let me know on the issue tracker!"+(char)0x0D+(char)0x0A+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry",Window.VERBOSITY_ALWAYS);
+			} else {
+				Window.println("VM ran out of memory on job "+(jobnum+1)+"."+(char)0x0D+(char)0x0A+"Please let me know on the issue tracker!"+(char)0x0D+(char)0x0A+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry",Window.VERBOSITY_ALWAYS);
+			}
 			Window.setProgress(jobnum, 1, 1, "ERROR! See log!");
 			Window.setProgressColor(jobnum, new Color(255, 128, 128));
 		}
