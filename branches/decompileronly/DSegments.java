@@ -1,6 +1,6 @@
 // DSegments class
 
-// Contains all information for subsectors in a Doom map
+// Maintains an array of DSegments.
 
 import java.io.FileInputStream;
 import java.io.File;
@@ -10,71 +10,53 @@ public class DSegments {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
-	private int numElems=0;
 	private int length;
 	private DSegment[] elements;
-
-	public static int structureLength=12;
+	
+	private int structLength=12;
 
 	// CONSTRUCTORS
 	
-	public DSegments(String in) {
-		data=new File(in);
-		length=(int)data.length();
-		try {
-			numElems=getNumElements();
-			elements=new DSegment[numElems];
-			populateList();
-		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+data.getName()+" not found!",0);
-		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+data.getName()+" could not be read, ensure the file is not open in another program",0);
-		}
+	// Accepts a filepath as a String
+	public DSegments(String in) throws java.lang.InterruptedException {
+		new DSegments(new File(in));
 	}
 	
 	// This one accepts the input file path as a File
-	public DSegments(File in) {
+	public DSegments(File in) throws java.lang.InterruptedException {
 		data=in;
-		length=(int)data.length();
 		try {
-			numElems=getNumElements();
-			elements=new DSegment[numElems];
-			populateList();
+			FileInputStream fileReader=new FileInputStream(data);
+			byte[] temp=new byte[(int)data.length()];
+			fileReader.read(temp);
+			new DSegments(temp);
+			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+data.getName()+" not found!",0);
+			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
 		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+data.getName()+" could not be read, ensure the file is not open in another program",0);
+			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",Window.VERBOSITY_ALWAYS);
 		}
 	}
 	
-	public DSegments(byte[] in) {
+	// Takes a byte array, as if read from a FileInputStream
+	public DSegments(byte[] in) throws java.lang.InterruptedException {
 		int offset=0;
 		length=in.length;
-		numElems=in.length/structureLength;
-		elements=new DSegment[numElems];
-		for(int i=0;i<numElems;i++) {
-			byte[] bytes=new byte[structureLength];
-			for(int j=0;j<structureLength;j++) {
+		elements=new DSegment[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Segment array");
+			}
+			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
 			elements[i]=new DSegment(bytes);
-			offset+=structureLength;
+			offset+=structLength;
 		}
 	}
 	
 	// METHODS
-	
-	// -populateList()
-	// Uses the instance data to populate the array of DSegment
-	private void populateList() throws java.io.FileNotFoundException, java.io.IOException {
-		FileInputStream reader=new FileInputStream(data);
-		for(int i=0;i<numElems;i++) {
-			byte[] datain=new byte[structureLength];
-			reader.read(datain);
-			elements[i]=new DSegment(datain);
-		}
-		reader.close();
-	}
 	
 	// ACCESSORS/MUTATORS
 	
@@ -83,19 +65,20 @@ public class DSegments {
 		return length;
 	}
 	
-	public int getNumElements() {
-		if(numElems==0) {
-			return length/structureLength;
+	// Returns the number of elements.
+	public int length() {
+		if(elements.length==0) {
+			return length/structLength;
 		} else {
-			return numElems;
+			return elements.length;
 		}
 	}
 	
-	public DSegment getSegment(int i) {
+	public DSegment getElement(int i) {
 		return elements[i];
 	}
 	
-	public DSegment[] getSegments() {
+	public DSegment[] getElements() {
 		return elements;
 	}
 }

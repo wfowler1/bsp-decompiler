@@ -18,12 +18,12 @@ public class BrushSides {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public BrushSides(String in, int type) {
+	public BrushSides(String in, int type) throws java.lang.InterruptedException {
 		new BrushSides(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public BrushSides(File in, int type) {
+	public BrushSides(File in, int type) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
@@ -39,7 +39,7 @@ public class BrushSides {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public BrushSides(byte[] in, int type) {
+	public BrushSides(byte[] in, int type) throws java.lang.InterruptedException {
 		switch(type) {
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_SOF:
@@ -75,6 +75,9 @@ public class BrushSides {
 		elements=new BrushSide[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Brush Side array");
+			}
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}

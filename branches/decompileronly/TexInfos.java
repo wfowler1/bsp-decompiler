@@ -18,12 +18,12 @@ public class TexInfos {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public TexInfos(String in, int type) {
+	public TexInfos(String in, int type) throws java.lang.InterruptedException {
 		new TexInfos(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public TexInfos(File in, int type) {
+	public TexInfos(File in, int type) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
@@ -39,7 +39,7 @@ public class TexInfos {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public TexInfos(byte[] in, int type) {
+	public TexInfos(byte[] in, int type) throws java.lang.InterruptedException {
 		switch(type) {
 			case BSP.TYPE_NIGHTFIRE:
 				structLength=32;
@@ -64,6 +64,9 @@ public class TexInfos {
 		elements=new TexInfo[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating TexInfo array");
+			}
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}

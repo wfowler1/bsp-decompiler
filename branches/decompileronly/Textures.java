@@ -18,12 +18,12 @@ public class Textures {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public Textures(String in, int type) {
+	public Textures(String in, int type) throws java.lang.InterruptedException {
 		new Textures(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public Textures(File in, int type) {
+	public Textures(File in, int type) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
@@ -39,7 +39,7 @@ public class Textures {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public Textures(byte[] in, int type) {
+	public Textures(byte[] in, int type) throws java.lang.InterruptedException {
 		int numElements=-1; // For Quake and Source, which use nonconstant struct lengths
 		int[] offsets=new int[0]; // For Quake, which stores offsets to each texture definition structure, which IS a constant length
 		switch(type) {
@@ -91,22 +91,28 @@ public class Textures {
 			default:
 				structLength=0; // This will cause the shit to hit the fan.
 		}
-		if(numElements==-1) {
+		if(numElements==-1) { // If not determined yet (most formats)
 			int offset=0;
 			length=in.length;
 			elements=new Texture[in.length/structLength];
 			byte[] bytes=new byte[structLength];
 			for(int i=0;i<elements.length;i++) {
+				if(Thread.currentThread().interrupted()) {
+					throw new java.lang.InterruptedException("while populating Texture array");
+				}
 				for(int j=0;j<structLength;j++) {
 					bytes[j]=in[offset+j];
 				}
 				elements[i]=new Texture(bytes, type);
 				offset+=structLength;
 			}
-		} else {
+		} else { // This is Quake or Source
 			elements=new Texture[numElements];
 			if(offsets.length!=0) { // Quake/GoldSrc
 				for(int i=0;i<numElements;i++) {
+					if(Thread.currentThread().interrupted()) {
+						throw new java.lang.InterruptedException("while populating Texture array");
+					}
 					int offset=offsets[i];
 					byte[] bytes=new byte[structLength];
 					for(int j=0;j<structLength;j++) {
@@ -121,6 +127,9 @@ public class Textures {
 				length=in.length;
 				byte[] bytes=new byte[0];
 				for(int i=0;i<in.length;i++) {
+					if(Thread.currentThread().interrupted()) {
+						throw new java.lang.InterruptedException("while populating Texture array");
+					}
 					if(in[i]==(byte)0x00) { // They are null-terminated strings, of non-constant length (not padded)
 						elements[current]=new Texture(bytes, type);
 						bytes=new byte[0];
@@ -162,7 +171,7 @@ public class Textures {
 		}
 	}
 	
-	public String getTextureAtOffset(int target) {
+	public String getTextureAtOffset(int target) { // Only Source will use this
 		String temp="";
 		int offset=0;
 		for(int i=0;i<elements.length;i++) {
@@ -176,7 +185,7 @@ public class Textures {
 		return null; // Perhaps this will throw an exception down the line? :trollface:
 	}
 	
-	public int getOffsetOf(String inTexture) {
+	public int getOffsetOf(String inTexture) { // Only Source will use this, probably to find a TOOLS/ texture
 		int offset=0;
 		for(int i=0;i<elements.length;i++) {
 			if(!elements[i].getName().equalsIgnoreCase(inTexture)) {

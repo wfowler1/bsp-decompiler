@@ -54,7 +54,7 @@ public class MAP510Writer {
 	// Handling file I/O with Strings is generally a bad idea. If you have maybe a couple hundred
 	// Strings to write then it'll probably be okay, but when you have on the order of 10,000 Strings
 	// it gets VERY slow, even if you concatenate them all before writing.
-	public void write() throws java.io.IOException {
+	public void write() throws java.io.IOException, java.lang.InterruptedException {
 		if(!path.substring(path.length()-4).equalsIgnoreCase(".map")) {
 			mapFile=new File(path+".map");
 		}
@@ -72,20 +72,20 @@ public class MAP510Writer {
 			
 			// Preprocessing entity corrections
 			for(int i=0;i<data.length();i++) {
-				if(data.getEntity(i).isBrushBased()) {
-					data.getEntity(i).deleteAttribute("model");
+				if(data.getElement(i).isBrushBased()) {
+					data.getElement(i).deleteAttribute("model");
 				}
 			}
 			if(BSPVersion!=42) {
 				Entity waterEntity=null;
 				boolean newEnt=false;
 				for(int i=0;i<data.length();i++) {
-					if(data.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_water")) {
-						waterEntity=data.getEntity(i);
+					if(data.getElement(i).getAttribute("classname").equalsIgnoreCase("func_water")) {
+						waterEntity=data.getElement(i);
 						break;
 					} else {
 						try {
-							if(data.getEntity(i).getAttribute("classname").substring(0,8).equalsIgnoreCase("team_CTF") || data.getEntity(i).getAttribute("classname").equalsIgnoreCase("ctf_flag_hardcorps")) {
+							if(data.getElement(i).getAttribute("classname").substring(0,8).equalsIgnoreCase("team_CTF") || data.getElement(i).getAttribute("classname").equalsIgnoreCase("ctf_flag_hardcorps")) {
 								ctfEnts=true;
 							}
 						} catch(java.lang.StringIndexOutOfBoundsException e) {
@@ -102,10 +102,10 @@ public class MAP510Writer {
 					waterEntity.setAttribute("skin", "-3");
 					waterEntity.setAttribute("WaveHeight", "3.2");
 				} // TODO: Y U NO WORK?!?!?
-				for(int i=0;i<data.getEntity(0).getNumBrushes();i++) {
-					if(data.getEntity(0).getBrushes()[i].isWaterBrush()) {
-						waterEntity.addBrush(data.getEntity(0).getBrushes()[i]);
-						data.getEntity(0).deleteBrush(i);
+				for(int i=0;i<data.getElement(0).getNumBrushes();i++) {
+					if(data.getElement(0).getBrushes()[i].isWaterBrush()) {
+						waterEntity.addBrush(data.getElement(0).getBrushes()[i]);
+						data.getElement(0).deleteBrush(i);
 					}
 				}
 				if(newEnt && waterEntity.getBrushes().length!=0) {
@@ -117,14 +117,17 @@ public class MAP510Writer {
 			byte[][] entityBytes=new byte[data.length()][];
 			int totalLength=0;
 			for(currentEntity=0;currentEntity<data.length();currentEntity++) {
+				if(Thread.currentThread().interrupted()) {
+					throw new java.lang.InterruptedException("while writing GearCraft map.");
+				}
 				try {
-					entityBytes[currentEntity]=entityToByteArray(data.getEntity(currentEntity), currentEntity);
+					entityBytes[currentEntity]=entityToByteArray(data.getElement(currentEntity), currentEntity);
 				} catch(java.lang.ArrayIndexOutOfBoundsException e) { // This happens when entities are added after the array is made
 					byte[][] newList=new byte[data.length()][]; // Create a new array with the new length
 					for(int j=0;j<entityBytes.length;j++) {
 						newList[j]=entityBytes[j];
 					}
-					newList[currentEntity]=entityToByteArray(data.getEntity(currentEntity), currentEntity);
+					newList[currentEntity]=entityToByteArray(data.getElement(currentEntity), currentEntity);
 					entityBytes=newList;
 				}
 				totalLength+=entityBytes[currentEntity].length;
@@ -155,7 +158,7 @@ public class MAP510Writer {
 	// from a hard drive is another costly operation, best done by handling
 	// massive amounts of data in one go, rather than tiny amounts of data thousands
 	// of times.
-	private byte[] entityToByteArray(Entity in, int num) {
+	private byte[] entityToByteArray(Entity in, int num) throws java.lang.InterruptedException {
 		byte[] out;
 		double[] origin=in.getOrigin();
 		// Correct some attributes of entities
@@ -200,6 +203,9 @@ public class MAP510Writer {
 		out=new byte[len];
 		int offset=0;
 		for(int i=0;i<in.getAttributes().length;i++) { // For each attribute
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while writing GearCraft map.");
+			}
 			if(in.getAttributes()[i].equals("{")) {
 				in.getAttributes()[i]="{ // Entity "+num;
 			} else {
@@ -207,6 +213,9 @@ public class MAP510Writer {
 					int brushArraySize=0;
 					byte[][] brushes=new byte[in.getBrushes().length][];
 					for(int j=0;j<in.getBrushes().length;j++) { // For each brush in the entity
+						if(Thread.currentThread().interrupted()) {
+							throw new java.lang.InterruptedException("while writing GearCraft map.");
+						}
 						// models with origin brushes need to be offset into their in-use position
 						in.getBrush(j).shift(new Vector3D(origin));
 						brushes[j]=brushToByteArray(in.getBrush(j), j);

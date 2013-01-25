@@ -18,12 +18,12 @@ public class DLinedefs {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public DLinedefs(String in, int type) {
+	public DLinedefs(String in, int type) throws java.lang.InterruptedException {
 		new DLinedefs(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public DLinedefs(File in, int type) {
+	public DLinedefs(File in, int type) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
@@ -39,7 +39,7 @@ public class DLinedefs {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public DLinedefs(byte[] in, int type) {
+	public DLinedefs(byte[] in, int type) throws java.lang.InterruptedException {
 		switch(type) {
 			case DoomMap.TYPE_DOOM:
 				structLength=14;
@@ -55,6 +55,9 @@ public class DLinedefs {
 		elements=new DLinedef[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Linedef array");
+			}
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}

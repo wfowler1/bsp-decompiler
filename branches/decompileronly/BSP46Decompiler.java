@@ -40,7 +40,7 @@ public class BSP46Decompiler {
 	
 	// +decompile()
 	// Attempts to convert the BSP file back into a .MAP file.
-	public void decompile() throws java.io.IOException {
+	public void decompile() throws java.io.IOException, java.lang.InterruptedException {
 		Date begin=new Date();
 		// Begin by copying all the entities into another Lump00 object. This is
 		// necessary because if I just modified the current entity list then it
@@ -50,18 +50,28 @@ public class BSP46Decompiler {
 		// I need to go through each entity and see if it's brush-based.
 		// Worldspawn is brush-based as well as any entity with model *#.
 		for(int i=0;i<BSPObject.getEntities().length();i++) { // For each entity
-			Window.println("Entity "+i+": "+mapFile.getEntity(i).getAttribute("classname"),Window.VERBOSITY_ENTITIES);
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while processing entity "+i+".");
+			}
+			Window.println("Entity "+i+": "+mapFile.getElement(i).getAttribute("classname"),Window.VERBOSITY_ENTITIES);
 			numBrshs=0; // Reset the brush count for each entity
 			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
-			int currentModel=mapFile.getEntity(i).getModelNumber();
+			int currentModel=mapFile.getElement(i).getModelNumber();
 			if(currentModel>-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
-				double[] origin=mapFile.getEntity(i).getOrigin();
+				double[] origin=mapFile.getElement(i).getOrigin();
 				int firstBrush=BSPObject.getModels().getElement(currentModel).getFirstBrush();
 				int numBrushes=BSPObject.getModels().getElement(currentModel).getNumBrushes();
 				numBrshs=0;
 				for(int j=0;j<numBrushes;j++) { // For each brush
-					Window.print("Brush "+(j+firstBrush),Window.VERBOSITY_BRUSHCREATION);
-					decompileBrush(BSPObject.getBrushes().getElement(j+firstBrush), i); // Decompile the brush
+					if(Thread.currentThread().interrupted()) {
+						throw new java.lang.InterruptedException("while processing entity "+i+" brush "+j+".");
+					}
+					Window.print("Brush "+j,Window.VERBOSITY_BRUSHCREATION);
+					try {
+						decompileBrush(BSPObject.getBrushes().getElement(j+firstBrush), i); // Decompile the brush
+					} catch(java.lang.InterruptedException e) {
+						throw new java.lang.InterruptedException("while processing entity "+i+" brush "+j+" "+e.toString().substring(32));
+					}
 					numBrshs++;
 					numTotalItems++;
 					Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");
@@ -84,8 +94,8 @@ public class BSP46Decompiler {
 	
 	// -decompileBrush(Brush, int)
 	// Decompiles the Brush and adds it to entitiy #currentEntity as MAPBrush classes.
-	private void decompileBrush(Brush brush, int currentEntity) {
-		double[] origin=mapFile.getEntity(currentEntity).getOrigin();
+	private void decompileBrush(Brush brush, int currentEntity) throws java.lang.InterruptedException {
+		double[] origin=mapFile.getElement(currentEntity).getOrigin();
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
 		if(firstSide<0) {
@@ -112,6 +122,9 @@ public class BSP46Decompiler {
 		}
 		boolean isVisBrush=false;
 		for(int i=0;i<numSides;i++) { // For each side of the brush
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("side "+i+".");
+			}
 			BrushSide currentSide=BSPObject.getBrushSides().getElement(firstSide+i);
 			int currentFaceIndex=currentSide.getFace();
 			Plane currentPlane;
@@ -324,9 +337,9 @@ public class BSP46Decompiler {
 		if(!isVisBrush) {
 			if(Window.brushesToWorldIsSelected()) {
 				mapBrush.setWater(false);
-				mapFile.getEntity(0).addBrush(mapBrush);
+				mapFile.getElement(0).addBrush(mapBrush);
 			} else {
-				mapFile.getEntity(currentEntity).addBrush(mapBrush);
+				mapFile.getElement(currentEntity).addBrush(mapBrush);
 			}
 		}
 	}

@@ -59,7 +59,7 @@ public class DoomMap {
 			Window.println("Linedefs not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Sidedefs lump: "+sidedefs.getLength()+" bytes, "+sidedefs.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Sidedefs lump: "+sidedefs.getLength()+" bytes, "+sidedefs.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Sidedefs not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -69,22 +69,22 @@ public class DoomMap {
 			Window.println("Vertices not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Segments lump: "+segs.getLength()+" bytes, "+segs.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Segments lump: "+segs.getLength()+" bytes, "+segs.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Segments not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Subsectors lump: "+subsectors.getLength()+" bytes, "+subsectors.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Subsectors lump: "+subsectors.getLength()+" bytes, "+subsectors.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Subsectors not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Nodes lump: "+nodes.getLength()+" bytes, "+nodes.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Nodes lump: "+nodes.getLength()+" bytes, "+nodes.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Nodes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Sectors lump: "+sectors.getLength()+" bytes, "+sectors.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Sectors lump: "+sectors.getLength()+" bytes, "+sectors.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 			Window.println("Sectors not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
@@ -122,7 +122,7 @@ public class DoomMap {
 		return newFile.getName().substring(0, newFile.getName().length()-4);
 	}
 	
-	public void setThings(byte[] data, int type) {
+	public void setThings(byte[] data, int type) throws java.lang.InterruptedException {
 		if(version==0) {
 			version=type;
 		}
@@ -133,7 +133,7 @@ public class DoomMap {
 		return things;
 	}
 	
-	public void setLinedefs(byte[] data, int type) {
+	public void setLinedefs(byte[] data, int type) throws java.lang.InterruptedException {
 		if(version==0) {
 			version=type;
 		}
@@ -144,7 +144,7 @@ public class DoomMap {
 		return linedefs;
 	}
 	
-	public void setSidedefs(byte[] data) {
+	public void setSidedefs(byte[] data) throws java.lang.InterruptedException {
 		sidedefs=new DSidedefs(data);
 	}
 	
@@ -152,7 +152,7 @@ public class DoomMap {
 		return sidedefs;
 	}
 	
-	public void setVertices(byte[] data) {
+	public void setVertices(byte[] data) throws java.lang.InterruptedException {
 		vertices=new Vertices(data, TYPE_DOOM);
 	}
 	
@@ -160,7 +160,7 @@ public class DoomMap {
 		return vertices;
 	}
 	
-	public void setSegments(byte[] data) {
+	public void setSegments(byte[] data) throws java.lang.InterruptedException {
 		segs=new DSegments(data);
 	}
 	
@@ -168,7 +168,7 @@ public class DoomMap {
 		return segs;
 	}
 	
-	public void setSubSectors(byte[] data) {
+	public void setSubSectors(byte[] data) throws java.lang.InterruptedException {
 		subsectors=new DSubSectors(data);
 	}
 	
@@ -176,7 +176,7 @@ public class DoomMap {
 		return subsectors;
 	}
 	
-	public void setNodes(byte[] data) {
+	public void setNodes(byte[] data) throws java.lang.InterruptedException {
 		nodes=new DNodes(data);
 	}
 	
@@ -184,7 +184,7 @@ public class DoomMap {
 		return nodes;
 	}
 	
-	public void setSectors(byte[] data) {
+	public void setSectors(byte[] data) throws java.lang.InterruptedException {
 		sectors=new DSectors(data);
 	}
 	

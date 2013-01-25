@@ -18,12 +18,12 @@ public class Brushes {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public Brushes(String in, int type) {
+	public Brushes(String in, int type) throws java.lang.InterruptedException {
 		new Brushes(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public Brushes(File in, int type) {
+	public Brushes(File in, int type) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
@@ -39,7 +39,7 @@ public class Brushes {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public Brushes(byte[] in, int type) {
+	public Brushes(byte[] in, int type) throws java.lang.InterruptedException {
 		switch(type) {
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_SIN:
@@ -73,6 +73,9 @@ public class Brushes {
 		elements=new Brush[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Brush array");
+			}
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}

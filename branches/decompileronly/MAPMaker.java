@@ -8,7 +8,7 @@ public class MAPMaker {
 	// CONSTRUCTORS
 	
 	// METHODS
-	public static void outputMaps(Entities data, String mapname, String mapfolder, int version) throws java.io.IOException {
+	public static void outputMaps(Entities data, String mapname, String mapfolder, int version) throws java.io.IOException, java.lang.InterruptedException {
 		if(Window.toAuto()) { // If "auto" is selected, output to one format appropriate for the source game
 			switch(version) {
 				// Gearcraft

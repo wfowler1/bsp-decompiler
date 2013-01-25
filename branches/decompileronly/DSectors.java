@@ -1,6 +1,6 @@
 // DSectors class
 
-// Contains all information for sectors in a Doom map
+// Maintains an array of DSectors.
 
 import java.io.FileInputStream;
 import java.io.File;
@@ -10,71 +10,53 @@ public class DSectors {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	private File data;
-	private int numElems=0;
 	private int length;
 	private DSector[] elements;
-
-	public static int structureLength=26;
+	
+	private int structLength=26;
 
 	// CONSTRUCTORS
 	
-	public DSectors(String in) {
-		data=new File(in);
-		length=(int)data.length();
-		try {
-			numElems=getNumElements();
-			elements=new DSector[numElems];
-			populateList();
-		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+data.getName()+" not found!",0);
-		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+data.getName()+" could not be read, ensure the file is not open in another program",0);
-		}
+	// Accepts a filepath as a String
+	public DSectors(String in) throws java.lang.InterruptedException {
+		new DSectors(new File(in));
 	}
 	
 	// This one accepts the input file path as a File
-	public DSectors(File in) {
+	public DSectors(File in) throws java.lang.InterruptedException {
 		data=in;
-		length=(int)data.length();
 		try {
-			numElems=getNumElements();
-			elements=new DSector[numElems];
-			populateList();
+			FileInputStream fileReader=new FileInputStream(data);
+			byte[] temp=new byte[(int)data.length()];
+			fileReader.read(temp);
+			new DSectors(temp);
+			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+data.getName()+" not found!",0);
+			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
 		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+data.getName()+" could not be read, ensure the file is not open in another program",0);
+			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",Window.VERBOSITY_ALWAYS);
 		}
 	}
 	
-	public DSectors(byte[] in) {
+	// Takes a byte array, as if read from a FileInputStream
+	public DSectors(byte[] in) throws java.lang.InterruptedException {
 		int offset=0;
 		length=in.length;
-		numElems=in.length/structureLength;
-		elements=new DSector[numElems];
-		for(int i=0;i<numElems;i++) {
-			byte[] bytes=new byte[structureLength];
-			for(int j=0;j<structureLength;j++) {
+		elements=new DSector[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Sector array");
+			}
+			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
 			elements[i]=new DSector(bytes);
-			offset+=structureLength;
+			offset+=structLength;
 		}
 	}
 	
 	// METHODS
-	
-	// -populateList()
-	// Uses the instance data to populate the array of DNode
-	private void populateList() throws java.io.FileNotFoundException, java.io.IOException {
-		FileInputStream reader=new FileInputStream(data);
-		for(int i=0;i<numElems;i++) {
-			byte[] datain=new byte[structureLength];
-			reader.read(datain);
-			elements[i]=new DSector(datain);
-		}
-		reader.close();
-	}
 	
 	// ACCESSORS/MUTATORS
 	
@@ -83,19 +65,20 @@ public class DSectors {
 		return length;
 	}
 	
-	public int getNumElements() {
-		if(numElems==0) {
-			return length/structureLength;
+	// Returns the number of elements.
+	public int length() {
+		if(elements.length==0) {
+			return length/structLength;
 		} else {
-			return numElems;
+			return elements.length;
 		}
 	}
 	
-	public DSector getSector(int i) {
+	public DSector getElement(int i) {
 		return elements[i];
 	}
 	
-	public DSector[] getSectors() {
+	public DSector[] getElements() {
 		return elements;
 	}
 }

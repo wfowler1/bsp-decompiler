@@ -18,12 +18,12 @@ public class Leaves {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public Leaves(String in, int type) {
+	public Leaves(String in, int type) throws java.lang.InterruptedException {
 		new Leaves(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public Leaves(File in, int type) {
+	public Leaves(File in, int type) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
@@ -39,7 +39,7 @@ public class Leaves {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public Leaves(byte[] in, int type) {
+	public Leaves(byte[] in, int type) throws java.lang.InterruptedException {
 		switch(type) {
 			case BSP.TYPE_QUAKE:
 			case BSP.TYPE_QUAKE2:
@@ -80,6 +80,9 @@ public class Leaves {
 		elements=new Leaf[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Leaf array");
+			}
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}

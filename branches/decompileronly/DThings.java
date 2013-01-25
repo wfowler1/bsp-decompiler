@@ -18,12 +18,12 @@ public class DThings {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public DThings(String in, int type) {
+	public DThings(String in, int type) throws java.lang.InterruptedException {
 		new DThings(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public DThings(File in, int type) {
+	public DThings(File in, int type) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
@@ -39,7 +39,7 @@ public class DThings {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public DThings(byte[] in, int type) {
+	public DThings(byte[] in, int type) throws java.lang.InterruptedException {
 		switch(type) {
 			case DoomMap.TYPE_DOOM:
 				structLength=10;
@@ -55,6 +55,9 @@ public class DThings {
 		elements=new DThing[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Thing array");
+			}
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}

@@ -53,7 +53,7 @@ public class VMFWriter {
 	// Handling file I/O with Strings is generally a bad idea. If you have maybe a couple hundred
 	// Strings to write then it'll probably be okay, but when you have on the order of 10,000 Strings
 	// it gets VERY slow, even if you concatenate them all before writing.
-	public void write() throws java.io.IOException {
+	public void write() throws java.io.IOException, java.lang.InterruptedException {
 		if(!path.substring(path.length()-4).equalsIgnoreCase(".vmf")) {
 			mapFile=new File(path+".vmf");
 		}
@@ -72,13 +72,13 @@ public class VMFWriter {
 			// Preprocessing entity corrections
 			if(BSPVersion==42) {
 				for(int i=1;i<data.length();i++) {
-					for(int j=0;j<data.getEntity(i).getNumBrushes();j++) {
-						if(data.getEntity(i).getBrushes()[j].isWaterBrush()) {
-							data.getEntity(0).addBrush(data.getEntity(i).getBrushes()[j]);
+					for(int j=0;j<data.getElement(i).getNumBrushes();j++) {
+						if(data.getElement(i).getBrushes()[j].isWaterBrush()) {
+							data.getElement(0).addBrush(data.getElement(i).getBrushes()[j]);
 							// TODO: Textures on this brush
 						}
 					}
-					if(data.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_water")) {
+					if(data.getElement(i).getAttribute("classname").equalsIgnoreCase("func_water")) {
 						data.delete(i);
 						i--;
 					}
@@ -98,14 +98,17 @@ public class VMFWriter {
 			byte[][] entityBytes=new byte[data.length()][];
 			int totalLength=0;
 			for(currentEntity=0;currentEntity<data.length();currentEntity++) {
+				if(Thread.currentThread().interrupted()) {
+					throw new java.lang.InterruptedException("while writing Hammer map.");
+				}
 				try {
-					entityBytes[currentEntity]=entityToByteArray(data.getEntity(currentEntity));
+					entityBytes[currentEntity]=entityToByteArray(data.getElement(currentEntity));
 				} catch(java.lang.ArrayIndexOutOfBoundsException e) { // This happens when entities are added after the array is made
 					byte[][] newList=new byte[data.length()][]; // Create a new array with the new length
 					for(int j=0;j<entityBytes.length;j++) {
 						newList[j]=entityBytes[j];
 					}
-					newList[currentEntity]=entityToByteArray(data.getEntity(currentEntity));
+					newList[currentEntity]=entityToByteArray(data.getElement(currentEntity));
 					entityBytes=newList;
 				}
 				totalLength+=entityBytes[currentEntity].length;
@@ -136,7 +139,7 @@ public class VMFWriter {
 	// from a hard drive is another costly operation, best done by handling
 	// massive amounts of data in one go, rather than tiny amounts of data thousands
 	// of times.
-	private byte[] entityToByteArray(Entity in) {
+	private byte[] entityToByteArray(Entity in) throws java.lang.InterruptedException {
 		in.setAttribute("id", new Integer(nextID++).toString());
 		byte[] out;
 		double[] origin=new double[3];
@@ -176,6 +179,9 @@ public class VMFWriter {
 		out=new byte[len];
 		int offset=0;
 		for(int i=0;i<in.getAttributes().length;i++) { // For each attribute
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while writing Hammer map.");
+			}
 			if(in.getAttributes()[i].equals("{")) {
 				if(in.getAttribute("classname").equalsIgnoreCase("worldspawn")) {
 					in.getAttributes()[i]="world"+(char)0x0D+(char)0x0A+"{";
@@ -187,6 +193,9 @@ public class VMFWriter {
 					int brushArraySize=0;
 					byte[][] brushes=new byte[in.getBrushes().length][];
 					for(int j=0;j<in.getBrushes().length;j++) { // For each brush in the entity
+						if(Thread.currentThread().interrupted()) {
+							throw new java.lang.InterruptedException("while writing Hammer map.");
+						}
 						if(in.getBrush(j).isDetailBrush()) {
 							in.getBrush(j).setDetail(false);
 							Entity newDetailEntity=new Entity("func_detail");

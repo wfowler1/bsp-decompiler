@@ -17,12 +17,12 @@ public class Planes {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public Planes(String in, int type) {
+	public Planes(String in, int type) throws java.lang.InterruptedException {
 		new Planes(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public Planes(File in, int type) {
+	public Planes(File in, int type) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
@@ -38,7 +38,7 @@ public class Planes {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public Planes(byte[] in, int type) {
+	public Planes(byte[] in, int type) throws java.lang.InterruptedException {
 		switch(type) {
 			case BSP.TYPE_QUAKE:
 			case BSP.TYPE_NIGHTFIRE:
@@ -73,6 +73,9 @@ public class Planes {
 		elements=new Plane[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Plane array");
+			}
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}

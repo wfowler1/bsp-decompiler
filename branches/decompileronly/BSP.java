@@ -115,7 +115,7 @@ public class BSP {
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
-			Window.println("Edges lump: "+edges.getLength()+" bytes, "+edges.getNumElements()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Edges lump: "+edges.getLength()+" bytes, "+edges.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
@@ -289,7 +289,7 @@ public class BSP {
 		return entities;
 	}
 	
-	public void setEntities(byte[] data) {
+	public void setEntities(byte[] data) throws java.lang.InterruptedException {
 		entities=new Entities(data);
 	}
 	
@@ -297,7 +297,7 @@ public class BSP {
 		return planes;
 	}
 	
-	public void setPlanes(byte[] data) {
+	public void setPlanes(byte[] data) throws java.lang.InterruptedException {
 		planes=new Planes(data, version);
 	}
 	
@@ -305,7 +305,7 @@ public class BSP {
 		return textures;
 	}
 	
-	public void setTextures(byte[] data) {
+	public void setTextures(byte[] data) throws java.lang.InterruptedException {
 		textures=new Textures(data, version);
 	}
 	
@@ -313,7 +313,7 @@ public class BSP {
 		return materials;
 	}
 	
-	public void setMaterials(byte[] data) {
+	public void setMaterials(byte[] data) throws java.lang.InterruptedException {
 		materials=new Textures(data, version);
 	}
 	
@@ -321,7 +321,7 @@ public class BSP {
 		return vertices;
 	}
 	
-	public void setVertices(byte[] data) {
+	public void setVertices(byte[] data) throws java.lang.InterruptedException {
 		vertices=new Vertices(data, version);
 	}
 	
@@ -329,7 +329,7 @@ public class BSP {
 		return nodes;
 	}
 	
-	public void setNodes(byte[] data) {
+	public void setNodes(byte[] data) throws java.lang.InterruptedException {
 		nodes=new Nodes(data, version);
 	}
 	
@@ -337,7 +337,7 @@ public class BSP {
 		return texInfo;
 	}
 	
-	public void setTexInfo(byte[] data) {
+	public void setTexInfo(byte[] data) throws java.lang.InterruptedException {
 		texInfo=new TexInfos(data, version);
 	}
 	
@@ -345,7 +345,7 @@ public class BSP {
 		return faces;
 	}
 	
-	public void setFaces(byte[] data) {
+	public void setFaces(byte[] data) throws java.lang.InterruptedException {
 		faces=new Faces(data, version);
 	}
 	
@@ -353,7 +353,7 @@ public class BSP {
 		return leaves;
 	}
 	
-	public void setLeaves(byte[] data) {
+	public void setLeaves(byte[] data) throws java.lang.InterruptedException {
 		leaves=new Leaves(data, version);
 	}
 	
@@ -361,7 +361,7 @@ public class BSP {
 		return markSurfaces;
 	}
 	
-	public void setMarkSurfaces(byte[] data) {
+	public void setMarkSurfaces(byte[] data) throws java.lang.InterruptedException {
 		switch(version) {
 			case TYPE_QUAKE:
 				markSurfaces=new NumList(data, NumList.TYPE_USHORT);
@@ -373,7 +373,7 @@ public class BSP {
 		return edges;
 	}
 	
-	public void setEdges(byte[] data) {
+	public void setEdges(byte[] data) throws java.lang.InterruptedException {
 		edges=new Edges(data);
 	}
 	
@@ -381,7 +381,7 @@ public class BSP {
 		return surfEdges;
 	}
 	
-	public void setSurfEdges(byte[] data) {
+	public void setSurfEdges(byte[] data) throws java.lang.InterruptedException {
 		switch(version) {
 			case TYPE_QUAKE:
 			case TYPE_QUAKE2:
@@ -403,7 +403,7 @@ public class BSP {
 		return models;
 	}
 	
-	public void setModels(byte[] data) {
+	public void setModels(byte[] data) throws java.lang.InterruptedException {
 		models=new Models(data, version);
 	}
 	
@@ -411,7 +411,7 @@ public class BSP {
 		return brushes;
 	}
 	
-	public void setBrushes(byte[] data) {
+	public void setBrushes(byte[] data) throws java.lang.InterruptedException {
 		brushes=new Brushes(data, version);
 	}
 	
@@ -419,11 +419,11 @@ public class BSP {
 		return brushSides;
 	}
 	
-	public void setBrushSides(byte[] data) {
+	public void setBrushSides(byte[] data) throws java.lang.InterruptedException {
 		brushSides=new BrushSides(data, version);
 	}
 	
-	public void setMarkBrushes(byte[] data) {
+	public void setMarkBrushes(byte[] data) throws java.lang.InterruptedException {
 		switch(version) {
 			case TYPE_QUAKE2:
 			case TYPE_SIN:
@@ -447,7 +447,7 @@ public class BSP {
 		return markBrushes;
 	}
 	
-	public void setTexDatas(byte[] data) {
+	public void setTexDatas(byte[] data) throws java.lang.InterruptedException {
 		texDatas=new SourceTexDatas(data);
 	}
 	
@@ -455,7 +455,7 @@ public class BSP {
 		return texDatas;
 	}
 	
-	public void setDispInfos(byte[] data) {
+	public void setDispInfos(byte[] data) throws java.lang.InterruptedException {
 		dispInfos=new SourceDispInfos(data);
 	}
 	
@@ -467,11 +467,11 @@ public class BSP {
 		return originalFaces;
 	}
 	
-	public void setOriginalFaces(byte[] data) {
+	public void setOriginalFaces(byte[] data) throws java.lang.InterruptedException {
 		originalFaces=new Faces(data, version);
 	}
 	
-	public void setDispVerts(byte[] data) {
+	public void setDispVerts(byte[] data) throws java.lang.InterruptedException {
 		dispVerts=new SourceDispVertices(data);
 	}
 	
@@ -479,7 +479,7 @@ public class BSP {
 		return dispVerts;
 	}
 	
-	public void setTexTable(byte[] data) {
+	public void setTexTable(byte[] data) throws java.lang.InterruptedException {
 		texTable=new NumList(data, NumList.TYPE_UINT);
 	}
 	
@@ -487,7 +487,7 @@ public class BSP {
 		return texTable;
 	}
 	
-	public void setDispTris(byte[] data) {
+	public void setDispTris(byte[] data) throws java.lang.InterruptedException {
 		displacementTriangles=new NumList(data, NumList.TYPE_USHORT);
 	}
 	

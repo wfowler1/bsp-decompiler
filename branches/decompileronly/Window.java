@@ -918,21 +918,19 @@ public class Window extends JPanel implements ActionListener {
 	private void stopDecompilerThread(int job) {
 		int currentThread=threadNum[job-1];
 		if(currentThread>-1) {
-			decompilerworkers[currentThread].stop();          // The Java API lists this method of stopping a thread as deprecated.
-			startNextJob(true, currentThread);                // For the purposes of this program, I'm not sure it's an issue though.
-			println("Job number "+job+" aborted by user.",VERBOSITY_ALWAYS); // More info: http://docs.oracle.com/javase/6/docs/technotes/guides/concurrency/threadPrimitiveDeprecation.html
-			setProgress(job-1, 1, 1, "Aborted!");
+			decompilerworkers[currentThread].interrupt();
+			decompilerworkers[currentThread]=null;
+			startNextJob(true, currentThread);
 		} else {
 			println("Job number "+job+" canceled by user.",VERBOSITY_ALWAYS);
 			setProgress(job-1, 1, 1, "Canceled!");
+			btn_abort[job-1].setEnabled(false);
+			setProgressColor(job-1, new Color(255, 128, 128));
 		}
-		setProgressColor(job-1, new Color(255, 128, 128));
 		jobs[job-1]=null;
 		doomJobs[job-1]=null;
-		btn_abort[job-1].setEnabled(false);
 		btn_abort[job-1].setText("Aborted!");
 		progressBar[job-1].setIndeterminate(false);
-		progressBar[job-1].setString("Aborted!");
 	}
 	
 	protected static synchronized void print(String out, int priority) {

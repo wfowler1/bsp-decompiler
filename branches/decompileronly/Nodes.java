@@ -18,12 +18,12 @@ public class Nodes {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public Nodes(String in, int type) {
+	public Nodes(String in, int type) throws java.lang.InterruptedException {
 		new Nodes(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public Nodes(File in, int type) {
+	public Nodes(File in, int type) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
@@ -39,7 +39,7 @@ public class Nodes {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public Nodes(byte[] in, int type) {
+	public Nodes(byte[] in, int type) throws java.lang.InterruptedException {
 		switch(type) {
 			case BSP.TYPE_QUAKE:
 				structLength=22;
@@ -76,6 +76,9 @@ public class Nodes {
 		elements=new Node[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Node array");
+			}
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}

@@ -18,12 +18,12 @@ public class SourceDispVertices {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public SourceDispVertices(String in) {
+	public SourceDispVertices(String in) throws java.lang.InterruptedException {
 		new SourceDispVertices(new File(in));
 	}
 	
 	// This one accepts the input file path as a File
-	public SourceDispVertices(File in) {
+	public SourceDispVertices(File in) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
@@ -39,12 +39,15 @@ public class SourceDispVertices {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public SourceDispVertices(byte[] in) {
+	public SourceDispVertices(byte[] in) throws java.lang.InterruptedException {
 		int offset=0;
 		length=in.length;
 		elements=new SourceDispVertex[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Displacement Vertex array");
+			}
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}

@@ -13,34 +13,41 @@ public class SourceTexDatas {
 	private int length;
 	private SourceTexData[] elements;
 	
-	public static final int structLength=32;
+	public int structLength=32;
 
 	// CONSTRUCTORS
 	
-	public SourceTexDatas(String in) {
+	// Accepts a filepath as a String
+	public SourceTexDatas(String in) throws java.lang.InterruptedException {
 		new SourceTexDatas(new File(in));
 	}
 	
 	// This one accepts the input file path as a File
-	public SourceTexDatas(File in) {
+	public SourceTexDatas(File in) throws java.lang.InterruptedException {
 		data=in;
-		length=(int)data.length();
 		try {
-			elements=new SourceTexData[length/structLength];
-			populateList();
+			FileInputStream fileReader=new FileInputStream(data);
+			byte[] temp=new byte[(int)data.length()];
+			fileReader.read(temp);
+			new SourceTexDatas(temp);
+			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+data.getPath()+" not found!",0);
+			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
 		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",0);
+			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",Window.VERBOSITY_ALWAYS);
 		}
 	}
 	
-	public SourceTexDatas(byte[] in) {
+	// Takes a byte array, as if read from a FileInputStream
+	public SourceTexDatas(byte[] in) throws java.lang.InterruptedException {
 		int offset=0;
 		length=in.length;
 		elements=new SourceTexData[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Texture Data array");
+			}
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
@@ -50,18 +57,6 @@ public class SourceTexDatas {
 	}
 	
 	// METHODS
-	
-	// -populateList()
-	// Uses the instance data to populate the array
-	private void populateList() throws java.io.FileNotFoundException, java.io.IOException {
-		FileInputStream reader=new FileInputStream(data);
-		byte[] datain=new byte[structLength];
-		for(int i=0;i<elements.length;i++) {
-			reader.read(datain);
-			elements[i]=new SourceTexData(datain);
-		}
-		reader.close();
-	}
 	
 	// ACCESSORS/MUTATORS
 	

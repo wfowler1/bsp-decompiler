@@ -61,7 +61,7 @@ public class BSPReader {
 	
 	// METHODS
 	
-	public void readBSP() {
+	public void readBSP() throws java.lang.InterruptedException {
 		try {
 			version=getVersion();
 			byte[] read=new byte[4];
@@ -91,6 +91,9 @@ public class BSPReader {
 					offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
 					length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
 					String lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+					if(Thread.currentThread().interrupted()) {
+						throw new java.lang.InterruptedException("on lump "+i+" of WAD, "+lumpName+".");
+					}
 					if( ( lumpName.substring(0,3).equals("MAP") && lumpName.charAt(3)>='0' && lumpName.charAt(3)<='9' && lumpName.charAt(4)>='0' && lumpName.charAt(4)<='9' ) || ( lumpName.charAt(0)=='E' && lumpName.charAt(2)=='M' && lumpName.charAt(1)>='0' && lumpName.charAt(1)<='9' && lumpName.charAt(3)>='0' && lumpName.charAt(3)<='9' ) ) {
 						String mapName=lumpName.substring(0,5); // Map names are always ExMy or MAPxx. Never more than five chars.
 						Window.println("Map: "+mapName,Window.VERBOSITY_ALWAYS);

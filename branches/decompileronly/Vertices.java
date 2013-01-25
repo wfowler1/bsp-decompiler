@@ -18,12 +18,12 @@ public class Vertices {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public Vertices(String in, int type) {
+	public Vertices(String in, int type) throws java.lang.InterruptedException {
 		new Vertices(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public Vertices(File in, int type) {
+	public Vertices(File in, int type) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
@@ -39,7 +39,7 @@ public class Vertices {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public Vertices(byte[] in, int type) {
+	public Vertices(byte[] in, int type) throws java.lang.InterruptedException {
 		switch(type) {
 			case DoomMap.TYPE_DOOM:
 				structLength=4;
@@ -77,6 +77,9 @@ public class Vertices {
 		elements=new Vertex[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Vertex array");
+			}
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}

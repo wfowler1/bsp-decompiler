@@ -54,7 +54,8 @@ public class BSP42Decompiler {
 	//   k: Current brush, referenced in a list by the current leaf.
 	//    l: Current side of the current brush.
 	//     m: When attempting vertex decompilation, the current vertex.
-	public void decompile() throws java.io.IOException {
+	public void decompile() throws java.io.IOException, java.lang.InterruptedException {
+		Window.println("Decompiling...",Window.VERBOSITY_ALWAYS);
 		Date begin=new Date();
 		// Begin by copying all the entities into another Lump00 object. This is
 		// necessary because if I just modified the current entity list then it
@@ -64,13 +65,15 @@ public class BSP42Decompiler {
 		// I need to go through each entity and see if it's brush-based.
 		// Worldspawn is brush-based as well as any entity with model *#.
 		for(int i=0;i<BSPObject.getEntities().length();i++) { // For each entity
-			Window.println("Entity "+i+": "+mapFile.getEntity(i).getAttribute("classname"),Window.VERBOSITY_ENTITIES);
-			numBrshs=0; // Reset the brush count for each entity
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while processing entity "+i+".");
+			}
+			Window.println("Entity "+i+": "+mapFile.getElement(i).getAttribute("classname"),Window.VERBOSITY_ENTITIES);
 			// getModelNumber() returns 0 for worldspawn, the *# for brush based entities, and -1 for everything else
-			int currentModel=mapFile.getEntity(i).getModelNumber();
+			int currentModel=mapFile.getElement(i).getModelNumber();
 			
 			if(currentModel>-1) { // If this is still -1 then it's strictly a point-based entity. Move on to the next one.
-				double[] origin=mapFile.getEntity(i).getOrigin();
+				double[] origin=mapFile.getElement(i).getOrigin();
 				int firstLeaf=BSPObject.getModels().getElement(currentModel).getFirstLeaf();
 				int numLeaves=BSPObject.getModels().getElement(currentModel).getNumLeaves();
 				boolean[] brushesUsed=new boolean[BSPObject.getBrushes().length()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
@@ -78,16 +81,23 @@ public class BSP42Decompiler {
 				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
 					Leaf currentLeaf=BSPObject.getLeaves().getElement(j+firstLeaf);
 					if(Window.visLeafBBoxesIsSelected()) {
-					//	mapFile.getEntity(0).addBrush(GenericMethods.createBrush(currentLeaf.getMins(), currentLeaf.getMaxs(), "special/hint"));
+					//	mapFile.getElement(0).addBrush(GenericMethods.createBrush(currentLeaf.getMins(), currentLeaf.getMaxs(), "special/hint"));
 					}
 					int firstBrushIndex=currentLeaf.getFirstMarkBrush();
 					int numBrushIndices=currentLeaf.getNumMarkBrushes();
 					if(numBrushIndices>0) { // A lot of leaves reference no brushes. If this is one, this iteration of the j loop is finished
 						for(int k=0;k<numBrushIndices;k++) { // For each brush referenced
+							if(Thread.currentThread().interrupted()) {
+								throw new java.lang.InterruptedException("while processing entity "+i+" brush "+numBrshs+".");
+							}
 							if(!brushesUsed[(int)BSPObject.getMarkBrushes().getElement(firstBrushIndex+k)]) { // If the current brush has NOT been used in this entity
-								Window.print("Brush "+(k+firstBrushIndex),Window.VERBOSITY_BRUSHCREATION);
+								Window.print("Brush "+numBrshs,Window.VERBOSITY_BRUSHCREATION);
 								brushesUsed[(int)BSPObject.getMarkBrushes().getElement(firstBrushIndex+k)]=true;
-								decompileBrush(BSPObject.getBrushes().getElement((int)BSPObject.getMarkBrushes().getElement(firstBrushIndex+k)), i); // Decompile the brush
+								try {
+									decompileBrush(BSPObject.getBrushes().getElement((int)BSPObject.getMarkBrushes().getElement(firstBrushIndex+k)), i); // Decompile the brush
+								} catch(java.lang.InterruptedException e) {
+									throw new java.lang.InterruptedException("while processing entity "+i+" brush "+numBrshs+" "+e.toString().substring(32));
+								}
 								numBrshs++;
 								numTotalItems++;
 								Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");
@@ -101,7 +111,6 @@ public class BSP42Decompiler {
 		}
 		Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Saving...");
 		MAPMaker.outputMaps(mapFile, BSPObject.getMapNameNoExtension(), BSPObject.getFolder(), BSPObject.getVersion());
-		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {
 			Window.println("Num simple corrected brushes: "+numSimpleCorrects,Window.VERBOSITY_MAPSTATS); 
 			Window.println("Num advanced corrected brushes: "+numAdvancedCorrects,Window.VERBOSITY_MAPSTATS); 
@@ -113,8 +122,8 @@ public class BSP42Decompiler {
 	
 	// -decompileBrush(Brush, int, boolean)
 	// Decompiles the Brush and adds it to entitiy #currentEntity as .MAP data.
-	private void decompileBrush(Brush brush, int currentEntity) {
-		double[] origin=mapFile.getEntity(currentEntity).getOrigin();
+	private void decompileBrush(Brush brush, int currentEntity) throws java.lang.InterruptedException {
+		double[] origin=mapFile.getElement(currentEntity).getOrigin();
 		int firstSide=brush.getFirstSide();
 		int numSides=brush.getNumSides();
 		MAPBrushSide[] brushSides=new MAPBrushSide[0];
@@ -127,10 +136,13 @@ public class BSP42Decompiler {
 		boolean containsNonClipSide=false;
 		Plane[] brushPlanes=new Plane[0];
 		Window.println(": "+numSides+" sides",Window.VERBOSITY_BRUSHCREATION);
-		if(mapFile.getEntity(currentEntity).getAttribute("classname").equalsIgnoreCase("func_water")) {
+		if(mapFile.getElement(currentEntity).getAttribute("classname").equalsIgnoreCase("func_water")) {
 			mapBrush.setWater(true);
 		}
 		for(int l=0;l<numSides;l++) { // For each side of the brush
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("side "+l+".");
+			}
 			BrushSide currentSide=BSPObject.getBrushSides().getElement(firstSide+l);
 			Face currentFace=BSPObject.getFaces().getElement(currentSide.getFace()); // To find those three points, I can use vertices referenced by faces.
 			String texture=BSPObject.getTextures().getElement(currentFace.getTexture()).getName();
@@ -276,9 +288,9 @@ public class BSP42Decompiler {
 		// cause any issues at all.
 		if(Window.brushesToWorldIsSelected()) {
 			mapBrush.setWater(false);
-			mapFile.getEntity(0).addBrush(mapBrush);
+			mapFile.getElement(0).addBrush(mapBrush);
 		} else {
-			mapFile.getEntity(currentEntity).addBrush(mapBrush);
+			mapFile.getElement(currentEntity).addBrush(mapBrush);
 		}
 	}
 }

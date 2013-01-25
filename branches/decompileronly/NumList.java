@@ -25,12 +25,12 @@ public class NumList {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public NumList(String in, int type) {
+	public NumList(String in, int type) throws java.lang.InterruptedException {
 		new NumList(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public NumList(File in, int type) {
+	public NumList(File in, int type) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
@@ -46,47 +46,68 @@ public class NumList {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public NumList(byte[] in, int type) {
+	public NumList(byte[] in, int type) throws java.lang.InterruptedException {
 		switch(type) {
 			case TYPE_BYTE:
 				elements=new long[in.length];
 				for(int i=0;i<elements.length;i++) {
+					if(Thread.currentThread().interrupted()) {
+						throw new java.lang.InterruptedException("while populating an array of int8");
+					}
 					elements[i]=(int)in[i];
 				}
 				break;
 			case TYPE_UBYTE:
 				elements=new long[in.length];
 				for(int i=0;i<elements.length;i++) {
+					if(Thread.currentThread().interrupted()) {
+						throw new java.lang.InterruptedException("while populating an array of uint8");
+					}
 					elements[i]=(int)DataReader.readUByte(in[i]);
 				}
 				break;
 			case TYPE_SHORT:
 				elements=new long[in.length/2];
 				for(int i=0;i<elements.length;i++) {
+					if(Thread.currentThread().interrupted()) {
+						throw new java.lang.InterruptedException("while populating an array of int16");
+					}
 					elements[i]=(int)DataReader.readShort(in[i*2], in[(i*2)+1]);
 				}
 				break;
 			case TYPE_USHORT:
 				elements=new long[in.length/2];
 				for(int i=0;i<elements.length;i++) {
+					if(Thread.currentThread().interrupted()) {
+						throw new java.lang.InterruptedException("while populating an array of uint16");
+					}
 					elements[i]=(int)DataReader.readUShort(in[i*2], in[(i*2)+1]);
 				}
 				break;
 			case TYPE_INT:
 				elements=new long[in.length/4];
 				for(int i=0;i<elements.length;i++) {
+					if(Thread.currentThread().interrupted()) {
+						throw new java.lang.InterruptedException("while populating an array of int32");
+					}
 					elements[i]=(int)DataReader.readInt(in[i*4], in[(i*4)+1], in[(i*4)+2], in[(i*4)+3]);
 				}
 				break;
 			case TYPE_UINT:
 				elements=new long[in.length/4];
 				for(int i=0;i<elements.length;i++) {
+					if(Thread.currentThread().interrupted()) {
+						throw new java.lang.InterruptedException("while populating an array of uint32");
+					}
 					elements[i]=(int)DataReader.readUInt(in[i*4], in[(i*4)+1], in[(i*4)+2], in[(i*4)+3]);
 				}
 				break;
 			case TYPE_LONG:
 				elements=new long[in.length/4];
 				for(int i=0;i<elements.length;i++) {
+					if(Thread.currentThread().interrupted()) {
+						throw new java.lang.InterruptedException("while populating an array of int64");
+					}
 					elements[i]=(int)DataReader.readLong(in[i*4], in[(i*4)+1], in[(i*4)+2], in[(i*4)+3], in[(i*4)+4], in[(i*4)+5], in[(i*4)+6], in[(i*4)+7]);
 				}
 				break;

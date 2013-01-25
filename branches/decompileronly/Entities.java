@@ -19,21 +19,18 @@ public class Entities {
 	// CONSTRUCTORS
 	
 	// This one accepts the lump path as a String
-	public Entities(String in) {
+	public Entities(String in) throws java.lang.InterruptedException {
 		new Entities(new File(in));
 	}
 	
 	// This one accepts the input file path as a File
-	public Entities(File in) {
+	public Entities(File in) throws java.lang.InterruptedException {
 		dataFile=in;
 		try {
 			FileInputStream reader=new FileInputStream(dataFile); // reads the file
 			byte[] data=new byte[(int)dataFile.length()];
 			reader.read(data);
-			length=data.length;
-			reader.close();
-			entities = new Entity[countEnts(data)];
-			populateEntityList(data);
+			new Entities(data);
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+dataFile.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
 		} catch(java.io.IOException e) {
@@ -41,39 +38,39 @@ public class Entities {
 		}
 	}
 	
-	// This one accepts a Entities and copies it
+	// This one accepts an Entities and copies it
 	public Entities(Entities in) {
 		entities=new Entity[in.length()];
 		for(int i=0;i<entities.length;i++) {
-			entities[i]=new Entity(in.getEntity(i));
+			entities[i]=new Entity(in.getElement(i));
 		}
 	}
 	
 	// This one just takes an array of byte[]
-	public Entities(byte[] data) {
+	public Entities(byte[] data) throws java.lang.InterruptedException {
 		length=data.length;
-		entities = new Entity[countEnts(data)];
-		populateEntityList(data);
-	}
-	
-	public Entities() {
-		length=0;
-		entities = new Entity[0];
-	}
-	
-	// METHODS
-	
-	// -populateEntityList()
-	// Uses the instance data to populate an array of Entity classes. This
-	// will eat a shitton of memory but works surprisingly fast even for
-	// large maps. This method takes advantage of the constructors in the
-	// Entity class, look there to see how deep the nested loops really go.
-	// Even so, this method is a complete mess, so documentation is provided
-	// whenever possible.
-	// TODO: Rewrite this, try to make it faster.
-	private void populateEntityList(byte[] data) {
-		Window.print("Populating entity list... ",Window.VERBOSITY_ALWAYS);
-		Date begin=new Date();
+		int count=0;
+		boolean inQuotes=false; // Keep track of whether or not we're currently in a set of quotation marks.
+		// I came across a map where the idiot map maker used { and } within a value. This broke the code prior to revision 55.
+		for(int i=0;i<data.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while counting Entities");
+			}
+			if(inQuotes) {
+				if(data[i]=='\"' && inQuotes) {
+					inQuotes=false;
+				}
+			} else {
+				if(data[i]=='\"') {
+					inQuotes=true;
+				} else {
+					if(data[i] == '{') {
+						count++;
+					}
+				}
+			}
+		}
+		entities = new Entity[count];
 		// I'd love to use Scanner here, but Scanner doesn't like using delimiters
 		// with "{" or "}" in them, which I NEED
 		char currentChar; // The current character being read in the file. This is necessary because
@@ -81,14 +78,16 @@ public class Entities {
 								// all text between them.
 		int offset=0;
 		for(int i=0;i<entities.length;i++) { // For every entity
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Entity array");
+			}
 			String current=""; // This will be the resulting entity, fed into the Entity class
 			currentChar=(char)data[offset]; // begin reading the file
 			while(currentChar!='{') { // Eat bytes until we find the beginning of an entity structure
 				offset++;
 				currentChar=(char)data[offset];
 			}
-			boolean inQuotes=false; // Keep track of whether or not we're in a set of quotation marks.
-			// I came across a map where the idiot map maker used { and } in a value. This broke the code prior to revision 55.
+			inQuotes=false;
 			do {
 				if(currentChar=='\"') {
 					inQuotes=!inQuotes;
@@ -98,12 +97,17 @@ public class Entities {
 				currentChar=(char)data[offset];
 			} while(currentChar!='}' || inQuotes); // Read bytes until we find the end of the current entity structure
 			current+=currentChar+""; // adds the '}' to the current string
-			entities[i]=new Entity(); // puts the resulting String into the constructor of the Entity class
+			entities[i]=new Entity();
 			entities[i].setData(current);
 		}
-		Date end=new Date();
-		Window.println(end.getTime()-begin.getTime()+"ms",Window.VERBOSITY_ALWAYS);
 	}
+	
+	public Entities() {
+		length=0;
+		entities = new Entity[0];
+	}
+	
+	// METHODS
 	
 	// +add(String)
 	// Parses the string and adds it to the entity list.
@@ -187,33 +191,6 @@ public class Entities {
 		return indices;
 	}
 	
-	// Counts the entities in a given byte array 
-	public int countEnts(byte[] data) {
-		Window.print("Counting entities... ",Window.VERBOSITY_ALWAYS);
-		Date begin=new Date();
-		int count=0;
-		boolean inQuotes=false; // Keep track of whether or not we're in a set of quotation marks.
-		// I came across a map where the idiot map maker used { and } in a value. This broke the code prior to revision 55.
-		for(int i=0;i<data.length;i++) {
-			if(inQuotes) {
-				if(data[i]=='\"' && inQuotes) {
-					inQuotes=false;
-				}
-			} else {
-				if(data[i]=='\"') {
-					inQuotes=true;
-				} else {
-					if(data[i] == '{') {
-						count++;
-					}
-				}
-			}
-		}
-		Date end=new Date();
-		Window.println(end.getTime()-begin.getTime()+"ms",Window.VERBOSITY_ALWAYS);
-		return count;
-	}
-	
 	// ACCESSORS/MUTATORS
 		
 	// Returns the length (in bytes) of the lump
@@ -226,12 +203,12 @@ public class Entities {
 	}
 	
 	// Returns a specific entity as an Entity object.
-	public Entity getEntity(int i) {
+	public Entity getElement(int i) {
 		return entities[i];
 	}
 	
 	// Returns a reference to the entities array
-	public Entity[] getEntities() {
+	public Entity[] getElements() {
 		return entities;
 	}
 }

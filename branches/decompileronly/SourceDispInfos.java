@@ -19,12 +19,12 @@ public class SourceDispInfos {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public SourceDispInfos(String in) {
+	public SourceDispInfos(String in) throws java.lang.InterruptedException {
 		new SourceDispInfos(new File(in));
 	}
 	
 	// This one accepts the input file path as a File
-	public SourceDispInfos(File in) {
+	public SourceDispInfos(File in) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
@@ -40,12 +40,15 @@ public class SourceDispInfos {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public SourceDispInfos(byte[] in) {
+	public SourceDispInfos(byte[] in) throws java.lang.InterruptedException {
 		int offset=0;
 		length=in.length;
 		elements=new SourceDispInfo[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Displacement Info array");
+			}
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}

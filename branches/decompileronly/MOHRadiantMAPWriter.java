@@ -36,7 +36,7 @@ public class MOHRadiantMAPWriter {
 	// Handling file I/O with Strings is generally a bad idea. If you have maybe a couple hundred
 	// Strings to write then it'll probably be okay, but when you have on the order of 10,000 Strings
 	// it gets VERY slow, even if you concatenate them all before writing.
-	public void write() throws java.io.IOException {
+	public void write() throws java.io.IOException, java.lang.InterruptedException {
 		if(!path.substring(path.length()-4).equalsIgnoreCase(".map")) {
 			mapFile=new File(path+".map");
 		}
@@ -55,13 +55,13 @@ public class MOHRadiantMAPWriter {
 			// Preprocessing entity corrections
 			if(BSPVersion==42) {
 				for(int i=1;i<data.length();i++) {
-					for(int j=0;j<data.getEntity(i).getNumBrushes();j++) {
-						if(data.getEntity(i).getBrushes()[j].isWaterBrush()) {
-							data.getEntity(0).addBrush(data.getEntity(i).getBrushes()[j]);
+					for(int j=0;j<data.getElement(i).getNumBrushes();j++) {
+						if(data.getElement(i).getBrushes()[j].isWaterBrush()) {
+							data.getElement(0).addBrush(data.getElement(i).getBrushes()[j]);
 							// TODO: Textures on this brush
 						}
 					}
-					if(data.getEntity(i).getAttribute("classname").equalsIgnoreCase("func_water")) {
+					if(data.getElement(i).getAttribute("classname").equalsIgnoreCase("func_water")) {
 						data.delete(i);
 						i--;
 					}
@@ -72,14 +72,17 @@ public class MOHRadiantMAPWriter {
 			byte[][] entityBytes=new byte[data.length()][];
 			int totalLength=0;
 			for(currentEntity=0;currentEntity<data.length();currentEntity++) {
+				if(Thread.currentThread().interrupted()) {
+					throw new java.lang.InterruptedException("while writing MOHRadiant map.");
+				}
 				try {
-					entityBytes[currentEntity]=entityToByteArray(data.getEntity(currentEntity), currentEntity);
+					entityBytes[currentEntity]=entityToByteArray(data.getElement(currentEntity), currentEntity);
 				} catch(java.lang.ArrayIndexOutOfBoundsException e) { // This happens when entities are added after the array is made
 					byte[][] newList=new byte[data.length()][]; // Create a new array with the new length
 					for(int j=0;j<entityBytes.length;j++) {
 						newList[j]=entityBytes[j];
 					}
-					newList[currentEntity]=entityToByteArray(data.getEntity(currentEntity), currentEntity);
+					newList[currentEntity]=entityToByteArray(data.getElement(currentEntity), currentEntity);
 					entityBytes=newList;
 				}
 				totalLength+=entityBytes[currentEntity].length;
@@ -110,7 +113,7 @@ public class MOHRadiantMAPWriter {
 	// from a hard drive is another costly operation, best done by handling
 	// massive amounts of data in one go, rather than tiny amounts of data thousands
 	// of times.
-	private byte[] entityToByteArray(Entity in, int num) {
+	private byte[] entityToByteArray(Entity in, int num) throws java.lang.InterruptedException {
 		byte[] out;
 		double[] origin;
 		// Correct some attributes of entities
@@ -147,6 +150,9 @@ public class MOHRadiantMAPWriter {
 		out=new byte[len];
 		int offset=0;
 		for(int i=0;i<in.getAttributes().length;i++) { // For each attribute
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while writing MOHRadiant map.");
+			}
 			if(in.getAttributes()[i].equals("{") && !in.getAttribute("classname").equals("worldspawn")) {
 				in.getAttributes()[i]="// Entity "+num+(char)0x0D+(char)0x0A+"{";
 			} else {
@@ -154,6 +160,9 @@ public class MOHRadiantMAPWriter {
 					int brushArraySize=0;
 					byte[][] brushes=new byte[in.getBrushes().length][];
 					for(int j=0;j<in.getBrushes().length;j++) { // For each brush in the entity
+						if(Thread.currentThread().interrupted()) {
+							throw new java.lang.InterruptedException("while writing MOHRadiant map.");
+						}
 						// models with origin brushes need to be offset into their in-use position
 						in.getBrush(j).shift(new Vector3D(origin));
 						brushes[j]=brushToByteArray(in.getBrush(j), j);
