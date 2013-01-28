@@ -91,6 +91,60 @@ public class SourceBSPDecompiler {
 			numTotalItems++; // This entity
 			Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");
 		}
+		for(int i=0;i<BSPObject.getFaces().length();i++) {
+			Face face=BSPObject.getFaces().getElement(i);
+			if(face.getDisplacement()>-1) {
+				SourceDispInfo disp=BSPObject.getDispInfos().getElement(face.getDisplacement());
+				TexInfo currentTexInfo;
+				if(face.getTexture()>-1) {
+					currentTexInfo=BSPObject.getTexInfo().getElement(face.getTexture());
+				} else {
+					Vector3D[] axes=GenericMethods.textureAxisFromPlane(BSPObject.getPlanes().getElement(face.getPlane()));
+					currentTexInfo=new TexInfo(axes[0], 0, axes[1], 0, 0, BSPObject.findTexDataWithTexture("tools/toolsclip"));
+				}
+				SourceTexData currentTexData=BSPObject.getTexDatas().getElement(currentTexInfo.getTexture());
+				String texture=BSPObject.getTextures().getTextureAtOffset((int)BSPObject.getTexTable().getElement(currentTexData.getStringTableIndex()));
+				double[] textureU=new double[3];
+				double[] textureV=new double[3];
+				// Get the lengths of the axis vectors
+				double SAxisLength=Math.sqrt(Math.pow((double)currentTexInfo.getSAxis().getX(),2)+Math.pow((double)currentTexInfo.getSAxis().getY(),2)+Math.pow((double)currentTexInfo.getSAxis().getZ(),2));
+				double TAxisLength=Math.sqrt(Math.pow((double)currentTexInfo.getTAxis().getX(),2)+Math.pow((double)currentTexInfo.getTAxis().getY(),2)+Math.pow((double)currentTexInfo.getTAxis().getZ(),2));
+				// In compiled maps, shorter vectors=longer textures and vice versa. This will convert their lengths back to 1. We'll use the actual scale values for length.
+				double texScaleU=(1/SAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
+				double texScaleV=(1/TAxisLength);
+				textureU[0]=((double)currentTexInfo.getSAxis().getX()/SAxisLength);
+				textureU[1]=((double)currentTexInfo.getSAxis().getY()/SAxisLength);
+				textureU[2]=((double)currentTexInfo.getSAxis().getZ()/SAxisLength);
+				double textureShiftU=(double)currentTexInfo.getSShift();
+				textureV[0]=((double)currentTexInfo.getTAxis().getX()/TAxisLength);
+				textureV[1]=((double)currentTexInfo.getTAxis().getY()/TAxisLength);
+				textureV[2]=((double)currentTexInfo.getTAxis().getZ()/TAxisLength);
+				double textureShiftV=(double)currentTexInfo.getTShift();
+				
+				if(face.getNumEdges()!=4) {
+					Window.println("Displacement face with "+face.getNumEdges()+" edges!",Window.VERBOSITY_WARNINGS);
+				}
+				
+				// Turn vertices and edges into arrays of vectors
+				Vector3D[] froms=new Vector3D[face.getNumEdges()];
+				Vector3D[] tos=new Vector3D[face.getNumEdges()];
+				for(int j=0;j<face.getNumEdges();j++) {
+					if(BSPObject.getSurfEdges().getElement(face.getFirstEdge()+j) > 0) {
+						froms[j]=BSPObject.getVertices().getElement(BSPObject.getEdges().getElement((int)BSPObject.getSurfEdges().getElement(face.getFirstEdge()+j)).getFirstVertex()).getVertex();
+						tos[j]=BSPObject.getVertices().getElement(BSPObject.getEdges().getElement((int)BSPObject.getSurfEdges().getElement(face.getFirstEdge()+j)).getSecondVertex()).getVertex();
+					} else {
+						tos[j]=BSPObject.getVertices().getElement(BSPObject.getEdges().getElement((int)BSPObject.getSurfEdges().getElement(face.getFirstEdge()+j) * -1).getFirstVertex()).getVertex();
+						froms[j]=BSPObject.getVertices().getElement(BSPObject.getEdges().getElement((int)BSPObject.getSurfEdges().getElement(face.getFirstEdge()+j) * -1).getSecondVertex()).getVertex();
+					}
+				}
+				
+				MAPBrush displacementBrush = GenericMethods.createBrushFromWind(froms, tos, texture, "TOOLS/TOOLSNODRAW", currentTexInfo);
+				
+				MAPDisplacement mapdisp=new MAPDisplacement(disp, BSPObject.getDispVerts().getVertsInDisp(disp.getDispVertStart(), disp.getPower()));
+				displacementBrush.getSide(0).setDisplacement(mapdisp);
+				mapFile.getElement(0).addBrush(displacementBrush);
+			}
+		}
 		Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Saving...");
 		MAPMaker.outputMaps(mapFile, BSPObject.getMapNameNoExtension(), BSPObject.getFolder(), BSPObject.getVersion());
 		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);

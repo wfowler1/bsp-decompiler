@@ -47,6 +47,7 @@ public class NumList {
 	
 	// Takes a byte array, as if read from a FileInputStream
 	public NumList(byte[] in, int type) throws java.lang.InterruptedException {
+		length=in.length;
 		switch(type) {
 			case TYPE_BYTE:
 				elements=new long[in.length];

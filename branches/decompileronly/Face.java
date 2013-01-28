@@ -65,7 +65,7 @@ public class Face extends LumpObject {
 				firstEdge=DataReader.readInt(data[4], data[5], data[6], data[7]);
 				numEdges=DataReader.readUShort(data[8], data[9]);
 				texture=DataReader.readUShort(data[10], data[11]);
-				displacement=DataReader.readUShort(data[12], data[13]);
+				displacement=DataReader.readShort(data[12], data[13]);
 				original=DataReader.readInt(data[44], data[45], data[46], data[47]);
 				break;
 			case BSP.TYPE_NIGHTFIRE:

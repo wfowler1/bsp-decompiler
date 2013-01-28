@@ -24,6 +24,7 @@ public class MAPBrush {
 	}
 	
 	public MAPBrush(MAPBrushSide[] in, int num, int entnum, boolean isDetail) {
+		sides=new MAPBrushSide[0];
 		for(int i=0;i<in.length;i++) {
 			add(in[i]);
 		}

@@ -21,6 +21,8 @@ public class MAPBrushSide {
 	private double lgtScale;
 	private double lgtRot;
 	
+	private MAPDisplacement disp=null;
+	
 	private boolean planeDefined=false;
 	private boolean triangleDefined=false;
 	
@@ -126,6 +128,7 @@ public class MAPBrushSide {
 		lgtRot=copy.getLgtRot();
 		planeDefined=copy.isDefinedByPlane();
 		triangleDefined=copy.isDefinedByTriangle();
+		disp=copy.getDisplacement();
 	}
 
 	// METHODS
@@ -244,6 +247,14 @@ public class MAPBrushSide {
 		triangle=GenericMethods.extrapPlanePoints(plane);
 		planeDefined=true;
 		triangleDefined=false;
+	}
+	
+	public void setDisplacement(MAPDisplacement in) {
+		disp=in;
+	}
+	
+	public MAPDisplacement getDisplacement() {
+		return disp;
 	}
 	
 	public double getLgtScale() {

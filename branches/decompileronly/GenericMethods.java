@@ -709,6 +709,39 @@ public class GenericMethods {
 		}
 		return newBrush;
 	}
+	
+	// The inspiration for this is the BSPSource source code. It's not a direct copy but does essentially
+	// the same thing as the algorithm to "create a prism back", and isn't as neatly written.
+	public static MAPBrush createBrushFromWind(Vector3D[] froms, Vector3D[] tos, String texture, String backtex, TexInfo scaling) {
+		Vector3D[] planepts = new Vector3D[3];
+		MAPBrushSide[] sides=new MAPBrushSide[froms.length+2]; // Each edge, plus a front and back side
+		planepts[0]=froms[0];
+		planepts[1]=tos[0];
+		planepts[2]=tos[1];
+		Plane plane=new Plane(planepts);
+		Vector3D reverseNormal=plane.getNormal();
+		sides[0]=new MAPBrushSide(planepts, texture, scaling.getSAxis().getPoint(), scaling.getSShift(), scaling.getTAxis().getPoint(), scaling.getTShift(), 0, 1, 1, 0, "wld_lightmap", 16, 0);
+
+		Vector3D[] backplanepts = new Vector3D[3];
+		backplanepts[0]=froms[0].subtract(reverseNormal);
+		backplanepts[1]=tos[1].subtract(reverseNormal);
+		backplanepts[2]=tos[0].subtract(reverseNormal);
+		Plane backplane=new Plane(backplanepts);
+		Vector3D[] backaxes=textureAxisFromPlane(backplane);
+		sides[1]=new MAPBrushSide(backplane, backtex, backaxes[0].getPoint(), 0, backaxes[1].getPoint(), 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+		
+		for(int i=0;i<froms.length;i++) { // each edge
+			Vector3D[] sideplanepts = new Vector3D[3];
+			sideplanepts[0]=froms[i];
+			sideplanepts[1]=tos[i];
+			sideplanepts[2]=froms[i].add(reverseNormal);
+			Plane sideplane=new Plane(sideplanepts);
+			Vector3D[] sideaxes=textureAxisFromPlane(sideplane);
+			sides[i+2]=new MAPBrushSide(sideplane, backtex, sideaxes[0].getPoint(), 0, sideaxes[1].getPoint(), 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+		}
+		
+		return new MAPBrush(sides, 0, 0, false);
+	}
 
 	public static final Vector3D[] baseAxes = new Vector3D[] { new Vector3D(0,0,1), new Vector3D(1,0,0), new Vector3D(0,-1,0),
 	                                                           new Vector3D(0,0,-1), new Vector3D(1,0,0), new Vector3D(0,-1,0),

@@ -18,7 +18,7 @@ public class SourceDispInfo {
 	private int lightmapAlphaStart;
 	private int lightmapSamplePositionStart;
 	private byte[] neighborInfo=new byte[90];
-	private long[] allowedVerts; // unsigned
+	private int[] allowedVerts; // unsigned
 	
 	// CONSTRUCTORS
 	
@@ -40,12 +40,12 @@ public class SourceDispInfo {
 		mapFace=DataReader.readUShort(in[36], in[37]);
 		lightmapAlphaStart=DataReader.readInt(in[38], in[39], in[40], in[41]);
 		lightmapSamplePositionStart=DataReader.readInt(in[42], in[43], in[44], in[45]);
-		allowedVerts=new long[5];
+		allowedVerts=new int[10];
 		for(int i=0;i<90;i++) {
 			neighborInfo[i]=in[46+i];
 		}
-		for(int i=0;i<5;i++) {
-			allowedVerts[i]=DataReader.readLong(in[136+(i*8)], in[137+(i*8)], in[138+(i*8)], in[139+(i*8)], in[140+(i*8)], in[141+(i*8)], in[142+(i*8)], in[143+(i*8)]); // unsigned
+		for(int i=0;i<10;i++) {
+			allowedVerts[i]=DataReader.readInt(in[136+(i*4)], in[137+(i*4)], in[138+(i*4)], in[139+(i*4)]);
 		}
 	}
 	
@@ -141,11 +141,11 @@ public class SourceDispInfo {
 		neighborInfo=in;
 	}
 	
-	public long[] getAllowedVerts() {
+	public int[] getAllowedVerts() {
 		return allowedVerts;
 	}
 	
-	public void setAllowedVerts(long[] in) {
+	public void setAllowedVerts(int[] in) {
 		allowedVerts=in;
 	}
 }

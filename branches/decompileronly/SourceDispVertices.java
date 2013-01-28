@@ -81,4 +81,24 @@ public class SourceDispVertices {
 	public SourceDispVertex[] getElements() {
 		return elements;
 	}
+	
+	public SourceDispVertex[] getVertsInDisp(int first, int power) {
+		int numVerts=0;
+		switch(power) {
+			case 2:
+				numVerts=25;
+				break;
+			case 3:
+				numVerts=81;
+				break;
+			case 4:
+				numVerts=289;
+				break;
+		}
+		SourceDispVertex[] out=new SourceDispVertex[numVerts];
+		for(int i=0;i<numVerts;i++) {
+			out[i]=elements[first+i];
+		}
+		return out;
+	}
 }

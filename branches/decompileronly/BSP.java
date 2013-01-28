@@ -459,7 +459,7 @@ public class BSP {
 		dispInfos=new SourceDispInfos(data);
 	}
 	
-	public SourceDispInfos getDistInfos() {
+	public SourceDispInfos getDispInfos() {
 		return dispInfos;
 	}
 	

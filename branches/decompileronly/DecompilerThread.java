@@ -121,7 +121,7 @@ public class DecompilerThread implements Runnable {
 				String stackTrace="";
 				StackTraceElement[] trace=e.getStackTrace();
 				for(int i=0;i<trace.length;i++) {
-					stackTrace+=trace.toString()+Window.LF;
+					stackTrace+=trace[i].toString()+Window.LF;
 				}
 				Window.println(e.getMessage()+Window.LF+stackTrace,Window.VERBOSITY_WARNINGS);
 				Window.setProgress(jobnum, 1, 1, "ERROR! See log!");

@@ -228,9 +228,9 @@ public class BSPReader {
 						}
 						
 						lumpReader.close();
-				
+
 						doomMaps[doomMaps.length-1].printBSPReport();
-						
+
 						DecompilerDriver.window.addJob(null, doomMaps[doomMaps.length-1]);
 					}
 				}
@@ -885,9 +885,9 @@ public class BSPReader {
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
-						//	BSPObject.setFaces(readLump(length, version));
+							BSPObject.setFaces(readLump(length, version));
 						} else {
-						//	BSPObject.setFaces(readLump(offset, length));
+							BSPObject.setFaces(readLump(offset, length));
 						}
 						
 						offsetReader.skip(32); // skip lump 8 and 9 data
@@ -1019,9 +1019,9 @@ public class BSPReader {
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
-						//	BSPObject.setOriginalFaces(readLump(length, version));
+							BSPObject.setOriginalFaces(readLump(length, version));
 						} else {
-						//	BSPObject.setOriginalFaces(readLump(offset, length));
+							BSPObject.setOriginalFaces(readLump(offset, length));
 						}
 						
 						offsetReader.skip(80); // Lumps 28 29 30 31 32

@@ -328,37 +328,78 @@ public class VMFWriter {
 					}
 				}
 			}
+			String out="		side"+(char)0x0D+(char)0x0A+"		{"+(char)0x0D+(char)0x0A;
+			out+="			\"id\" \""+(nextID++)+"\""+(char)0x0D+(char)0x0A;
+			out+="			\"material\" \"" + texture + "\""+(char)0x0D+(char)0x0A;
 			if(Window.roundNumsIsSelected()) {
-				String out="		side"+(char)0x0D+(char)0x0A+"		{"+(char)0x0D+(char)0x0A;
-				out+="			\"id\" \""+(nextID++)+"\""+(char)0x0D+(char)0x0A;
 				out+="			\"plane\" \"("+fmt.format((double)Math.round(triangle[0].getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[0].getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[0].getZ()*1000000.0)/1000000.0)+") ";
 				out+="("+fmt.format((double)Math.round(triangle[1].getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[1].getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[1].getZ()*1000000.0)/1000000.0)+") ";
 				out+="("+fmt.format((double)Math.round(triangle[2].getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[2].getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(triangle[2].getZ()*1000000.0)/1000000.0)+")\""+(char)0x0D+(char)0x0A;
-				out+="			\"material\" \"" + texture + "\""+(char)0x0D+(char)0x0A;
 				out+="			\"uaxis\" \"["+fmt.format((double)Math.round(textureS.getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureS.getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureS.getZ()*1000000.0)/1000000.0)+" "+Math.round(textureShiftS)+"] "+fmt.format((double)Math.round(texScaleX*10000.0)/10000.0)+"\""+(char)0x0D+(char)0x0A;
 				out+="			\"vaxis\" \"["+fmt.format((double)Math.round(textureT.getX()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureT.getY()*1000000.0)/1000000.0)+" "+fmt.format((double)Math.round(textureT.getZ()*1000000.0)/1000000.0)+" "+Math.round(textureShiftT)+"] "+fmt.format((double)Math.round(texScaleY*10000.0)/10000.0)+"\""+(char)0x0D+(char)0x0A;
 				out+="			\"rotation\" \""+fmt.format((double)Math.round(texRot*10000.0)/10000.0)+"\""+(char)0x0D+(char)0x0A;
 				out+="			\"lightmapscale\" \""+fmt.format((double)Math.round(lgtScale*10000.0)/10000.0)+"\""+(char)0x0D+(char)0x0A;
-				out+="			\"smoothing_groups\" \"0\""+(char)0x0D+(char)0x0A+"		}"+(char)0x0D+(char)0x0A;
-				return out;
 			} else {
-				String out="		side"+(char)0x0D+(char)0x0A+"		{"+(char)0x0D+(char)0x0A;
-				out+="			\"id\" \""+(nextID++)+"\""+(char)0x0D+(char)0x0A;
 				out+="			\"plane\" \"("+triangle[0].getX()+" "+triangle[0].getY()+" "+triangle[0].getZ()+") ";
 				out+="("+triangle[1].getX()+" "+triangle[1].getY()+" "+triangle[1].getZ()+") ";
 				out+="("+triangle[2].getX()+" "+triangle[2].getY()+" "+triangle[2].getZ()+")\""+(char)0x0D+(char)0x0A;
-				out+="			\"material\" \"" + texture + "\""+(char)0x0D+(char)0x0A;
 				out+="			\"uaxis\" \"["+textureS.getX()+" "+textureS.getY()+" "+textureS.getZ()+" "+textureShiftS+"] "+texScaleX+"\""+(char)0x0D+(char)0x0A;
 				out+="			\"vaxis\" \"["+textureT.getX()+" "+textureT.getY()+" "+textureT.getZ()+" "+textureShiftT+"] "+texScaleY+"\""+(char)0x0D+(char)0x0A;
 				out+="			\"rotation\" \""+texRot+"\""+(char)0x0D+(char)0x0A;
 				out+="			\"lightmapscale\" \""+lgtScale+"\""+(char)0x0D+(char)0x0A;
-				out+="			\"smoothing_groups\" \"0\""+(char)0x0D+(char)0x0A+"		}"+(char)0x0D+(char)0x0A;
-				return out;
 			}
+			out+="			\"smoothing_groups\" \"0\""+(char)0x0D+(char)0x0A;
+			if(in.getDisplacement()!=null) {
+				out+=displacementToString(in.getDisplacement());
+			}
+			out+="		}"+(char)0x0D+(char)0x0A;
+			return out;
 		} catch(java.lang.NullPointerException e) {
 			Window.println("WARNING: Side with bad data! Not exported!",Window.VERBOSITY_WARNINGS);
 			return null;
 		}
+	}
+	
+	private String displacementToString(MAPDisplacement in) {
+		String out="			dispinfo"+(char)0x0D+(char)0x0A+"			{"+(char)0x0D+(char)0x0A;
+		out+="				\"power\" \""+in.getPower()+"\""+(char)0x0D+(char)0x0A;
+		out+="				\"startposition\" \"["+in.getStart().getX()+" "+in.getStart().getY()+" "+in.getStart().getZ()+"]\""+(char)0x0D+(char)0x0A;
+		out+="				\"elevation\" \"0\""+(char)0x0D+(char)0x0A+"				\"subdiv\" \"0\""+(char)0x0D+(char)0x0A;
+		String normals="				normals"+(char)0x0D+(char)0x0A+"				{"+(char)0x0D+(char)0x0A;
+		String distances="				distances"+(char)0x0D+(char)0x0A+"				{"+(char)0x0D+(char)0x0A;
+		String alphas="				alphas"+(char)0x0D+(char)0x0A+"				{"+(char)0x0D+(char)0x0A;
+		for(int i=0;i<Math.pow(2, in.getPower())+1;i++) {
+			normals+="					\"row"+i+"\" \"";
+			distances+="					\"row"+i+"\" \"";
+			alphas+="					\"row"+i+"\" \"";
+			for(int j=0;j<Math.pow(2, in.getPower())+1;j++) {
+				normals+=in.getNormal(i, j).getX()+" "+in.getNormal(i, j).getY()+" "+in.getNormal(i, j).getZ();
+				distances+=in.getDist(i, j);
+				alphas+=in.getAlpha(i, j);
+				if(j<Math.pow(2, in.getPower())) {
+					normals+=" ";
+					distances+=" ";
+					alphas+=" ";
+				}
+			}
+			normals+="\""+(char)0x0D+(char)0x0A;
+			distances+="\""+(char)0x0D+(char)0x0A;
+			alphas+="\""+(char)0x0D+(char)0x0A;
+		}
+		out+=normals+"				}"+(char)0x0D+(char)0x0A;
+		out+=distances+"				}"+(char)0x0D+(char)0x0A;
+		out+=alphas+"				}"+(char)0x0D+(char)0x0A;
+		out+="				triangle_tags"+(char)0x0D+(char)0x0A+"				{"+(char)0x0D+(char)0x0A+"				}"+(char)0x0D+(char)0x0A;
+		out+="				allowed_verts"+(char)0x0D+(char)0x0A+"				{"+(char)0x0D+(char)0x0A+"					\"10\" \"";
+		for(int i=0;i<10;i++) {
+			out+=in.getAllowedVerts()[i];
+			if(i<9) {
+				out+=" ";
+			}
+		}
+		out+="\""+(char)0x0D+(char)0x0A+"				}"+(char)0x0D+(char)0x0A;
+		out+="			}"+(char)0x0D+(char)0x0A;
+		return out;
 	}
 	
 	// Turn a Q2 entity into a Hammer one. This won't magically fix every single
