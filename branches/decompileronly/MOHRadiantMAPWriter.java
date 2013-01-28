@@ -208,7 +208,7 @@ public class MOHRadiantMAPWriter {
 		}
 		String brush="// Brush "+num+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A;
 		for(int i=0;i<in.getNumSides();i++) {
-			brush+=brushSideToString(in.getSide(i), in.isDetailBrush())+(char)0x0D+(char)0x0A;
+			brush+=brushSideToString(in.getSide(i), (in.isDetailBrush() || in.getSide(0).getDisplacement()!=null))+(char)0x0D+(char)0x0A;
 		}
 		brush+="}"+(char)0x0D+(char)0x0A;
 		if(brush.length() < 45) { // Any brush this short contains no sides.

@@ -260,7 +260,7 @@ public class MAP510Writer {
 			return new byte[0];
 		}
 		String brush="{ // Brush "+num+(char)0x0D+(char)0x0A;
-		if(in.isDetailBrush() && currentEntity==0) {
+		if((in.isDetailBrush() || in.getSide(0).getDisplacement()!=null) && currentEntity==0) {
 			brush+="\"BRUSHFLAGS\" \"DETAIL\""+(char)0x0D+(char)0x0A;
 		}
 		for(int i=0;i<in.getNumSides();i++) {
@@ -332,6 +332,10 @@ public class MAP510Writer {
 										} else {
 											if(texture.equalsIgnoreCase("tools/toolsnodraw")) {
 												texture="special/nodraw";
+											} else {
+												if(texture.equalsIgnoreCase("TOOLS/TOOLSPLAYERCLIP")) {
+													texture="special/playerclip";
+												}
 											}
 										}
 									}
