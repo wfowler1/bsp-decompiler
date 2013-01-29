@@ -31,6 +31,8 @@ public class VMFWriter {
 	private File mapFile;
 	private int BSPVersion;
 	
+	private Entity[] cubemaps=new Entity[0];
+	
 	private int currentEntity;
 	
 	int nextID=1;
@@ -112,6 +114,12 @@ public class VMFWriter {
 					entityBytes=newList;
 				}
 				totalLength+=entityBytes[currentEntity].length;
+				if(cubemaps.length>0) { // This has to go somewhere...
+					for(int i=0;i<cubemaps.length;i++) {
+						data.add(cubemaps[i]);
+					}
+					cubemaps=new Entity[0];
+				}
 			}
 			byte[] allEnts=new byte[totalLength];
 			int offset=0;
@@ -277,7 +285,7 @@ public class VMFWriter {
 			double texScaleY=in.getTexScaleY();
 			float texRot=in.getTexRot();
 			double lgtScale=in.getLgtScale();
-			if(BSPVersion==42 || BSPVersion==1) {
+			if(BSPVersion==BSP.TYPE_NIGHTFIRE || BSPVersion==DoomMap.TYPE_DOOM || BSPVersion==DoomMap.TYPE_HEXEN) {
 				if(texture.equalsIgnoreCase("special/nodraw") || texture.equalsIgnoreCase("special/null")) {
 					texture="tools/toolsnodraw";
 				} else {
@@ -302,7 +310,7 @@ public class VMFWriter {
 					}
 				}
 			} else {
-				if(BSPVersion==38) {
+				if(BSPVersion==BSP.TYPE_QUAKE2) {
 					try {
 						if(texture.equalsIgnoreCase("special/hint")) {
 							texture="tools/toolshint";
@@ -325,6 +333,72 @@ public class VMFWriter {
 						}
 					} catch(StringIndexOutOfBoundsException e) {
 						;
+					}
+				} else {
+					if(BSPVersion==BSP.TYPE_SOURCE17 || BSPVersion==BSP.TYPE_SOURCE18 || BSPVersion==BSP.TYPE_SOURCE19 || BSPVersion==BSP.TYPE_SOURCE20 || BSPVersion==BSP.TYPE_SOURCE21 || BSPVersion==BSP.TYPE_SOURCE22 || BSPVersion==BSP.TYPE_SOURCE23) {
+						if(texture.substring(0,5).equalsIgnoreCase("maps/")) {
+							texture=texture.substring(5);
+							for(int i=0;i<texture.length();i++) {
+								if(texture.charAt(i)=='/') {
+									texture=texture.substring(i+1);
+									break;
+								}
+							}
+						}
+						// Find cubemap textures
+						int numUnderscores=0;
+						String[] cubemapNumbers=new String[3];
+						cubemapNumbers[0]="";
+						cubemapNumbers[1]="";
+						cubemapNumbers[2]="";
+						for(int i=texture.length()-1;i>0;i--) {
+							if(texture.charAt(i)<='9' && texture.charAt(i)>='0') { // Current is a number, start building string
+								cubemapNumbers[2-numUnderscores]=texture.charAt(i)+cubemapNumbers[2-numUnderscores];
+							} else {
+								if(texture.charAt(i)=='-') { // Current is a minus sign (-).
+									if(cubemapNumbers[2-numUnderscores].length()==0) {
+										break; // Make sure there's a number to add the minus sign to. If not, kill the loop.
+									} else {
+										cubemapNumbers[2-numUnderscores]="-"+cubemapNumbers[2-numUnderscores];
+									}
+								} else {
+									if(texture.charAt(i)=='_') { // Current is an underscore (_)
+										if(cubemapNumbers[2-numUnderscores].length()>0) { // Make sure there is a number in the current string
+											numUnderscores++;                              // before moving on to the next one.
+											if(numUnderscores==3) { // If we've got all our numbers
+												texture=texture.substring(0,i); // Cut the texture string
+												break; // Kill the loop, we're done
+											}
+										} else { // No number after the underscore
+											break;
+										}
+									} else { // Not an acceptable character
+										break;
+									}
+								}
+							}
+						}
+						if(numUnderscores>=3) { // If this texture has a cubemap associated with it
+							boolean added=false;
+							for(int i=0;i<cubemaps.length;i++) {
+								if(cubemaps[i].getAttribute("origin").equals(cubemapNumbers[0]+" "+cubemapNumbers[1]+" "+cubemapNumbers[2])) {
+									cubemaps[i].setAttribute("sides", cubemaps[i].getAttribute("sides")+" "+nextID);
+									added=true;
+									break;
+								}
+							}
+							if(!added) {
+								Entity newCubemap=new Entity("env_cubemap");
+								newCubemap.setAttribute("origin", cubemapNumbers[0]+" "+cubemapNumbers[1]+" "+cubemapNumbers[2]);
+								newCubemap.setAttribute("sides", nextID+"");
+								Entity[] newList=new Entity[cubemaps.length+1];
+								for(int i=0;i<cubemaps.length;i++) {
+									newList[i]=cubemaps[i];
+								}
+								newList[newList.length-1]=newCubemap;
+								cubemaps=newList;
+							}
+						}
 					}
 				}
 			}
@@ -373,7 +447,7 @@ public class VMFWriter {
 			distances+="					\"row"+i+"\" \"";
 			alphas+="					\"row"+i+"\" \"";
 			for(int j=0;j<Math.pow(2, in.getPower())+1;j++) {
-				normals+=in.getNormal(i, j).getX()+" "+in.getNormal(i, j).getY()+" "+in.getNormal(i, j).getZ();
+				normals+=fmt.format(in.getNormal(i, j).getX())+" "+fmt.format(in.getNormal(i, j).getY())+" "+fmt.format(in.getNormal(i, j).getZ());
 				distances+=in.getDist(i, j);
 				alphas+=in.getAlpha(i, j);
 				if(j<Math.pow(2, in.getPower())) {
