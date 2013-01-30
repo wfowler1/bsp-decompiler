@@ -31,8 +31,6 @@ public class VMFWriter {
 	private File mapFile;
 	private int BSPVersion;
 	
-	private Entity[] cubemaps=new Entity[0];
-	
 	private int currentEntity;
 	
 	int nextID=1;
@@ -114,12 +112,6 @@ public class VMFWriter {
 					entityBytes=newList;
 				}
 				totalLength+=entityBytes[currentEntity].length;
-				if(cubemaps.length>0) { // This has to go somewhere...
-					for(int i=0;i<cubemaps.length;i++) {
-						data.add(cubemaps[i]);
-					}
-					cubemaps=new Entity[0];
-				}
 			}
 			byte[] allEnts=new byte[totalLength];
 			int offset=0;
@@ -347,24 +339,20 @@ public class VMFWriter {
 						}
 						// Find cubemap textures
 						int numUnderscores=0;
-						String[] cubemapNumbers=new String[3];
-						cubemapNumbers[0]="";
-						cubemapNumbers[1]="";
-						cubemapNumbers[2]="";
+						boolean validnumber=false;
 						for(int i=texture.length()-1;i>0;i--) {
 							if(texture.charAt(i)<='9' && texture.charAt(i)>='0') { // Current is a number, start building string
-								cubemapNumbers[2-numUnderscores]=texture.charAt(i)+cubemapNumbers[2-numUnderscores];
+								validnumber=true;
 							} else {
 								if(texture.charAt(i)=='-') { // Current is a minus sign (-).
-									if(cubemapNumbers[2-numUnderscores].length()==0) {
+									if(!validnumber) {
 										break; // Make sure there's a number to add the minus sign to. If not, kill the loop.
-									} else {
-										cubemapNumbers[2-numUnderscores]="-"+cubemapNumbers[2-numUnderscores];
 									}
 								} else {
 									if(texture.charAt(i)=='_') { // Current is an underscore (_)
-										if(cubemapNumbers[2-numUnderscores].length()>0) { // Make sure there is a number in the current string
-											numUnderscores++;                              // before moving on to the next one.
+										if(validnumber) { // Make sure there is a number in the current string
+											numUnderscores++; // before moving on to the next one.
+											validnumber=false;
 											if(numUnderscores==3) { // If we've got all our numbers
 												texture=texture.substring(0,i); // Cut the texture string
 												break; // Kill the loop, we're done
@@ -376,27 +364,6 @@ public class VMFWriter {
 										break;
 									}
 								}
-							}
-						}
-						if(numUnderscores>=3) { // If this texture has a cubemap associated with it
-							boolean added=false;
-							for(int i=0;i<cubemaps.length;i++) {
-								if(cubemaps[i].getAttribute("origin").equals(cubemapNumbers[0]+" "+cubemapNumbers[1]+" "+cubemapNumbers[2])) {
-									cubemaps[i].setAttribute("sides", cubemaps[i].getAttribute("sides")+" "+nextID);
-									added=true;
-									break;
-								}
-							}
-							if(!added) {
-								Entity newCubemap=new Entity("env_cubemap");
-								newCubemap.setAttribute("origin", cubemapNumbers[0]+" "+cubemapNumbers[1]+" "+cubemapNumbers[2]);
-								newCubemap.setAttribute("sides", nextID+"");
-								Entity[] newList=new Entity[cubemaps.length+1];
-								for(int i=0;i<cubemaps.length;i++) {
-									newList[i]=cubemaps[i];
-								}
-								newList[newList.length-1]=newCubemap;
-								cubemaps=newList;
 							}
 						}
 					}

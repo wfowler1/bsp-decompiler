@@ -145,6 +145,26 @@ public class SourceBSPDecompiler {
 				mapFile.getElement(0).addBrush(displacementBrush);
 			}
 		}
+		for(int i=0;i<BSPObject.getStaticProps().length();i++) {
+			Entity newStaticProp=new Entity("prop_static");
+			SourceStaticProp currentProp=BSPObject.getStaticProps().getElement(i);
+			newStaticProp.setAttribute("model", BSPObject.getStaticProps().getDictionary()[currentProp.getDictionaryEntry()]);
+			newStaticProp.setAttribute("skin", currentProp.getSkin()+"");
+			newStaticProp.setAttribute("origin", currentProp.getOrigin().getX()+" "+currentProp.getOrigin().getY()+" "+currentProp.getOrigin().getZ());
+			newStaticProp.setAttribute("angles", currentProp.getAngles().getX()+" "+currentProp.getAngles().getY()+" "+currentProp.getAngles().getZ());
+			newStaticProp.setAttribute("solid", currentProp.getSolidity()+"");
+			newStaticProp.setAttribute("fademindist", currentProp.getMinFadeDist()+"");
+			newStaticProp.setAttribute("fademaxdist", currentProp.getMaxFadeDist()+"");
+			newStaticProp.setAttribute("fadescale", currentProp.getForcedFadeScale()+"");
+			mapFile.add(newStaticProp);
+		}
+		for(int i=0;i<BSPObject.getCubemaps().length();i++) {
+			Entity newCubemap=new Entity("env_cubemap");
+			SourceCubemap currentCube=BSPObject.getCubemaps().getElement(i);
+			newCubemap.setAttribute("origin", currentCube.getOrigin().getX()+" "+currentCube.getOrigin().getY()+" "+currentCube.getOrigin().getZ());
+			newCubemap.setAttribute("size", currentCube.getSize()+"");
+			mapFile.add(newCubemap);
+		}
 		Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Saving...");
 		MAPMaker.outputMaps(mapFile, BSPObject.getMapNameNoExtension(), BSPObject.getFolder(), BSPObject.getVersion());
 		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
@@ -189,138 +209,50 @@ public class SourceBSPDecompiler {
 					}
 				}*/
 				if(!isDuplicate) {
-					TexInfo currentTexInfo;
+					TexInfo currentTexInfo=null;
+					String texture="tools/toolsclip";
 					if(currentSide.getTexture()>-1) {
 						currentTexInfo=BSPObject.getTexInfo().getElement(currentSide.getTexture());
 					} else {
-						Vector3D[] axes=GenericMethods.textureAxisFromPlane(currentPlane);
-						currentTexInfo=new TexInfo(axes[0], 0, axes[1], 0, 0, BSPObject.findTexDataWithTexture("tools/toolsclip"));
+						int dataIndex=BSPObject.findTexDataWithTexture("tools/toolsclip");
+						if(dataIndex>=0) {
+							currentTexInfo=new TexInfo(new Vector3D(0,0,0), 0, new Vector3D(0,0,0), 0, 0, dataIndex);
+						}
 					}
-					SourceTexData currentTexData=BSPObject.getTexDatas().getElement(currentTexInfo.getTexture());
-					/*if(!Window.planarDecompIsSelected()) {
-						// Find a face whose plane and texture information corresponds to the current side
-						// It doesn't really matter if it's the actual brush's face, just as long as it provides vertices.
-						v38Face currentFace=null;
-						boolean faceFound=false;
-						for(int j=0;j<BSP38.getFaces().length();j++) {
-							currentFace=BSP38.getFaces().getFace(j);
-							if(currentFace.getPlane()==currentSide.getPlane() && currentFace.getTexInfo()==currentSide.getTexInfo() && currentFace.getNumEdges()>1) {
-								faceFound=true;
-								break;
-							}
-						}
-						if(faceFound) {
-							int markEdge=BSP38.getMarkEdges().getInt(currentFace.getFirstEdge());
-							int currentMarkEdge=0;
-							int firstVertex;
-							int secondVertex;
-							if(markEdge>0) {
-								firstVertex=BSP38.getEdges().getEdge(markEdge).getFirstVertex();
-								secondVertex=BSP38.getEdges().getEdge(markEdge).getSecondVertex();
-							} else {
-								firstVertex=BSP38.getEdges().getEdge(-markEdge).getSecondVertex();
-								secondVertex=BSP38.getEdges().getEdge(-markEdge).getFirstVertex();
-							}
-							int numVertices=currentFace.getNumEdges()+1;
-							boolean pointsWorked=false;
-							plane[0]=new Vector3D(BSP38.getVertices().getVertex(firstVertex)); // Grab and store the first one
-							plane[1]=new Vector3D(BSP38.getVertices().getVertex(secondVertex)); // The second should be unique from the first
-							boolean second=false;
-							if(plane[0].equals(plane[1])) { // If for some messed up reason they are the same
-								for(currentMarkEdge=1;currentMarkEdge<currentFace.getNumEdges();currentMarkEdge++) { // For each edge after the first one
-									markEdge=BSP38.getMarkEdges().getInt(currentFace.getFirstEdge()+currentMarkEdge);
-									if(markEdge>0) {
-										plane[1]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(markEdge).getFirstVertex()));
-									} else {
-										plane[1]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(-markEdge).getSecondVertex()));
-									}
-									if(!plane[0].equals(plane[1])) { // Make sure the point isn't the same as the first one
-										second=false;
-										break; // If it isn't the same, this point is good
-									} else {
-										if(markEdge>0) {
-											plane[1]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(markEdge).getSecondVertex()));
-										} else {
-											plane[1]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(-markEdge).getFirstVertex()));
-										}
-										if(!plane[0].equals(plane[1])) {
-											second=true;
-											break;
-										}
-									}
-								}
-							}
-							if(second) {
-								currentMarkEdge++;
-							}
-							for(;currentMarkEdge<currentFace.getNumEdges();currentMarkEdge++) {
-								markEdge=BSP38.getMarkEdges().getInt(currentFace.getFirstEdge()+currentMarkEdge);
-								if(second) {
-									if(markEdge>0) {
-										plane[2]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(markEdge).getFirstVertex()));
-									} else {
-										plane[2]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(-markEdge).getSecondVertex()));
-									}
-									if(!plane[2].equals(plane[0]) && !plane[2].equals(plane[1])) { // Make sure no point is equal to the third one
-										if((Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || // Make sure all
-										   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getY()!=0) || // three points 
-										   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getZ()!=0)) { // are not collinear
-											pointsWorked=true;
-											break;
-										}
-									}
-								}
-								// if we get to here, the first vertex of the edge failed, or was already used
-								if(markEdge>0) { // use the second vertex
-									plane[2]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(markEdge).getSecondVertex()));
-								} else {
-									plane[2]=new Vector3D(BSP38.getVertices().getVertex(BSP38.getEdges().getEdge(-markEdge).getFirstVertex()));
-								}
-								if(!plane[2].equals(plane[0]) && !plane[2].equals(plane[1])) { // Make sure no point is equal to the third one
-									if((Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getX()!=0) || // Make sure all
-									   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getY()!=0) || // three points 
-									   (Vector3D.crossProduct(plane[0].subtract(plane[1]), plane[0].subtract(plane[2])).getZ()!=0)) { // are not collinear
-										pointsWorked=true;
-										break;
-									}
-								}
-								// If we get here, neither point worked and we need to try the next edge.
-								second=true;
-							}
-							if(!pointsWorked) {
-								plane=GenericMethods.extrapPlanePoints(currentPlane);
-							}
-						} else { // Face not found
-							plane=GenericMethods.extrapPlanePoints(currentPlane);
-						}
-					} else { // Planar decomp only */
-					//	plane=GenericMethods.extrapPlanePoints(currentPlane);
-					// }
-					String texture=BSPObject.getTextures().getTextureAtOffset((int)BSPObject.getTexTable().getElement(currentTexData.getStringTableIndex()));
-					if(texture.substring(0,6).equalsIgnoreCase("tools/")) {
-						// Tools textured faces do not maintain their own texture axes. Therefore, an arbitrary axis is
-						// used in the compiled map. When decompiled, these axes might smear the texture on the face. Fix that.
-						Vector3D[] axes=GenericMethods.textureAxisFromPlane(currentPlane);
-						currentTexInfo=new TexInfo(axes[0], 0, axes[1], 0, 0, BSPObject.findTexDataWithTexture(texture));
+					if(currentTexInfo!=null) {
+						SourceTexData currentTexData=BSPObject.getTexDatas().getElement(currentTexInfo.getTexture());
+						texture=BSPObject.getTextures().getTextureAtOffset((int)BSPObject.getTexTable().getElement(currentTexData.getStringTableIndex()));
 					}
 					double[] textureU=new double[3];
 					double[] textureV=new double[3];
+					double textureShiftU=0;
+					double textureShiftV=0;
+					double texScaleU=1;
+					double texScaleV=1;
 					// Get the lengths of the axis vectors
-					double SAxisLength=Math.sqrt(Math.pow((double)currentTexInfo.getSAxis().getX(),2)+Math.pow((double)currentTexInfo.getSAxis().getY(),2)+Math.pow((double)currentTexInfo.getSAxis().getZ(),2));
-					double TAxisLength=Math.sqrt(Math.pow((double)currentTexInfo.getTAxis().getX(),2)+Math.pow((double)currentTexInfo.getTAxis().getY(),2)+Math.pow((double)currentTexInfo.getTAxis().getZ(),2));
-					// In compiled maps, shorter vectors=longer textures and vice versa. This will convert their lengths back to 1. We'll use the actual scale values for length.
-					double texScaleU=(1/SAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
-					double texScaleV=(1/TAxisLength);
-					textureU[0]=((double)currentTexInfo.getSAxis().getX()/SAxisLength);
-					textureU[1]=((double)currentTexInfo.getSAxis().getY()/SAxisLength);
-					textureU[2]=((double)currentTexInfo.getSAxis().getZ()/SAxisLength);
-					double originShiftU=(((double)currentTexInfo.getSAxis().getX()/SAxisLength)*origin[X]+((double)currentTexInfo.getSAxis().getY()/SAxisLength)*origin[Y]+((double)currentTexInfo.getSAxis().getZ()/SAxisLength)*origin[Z])/texScaleU;
-					double textureShiftU=(double)currentTexInfo.getSShift()-originShiftU;
-					textureV[0]=((double)currentTexInfo.getTAxis().getX()/TAxisLength);
-					textureV[1]=((double)currentTexInfo.getTAxis().getY()/TAxisLength);
-					textureV[2]=((double)currentTexInfo.getTAxis().getZ()/TAxisLength);
-					double originShiftV=(((double)currentTexInfo.getTAxis().getX()/TAxisLength)*origin[X]+((double)currentTexInfo.getTAxis().getY()/TAxisLength)*origin[Y]+((double)currentTexInfo.getTAxis().getZ()/TAxisLength)*origin[Z])/texScaleV;
-					double textureShiftV=(double)currentTexInfo.getTShift()-originShiftV;
+					if(texture.substring(0,6).equalsIgnoreCase("tools/") || currentTexInfo==null) {
+						// Tools textured faces do not maintain their own texture axes. Therefore, an arbitrary axis is
+						// used in the compiled map. When decompiled, these axes might smear the texture on the face. Fix that.
+						Vector3D[] axes=GenericMethods.textureAxisFromPlane(currentPlane);
+						textureU=axes[0].getPoint();
+						textureV=axes[1].getPoint();
+					} else {
+						double SAxisLength=Math.sqrt(Math.pow((double)currentTexInfo.getSAxis().getX(),2)+Math.pow((double)currentTexInfo.getSAxis().getY(),2)+Math.pow((double)currentTexInfo.getSAxis().getZ(),2));
+						double TAxisLength=Math.sqrt(Math.pow((double)currentTexInfo.getTAxis().getX(),2)+Math.pow((double)currentTexInfo.getTAxis().getY(),2)+Math.pow((double)currentTexInfo.getTAxis().getZ(),2));
+						// In compiled maps, shorter vectors=longer textures and vice versa. This will convert their lengths back to 1. We'll use the actual scale values for length.
+						texScaleU=(1/SAxisLength);// Let's use these values using the lengths of the U and V axes we found above.
+						texScaleV=(1/TAxisLength);
+						textureU[0]=((double)currentTexInfo.getSAxis().getX()/SAxisLength);
+						textureU[1]=((double)currentTexInfo.getSAxis().getY()/SAxisLength);
+						textureU[2]=((double)currentTexInfo.getSAxis().getZ()/SAxisLength);
+						double originShiftU=(((double)currentTexInfo.getSAxis().getX()/SAxisLength)*origin[X]+((double)currentTexInfo.getSAxis().getY()/SAxisLength)*origin[Y]+((double)currentTexInfo.getSAxis().getZ()/SAxisLength)*origin[Z])/texScaleU;
+						textureShiftU=(double)currentTexInfo.getSShift()-originShiftU;
+						textureV[0]=((double)currentTexInfo.getTAxis().getX()/TAxisLength);
+						textureV[1]=((double)currentTexInfo.getTAxis().getY()/TAxisLength);
+						textureV[2]=((double)currentTexInfo.getTAxis().getZ()/TAxisLength);
+						double originShiftV=(((double)currentTexInfo.getTAxis().getX()/TAxisLength)*origin[X]+((double)currentTexInfo.getTAxis().getY()/TAxisLength)*origin[Y]+((double)currentTexInfo.getTAxis().getZ()/TAxisLength)*origin[Z])/texScaleV;
+						textureShiftV=(double)currentTexInfo.getTShift()-originShiftV;
+					}
 					float texRot=0; // In compiled maps this is calculated into the U and V axes, so set it to 0 until I can figure out a good way to determine a better value.
 					int flags=0; // Set this to 0 until we can somehow associate faces with brushes
 					String material="wld_lightmap"; // Since materials are a NightFire only thing, set this to a good default

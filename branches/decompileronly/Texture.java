@@ -18,6 +18,11 @@ public class Texture extends LumpObject {
 	private TexInfo texAxes;
 	
 	// CONSTRUCTORS
+	public Texture(String texture) {
+		super(texture.getBytes());
+		this.name=texture;
+	}
+	
 	public Texture(LumpObject in, int type) {
 		super(in.getData());
 		new Texture(in.getData(), type);

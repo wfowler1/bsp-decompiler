@@ -1040,7 +1040,56 @@ public class BSPReader {
 							BSPObject.setDispVerts(readLump(offset, length));
 						}
 						
-						offsetReader.skip(96);
+						offsetReader.skip(16);
+						
+						// Lump 35, Game lump
+						// This lump SUCKS. It's a lump containing nested lumps for game specific data.
+						// What we need out of it is the static prop lump.
+						offsetReader.read(read); // Read 4 bytes
+						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+						offsetReader.read(read); // Read 4 more bytes
+						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+						offsetReader.read(read); // Read 4 more bytes
+						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
+						offsetReader.skip(4);
+						byte[] gamelumpData;
+						int gamelumpFileOffset;
+						if(isL4D2) {
+							gamelumpData=readLump(length, version);
+							gamelumpFileOffset=length;
+						} else {
+							gamelumpData=readLump(offset, length);
+							gamelumpFileOffset=offset;
+						}
+						int numGamelumps=DataReader.readInt(gamelumpData[0], gamelumpData[1], gamelumpData[2], gamelumpData[3]);
+						int gamelumpOffset=4;
+						if(numGamelumps>1) {
+							byte[] staticPropLump=new byte[0];
+							int staticPropLumpVersion=0;
+							boolean isRelativeToLumpStart=false;
+							for(int i=0;i<numGamelumps;i++) {
+								int gamelumpID=DataReader.readInt(gamelumpData[gamelumpOffset++], gamelumpData[gamelumpOffset++], gamelumpData[gamelumpOffset++], gamelumpData[gamelumpOffset++]);
+								gamelumpOffset+=2; // skip flags
+								short gamelumpVersion=DataReader.readShort(gamelumpData[gamelumpOffset++], gamelumpData[gamelumpOffset++]);
+								int internalOffset=DataReader.readInt(gamelumpData[gamelumpOffset++], gamelumpData[gamelumpOffset++], gamelumpData[gamelumpOffset++], gamelumpData[gamelumpOffset++]);
+								int internalLength=DataReader.readInt(gamelumpData[gamelumpOffset++], gamelumpData[gamelumpOffset++], gamelumpData[gamelumpOffset++], gamelumpData[gamelumpOffset++]);
+								if(internalOffset<gamelumpFileOffset) {
+									isRelativeToLumpStart=true;
+								}
+								if(gamelumpID==1936749168) { // "prps"
+									staticPropLumpVersion=gamelumpVersion;
+									if(isRelativeToLumpStart) {
+										staticPropLump=readLump(gamelumpFileOffset+internalOffset, internalLength);
+									} else {
+										staticPropLump=readLump(internalOffset, internalLength);
+									}
+								}
+								// Other game lumps would go here
+							}
+							BSPObject.setStaticProps(staticPropLump, staticPropLumpVersion);
+						}
+						
+						offsetReader.skip(64);
 						
 						if(Window.extractZipIsSelected()) {
 							// Lump 40
@@ -1075,7 +1124,21 @@ public class BSPReader {
 							offsetReader.skip(16);
 						}
 						
-						offsetReader.skip(32);
+						offsetReader.skip(16);
+						
+						// Lump 42
+						offsetReader.read(read); // Read 4 bytes
+						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
+						offsetReader.read(read); // Read 4 more bytes
+						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
+						offsetReader.read(read); // Read 4 more bytes
+						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
+						offsetReader.skip(4);
+						if(isL4D2) {
+							BSPObject.setCubemaps(readLump(length, version));
+						} else {
+							BSPObject.setCubemaps(readLump(offset, length));
+						}
 						
 						// Lump 43
 						offsetReader.read(read); // Read 4 bytes

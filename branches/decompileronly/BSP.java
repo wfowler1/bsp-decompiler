@@ -66,6 +66,8 @@ public class BSP {
 	private SourceDispInfos dispInfos;
 	private SourceDispVertices dispVerts;
 	private NumList displacementTriangles;
+	private SourceStaticProps staticProps;
+	private SourceCubemaps cubemaps;
 	
 	// CONSTRUCTORS
 	public BSP(String filePath, int version) {
@@ -164,6 +166,14 @@ public class BSP {
 		}
 		try {
 			Window.println("Displacement Triangle Tags lump: "+displacementTriangles.getLength()+" bytes, "+displacementTriangles.length()+" items",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Static Props lump: "+staticProps.getLength()+" bytes, "+staticProps.length()+" items, "+staticProps.getDictionary().length+" unique models",Window.VERBOSITY_MAPSTATS);
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
+			Window.println("Cubemaps lump: "+cubemaps.getLength()+" bytes, "+cubemaps.length()+" items",Window.VERBOSITY_MAPSTATS);
 		} catch(java.lang.NullPointerException e) {
 		}
 	}
@@ -493,6 +503,22 @@ public class BSP {
 	
 	public NumList getDispTris() {
 		return displacementTriangles;
+	}
+	
+	public void setStaticProps(byte[] data, int lumpVersion) throws java.lang.InterruptedException {
+		staticProps=new SourceStaticProps(data, version, lumpVersion);
+	}
+	
+	public SourceStaticProps getStaticProps() {
+		return staticProps;
+	}
+	
+	public void setCubemaps(byte[] data) throws java.lang.InterruptedException {
+		cubemaps=new SourceCubemaps(data, version);
+	}
+
+	public SourceCubemaps getCubemaps() {
+		return cubemaps;
 	}
 	
 	// INTERNAL CLASSES
