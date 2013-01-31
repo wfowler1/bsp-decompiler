@@ -13,24 +13,23 @@ public class SourceDispInfos {
 	private int length;
 	private SourceDispInfo[] elements;
 	
-	public int structLength=176; // Only for BSP versions 18-21 (internal lump version number is probably more important)
-	// TODO: Implement more versions of this lump, it varies wildly between games.
+	public int structLength=0;
 
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public SourceDispInfos(String in) throws java.lang.InterruptedException {
-		new SourceDispInfos(new File(in));
+	public SourceDispInfos(String in, int type) throws java.lang.InterruptedException {
+		new SourceDispInfos(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public SourceDispInfos(File in) throws java.lang.InterruptedException {
+	public SourceDispInfos(File in, int type) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
 			byte[] temp=new byte[(int)data.length()];
 			fileReader.read(temp);
-			new SourceDispInfos(temp);
+			new SourceDispInfos(temp, type);
 			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
@@ -40,7 +39,22 @@ public class SourceDispInfos {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public SourceDispInfos(byte[] in) throws java.lang.InterruptedException {
+	public SourceDispInfos(byte[] in, int type) throws java.lang.InterruptedException {
+		switch(type) {
+			case BSP.TYPE_SOURCE17:
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+				structLength=176;
+				break;
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
+				structLength=180;
+				break;
+			default:
+				structLength=0; // This will cause the shit to hit the fan.
+		}
 		int offset=0;
 		length=in.length;
 		elements=new SourceDispInfo[in.length/structLength];

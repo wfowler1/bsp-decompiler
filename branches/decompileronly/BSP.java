@@ -466,7 +466,7 @@ public class BSP {
 	}
 	
 	public void setDispInfos(byte[] data) throws java.lang.InterruptedException {
-		dispInfos=new SourceDispInfos(data);
+		dispInfos=new SourceDispInfos(data, version);
 	}
 	
 	public SourceDispInfos getDispInfos() {

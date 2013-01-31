@@ -162,7 +162,7 @@ public class SourceBSPDecompiler {
 			Entity newCubemap=new Entity("env_cubemap");
 			SourceCubemap currentCube=BSPObject.getCubemaps().getElement(i);
 			newCubemap.setAttribute("origin", currentCube.getOrigin().getX()+" "+currentCube.getOrigin().getY()+" "+currentCube.getOrigin().getZ());
-			newCubemap.setAttribute("size", currentCube.getSize()+"");
+			newCubemap.setAttribute("cubemapsize", currentCube.getSize()+"");
 			mapFile.add(newCubemap);
 		}
 		Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Saving...");
