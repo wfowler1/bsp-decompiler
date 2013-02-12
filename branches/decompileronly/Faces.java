@@ -18,18 +18,18 @@ public class Faces {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public Faces(String in, int type) throws java.lang.InterruptedException {
-		new Faces(new File(in), type);
+	public Faces(String in, int type, boolean isVindictus) throws java.lang.InterruptedException {
+		new Faces(new File(in), type, isVindictus);
 	}
 	
 	// This one accepts the input file path as a File
-	public Faces(File in, int type) throws java.lang.InterruptedException {
+	public Faces(File in, int type, boolean isVindictus) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
 			byte[] temp=new byte[(int)data.length()];
 			fileReader.read(temp);
-			new Faces(temp, type);
+			new Faces(temp, type, isVindictus);
 			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
@@ -39,7 +39,7 @@ public class Faces {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public Faces(byte[] in, int type) throws java.lang.InterruptedException {
+	public Faces(byte[] in, int type, boolean isVindictus) throws java.lang.InterruptedException {
 		switch(type) {
 			case BSP.TYPE_QUAKE:
 			case BSP.TYPE_QUAKE2:
@@ -79,6 +79,9 @@ public class Faces {
 			default:
 				structLength=0; // This will cause the shit to hit the fan.
 		}
+		if(isVindictus) {
+			structLength=72;
+		}
 		int offset=0;
 		length=in.length;
 		elements=new Face[in.length/structLength];
@@ -90,7 +93,7 @@ public class Faces {
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
-			elements[i]=new Face(bytes, type);
+			elements[i]=new Face(bytes, type, isVindictus);
 			offset+=structLength;
 		}
 	}

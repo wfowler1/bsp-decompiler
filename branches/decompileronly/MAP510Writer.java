@@ -184,6 +184,15 @@ public class MAP510Writer {
 			case BSP.TYPE_COD:
 				in=ent59ToEntM510(in);
 				break;
+			case BSP.TYPE_SOURCE17:
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
+				in=entSourceToEntM510(in);
+				break;
 		}
 		if(in.getAttribute("classname").equalsIgnoreCase("worldspawn")) {
 			in.setAttribute("mapversion", "510");
@@ -795,6 +804,42 @@ public class MAP510Writer {
 								}
 							}
 						}
+					}
+				}
+			}
+		}
+		return in;
+	}
+	
+	private Entity entSourceToEntM510(Entity in) {
+		if(in.getAttribute("classname").equalsIgnoreCase("func_breakable_surf")) {
+			in.setAttribute("classname", "func_breakable");
+		} else {
+			if(in.getAttribute("classname").equalsIgnoreCase("func_brush")) {
+				if(in.getAttribute("solidity").equals("0")) {
+					in.setAttribute("classname", "func_wall_toggle");
+					if(in.getAttribute("StartDisabled").equals("1")) {
+						in.setAttribute("spawnflags", "1");
+					} else {
+						in.setAttribute("spawnflags", "0");
+					}
+					in.deleteAttribute("StartDisabled");
+				} else {
+					if(in.getAttribute("solidity").equals("1")) {
+						in.setAttribute("classname", "func_illusionary");
+					} else {
+						in.setAttribute("classname", "func_wall");
+					}
+				}
+				in.deleteAttribute("solidity");
+			} else {
+				if(in.getAttribute("classname").equalsIgnoreCase("env_fog_controller")) {
+					in.setAttribute("classname", "env_fog");
+					in.setAttribute("rendercolor", in.getAttribute("fogcolor"));
+					in.deleteAttribute("fogcolor");
+				} else {
+					if(in.getAttribute("classname").equalsIgnoreCase("prop_static")) {
+						in.setAttribute("classname", "item_generic");
 					}
 				}
 			}

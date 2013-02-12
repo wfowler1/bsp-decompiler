@@ -59,7 +59,7 @@ public class SourceCubemaps {
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
 			if(Thread.currentThread().interrupted()) {
-				throw new java.lang.InterruptedException("while populating Brush Side array");
+				throw new java.lang.InterruptedException("while populating Cubemap array");
 			}
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];

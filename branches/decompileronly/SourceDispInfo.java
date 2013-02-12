@@ -29,7 +29,7 @@ public class SourceDispInfo {
 	
 	// This constructor takes 32 bytes in a byte array, as though
 	// it had just been read by a FileInputStream.
-	public SourceDispInfo(byte[] in) {
+	public SourceDispInfo(byte[] in, int type, boolean isVindictus) {
 		startPosition=DataReader.readPoint3F(in[0], in[1], in[2], in[3], in[4], in[5], in[6], in[7], in[8], in[9], in[10], in[11]);
 		dispVertStart=DataReader.readInt(in[12], in[13], in[14], in[15]);
 		dispTriStart=DataReader.readInt(in[16], in[17], in[18], in[19]);

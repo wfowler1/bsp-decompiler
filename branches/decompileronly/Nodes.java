@@ -18,18 +18,18 @@ public class Nodes {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public Nodes(String in, int type) throws java.lang.InterruptedException {
-		new Nodes(new File(in), type);
+	public Nodes(String in, int type, boolean isVindictus) throws java.lang.InterruptedException {
+		new Nodes(new File(in), type, isVindictus);
 	}
 	
 	// This one accepts the input file path as a File
-	public Nodes(File in, int type) throws java.lang.InterruptedException {
+	public Nodes(File in, int type, boolean isVindictus) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
 			byte[] temp=new byte[(int)data.length()];
 			fileReader.read(temp);
-			new Nodes(temp, type);
+			new Nodes(temp, type, isVindictus);
 			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
@@ -39,7 +39,7 @@ public class Nodes {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public Nodes(byte[] in, int type) throws java.lang.InterruptedException {
+	public Nodes(byte[] in, int type, boolean isVindictus) throws java.lang.InterruptedException {
 		switch(type) {
 			case BSP.TYPE_QUAKE:
 				structLength=22;
@@ -71,6 +71,9 @@ public class Nodes {
 			default:
 				structLength=0; // This will cause the shit to hit the fan.
 		}
+		if(isVindictus) {
+			structLength=48;
+		}
 		int offset=0;
 		length=in.length;
 		elements=new Node[in.length/structLength];
@@ -82,7 +85,7 @@ public class Nodes {
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
-			elements[i]=new Node(bytes, type);
+			elements[i]=new Node(bytes, type, isVindictus);
 			offset+=structLength;
 		}
 	}

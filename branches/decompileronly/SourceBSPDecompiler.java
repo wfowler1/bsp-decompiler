@@ -60,9 +60,6 @@ public class SourceBSPDecompiler {
 				numBrshs=0; // Reset the brush count for each entity
 				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
 					Leaf currentLeaf=leaves[j];
-					if(Window.visLeafBBoxesIsSelected()) {
-					//	mapFile.getElement(0).addBrush(GenericMethods.createBrush(currentLeaf.getMins(), currentLeaf.getMaxs(), "special/hint"));
-					}
 					int firstMarkBrushIndex=currentLeaf.getFirstMarkBrush();
 					int numBrushIndices=currentLeaf.getNumMarkBrushes();
 					if(numBrushIndices>0) { // A lot of leaves reference no brushes. If this is one, this iteration of the j loop is finished

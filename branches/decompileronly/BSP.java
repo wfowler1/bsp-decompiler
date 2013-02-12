@@ -68,6 +68,7 @@ public class BSP {
 	private NumList displacementTriangles;
 	private SourceStaticProps staticProps;
 	private SourceCubemaps cubemaps;
+	//private SourceOverlays overlays;
 	
 	// CONSTRUCTORS
 	public BSP(String filePath, int version) {
@@ -86,6 +87,9 @@ public class BSP {
 		}
 		try {
 			Window.println("Planes lump: "+planes.getLength()+" bytes, "+planes.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(planes.getLength()%planes.length()!=0) {
+				Window.println("WARNING: Funny lump size in Planes",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
@@ -94,78 +98,128 @@ public class BSP {
 		}
 		try {
 			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(vertices.getLength()%vertices.length()!=0) {
+				Window.println("WARNING: Funny lump size in Vertices",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
 			Window.println("Nodes lump: "+nodes.getLength()+" bytes, "+nodes.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(nodes.getLength()%nodes.length()!=0) {
+				Window.println("WARNING: Funny lump size in Nodes",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
 			Window.println("Texture info lump: "+texInfo.getLength()+" bytes, "+texInfo.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(texInfo.getLength()%texInfo.length()!=0) {
+				Window.println("WARNING: Funny lump size in Texture info",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
 			Window.println("Faces lump: "+faces.getLength()+" bytes, "+faces.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(faces.getLength()%faces.length()!=0) {
+				Window.println("WARNING: Funny lump size in Faces",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
 			Window.println("Leaves lump: "+leaves.getLength()+" bytes, "+leaves.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(leaves.getLength()%leaves.length()!=0) {
+				Window.println("WARNING: Funny lump size in Leaves",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
 			Window.println("Mark surfaces lump: "+markSurfaces.getLength()+" bytes, "+markSurfaces.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(markSurfaces.getLength()%markSurfaces.length()!=0) {
+				Window.println("WARNING: Funny lump size in Mark surfaces",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
 			Window.println("Edges lump: "+edges.getLength()+" bytes, "+edges.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(edges.getLength()%edges.length()!=0) {
+				Window.println("WARNING: Funny lump size in Edges",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
 			Window.println("Surface Edges lump: "+surfEdges.getLength()+" bytes, "+surfEdges.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(surfEdges.getLength()%surfEdges.length()!=0) {
+				Window.println("WARNING: Funny lump size in Surface Edges",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
 			Window.println("Models lump: "+models.getLength()+" bytes, "+models.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(models.getLength()%models.length()!=0) {
+				Window.println("WARNING: Funny lump size in Models",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
 			Window.println("Brushes lump: "+brushes.getLength()+" bytes, "+brushes.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(brushes.getLength()%brushes.length()!=0) {
+				Window.println("WARNING: Funny lump size in Brushes",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
 			Window.println("Brush sides lump: "+brushSides.getLength()+" bytes, "+brushSides.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(brushSides.getLength()%brushSides.length()!=0) {
+				Window.println("WARNING: Funny lump size in Brush sides",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
 			Window.println("Mark brushes lump: "+markBrushes.getLength()+" bytes, "+markBrushes.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(markBrushes.getLength()%markBrushes.length()!=0) {
+				Window.println("WARNING: Funny lump size in Mark brushes",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
-		/*try {
-			Window.println("Static prop lump: "+staticProps.getLength()+" bytes, "+staticProps.length()+" items",Window.VERBOSITY_MAPSTATS);
-		} catch(java.lang.NullPointerException e) {
-		}*/
 		try {
 			Window.println("Original Faces lump: "+originalFaces.getLength()+" bytes, "+originalFaces.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(originalFaces.getLength()%originalFaces.length()!=0) {
+				Window.println("WARNING: Funny lump size in Original Faces",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
 			Window.println("Texture index table lump: "+texTable.getLength()+" bytes, "+texTable.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(texTable.getLength()%texTable.length()!=0) {
+				Window.println("WARNING: Funny lump size in Texture index table",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
-			Window.println("Textures lump: "+texDatas.getLength()+" bytes, "+texDatas.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Texture data lump: "+texDatas.getLength()+" bytes, "+texDatas.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(texDatas.getLength()%texDatas.length()!=0) {
+				Window.println("WARNING: Funny lump size in Texture data",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
 			Window.println("Displacement info lump: "+dispInfos.getLength()+" bytes, "+dispInfos.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(dispInfos.getLength()%dispInfos.length()!=0) {
+				Window.println("WARNING: Funny lump size in Displacement info",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
 			Window.println("Displacement Vertices lump: "+dispVerts.getLength()+" bytes, "+dispVerts.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(dispVerts.getLength()%dispVerts.length()!=0) {
+				Window.println("WARNING: Funny lump size in Displacement Vertices",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
 			Window.println("Displacement Triangle Tags lump: "+displacementTriangles.getLength()+" bytes, "+displacementTriangles.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(displacementTriangles.getLength()%displacementTriangles.length()!=0) {
+				Window.println("WARNING: Funny lump size in Displacement Triangle Tags",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
@@ -174,8 +228,18 @@ public class BSP {
 		}
 		try {
 			Window.println("Cubemaps lump: "+cubemaps.getLength()+" bytes, "+cubemaps.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(cubemaps.getLength()%cubemaps.length()!=0) {
+				Window.println("WARNING: Funny lump size in Cubemaps",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
-		}
+		}/*
+		try {
+			Window.println("Overlays lump: "+overlays.getLength()+" bytes, "+overlays.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(overlays.getLength()%overlays.length()!=0) {
+				Window.println("WARNING: Funny lump size in Overlays",Window.VERBOSITY_WARNINGS);
+			}
+		} catch(java.lang.NullPointerException e) {
+		}*/
 	}
 	
 	// +getLeavesInModel(int)
@@ -339,8 +403,8 @@ public class BSP {
 		return nodes;
 	}
 	
-	public void setNodes(byte[] data) throws java.lang.InterruptedException {
-		nodes=new Nodes(data, version);
+	public void setNodes(byte[] data, boolean isVindictus) throws java.lang.InterruptedException {
+		nodes=new Nodes(data, version, isVindictus);
 	}
 	
 	public TexInfos getTexInfo() {
@@ -355,16 +419,16 @@ public class BSP {
 		return faces;
 	}
 	
-	public void setFaces(byte[] data) throws java.lang.InterruptedException {
-		faces=new Faces(data, version);
+	public void setFaces(byte[] data, boolean isVindictus) throws java.lang.InterruptedException {
+		faces=new Faces(data, version, isVindictus);
 	}
 	
 	public Leaves getLeaves() {
 		return leaves;
 	}
 	
-	public void setLeaves(byte[] data) throws java.lang.InterruptedException {
-		leaves=new Leaves(data, version);
+	public void setLeaves(byte[] data, boolean isVindictus) throws java.lang.InterruptedException {
+		leaves=new Leaves(data, version, isVindictus);
 	}
 	
 	public NumList getMarkSurfaces() {
@@ -465,8 +529,8 @@ public class BSP {
 		return texDatas;
 	}
 	
-	public void setDispInfos(byte[] data) throws java.lang.InterruptedException {
-		dispInfos=new SourceDispInfos(data, version);
+	public void setDispInfos(byte[] data, boolean isVindictus) throws java.lang.InterruptedException {
+		dispInfos=new SourceDispInfos(data, version, isVindictus);
 	}
 	
 	public SourceDispInfos getDispInfos() {
@@ -477,8 +541,8 @@ public class BSP {
 		return originalFaces;
 	}
 	
-	public void setOriginalFaces(byte[] data) throws java.lang.InterruptedException {
-		originalFaces=new Faces(data, version);
+	public void setOriginalFaces(byte[] data, boolean isVindictus) throws java.lang.InterruptedException {
+		originalFaces=new Faces(data, version, isVindictus);
 	}
 	
 	public void setDispVerts(byte[] data) throws java.lang.InterruptedException {
@@ -520,6 +584,14 @@ public class BSP {
 	public SourceCubemaps getCubemaps() {
 		return cubemaps;
 	}
+	/*
+	public void setOverlays(byte[] data) throws java.lang.InterruptedException {
+		overlays=new SourceOverlays(data, version);
+	}
+	
+	public SourceOverlays getOverlays() {
+		return overlays;
+	}*/
 	
 	// INTERNAL CLASSES
 	

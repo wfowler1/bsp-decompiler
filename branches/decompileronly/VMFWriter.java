@@ -526,8 +526,6 @@ public class VMFWriter {
 		}
 		if(in.getAttribute("classname").equalsIgnoreCase("light_spot")) {
 			in.setAttribute("pitch", new Double(in.getAngles()[0]).toString());
-			in.renameAttribute("_cone", "_inner_cone"); 
-			in.renameAttribute("_cone2", "_cone");
 			try {
 				if(Double.parseDouble(in.getAttribute("_cone"))>90.0) {
 					in.setAttribute("_cone", "90");
@@ -536,6 +534,10 @@ public class VMFWriter {
 						in.setAttribute("_cone", "0");
 					}
 				}
+			} catch(java.lang.NumberFormatException e) {
+				;
+			}
+			try {
 				if(Double.parseDouble(in.getAttribute("_cone2"))>90.0) {
 					in.setAttribute("_cone2", "90");
 				} else {
@@ -546,6 +548,8 @@ public class VMFWriter {
 			} catch(java.lang.NumberFormatException e) {
 				;
 			}
+			in.renameAttribute("_cone", "_inner_cone"); 
+			in.renameAttribute("_cone2", "_cone");
 		} else {
 			if(in.getAttribute("classname").equalsIgnoreCase("func_wall")) {
 				if(in.getAttribute("rendermode").equals("0")) {
@@ -560,7 +564,7 @@ public class VMFWriter {
 					in.setAttribute("classname", "func_brush");
 					in.setAttribute("solidity", "0");
 					try {
-						if((Double.parseDouble(in.getAttribute("spawnflags")))/2.0 == Double.parseDouble(in.getAttribute("spawnflags"))) {
+						if((Double.parseDouble(in.getAttribute("spawnflags")))%2.0 == 1) {
 							in.setAttribute("StartDisabled", "1"); // If spawnflags is an odd number, the start disabled flag is set.
 						} else {
 							in.setAttribute("StartDisabled", "0");

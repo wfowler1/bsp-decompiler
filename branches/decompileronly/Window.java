@@ -109,7 +109,7 @@ public class Window extends JPanel implements ActionListener {
 	// "Special requests" submenu
 	private static JMenu specialMenu;
 	private static JCheckBoxMenuItem chk_replaceWithNull;
-	private static JCheckBoxMenuItem chk_visLeafBBoxes;
+	private static JCheckBoxMenuItem chk_dumpLump;
 	private static JCheckBoxMenuItem chk_dontCull;
 	// "Log Verbosity" submenu
 	private static JMenu verbosityMenu;
@@ -398,9 +398,9 @@ public class Window extends JPanel implements ActionListener {
 		chk_replaceWithNull = new JCheckBoxMenuItem("Replace flag 512 with special/null");
 		chk_replaceWithNull.setSelected(false);
 		specialMenu.add(chk_replaceWithNull);
-		chk_visLeafBBoxes = new JCheckBoxMenuItem("Place brushes on visleaf bounding boxes");
-		chk_visLeafBBoxes.setSelected(false);
-		specialMenu.add(chk_visLeafBBoxes);
+		chk_dumpLump = new JCheckBoxMenuItem("When an exception occurs while populating a structure, dump its associated lump");
+		chk_dumpLump.setSelected(false);
+		specialMenu.add(chk_dumpLump);
 		chk_dontCull = new JCheckBoxMenuItem("Don't cull extra planes in Doom or CoD maps");
 		chk_dontCull.setSelected(false);
 		specialMenu.add(chk_dontCull);
@@ -1194,7 +1194,7 @@ public class Window extends JPanel implements ActionListener {
 		chk_noFaceFlagsItem.setEnabled(in);
 		setErrorItem.setEnabled(in);
 		chk_replaceWithNull.setEnabled(in);
-		chk_visLeafBBoxes.setEnabled(in);
+		chk_dumpLump.setEnabled(in);
 		setOriginBrushSizeItem.setEnabled(in);
 		chk_dontCull.setEnabled(in);
 		chk_extractZipItem.setEnabled(in);
@@ -1271,8 +1271,8 @@ public class Window extends JPanel implements ActionListener {
 		return chk_noOriginBrushItem.isSelected();
 	}
 	
-	public static boolean visLeafBBoxesIsSelected() {
-		return chk_visLeafBBoxes.isSelected();
+	public static boolean dumpLumpIsSelected() {
+		return chk_dumpLump.isSelected();
 	}
 	
 	public static boolean dontCullIsSelected() {
