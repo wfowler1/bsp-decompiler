@@ -252,11 +252,19 @@ public class Entity {
 		attributes=new String[numAttributes];
 		for(int i=0;i<numAttributes;i++) {
 			String current=reader.next();
-			// This will trim all the 0D bytes before the 0A delimiters if they exist,
+			String backup=current;
+			// This will trim all the bytes before the quotation marks if they exist,
 			// since the Windows newline sequence is 0D0A and all its text editors use
 			// that. This keeps the data from getting confusing to this program, but
 			// also saves a small amount of space in the output lump itself.
-			if(current.charAt(current.length()-1)==(char)0x0D) {
+			// Also, in Vindictus BSPs, the compiled entities lump has 0x09 "tabulation"
+			// before each attribute, as if they weren't processed out by the compiler
+			// as whitespace. Kinda stupid. It didn't cause any exceptions in this program,
+			// but it did keep attribute keys from being read properly.
+			while(current.length()>0 && current.charAt(0)!='\"' && current.charAt(0)!='{' && current.charAt(0)!='}') {
+				current=current.substring(1);
+			}
+			while(current.length()>0 && current.charAt(current.length()-1)!='\"' && current.charAt(current.length()-1)!='{' && current.charAt(current.length()-1)!='}') {
 				current=current.substring(0,current.length()-1);
 			}
 			attributes[i]=current;

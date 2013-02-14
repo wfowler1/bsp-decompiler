@@ -24,9 +24,14 @@ public class Edge {
 	
 	// This constructor takes 20 bytes in a byte array, as though
 	// it had just been read by a FileInputStream.
-	public Edge(byte[] in) {
-		firstVertex=DataReader.readUShort(in[0], in[1]);
-		secondVertex=DataReader.readUShort(in[2], in[3]);
+	public Edge(byte[] in, boolean isVindictus) {
+		if(!isVindictus) {
+			firstVertex=DataReader.readUShort(in[0], in[1]);
+			secondVertex=DataReader.readUShort(in[2], in[3]);
+		} else {
+			firstVertex=DataReader.readInt(in[0], in[1], in[2], in[3]);
+			secondVertex=DataReader.readInt(in[4], in[5], in[6], in[7]);
+		}
 	}
 	
 	// METHODS

@@ -18,18 +18,18 @@ public class BrushSides {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public BrushSides(String in, int type) throws java.lang.InterruptedException {
-		new BrushSides(new File(in), type);
+	public BrushSides(String in, int type, boolean isVindictus) throws java.lang.InterruptedException {
+		new BrushSides(new File(in), type, isVindictus);
 	}
 	
 	// This one accepts the input file path as a File
-	public BrushSides(File in, int type) throws java.lang.InterruptedException {
+	public BrushSides(File in, int type, boolean isVindictus) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
 			byte[] temp=new byte[(int)data.length()];
 			fileReader.read(temp);
-			new BrushSides(temp, type);
+			new BrushSides(temp, type, isVindictus);
 			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
@@ -39,7 +39,7 @@ public class BrushSides {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public BrushSides(byte[] in, int type) throws java.lang.InterruptedException {
+	public BrushSides(byte[] in, int type, boolean isVindictus) throws java.lang.InterruptedException {
 		switch(type) {
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_SOF:
@@ -70,6 +70,9 @@ public class BrushSides {
 			default:
 				structLength=0; // This will cause the shit to hit the fan.
 		}
+		if(isVindictus) {
+			structLength=16;
+		}
 		int offset=0;
 		length=in.length;
 		elements=new BrushSide[in.length/structLength];
@@ -81,7 +84,7 @@ public class BrushSides {
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
-			elements[i]=new BrushSide(bytes, type);
+			elements[i]=new BrushSide(bytes, type, isVindictus);
 			offset+=structLength;
 		}
 	}

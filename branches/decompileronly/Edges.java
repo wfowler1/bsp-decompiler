@@ -18,18 +18,18 @@ public class Edges {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public Edges(String in) throws java.lang.InterruptedException {
-		new Edges(new File(in));
+	public Edges(String in, boolean isVindictus) throws java.lang.InterruptedException {
+		new Edges(new File(in), isVindictus);
 	}
 	
 	// This one accepts the input file path as a File
-	public Edges(File in) throws java.lang.InterruptedException {
+	public Edges(File in, boolean isVindictus) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
 			byte[] temp=new byte[(int)data.length()];
 			fileReader.read(temp);
-			new Edges(temp);
+			new Edges(temp, isVindictus);
 			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
@@ -39,9 +39,12 @@ public class Edges {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public Edges(byte[] in) throws java.lang.InterruptedException {
+	public Edges(byte[] in, boolean isVindictus) throws java.lang.InterruptedException {
 		int offset=0;
 		length=in.length;
+		if(isVindictus) {
+			structLength=8;
+		}
 		elements=new Edge[in.length/structLength];
 		byte[] bytes=new byte[structLength];
 		for(int i=0;i<elements.length;i++) {
@@ -51,7 +54,7 @@ public class Edges {
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
-			elements[i]=new Edge(bytes);
+			elements[i]=new Edge(bytes, isVindictus);
 			offset+=structLength;
 		}
 	}
