@@ -180,6 +180,7 @@ public class MAP510Writer {
 				in=ent38ToEntM510(in);
 				break;
 			case DoomMap.TYPE_DOOM:
+			case DoomMap.TYPE_HEXEN:
 				break;
 			case BSP.TYPE_COD:
 				in=ent59ToEntM510(in);
@@ -333,7 +334,7 @@ public class MAP510Writer {
 								if(texture.equalsIgnoreCase("tools/toolsclip")) {
 									texture="special/clip";
 								} else {
-									if(texture.equalsIgnoreCase("tools/toolstrigger")) {
+									if(texture.equalsIgnoreCase("tools/toolstrigger") || texture.equalsIgnoreCase("TOOLS/TOOLSFOG")) {
 										texture="special/trigger";
 									} else {
 										if(texture.equalsIgnoreCase("tools/TOOLSSKYBOX")) {
@@ -344,6 +345,18 @@ public class MAP510Writer {
 											} else {
 												if(texture.equalsIgnoreCase("TOOLS/TOOLSPLAYERCLIP")) {
 													texture="special/playerclip";
+												} else {
+													if(texture.equalsIgnoreCase("TOOLS/TOOLSNPCCLIP")) {
+														texture="special/enemyclip";
+													} else {
+														if(texture.equalsIgnoreCase("TOOLS/TOOLSBLACK")) {
+															texture="special/black";
+														} else {
+															if(texture.equalsIgnoreCase("TOOLS/TOOLSINVISIBLE")) {
+																texture="special/clip";
+															}
+														}
+													}
 												}
 											}
 										}

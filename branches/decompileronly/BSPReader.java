@@ -3128,8 +3128,6 @@ public class BSPReader {
 							}
 						}
 						break;
-					default:
-						Window.println("I don't know what kind of BSP this is! Please post an issue on the bug tracker!",Window.VERBOSITY_ALWAYS);
 				}
 				BSPObject.printBSPReport();
 			}
@@ -3167,7 +3165,7 @@ public class BSPReader {
 	public int getVersion() throws java.io.IOException {
 		if(readAs!=-1) {
 			return readAs;
-		}
+		} // else
 		if(version==0) {
 			byte[] read=new byte[4];
 			FileInputStream versionNumberReader=new FileInputStream(BSPFile); // This filestream will be used to read version number only
@@ -3214,6 +3212,8 @@ public class BSPReader {
 					case 47:
 						version=BSP.TYPE_QUAKE3;
 						break;
+					default:
+						version=in; // Probably will be unsupported, which will throw an exception
 				}
 			} else {
 				if(in == 892416050) { // 892416050 reads in ASCII as "2015," the game studio which developed MoHAA
@@ -3250,10 +3250,12 @@ public class BSPReader {
 								case 23:
 									version=BSP.TYPE_SOURCE23;
 									break;
+								default:
+									version=in; // Probably will be unsupported, which will throw an exception
 							}
 							version2=(int)DataReader.readShort(read[2], read[3]);
 						} else {
-							if(in==1347633746) { // Reads in ASCII as "RBSP". Raven software's modification of Q3BSP
+							if(in==1347633746) { // Reads in ASCII as "RBSP". Raven software's modification of Q3BSP, or Ritual's modification of Q2.
 								FileInputStream secondOffsetReader = new FileInputStream(BSPFile);
 								secondOffsetReader.skip(8);
 								version=BSP.TYPE_RAVEN;
@@ -3269,6 +3271,8 @@ public class BSPReader {
 									} else {
 										if(temp==152) {
 											break;
+										} else {
+											version=1;
 										}
 									}
 									secondOffsetReader.skip(4);
@@ -3280,7 +3284,7 @@ public class BSPReader {
 								} else {
 									if(in == 1145132873 || in == 1145132880) { // "IWAD" or "PWAD"
 										wad=true;
-										version=1;
+										version=1145132868;
 									} else {
 										if(in == 1263223110) { // "FAKK"
 											versionNumberReader.read(read);
@@ -3293,6 +3297,8 @@ public class BSPReader {
 												case 42:
 													version=BSP.TYPE_FAKK;
 													break;
+												default:
+													version=in;
 											}
 										} else {
 											switch(in) {
@@ -3303,6 +3309,8 @@ public class BSPReader {
 												case 42:
 													version=BSP.TYPE_NIGHTFIRE;
 													break;
+												default:
+													version=in;
 											}
 										}
 									}

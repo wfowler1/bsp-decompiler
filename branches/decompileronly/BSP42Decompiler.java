@@ -15,13 +15,6 @@ public class BSP42Decompiler {
 	public static final int Y = 1;
 	public static final int Z = 2;
 	
-	// These are lowercase so as not to conflict with A B and C
-	// Light entity attributes; red, green, blue, strength (can't use i for intensity :P)
-	public static final int r = 0;
-	public static final int g = 1;
-	public static final int b = 2;
-	public static final int s = 3;
-	
 	private int jobnum;
 	
 	private Entities mapFile; // Most MAP file formats (including GearCraft) are simply a bunch of nested entities
@@ -57,10 +50,9 @@ public class BSP42Decompiler {
 	public void decompile() throws java.io.IOException, java.lang.InterruptedException {
 		Window.println("Decompiling...",Window.VERBOSITY_ALWAYS);
 		Date begin=new Date();
-		// Begin by copying all the entities into another Lump00 object. This is
-		// necessary because if I just modified the current entity list then it
-		// could be saved back into the BSP and really mess some stuff up.
-		mapFile=new Entities(BSPObject.getEntities());
+		// In the decompiler, it is not necessary to copy all entities to a new object, since
+		// no writing is ever done back to the BSP file.
+		mapFile=BSPObject.getEntities();
 		int numTotalItems=0;
 		// I need to go through each entity and see if it's brush-based.
 		// Worldspawn is brush-based as well as any entity with model *#.

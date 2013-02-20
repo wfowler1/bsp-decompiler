@@ -126,19 +126,19 @@ public class Plane extends LumpObject {
 		dist = -dist;
 	}
 	
+	// Takes a Plane and flips it (static method)
+	public static Plane flip(Plane in) {
+		return new Plane(new Vector3D(in.getNormal()).negate(), -in.getDist());
+	}
+	
 	// Takes a plane as an array of vertices and flips it over.
 	public static Vector3D[] flip(Vector3D[] in) {
 		return new Vector3D[] {in[0], in[2], in[1]};
 	}
 	
-	// Takes a Plane and flips it (static method)
-	public static Plane flip(Plane in) {
-		return new Plane(in.getNormal().negate(), -in.getDist());
-	}
-	
 	// Returns this plane, flipped
 	public Plane negate() {
-		return new Plane(normal.negate(), -dist);
+		return new Plane(new Vector3D(normal).negate(), -dist);
 	}
 	
 	public String toString() {

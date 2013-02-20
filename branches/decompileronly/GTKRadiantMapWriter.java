@@ -118,13 +118,14 @@ public class GTKRadiantMapWriter {
 		double[] origin;
 		// Correct some attributes of entities
 		switch(BSPVersion) {
-			case 42: // Nightfire
+			case BSP.TYPE_NIGHTFIRE: // Nightfire
 				in=ent42ToEntRad(in);
 				break;
-			case 38:
+			case BSP.TYPE_QUAKE2:
 				in=ent38ToEntRad(in);
 				break;
-			case 1: // Doom! I can use any versioning system I want!
+			case DoomMap.TYPE_DOOM:
+			case DoomMap.TYPE_HEXEN:
 				break;
 		}
 		if(in.isBrushBased()) {

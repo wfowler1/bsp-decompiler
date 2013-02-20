@@ -211,6 +211,7 @@ public class WADDecompiler {
 			MAPBrush cielingBrush=new MAPBrush(numBrshs++, 0, false);
 			MAPBrush floorBrush=new MAPBrush(numBrshs++, 0, false);
 			MAPBrush midBrush=new MAPBrush(numBrshs++, 0, false);
+			MAPBrush damageBrush=new MAPBrush(numBrshs++, 0, false);
 			DSector currentSector=doomMap.getSectors().getElement(subsectorSectors[i]);
 			
 			Vector3D[] roofPlane=new Vector3D[3];
@@ -298,6 +299,7 @@ public class WADDecompiler {
 				MAPBrushSide low=new MAPBrushSide(plane, lowerWallTextures[subsectorSidedefs[i][j]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				MAPBrushSide high=new MAPBrushSide(plane, higherWallTextures[subsectorSidedefs[i][j]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				MAPBrushSide mid;
+				MAPBrushSide damage=new MAPBrushSide(plane, "special/trigger", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				
 				if(currentLinedef.isOneSided()) {
 					MAPBrush outsideBrush=null;
@@ -474,6 +476,7 @@ public class WADDecompiler {
 				cielingBrush.add(high);
 				midBrush.add(mid);
 				floorBrush.add(low);
+				damageBrush.add(damage);
 			}
 			
 			MAPBrushSide roof=new MAPBrushSide(roofPlane, "special/nodraw", roofTexS, 0, roofTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
@@ -482,6 +485,10 @@ public class WADDecompiler {
 			MAPBrushSide foundation=new MAPBrushSide(foundationPlane, "special/nodraw", foundationTexS, 0, foundationTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 			MAPBrushSide top=new MAPBrushSide(topPlane, "special/nodraw", topTexS, 0, topTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 			MAPBrushSide bottom=new MAPBrushSide(bottomPlane, "special/nodraw", bottomTexS, 0, bottomTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+			MAPBrushSide invertedFloor=new MAPBrushSide(Plane.flip(floorPlane), "special/trigger", floorTexS, 0, floorTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+			MAPBrushSide damageTop=new MAPBrushSide(new Vector3D[] { floorPlane[0].add(new Vector3D(0,0,1)), floorPlane[1].add(new Vector3D(0,0,1)), floorPlane[2].add(new Vector3D(0,0,1)) }, "special/trigger", floorTexS, 0, floorTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+			damageBrush.add(damageTop);
+			damageBrush.add(invertedFloor);
 
 			midBrush.add(top);
 			midBrush.add(bottom);
@@ -525,10 +532,12 @@ public class WADDecompiler {
 				MAPBrushSide low=new MAPBrushSide(plane, "special/nodraw", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				MAPBrushSide high=new MAPBrushSide(plane, "special/nodraw", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				MAPBrushSide mid=new MAPBrushSide(plane, "special/nodraw", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+				MAPBrushSide damage=new MAPBrushSide(plane, "special/trigger", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				
 				cielingBrush.add(high);
 				midBrush.add(mid);
 				floorBrush.add(low);
+				damageBrush.add(damage);
 				
 				leftSide=nodeIsLeft[nextNode];
 				nextNode=nodeparents[nextNode];
@@ -572,12 +581,49 @@ public class WADDecompiler {
 			}
 			if(containsMiddle && currentSector.getCielingHeight() > currentSector.getFloorHeight()) {
 				Entity middleEnt=new Entity("func_illusionary");
-				for(int j=badSides.length-1;j>-1;j--) {
-					midBrush.delete(badSides[j]);
+				if(midBrush.getNumSides()-badSides.length>=4) {
+					for(int j=badSides.length-1;j>-1;j--) {
+						midBrush.delete(badSides[j]);
+					}
 				}
 				
 				middleEnt.addBrush(midBrush);
 				mapFile.add(middleEnt);
+			}
+			Entity hurtMe=new Entity("trigger_hurt");
+			switch(currentSector.getType()) {
+				case 4:
+				case 11:
+				case 16:
+					hurtMe.setAttribute("dmg", "40");
+					if(damageBrush.getNumSides()-badSides.length<4) {
+						for(int j=badSides.length-1;j>-1;j--) {
+							damageBrush.delete(badSides[j]);
+						}
+					}
+					hurtMe.addBrush(damageBrush);
+					mapFile.add(hurtMe);
+					break;
+				case 5:
+					hurtMe.setAttribute("dmg", "20");
+					if(damageBrush.getNumSides()-badSides.length<4) {
+						for(int j=badSides.length-1;j>-1;j--) {
+							damageBrush.delete(badSides[j]);
+						}
+					}
+					hurtMe.addBrush(damageBrush);
+					mapFile.add(hurtMe);
+					break;
+				case 7:
+					hurtMe.setAttribute("dmg", "10");
+					if(damageBrush.getNumSides()-badSides.length<4) {
+						for(int j=badSides.length-1;j>-1;j--) {
+							damageBrush.delete(badSides[j]);
+						}
+					}
+					hurtMe.addBrush(damageBrush);
+					mapFile.add(hurtMe);
+					break;
 			}
 			Window.setProgress(jobnum, i+1, doomMap.getSubSectors().length(), "Decompiling...");
 		}

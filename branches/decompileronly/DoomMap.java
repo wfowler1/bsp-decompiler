@@ -14,8 +14,8 @@ public class DoomMap {
 	// This is the version of the BSP. This will determine the lumps order and aid in
 	// decompilation. Since this one never had a formal version, I'll make one up. 1
 	// is the most correct version since it really was the first version...
-	public static final int TYPE_DOOM=1;
-	public static final int TYPE_HEXEN=2;
+	public static final int TYPE_DOOM=1145132868; // "DWAD"
+	public static final int TYPE_HEXEN=1145132872; // "HWAD"
 	
 	// Since all Doom engine maps were incorporated into the WAD, we need to keep
 	// track of both the location of the WAD file and the internal name of the map.

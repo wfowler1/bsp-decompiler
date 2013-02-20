@@ -42,7 +42,7 @@ public class Nodes {
 	public Nodes(byte[] in, int type, boolean isVindictus) throws java.lang.InterruptedException {
 		switch(type) {
 			case BSP.TYPE_QUAKE:
-				structLength=22;
+				structLength=24;
 				break;
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_SIN:

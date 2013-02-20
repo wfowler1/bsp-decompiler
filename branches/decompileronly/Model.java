@@ -22,6 +22,8 @@ public class Model extends LumpObject {
 	private int numLeaves=-1;
 	private int firstBrush=-1; // Quake 3 and derivatives
 	private int numBrushes=-1;
+	private int firstFace=-1; // Quake/GoldSrc
+	private int numFaces=-1;
 	
 	// CONSTRUCTORS
 	public Model(LumpObject in, int type) {
@@ -33,6 +35,8 @@ public class Model extends LumpObject {
 		super(data);
 		switch(type) {
 			case BSP.TYPE_QUAKE:
+				firstFace=DataReader.readInt(data[56], data[57], data[58], data[59]);
+				numFaces=DataReader.readInt(data[60], data[61], data[62], data[63]);
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_SIN:
 			case BSP.TYPE_SOF:
@@ -87,5 +91,13 @@ public class Model extends LumpObject {
 	
 	public int getNumBrushes() {
 		return numBrushes;
+	}
+	
+	public int getFirstFace() {
+		return firstFace;
+	}
+	
+	public int getNumFaces() {
+		return numFaces;
 	}
 }

@@ -58,14 +58,20 @@ public class DecompilerThread implements Runnable {
 						try {
 							Window.setProgress(jobnum, 0, reader.getBSPObject().getBrushes().length()+reader.getBSPObject().getEntities().length(), "Decompiling...");
 						} catch(java.lang.NullPointerException e) {
-							Window.setProgress(jobnum, 0, reader.getBSPObject().getLeaves().length()+reader.getBSPObject().getEntities().length(), "Decompiling...");
+							try {
+								Window.setProgress(jobnum, 0, reader.getBSPObject().getLeaves().length()+reader.getBSPObject().getEntities().length(), "Decompiling...");
+							} catch(java.lang.NullPointerException f) {
+								Window.setProgress(jobnum, 0, 1, "Decompiling..."); // What's going on here? Put in a failsafe progress bar for now
+							}
 						}
 							
 						switch(reader.getVersion()) {
 							case BSP.TYPE_QUAKE:
-								Window.println("ERROR: Algorithm for decompiling Quake BSPs not written yet.",Window.VERBOSITY_ALWAYS);
-								throw new java.lang.Exception(); // Throw an exception to the exception handler to indicate it didn't work
-								//break;
+								//Window.println("ERROR: Algorithm for decompiling Quake BSPs not written yet.",Window.VERBOSITY_ALWAYS);
+								//throw new java.lang.Exception(); // Throw an exception to the exception handler to indicate it didn't work
+								QuakeDecompiler decompiler29 = new QuakeDecompiler(reader.getBSPObject(), jobnum);
+								decompiler29.decompile();
+								break;
 							case BSP.TYPE_NIGHTFIRE:
 								BSP42Decompiler decompiler42 = new BSP42Decompiler(reader.getBSPObject(), jobnum);
 								decompiler42.decompile();
@@ -99,7 +105,8 @@ public class DecompilerThread implements Runnable {
 								decompiler46.decompile();
 								break;
 							default:
-								Window.println("wtf", Window.VERBOSITY_ALWAYS);
+								Window.println("ERROR: Unknown BSP version: "+reader.getVersion(), Window.VERBOSITY_ALWAYS);
+								throw new java.lang.Exception(); // Throw an exception to the exception handler to indicate it didn't work
 						}
 					}
 				}

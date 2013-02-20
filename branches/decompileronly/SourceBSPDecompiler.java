@@ -39,13 +39,13 @@ public class SourceBSPDecompiler {
 	// Attempt to turn the BSP into a .MAP file
 	public void decompile() throws java.io.IOException, java.lang.InterruptedException {
 		Date begin=new Date();
-		// Begin by copying all the entities into another Lump00 object. This is
-		// necessary because if I just modified the current entity list then it
-		// could be saved back into the BSP and really mess some stuff up.
-		mapFile=new Entities(BSPObject.getEntities());
+		// In the decompiler, it is not necessary to copy all entities to a new object, since
+		// no writing is ever done back to the BSP file.
+		mapFile=BSPObject.getEntities();
 		//int numAreaPortals=0;
 		int numTotalItems=0;
-		for(int i=0;i<BSPObject.getEntities().length();i++) { // For each entity
+		int originalNumEntities=BSPObject.getEntities().length(); // Need to keep track of this in this algorithm, since I create more entities on the fly
+		for(int i=0;i<originalNumEntities;i++) { // For each entity
 			if(Thread.currentThread().interrupted()) {
 				throw new java.lang.InterruptedException("while processing entity "+i+".");
 			}
@@ -79,14 +79,14 @@ public class SourceBSPDecompiler {
 								}
 								numBrshs++;
 								numTotalItems++;
-								Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");
+								Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+originalNumEntities, "Decompiling...");
 							}
 						}
 					}
 				}
 			}
 			numTotalItems++; // This entity
-			Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");
+			Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+originalNumEntities, "Decompiling...");
 		}
 		for(int i=0;i<BSPObject.getFaces().length();i++) {
 			Face face=BSPObject.getFaces().getElement(i);
@@ -162,7 +162,7 @@ public class SourceBSPDecompiler {
 			newCubemap.setAttribute("cubemapsize", currentCube.getSize()+"");
 			mapFile.add(newCubemap);
 		}
-		Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Saving...");
+		Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+originalNumEntities, "Saving...");
 		MAPMaker.outputMaps(mapFile, BSPObject.getMapNameNoExtension(), BSPObject.getFolder(), BSPObject.getVersion());
 		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {

@@ -42,10 +42,9 @@ public class BSP46Decompiler {
 	// Attempts to convert the BSP file back into a .MAP file.
 	public void decompile() throws java.io.IOException, java.lang.InterruptedException {
 		Date begin=new Date();
-		// Begin by copying all the entities into another Lump00 object. This is
-		// necessary because if I just modified the current entity list then it
-		// could be saved back into the BSP and really mess some stuff up.
-		mapFile=new Entities(BSPObject.getEntities());
+		// In the decompiler, it is not necessary to copy all entities to a new object, since
+		// no writing is ever done back to the BSP file.
+		mapFile=BSPObject.getEntities();
 		int numTotalItems=0;
 		// I need to go through each entity and see if it's brush-based.
 		// Worldspawn is brush-based as well as any entity with model *#.
