@@ -192,12 +192,12 @@ public class BSP42Decompiler {
 				textureU[0]=((double)currentTexInfo.getSAxis().getX()/SAxisLength);
 				textureU[1]=((double)currentTexInfo.getSAxis().getY()/SAxisLength);
 				textureU[2]=((double)currentTexInfo.getSAxis().getZ()/SAxisLength);
-				double originShiftU=(((double)currentTexInfo.getSAxis().getX()/SAxisLength)*origin[X]+((double)currentTexInfo.getSAxis().getY()/SAxisLength)*origin[Y]+((double)currentTexInfo.getSAxis().getZ()/SAxisLength)*origin[Z])/texScaleU;
+				double originShiftU=(textureU[0]*origin[X]+textureU[1]*origin[Y]+textureU[2]*origin[Z])/texScaleU;
 				double textureUhiftU=(double)currentTexInfo.getSShift()-originShiftU;
 				textureV[0]=((double)currentTexInfo.getTAxis().getX()/TAxisLength);
 				textureV[1]=((double)currentTexInfo.getTAxis().getY()/TAxisLength);
 				textureV[2]=((double)currentTexInfo.getTAxis().getZ()/TAxisLength);
-				double originShiftV=(((double)currentTexInfo.getTAxis().getX()/TAxisLength)*origin[X]+((double)currentTexInfo.getTAxis().getY()/TAxisLength)*origin[Y]+((double)currentTexInfo.getTAxis().getZ()/TAxisLength)*origin[Z])/texScaleV;
+				double originShiftV=(textureV[0]*origin[X]+textureV[1]*origin[Y]+textureV[2]*origin[Z])/texScaleV;
 				double textureUhiftV=(double)currentTexInfo.getTShift()-originShiftV;
 				float texRot=0; // In compiled maps this is calculated into the U and V axes, so set it to 0 until I can figure out a good way to determine a better value.
 				int flags=DataReader.readInt(currentFace.getFlags()[0], currentFace.getFlags()[1], currentFace.getFlags()[2], currentFace.getFlags()[3]); // This is actually a set of flags. Whatever.

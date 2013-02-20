@@ -50,7 +50,7 @@ public class Window extends JPanel implements ActionListener {
 	private static JMenuItem exitItem;
 	// "MAP formats" submenu
 	private static JMenu formatsMenu;
-	private static JCheckBoxMenuItem decompAutoItem;
+	private static JRadioButtonMenuItem decompAutoItem;
 	private static JCheckBoxMenuItem decompVMFItem;
 	private static JCheckBoxMenuItem decompMAPItem; 
 	private static JCheckBoxMenuItem decompMOHRadiantItem;
@@ -277,29 +277,24 @@ public class Window extends JPanel implements ActionListener {
 		openAsGroup.add(openAsSource23);
 		openAsMenu.add(openAsSource23);
 		
-		decompAutoItem = new JCheckBoxMenuItem("Auto");
+		decompAutoItem = new JRadioButtonMenuItem("Auto");
 		formatsMenu.add(decompAutoItem);
 		decompAutoItem.setSelected(true);
 		decompAutoItem.addActionListener(this);
 		formatsMenu.addSeparator();
 		decompVMFItem = new JCheckBoxMenuItem("Output Hammer VMF");
-		decompVMFItem.setEnabled(false);
 		formatsMenu.add(decompVMFItem);
 		decompVMFItem.addActionListener(this);
 		decompMAPItem = new JCheckBoxMenuItem("Output Gearcraft MAP");
-		decompMAPItem.setEnabled(false);
 		formatsMenu.add(decompMAPItem);
 		decompMAPItem.addActionListener(this);
 		decompMOHRadiantItem = new JCheckBoxMenuItem("Output MOHRadiant MAP");
-		decompMOHRadiantItem.setEnabled(false);
 		formatsMenu.add(decompMOHRadiantItem);
 		decompMOHRadiantItem.addActionListener(this);
 		decompRadiantItem = new JCheckBoxMenuItem("Output GTKRadiant MAP");
-		decompRadiantItem.setEnabled(false);
 		formatsMenu.add(decompRadiantItem);
 		decompRadiantItem.addActionListener(this);
 		decompDoomEditItem = new JCheckBoxMenuItem("Output DOOMEdit MAP");
-		decompDoomEditItem.setEnabled(false);
 		formatsMenu.add(decompDoomEditItem);
 		decompDoomEditItem.addActionListener(this);
 		
@@ -402,7 +397,7 @@ public class Window extends JPanel implements ActionListener {
 		chk_dumpLump.setSelected(false);
 		specialMenu.add(chk_dumpLump);
 		chk_dontCull = new JCheckBoxMenuItem("Don't cull extra planes in Doom or CoD maps");
-		chk_dontCull.setSelected(false);
+		chk_dontCull.setSelected(true);
 		specialMenu.add(chk_dontCull);
 		
 		verbosityGroup=new ButtonGroup();
@@ -568,22 +563,19 @@ public class Window extends JPanel implements ActionListener {
 		}
 		
 		if(action.getSource() == decompAutoItem) {
-			if(!decompAutoItem.isSelected()) {
-				if(!decompDoomEditItem.isSelected() && !decompRadiantItem.isSelected() && !decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
-					decompVMFItem.setSelected(true);
-				}
-			}
-			decompMAPItem.setEnabled(!decompAutoItem.isSelected());
-			decompVMFItem.setEnabled(!decompAutoItem.isSelected());
-			decompMOHRadiantItem.setEnabled(!decompAutoItem.isSelected());
-			decompRadiantItem.setEnabled(!decompAutoItem.isSelected());
-			decompDoomEditItem.setEnabled(!decompAutoItem.isSelected());
+			decompMAPItem.setSelected(false);
+			decompVMFItem.setSelected(false);
+			decompMOHRadiantItem.setSelected(false);
+			decompRadiantItem.setSelected(false);
+			decompDoomEditItem.setSelected(false);
+			decompAutoItem.setSelected(true);
 		}
 		
 		if(action.getSource() == decompMAPItem || action.getSource() == decompVMFItem || action.getSource() == decompMOHRadiantItem || action.getSource() == decompRadiantItem || action.getSource() == decompDoomEditItem) {
-			if(!decompDoomEditItem.isSelected() && !decompRadiantItem.isSelected() && !decompMAPItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompVMFItem.isSelected()) {
-				decompVMFItem.setSelected(true);
-				println("Must output to at least one MAP format!",VERBOSITY_ALWAYS);
+			if(!decompMAPItem.isSelected() && !decompVMFItem.isSelected() && !decompMOHRadiantItem.isSelected() && !decompRadiantItem.isSelected() && !decompDoomEditItem.isSelected()) {
+				decompAutoItem.setSelected(true);
+			} else {
+				decompAutoItem.setSelected(false);
 			}
 		}
 		

@@ -296,8 +296,9 @@ public class WADDecompiler {
 				texT[0]=0;
 				texT[1]=0;
 				texT[2]=-1;
-				MAPBrushSide low=new MAPBrushSide(plane, lowerWallTextures[subsectorSidedefs[i][j]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-				MAPBrushSide high=new MAPBrushSide(plane, higherWallTextures[subsectorSidedefs[i][j]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+				double SShift=-(texS[0]*start.getX())-(texS[1]*start.getY());
+				MAPBrushSide low=new MAPBrushSide(plane, lowerWallTextures[subsectorSidedefs[i][j]], texS, SShift, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+				MAPBrushSide high=new MAPBrushSide(plane, higherWallTextures[subsectorSidedefs[i][j]], texS, SShift, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				MAPBrushSide mid;
 				MAPBrushSide damage=new MAPBrushSide(plane, "special/trigger", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				
@@ -596,7 +597,7 @@ public class WADDecompiler {
 				case 11:
 				case 16:
 					hurtMe.setAttribute("dmg", "40");
-					if(damageBrush.getNumSides()-badSides.length<4) {
+					if(damageBrush.getNumSides()-badSides.length>=4) {
 						for(int j=badSides.length-1;j>-1;j--) {
 							damageBrush.delete(badSides[j]);
 						}
@@ -606,7 +607,7 @@ public class WADDecompiler {
 					break;
 				case 5:
 					hurtMe.setAttribute("dmg", "20");
-					if(damageBrush.getNumSides()-badSides.length<4) {
+					if(damageBrush.getNumSides()-badSides.length>=4) {
 						for(int j=badSides.length-1;j>-1;j--) {
 							damageBrush.delete(badSides[j]);
 						}
@@ -616,7 +617,7 @@ public class WADDecompiler {
 					break;
 				case 7:
 					hurtMe.setAttribute("dmg", "10");
-					if(damageBrush.getNumSides()-badSides.length<4) {
+					if(damageBrush.getNumSides()-badSides.length>=4) {
 						for(int j=badSides.length-1;j>-1;j--) {
 							damageBrush.delete(badSides[j]);
 						}
