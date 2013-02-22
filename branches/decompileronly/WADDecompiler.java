@@ -113,6 +113,8 @@ public class WADDecompiler {
 		// Keep a list of what sidedefs belong to what subsector as well
 		int[][] subsectorSidedefs = new int[doomMap.getSubSectors().length()][];
 		
+		short[][] sideDefShifts=new short[2][doomMap.getSidedefs().length()];
+		
 		// Figure out what sector each subsector belongs to, and what node is its parent.
 		// Depending on sector "tags" this will help greatly in creation of brushbased entities,
 		// and also helps in finding subsector floor and cieling heights.
@@ -166,6 +168,8 @@ public class WADDecompiler {
 					midWallTextures[currentsidedefIndex]=doomMap.getWadName()+"/"+currentSidedef.getMidTexture();
 					higherWallTextures[currentsidedefIndex]="special/nodraw";
 					lowerWallTextures[currentsidedefIndex]="special/nodraw";
+					sideDefShifts[X][currentsidedefIndex]=currentSidedef.getOffsetX();
+					sideDefShifts[Y][currentsidedefIndex]=currentSidedef.getOffsetY();
 				} else {
 					// I don't really get why I need to apply these textures to the other side. But if it works I won't argue...
 					if(!currentSidedef.getMidTexture().equals("-")) {
@@ -183,12 +187,11 @@ public class WADDecompiler {
 					} else {
 						lowerWallTextures[othersideIndex]="special/nodraw";
 					}
+					sideDefShifts[X][othersideIndex]=currentSidedef.getOffsetX();
+					sideDefShifts[Y][othersideIndex]=currentSidedef.getOffsetY();
 				}
-				// Sometimes a subsector seems to belong to more than one sector. I don't know why.
-				if(subsectorSectors[i]!=-1 && currentSidedef.getSector()!=subsectorSectors[i]) {
-					Window.println("WARNING: Subsector "+i+" has sides defining different sectors!",Window.VERBOSITY_WARNINGS);
-					Window.println("This is probably nothing to worry about, but something might be wrong (floor/cieling height)",Window.VERBOSITY_WARNINGS);
-				} else {
+				// Sometimes a subsector seems to belong to more than one sector. Only the reference in the first seg is true.
+				if(j==0) {
 					subsectorSectors[i]=currentSidedef.getSector();
 				}
 			}
@@ -198,6 +201,9 @@ public class WADDecompiler {
 		
 		MAPBrush[][] sectorFloorBrushes=new MAPBrush[doomMap.getSectors().length()][0];
 		MAPBrush[][] sectorCielingBrushes=new MAPBrush[doomMap.getSectors().length()][0];
+		
+		// For one-sided linedefs referenced by more than one subsector
+		boolean[] outsideBrushAlreadyCreated=new boolean[doomMap.getLinedefs().length()];
 		
 		for(int i=0;i<doomMap.getSubSectors().length();i++) {
 			if(Thread.currentThread().interrupted()) {
@@ -276,7 +282,6 @@ public class WADDecompiler {
 				Vector3D start=doomMap.getVertices().getElement(currentseg.getStartVertex()).getVertex();
 				Vector3D end=doomMap.getVertices().getElement(currentseg.getEndVertex()).getVertex();
 				DLinedef currentLinedef=doomMap.getLinedefs().getElement((int)currentseg.getLinedef());
-				DSidedef currentSidedef=doomMap.getSidedefs().getElement(subsectorSidedefs[i][j]);
 				
 				Vector3D[] plane=new Vector3D[3];
 				double[] texS=new double[3];
@@ -290,37 +295,71 @@ public class WADDecompiler {
 				
 				double sideLength=Math.sqrt(Math.pow(start.getX()-end.getX(), 2) + Math.pow(start.getY()-end.getY(),2));
 				
+				boolean upperUnpegged=!((currentLinedef.getFlags()[0] & ((byte)1 << 3)) == 0);
+				boolean lowerUnpegged=!((currentLinedef.getFlags()[0] & ((byte)1 << 4)) == 0);
+				
 				texS[0]=(start.getX()-end.getX())/sideLength;
 				texS[1]=(start.getY()-end.getY())/sideLength;
 				texS[2]=0;
 				texT[0]=0;
 				texT[1]=0;
 				texT[2]=-1;
-				double SShift=-(texS[0]*start.getX())-(texS[1]*start.getY());
-				MAPBrushSide low=new MAPBrushSide(plane, lowerWallTextures[subsectorSidedefs[i][j]], texS, SShift, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-				MAPBrushSide high=new MAPBrushSide(plane, higherWallTextures[subsectorSidedefs[i][j]], texS, SShift, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+				
+				double SShift=sideDefShifts[X][subsectorSidedefs[i][j]]-(texS[0]*end.getX())-(texS[1]*end.getY());
+				double lowTShift=0;
+				double highTShift=0;
+				if(!currentLinedef.isOneSided()) {
+					DSector otherSideSector;
+					if(doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentLinedef.getLeft()).getSector())==currentSector) {
+						otherSideSector=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentLinedef.getRight()).getSector());
+					} else {
+						otherSideSector=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentLinedef.getLeft()).getSector());
+					}
+					if(lowerUnpegged) {
+						lowTShift=otherSideSector.getCielingHeight();
+					} else {
+						lowTShift=currentSector.getFloorHeight();
+					}
+					if(upperUnpegged) {
+						highTShift=otherSideSector.getCielingHeight();
+					} else {
+						highTShift=currentSector.getCielingHeight();
+					}
+					lowTShift+=sideDefShifts[Y][subsectorSidedefs[i][j]];
+					highTShift+=sideDefShifts[Y][subsectorSidedefs[i][j]];
+				}
+				MAPBrushSide low=new MAPBrushSide(plane, lowerWallTextures[subsectorSidedefs[i][j]], texS, SShift, texT, lowTShift, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+				MAPBrushSide high=new MAPBrushSide(plane, higherWallTextures[subsectorSidedefs[i][j]], texS, SShift, texT, highTShift, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				MAPBrushSide mid;
 				MAPBrushSide damage=new MAPBrushSide(plane, "special/trigger", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				
 				if(currentLinedef.isOneSided()) {
-					MAPBrush outsideBrush=null;
-					if(currentSector.getCielingHeight()<=currentSector.getFloorHeight()) {
-						outsideBrush = GenericMethods.createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], "special/nodraw", plane[0], plane[2], currentSidedef.getOffsetX(), currentSidedef.getOffsetY());
-					} else {
-						outsideBrush = GenericMethods.createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], "special/nodraw", new Vector3D(plane[0].getX(), plane[0].getY(), currentSector.getFloorHeight()), new Vector3D(plane[2].getX(), plane[2].getY(), currentSector.getCielingHeight()), currentSidedef.getOffsetX(), currentSidedef.getOffsetY());
+					if(!outsideBrushAlreadyCreated[currentseg.getLinedef()]) {
+						MAPBrush outsideBrush=null;
+						if(currentSector.getCielingHeight()<=currentSector.getFloorHeight()) {
+							outsideBrush = GenericMethods.createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], "special/nodraw", linestart, lineend, sideDefShifts[X][subsectorSidedefs[i][j]], sideDefShifts[Y][subsectorSidedefs[i][j]], lowerUnpegged);
+						} else {
+							outsideBrush = GenericMethods.createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], "special/nodraw", new Vector3D(linestart.getX(), linestart.getY(), currentSector.getFloorHeight()), new Vector3D(lineend.getX(), lineend.getY(), currentSector.getCielingHeight()), sideDefShifts[X][subsectorSidedefs[i][j]], sideDefShifts[Y][subsectorSidedefs[i][j]], lowerUnpegged);
+						}
+						world.addBrush(outsideBrush);
 					}
-					world.addBrush(outsideBrush);
 					mid=new MAPBrushSide(plane, "special/nodraw", texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 				} else {
-					mid=new MAPBrushSide(plane, midWallTextures[subsectorSidedefs[i][j]], texS, 0, texT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+					double midTShift=sideDefShifts[Y][subsectorSidedefs[i][j]];
+					if(lowerUnpegged) {
+						midTShift+=currentSector.getFloorHeight();
+					} else {
+						midTShift+=currentSector.getCielingHeight();
+					}
+					mid=new MAPBrushSide(plane, midWallTextures[subsectorSidedefs[i][j]], texS, SShift, texT, midTShift, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 					if(!linedefFlagsDealtWith[currentseg.getLinedef()]) {
 						linedefFlagsDealtWith[currentseg.getLinedef()]=true;
 						if(!((currentLinedef.getFlags()[0] & ((byte)1 << 0)) == 0)) { // Flag 0x0001 indicates "solid" but doesn't block bullets. It is assumed for all one-sided.
-							MAPBrush solidBrush = GenericMethods.createFaceBrush("special/clip", "special/clip", linestart, lineend,0,0);
+							MAPBrush solidBrush = GenericMethods.createFaceBrush("special/clip", "special/clip", linestart, lineend,0,0, false);
 							world.addBrush(solidBrush);
 						} else {
 							if(!((currentLinedef.getFlags()[0] & ((byte)1 << 1)) == 0)) { // Flag 0x0002 indicates "monster clip".
-								MAPBrush solidBrush = GenericMethods.createFaceBrush("special/enemyclip", "special/enemyclip", linestart, lineend,0,0);
+								MAPBrush solidBrush = GenericMethods.createFaceBrush("special/enemyclip", "special/enemyclip", linestart, lineend,0,0, false);
 								world.addBrush(solidBrush);
 							}
 						}
@@ -336,7 +375,7 @@ public class WADDecompiler {
 					if(currentLinedef.getAction()!=0 && !linedefSpecialsDealtWith[currentseg.getLinedef()]) {
 						linedefSpecialsDealtWith[currentseg.getLinedef()]=true;
 						Entity trigger=null;
-						MAPBrush triggerBrush = GenericMethods.createFaceBrush("special/trigger", "special/trigger", linestart, lineend,0,0);
+						MAPBrush triggerBrush = GenericMethods.createFaceBrush("special/trigger", "special/trigger", linestart, lineend,0,0, false);
 						if(doomMap.getVersion()==DoomMap.TYPE_HEXEN) {
 							boolean[] bitset=new boolean[16];
 							for(int k=0;k<8;k++) {
@@ -657,23 +696,7 @@ public class WADDecompiler {
 							newDoor.setAttribute("wait", "-1");
 						}
 					}
-					int lowestNeighborCielingHeight=32768;
-					for(int j=0;j<doomMap.getLinedefs().length();j++) {
-						DLinedef currentLinedef=doomMap.getLinedefs().getElement(j);
-						if(!currentLinedef.isOneSided()) {
-							DSector neighbor=null;
-							if(doomMap.getSidedefs().getElement(currentLinedef.getLeft()).getSector()==i) {
-								neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentLinedef.getRight()).getSector());
-							} else {
-								if(doomMap.getSidedefs().getElement(currentLinedef.getRight()).getSector()==i) {
-									neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentLinedef.getLeft()).getSector());
-								}
-							}
-							if(neighbor!=null && neighbor.getCielingHeight()<lowestNeighborCielingHeight) {
-								lowestNeighborCielingHeight=neighbor.getCielingHeight();
-							}
-						}
-					}
+					int lowestNeighborCielingHeight=getLowestNeighborCielingHeight(i);
 					int lip=ZMax-lowestNeighborCielingHeight+4;
 					newDoor.setAttribute("lip", ""+lip);
 					for(int j=0;j<sectorFloorBrushes[i].length;j++) {
@@ -687,8 +710,8 @@ public class WADDecompiler {
 						int linedefTriggerType=currentLinedef.getAction();
 						if(doomMap.getVersion()==doomMap.TYPE_HEXEN) {
 							switch(linedefTriggerType) {
-								case 21: // Generalized Floor lower to lowest neighbor
-								case 22: // Floor lower to next lowest neighbor
+								case 21: // Floor lower to lowest neighbor
+								case 22: // Floor lower to nearest lower neighbor
 									// I don't know where retriggerability is determined, or whether or not it goes back up.
 									if(currentLinedef.getArguments()[0]==sectorTag[i]) {
 										Entity newFloor=new Entity("func_door");
@@ -700,28 +723,11 @@ public class WADDecompiler {
 										} else {
 											newFloor.setAttribute("targetname", "sector"+currentLinedef.getArguments()[0]+"lowerfloor");
 										}
-										int lowestNeighborFloorHeight=32768;
-										for(int k=0;k<doomMap.getLinedefs().length();k++) {
-											DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
-											if(!currentSearchLinedef.isOneSided()) {
-												DSector neighbor=null;
-												if(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector()==i) {
-													neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector());
-												} else {
-													if(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector()==i) {
-														neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector());
-													}
-												}
-												if(linedefTriggerType==21) {
-													if(neighbor!=null && neighbor.getFloorHeight()<lowestNeighborFloorHeight) {
-														lowestNeighborFloorHeight=neighbor.getFloorHeight();
-													}
-												} else {
-													if(neighbor!=null && neighbor.getFloorHeight()<doomMap.getSectors().getElement(i).getFloorHeight() && neighbor.getFloorHeight()>lowestNeighborFloorHeight) {
-														lowestNeighborFloorHeight=neighbor.getFloorHeight();
-													}
-												}
-											}
+										int lowestNeighborFloorHeight;
+										if(linedefTriggerType==21) {
+											lowestNeighborFloorHeight=getLowestNeighborFloorHeight(i);
+										} else {
+											lowestNeighborFloorHeight=getNextLowestNeighborFloorHeight(i);
 										}
 										if(lowestNeighborFloorHeight==32768) {
 											lowestNeighborFloorHeight=doomMap.getSectors().getElement(i).getFloorHeight();
@@ -737,8 +743,8 @@ public class WADDecompiler {
 										mapFile.add(newFloor);
 									}
 									break;
-								case 24: // Generalized Floor raise to highest neighbor
-								case 25: // Floor raise to next highest neighbor
+								case 24: // Floor raise to highest neighbor
+								case 25: // Floor raise to nearest higher neighbor
 									// I don't know where retriggerability is determined, or whether or not it goes back up.
 									if(currentLinedef.getArguments()[0]==sectorTag[i]) {
 										Entity newFloor=new Entity("func_door");
@@ -750,28 +756,11 @@ public class WADDecompiler {
 										} else {
 											newFloor.setAttribute("targetname", "sector"+currentLinedef.getArguments()[0]+"raisefloor");
 										}
-										int highestNeighborFloorHeight=-32768;
-										for(int k=0;k<doomMap.getLinedefs().length();k++) {
-											DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
-											if(!currentSearchLinedef.isOneSided()) {
-												DSector neighbor=null;
-												if(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector()==i) {
-													neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector());
-												} else {
-													if(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector()==i) {
-														neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector());
-													}
-												}
-												if(linedefTriggerType==24) {
-													if(neighbor!=null && neighbor.getFloorHeight()>highestNeighborFloorHeight) {
-														highestNeighborFloorHeight=neighbor.getFloorHeight();
-													}
-												} else {
-													if(neighbor!=null && neighbor.getFloorHeight()>doomMap.getSectors().getElement(i).getFloorHeight() && neighbor.getFloorHeight()<highestNeighborFloorHeight) {
-														highestNeighborFloorHeight=neighbor.getFloorHeight();
-													}
-												}
-											}
+										int highestNeighborFloorHeight;
+										if(linedefTriggerType==24) {
+											highestNeighborFloorHeight=getHighestNeighborFloorHeight(i);
+										} else {
+											highestNeighborFloorHeight=getNextHighestNeighborFloorHeight(i);
 										}
 										if(highestNeighborFloorHeight==-32768) {
 											highestNeighborFloorHeight=doomMap.getSectors().getElement(i).getFloorHeight();
@@ -798,23 +787,7 @@ public class WADDecompiler {
 										newFloor.setAttribute("angles", "90 0 0");
 										newFloor.setAttribute("targetname", "sector"+sectorTag[i]+"lowerfloor");
 										newFloor.setAttribute("wait", "-1");
-										int lowestNeighborFloorHeight=32768;
-										for(int k=0;k<doomMap.getLinedefs().length();k++) {
-											DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
-											if(!currentSearchLinedef.isOneSided()) {
-												DSector neighbor=null;
-												if(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector()==i) {
-													neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector());
-												} else {
-													if(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector()==i) {
-														neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector());
-													}
-												}
-												if(neighbor!=null && neighbor.getFloorHeight()<lowestNeighborFloorHeight) {
-													lowestNeighborFloorHeight=neighbor.getFloorHeight();
-												}
-											}
-										}
+										int lowestNeighborFloorHeight=getLowestNeighborFloorHeight(i);
 										int lip=ZMin-lowestNeighborFloorHeight;
 										if(linedefTriggerType==36) {
 											lip-=8;
@@ -839,23 +812,7 @@ public class WADDecompiler {
 										if(sectorTag[i]==63) {
 											newDoor.setAttribute("wait", "4");
 										}
-										int lowestNeighborCielingHeight=32768;
-										for(int k=0;k<doomMap.getLinedefs().length();k++) {
-											DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
-											if(!currentSearchLinedef.isOneSided()) {
-												DSector neighbor=null;
-												if(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector()==i) {
-													neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector());
-												} else {
-													if(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector()==i) {
-														neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector());
-													}
-												}
-												if(neighbor!=null && neighbor.getCielingHeight()<lowestNeighborCielingHeight) {
-													lowestNeighborCielingHeight=neighbor.getCielingHeight();
-												}
-											}
-										}
+										int lowestNeighborCielingHeight=getLowestNeighborCielingHeight(i);
 										lip=ZMax-lowestNeighborCielingHeight+4;
 										newDoor.setAttribute("lip", ""+lip);
 										for(int k=0;k<sectorFloorBrushes[i].length;k++) {
@@ -873,23 +830,7 @@ public class WADDecompiler {
 										newVator.setAttribute("angles", "90 0 0");
 										newVator.setAttribute("targetname", "sector"+sectorTag[i]+"vator");
 										newVator.setAttribute("wait", "4");
-										lowestNeighborFloorHeight=32768;
-										for(int k=0;k<doomMap.getLinedefs().length();k++) {
-											DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
-											if(!currentSearchLinedef.isOneSided()) {
-												DSector neighbor=null;
-												if(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector()==i) {
-													neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector());
-												} else {
-													if(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector()==i) {
-														neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector());
-													}
-												}
-												if(neighbor!=null && neighbor.getFloorHeight()<lowestNeighborFloorHeight) {
-													lowestNeighborFloorHeight=neighbor.getFloorHeight();
-												}
-											}
-										}
+										lowestNeighborFloorHeight=getLowestNeighborFloorHeight(i);
 										lip=Math.abs(ZMin-lowestNeighborFloorHeight);
 										newVator.setAttribute("lip", ""+lip);
 										for(int k=0;k<sectorFloorBrushes[i].length;k++) {
@@ -1082,5 +1023,177 @@ public class WADDecompiler {
 		MAPMaker.outputMaps(mapFile, doomMap.getMapName(), doomMap.getFolder()+doomMap.getWadName()+"\\", DoomMap.TYPE_DOOM);
 		Date end=new Date();
 		Window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,Window.VERBOSITY_ALWAYS);
+	}
+	
+	private int getLowestNeighborCielingHeight(int sector) {
+		int lowestNeighborCielingHeight=32768;
+		for(int j=0;j<doomMap.getLinedefs().length();j++) {
+			DLinedef currentLinedef=doomMap.getLinedefs().getElement(j);
+			if(!currentLinedef.isOneSided()) {
+				DSector neighbor=null;
+				if(doomMap.getSidedefs().getElement(currentLinedef.getLeft()).getSector()==sector) {
+					neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentLinedef.getRight()).getSector());
+				} else {
+					if(doomMap.getSidedefs().getElement(currentLinedef.getRight()).getSector()==sector) {
+						neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentLinedef.getLeft()).getSector());
+					}
+				}
+				if(neighbor!=null && neighbor.getCielingHeight()<lowestNeighborCielingHeight) {
+					lowestNeighborCielingHeight=neighbor.getCielingHeight();
+				}
+			}
+		}
+		return lowestNeighborCielingHeight;
+	}
+	
+	private int getLowestNeighborFloorHeight(int sector) {
+		int lowestNeighborFloorHeight=32768;
+		for(int k=0;k<doomMap.getLinedefs().length();k++) {
+			DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
+			if(!currentSearchLinedef.isOneSided()) {
+				DSector neighbor=null;
+				if(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector()==sector) {
+					neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector());
+				} else {
+					if(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector()==sector) {
+						neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector());
+					}
+				}
+				if(neighbor!=null && neighbor.getFloorHeight()<lowestNeighborFloorHeight) {
+					lowestNeighborFloorHeight=neighbor.getFloorHeight();
+				}
+			}
+		}
+		return lowestNeighborFloorHeight;
+	}
+	
+	private int getHighestNeighborCielingHeight(int sector) {
+		int highestNeighborCielingHeight=-32768;
+		for(int j=0;j<doomMap.getLinedefs().length();j++) {
+			DLinedef currentLinedef=doomMap.getLinedefs().getElement(j);
+			if(!currentLinedef.isOneSided()) {
+				DSector neighbor=null;
+				if(doomMap.getSidedefs().getElement(currentLinedef.getLeft()).getSector()==sector) {
+					neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentLinedef.getRight()).getSector());
+				} else {
+					if(doomMap.getSidedefs().getElement(currentLinedef.getRight()).getSector()==sector) {
+						neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentLinedef.getLeft()).getSector());
+					}
+				}
+				if(neighbor!=null && neighbor.getCielingHeight()>highestNeighborCielingHeight) {
+					highestNeighborCielingHeight=neighbor.getCielingHeight();
+				}
+			}
+		}
+		return highestNeighborCielingHeight;
+	}
+	
+	private int getHighestNeighborFloorHeight(int sector) {
+		int highestNeighborFloorHeight=-32768;
+		for(int k=0;k<doomMap.getLinedefs().length();k++) {
+			DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
+			if(!currentSearchLinedef.isOneSided()) {
+				DSector neighbor=null;
+				if(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector()==sector) {
+					neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector());
+				} else {
+					if(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector()==sector) {
+						neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector());
+					}
+				}
+				if(neighbor!=null && neighbor.getFloorHeight()>highestNeighborFloorHeight) {
+					highestNeighborFloorHeight=neighbor.getFloorHeight();
+				}
+			}
+		}
+		return highestNeighborFloorHeight;
+	}
+	
+	private int getNextLowestNeighborCielingHeight(int sector) {
+		int nextLowestNeighborCielingHeight=32768;
+		int current=doomMap.getSectors().getElement(sector).getCielingHeight();
+		for(int j=0;j<doomMap.getLinedefs().length();j++) {
+			DLinedef currentLinedef=doomMap.getLinedefs().getElement(j);
+			if(!currentLinedef.isOneSided()) {
+				DSector neighbor=null;
+				if(doomMap.getSidedefs().getElement(currentLinedef.getLeft()).getSector()==sector) {
+					neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentLinedef.getRight()).getSector());
+				} else {
+					if(doomMap.getSidedefs().getElement(currentLinedef.getRight()).getSector()==sector) {
+						neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentLinedef.getLeft()).getSector());
+					}
+				}
+				if(neighbor!=null && neighbor.getCielingHeight()>nextLowestNeighborCielingHeight && neighbor.getCielingHeight()<current) {
+					nextLowestNeighborCielingHeight=neighbor.getCielingHeight();
+				}
+			}
+		}
+		return nextLowestNeighborCielingHeight;
+	}
+	
+	private int getNextLowestNeighborFloorHeight(int sector) {
+		int nextLowestNeighborFloorHeight=32768;
+		int current=doomMap.getSectors().getElement(sector).getFloorHeight();
+		for(int k=0;k<doomMap.getLinedefs().length();k++) {
+			DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
+			if(!currentSearchLinedef.isOneSided()) {
+				DSector neighbor=null;
+				if(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector()==sector) {
+					neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector());
+				} else {
+					if(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector()==sector) {
+						neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector());
+					}
+				}
+				if(neighbor!=null && neighbor.getFloorHeight()>nextLowestNeighborFloorHeight && neighbor.getFloorHeight()<current) {
+					nextLowestNeighborFloorHeight=neighbor.getFloorHeight();
+				}
+			}
+		}
+		return nextLowestNeighborFloorHeight;
+	}
+	
+	private int getNextHighestNeighborCielingHeight(int sector) {
+		int nextHighestNeighborCielingHeight=-32768;
+		int current=doomMap.getSectors().getElement(sector).getCielingHeight();
+		for(int j=0;j<doomMap.getLinedefs().length();j++) {
+			DLinedef currentLinedef=doomMap.getLinedefs().getElement(j);
+			if(!currentLinedef.isOneSided()) {
+				DSector neighbor=null;
+				if(doomMap.getSidedefs().getElement(currentLinedef.getLeft()).getSector()==sector) {
+					neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentLinedef.getRight()).getSector());
+				} else {
+					if(doomMap.getSidedefs().getElement(currentLinedef.getRight()).getSector()==sector) {
+						neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentLinedef.getLeft()).getSector());
+					}
+				}
+				if(neighbor!=null && neighbor.getCielingHeight()<nextHighestNeighborCielingHeight && neighbor.getCielingHeight()>current) {
+					nextHighestNeighborCielingHeight=neighbor.getCielingHeight();
+				}
+			}
+		}
+		return nextHighestNeighborCielingHeight;
+	}
+	
+	private int getNextHighestNeighborFloorHeight(int sector) {
+		int nextHighestNeighborFloorHeight=-32768;
+		int current=doomMap.getSectors().getElement(sector).getFloorHeight();
+		for(int k=0;k<doomMap.getLinedefs().length();k++) {
+			DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
+			if(!currentSearchLinedef.isOneSided()) {
+				DSector neighbor=null;
+				if(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector()==sector) {
+					neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector());
+				} else {
+					if(doomMap.getSidedefs().getElement(currentSearchLinedef.getRight()).getSector()==sector) {
+						neighbor=doomMap.getSectors().getElement(doomMap.getSidedefs().getElement(currentSearchLinedef.getLeft()).getSector());
+					}
+				}
+				if(neighbor!=null && neighbor.getFloorHeight()<nextHighestNeighborFloorHeight && neighbor.getFloorHeight()>current) {
+					nextHighestNeighborFloorHeight=neighbor.getFloorHeight();
+				}
+			}
+		}
+		return nextHighestNeighborFloorHeight;
 	}
 }
