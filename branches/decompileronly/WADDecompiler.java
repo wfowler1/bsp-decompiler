@@ -2,8 +2,6 @@
 
 // Handles the actual decompilation.
 
-import java.util.Date;
-
 public class WADDecompiler {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
@@ -45,8 +43,8 @@ public class WADDecompiler {
 	// Attempts to convert a map in a Doom WAD into a usable .MAP file. This has many
 	// challenges, not the least of which is the fact that the Doom engine didn't use
 	// brushes (at least, not in any sane way).
-	public void decompile() throws java.io.IOException, java.lang.InterruptedException {
-		Date begin=new Date();
+	public Entities decompile() throws java.io.IOException, java.lang.InterruptedException {
+		Window.println("Decompiling...",Window.VERBOSITY_ALWAYS);
 		Window.println(doomMap.getMapName(),Window.VERBOSITY_ALWAYS);
 		
 		mapFile=new Entities();
@@ -59,6 +57,7 @@ public class WADDecompiler {
 		String[] higherWallTextures=new String[doomMap.getSidedefs().length()];
 		
 		short[] sectorTag=new short[doomMap.getSectors().length()];
+		String playerStartOrigin="";
 		
 		// Since Doom relied on sectors to define a cieling and floor height, and nothing else,
 		// need to find the minimum and maximum used Z values. This is because the Doom engine
@@ -335,11 +334,24 @@ public class WADDecompiler {
 				
 				if(currentLinedef.isOneSided()) {
 					if(!outsideBrushAlreadyCreated[currentseg.getLinedef()]) {
+						outsideBrushAlreadyCreated[currentseg.getLinedef()]=true;
+						double highestCieling=currentSector.getCielingHeight();
+						double lowestFloor=currentSector.getFloorHeight();
+						if(currentSector.getTag()!=0) {
+							double temp=getHighestNeighborCielingHeight(subsectorSectors[i]);
+							if(temp>highestCieling) {
+								highestCieling=temp;
+							}
+							temp=getLowestNeighborFloorHeight(subsectorSectors[i]);
+							if(temp<lowestFloor) {
+								lowestFloor=temp;
+							}
+						}
 						MAPBrush outsideBrush=null;
-						if(currentSector.getCielingHeight()<=currentSector.getFloorHeight()) {
-							outsideBrush = GenericMethods.createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], "special/nodraw", linestart, lineend, sideDefShifts[X][subsectorSidedefs[i][j]], sideDefShifts[Y][subsectorSidedefs[i][j]], lowerUnpegged);
+						if(lowestFloor<=highestCieling) {
+							outsideBrush = GenericMethods.createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], "special/nodraw", new Vector3D(linestart.getX(), linestart.getY(), ZMin), new Vector3D(lineend.getX(), lineend.getY(), ZMax), sideDefShifts[X][subsectorSidedefs[i][j]], sideDefShifts[Y][subsectorSidedefs[i][j]], lowerUnpegged, currentSector.getCielingHeight(), currentSector.getFloorHeight());
 						} else {
-							outsideBrush = GenericMethods.createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], "special/nodraw", new Vector3D(linestart.getX(), linestart.getY(), currentSector.getFloorHeight()), new Vector3D(lineend.getX(), lineend.getY(), currentSector.getCielingHeight()), sideDefShifts[X][subsectorSidedefs[i][j]], sideDefShifts[Y][subsectorSidedefs[i][j]], lowerUnpegged);
+							outsideBrush = GenericMethods.createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], "special/nodraw", new Vector3D(linestart.getX(), linestart.getY(), lowestFloor), new Vector3D(lineend.getX(), lineend.getY(), highestCieling), sideDefShifts[X][subsectorSidedefs[i][j]], sideDefShifts[Y][subsectorSidedefs[i][j]], lowerUnpegged, currentSector.getCielingHeight(), currentSector.getFloorHeight());
 						}
 						world.addBrush(outsideBrush);
 					}
@@ -355,11 +367,11 @@ public class WADDecompiler {
 					if(!linedefFlagsDealtWith[currentseg.getLinedef()]) {
 						linedefFlagsDealtWith[currentseg.getLinedef()]=true;
 						if(!((currentLinedef.getFlags()[0] & ((byte)1 << 0)) == 0)) { // Flag 0x0001 indicates "solid" but doesn't block bullets. It is assumed for all one-sided.
-							MAPBrush solidBrush = GenericMethods.createFaceBrush("special/clip", "special/clip", linestart, lineend,0,0, false);
+							MAPBrush solidBrush = GenericMethods.createFaceBrush("special/clip", "special/clip", linestart, lineend,0,0, false,0,0);
 							world.addBrush(solidBrush);
 						} else {
 							if(!((currentLinedef.getFlags()[0] & ((byte)1 << 1)) == 0)) { // Flag 0x0002 indicates "monster clip".
-								MAPBrush solidBrush = GenericMethods.createFaceBrush("special/enemyclip", "special/enemyclip", linestart, lineend,0,0, false);
+								MAPBrush solidBrush = GenericMethods.createFaceBrush("special/enemyclip", "special/enemyclip", linestart, lineend,0,0, false,0,0);
 								world.addBrush(solidBrush);
 							}
 						}
@@ -375,7 +387,7 @@ public class WADDecompiler {
 					if(currentLinedef.getAction()!=0 && !linedefSpecialsDealtWith[currentseg.getLinedef()]) {
 						linedefSpecialsDealtWith[currentseg.getLinedef()]=true;
 						Entity trigger=null;
-						MAPBrush triggerBrush = GenericMethods.createFaceBrush("special/trigger", "special/trigger", linestart, lineend,0,0, false);
+						MAPBrush triggerBrush = GenericMethods.createFaceBrush("special/trigger", "special/trigger", linestart, lineend,0,0, false,0,0);
 						if(doomMap.getVersion()==DoomMap.TYPE_HEXEN) {
 							boolean[] bitset=new boolean[16];
 							for(int k=0;k<8;k++) {
@@ -909,7 +921,8 @@ public class WADDecompiler {
 					if(currentThing.getClassNum()>1) {
 						thing.setAttribute("targetname", "coopspawn"+currentThing.getClassNum());
 					}
-					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+(origin.getZ()+36));
+					playerStartOrigin=origin.getX()+" "+origin.getY()+" "+(origin.getZ()+36);
+					thing.setAttribute("origin", playerStartOrigin);
 					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
 					break;
 				case 11: // Deathmatch spawn
@@ -1017,12 +1030,9 @@ public class WADDecompiler {
 		
 		Entity playerequip=new Entity("game_player_equip");
 		playerequip.setAttribute("weapon_pp9", "1");
+		playerequip.setAttribute("origin", playerStartOrigin);
 		mapFile.add(playerequip);
-		
-		Window.setProgress(jobnum, 1, 1, "Saving...");
-		MAPMaker.outputMaps(mapFile, doomMap.getMapName(), doomMap.getFolder()+doomMap.getWadName()+"\\", DoomMap.TYPE_DOOM);
-		Date end=new Date();
-		Window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,Window.VERBOSITY_ALWAYS);
+		return mapFile;
 	}
 	
 	private int getLowestNeighborCielingHeight(int sector) {

@@ -28,7 +28,6 @@ public class MAP510Writer {
 	
 	private String path;
 	private Entities data;
-	private File mapFile;
 	private int BSPVersion;
 	
 	private int currentEntity;
@@ -43,7 +42,6 @@ public class MAP510Writer {
 	public MAP510Writer(Entities from, String to, int BSPVersion) {
 		this.data=from;
 		this.path=to;
-		this.mapFile=new File(path);
 		this.BSPVersion=BSPVersion;
 	}
 	
@@ -55,97 +53,76 @@ public class MAP510Writer {
 	// Strings to write then it'll probably be okay, but when you have on the order of 10,000 Strings
 	// it gets VERY slow, even if you concatenate them all before writing.
 	public void write() throws java.io.IOException, java.lang.InterruptedException {
-		if(!path.substring(path.length()-4).equalsIgnoreCase(".map")) {
-			mapFile=new File(path+".map");
+		// Preprocessing entity corrections
+		for(int i=0;i<data.length();i++) {
+			if(data.getElement(i).isBrushBased()) {
+				data.getElement(i).deleteAttribute("model");
+			}
 		}
-		try {
-			File absolutepath=new File(mapFile.getParent()+"\\");
-			if(!absolutepath.exists()) {
-				absolutepath.mkdir();
-			}
-			if(!mapFile.exists()) {
-				mapFile.createNewFile();
-			} else {
-				mapFile.delete();
-				mapFile.createNewFile();
-			}
-			
-			// Preprocessing entity corrections
+		if(BSPVersion!=42) {
+			Entity waterEntity=null;
+			boolean newEnt=false;
 			for(int i=0;i<data.length();i++) {
-				if(data.getElement(i).isBrushBased()) {
-					data.getElement(i).deleteAttribute("model");
-				}
-			}
-			if(BSPVersion!=42) {
-				Entity waterEntity=null;
-				boolean newEnt=false;
-				for(int i=0;i<data.length();i++) {
-					if(data.getElement(i).getAttribute("classname").equalsIgnoreCase("func_water")) {
-						waterEntity=data.getElement(i);
-						break;
-					} else {
-						try {
-							if(data.getElement(i).getAttribute("classname").substring(0,8).equalsIgnoreCase("team_CTF") || data.getElement(i).getAttribute("classname").equalsIgnoreCase("ctf_flag_hardcorps")) {
-								ctfEnts=true;
-							}
-						} catch(java.lang.StringIndexOutOfBoundsException e) {
-							;
+				if(data.getElement(i).getAttribute("classname").equalsIgnoreCase("func_water")) {
+					waterEntity=data.getElement(i);
+					break;
+				} else {
+					try {
+						if(data.getElement(i).getAttribute("classname").substring(0,8).equalsIgnoreCase("team_CTF") || data.getElement(i).getAttribute("classname").equalsIgnoreCase("ctf_flag_hardcorps")) {
+							ctfEnts=true;
 						}
+					} catch(java.lang.StringIndexOutOfBoundsException e) {
+						;
 					}
 				}
-				if(waterEntity==null) {
-					newEnt=true;
-					waterEntity=new Entity("func_water");
-					waterEntity.setAttribute("rendercolor", "0 0 0");
-					waterEntity.setAttribute("speed", "100");
-					waterEntity.setAttribute("wait", "4");
-					waterEntity.setAttribute("skin", "-3");
-					waterEntity.setAttribute("WaveHeight", "3.2");
-				} // TODO: Y U NO WORK?!?!?
-				for(int i=0;i<data.getElement(0).getNumBrushes();i++) {
-					if(data.getElement(0).getBrushes()[i].isWaterBrush()) {
-						waterEntity.addBrush(data.getElement(0).getBrushes()[i]);
-						data.getElement(0).deleteBrush(i);
-					}
-				}
-				if(newEnt && waterEntity.getBrushes().length!=0) {
-					data.add(waterEntity);
+			}
+			if(waterEntity==null) {
+				newEnt=true;
+				waterEntity=new Entity("func_water");
+				waterEntity.setAttribute("rendercolor", "0 0 0");
+				waterEntity.setAttribute("speed", "100");
+				waterEntity.setAttribute("wait", "4");
+				waterEntity.setAttribute("skin", "-3");
+				waterEntity.setAttribute("WaveHeight", "3.2");
+			} // TODO: Y U NO WORK?!?!?
+			for(int i=0;i<data.getElement(0).getNumBrushes();i++) {
+				if(data.getElement(0).getBrushes()[i].isWaterBrush()) {
+					waterEntity.addBrush(data.getElement(0).getBrushes()[i]);
+					data.getElement(0).deleteBrush(i);
 				}
 			}
-			
-			FileOutputStream mapWriter=new FileOutputStream(mapFile);
-			byte[][] entityBytes=new byte[data.length()][];
-			int totalLength=0;
-			for(currentEntity=0;currentEntity<data.length();currentEntity++) {
-				if(Thread.currentThread().interrupted()) {
-					throw new java.lang.InterruptedException("while writing GearCraft map.");
-				}
-				try {
-					entityBytes[currentEntity]=entityToByteArray(data.getElement(currentEntity), currentEntity);
-				} catch(java.lang.ArrayIndexOutOfBoundsException e) { // This happens when entities are added after the array is made
-					byte[][] newList=new byte[data.length()][]; // Create a new array with the new length
-					for(int j=0;j<entityBytes.length;j++) {
-						newList[j]=entityBytes[j];
-					}
-					newList[currentEntity]=entityToByteArray(data.getElement(currentEntity), currentEntity);
-					entityBytes=newList;
-				}
-				totalLength+=entityBytes[currentEntity].length;
+			if(newEnt && waterEntity.getBrushes().length!=0) {
+				data.add(waterEntity);
 			}
-			byte[] allEnts=new byte[totalLength];
-			int offset=0;
-			for(int i=0;i<data.length();i++) {
-				for(int j=0;j<entityBytes[i].length;j++) {
-					allEnts[offset+j]=entityBytes[i][j];
-				}
-				offset+=entityBytes[i].length;
-			}
-			mapWriter.write(allEnts);
-			mapWriter.close();
-		} catch(java.io.IOException e) {
-			Window.println("ERROR: Could not save "+mapFile.getPath()+", ensure the file is not open in another program and the path "+path+" exists",Window.VERBOSITY_ALWAYS);
-			throw e;
 		}
+		
+		byte[][] entityBytes=new byte[data.length()][];
+		int totalLength=0;
+		for(currentEntity=0;currentEntity<data.length();currentEntity++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while writing GearCraft map.");
+			}
+			try {
+				entityBytes[currentEntity]=entityToByteArray(data.getElement(currentEntity), currentEntity);
+			} catch(java.lang.ArrayIndexOutOfBoundsException e) { // This happens when entities are added after the array is made
+				byte[][] newList=new byte[data.length()][]; // Create a new array with the new length
+				for(int j=0;j<entityBytes.length;j++) {
+					newList[j]=entityBytes[j];
+				}
+				newList[currentEntity]=entityToByteArray(data.getElement(currentEntity), currentEntity);
+				entityBytes=newList;
+			}
+			totalLength+=entityBytes[currentEntity].length;
+		}
+		byte[] allEnts=new byte[totalLength];
+		int offset=0;
+		for(int i=0;i<data.length();i++) {
+			for(int j=0;j<entityBytes[i].length;j++) {
+				allEnts[offset+j]=entityBytes[i][j];
+			}
+			offset+=entityBytes[i].length;
+		}
+		MAPMaker.write(new byte[0], allEnts, path, false);
 	}
 	
 	// -entityToByteArray()

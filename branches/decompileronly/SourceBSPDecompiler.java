@@ -1,8 +1,6 @@
 // SourceBSPDecompiler class
 // Decompile BSP v38
 
-import java.util.Date;
-
 public class SourceBSPDecompiler {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
@@ -37,8 +35,8 @@ public class SourceBSPDecompiler {
 	// METHODS
 
 	// Attempt to turn the BSP into a .MAP file
-	public void decompile() throws java.io.IOException, java.lang.InterruptedException {
-		Date begin=new Date();
+	public Entities decompile() throws java.io.IOException, java.lang.InterruptedException {
+		Window.println("Decompiling...",Window.VERBOSITY_ALWAYS);
 		// In the decompiler, it is not necessary to copy all entities to a new object, since
 		// no writing is ever done back to the BSP file.
 		mapFile=BSPObject.getEntities();
@@ -162,16 +160,12 @@ public class SourceBSPDecompiler {
 			newCubemap.setAttribute("cubemapsize", currentCube.getSize()+"");
 			mapFile.add(newCubemap);
 		}
-		Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+originalNumEntities, "Saving...");
-		MAPMaker.outputMaps(mapFile, BSPObject.getMapNameNoExtension(), BSPObject.getFolder(), BSPObject.getVersion());
-		Window.println("Process completed!",Window.VERBOSITY_ALWAYS);
 		if(!Window.skipFlipIsSelected()) {
 			Window.println("Num simple corrected brushes: "+numSimpleCorrects,Window.VERBOSITY_MAPSTATS); 
 			Window.println("Num advanced corrected brushes: "+numAdvancedCorrects,Window.VERBOSITY_MAPSTATS); 
 			Window.println("Num good brushes: "+numGoodBrushes,Window.VERBOSITY_MAPSTATS); 
 		}
-		Date end=new Date();
-		DecompilerDriver.window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,Window.VERBOSITY_ALWAYS);
+		return mapFile;
 	}
 
 	// -decompileBrush38(Brush, int, boolean)

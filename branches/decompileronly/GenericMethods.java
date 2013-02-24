@@ -595,7 +595,7 @@ public class GenericMethods {
 	// This creates a rectangular brush. The String is assumed to be a texture for a face, and
 	// the two vectors are a bounding box to create a plane with (mins-maxs).
 	// The second String is the texture to apply to all other sides.
-	public static MAPBrush createFaceBrush(String texture, String backTexture, Vector3D mins, Vector3D maxs, double xoff, double yoff, boolean lowerUnpegged) {
+	public static MAPBrush createFaceBrush(String texture, String backTexture, Vector3D mins, Vector3D maxs, double xoff, double yoff, boolean lowerUnpegged, int shiftYCieling, int shiftYFloor) {
 		Window.println("Creating brush for face with "+texture,Window.VERBOSITY_BRUSHCREATION);
 		MAPBrush newBrush = new MAPBrush(0, 0, false);
 		Vector3D[][] planes=new Vector3D[6][3]; // Six planes for a cube brush, three vertices for each plane
@@ -622,9 +622,9 @@ public class GenericMethods {
 		// One sided linedefs (which this usually makes walls for) are only affected by lower unpegged. Upper is
 		// always assumed unless lower is true.
 		if(lowerUnpegged) {
-			TShift+=mins.getZ();
+			TShift+=shiftYFloor;
 		} else {
-			TShift+=maxs.getZ();
+			TShift+=shiftYCieling;
 		}
 		// Far
 		planes[1][0]=new Vector3D(mins.getX(), mins.getY(), maxs.getZ()).subtract(cross);

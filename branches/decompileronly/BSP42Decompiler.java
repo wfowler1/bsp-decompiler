@@ -1,8 +1,6 @@
 // BSP42Decompiler
 // Decompiles a Nightfire BSP
 
-import java.util.Date;
-
 public class BSP42Decompiler {
 
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
@@ -47,9 +45,8 @@ public class BSP42Decompiler {
 	//   k: Current brush, referenced in a list by the current leaf.
 	//    l: Current side of the current brush.
 	//     m: When attempting vertex decompilation, the current vertex.
-	public void decompile() throws java.io.IOException, java.lang.InterruptedException {
+	public Entities decompile() throws java.io.IOException, java.lang.InterruptedException {
 		Window.println("Decompiling...",Window.VERBOSITY_ALWAYS);
-		Date begin=new Date();
 		// In the decompiler, it is not necessary to copy all entities to a new object, since
 		// no writing is ever done back to the BSP file.
 		mapFile=BSPObject.getEntities();
@@ -98,15 +95,12 @@ public class BSP42Decompiler {
 			numTotalItems++;
 			Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");
 		}
-		Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Saving...");
-		MAPMaker.outputMaps(mapFile, BSPObject.getMapNameNoExtension(), BSPObject.getFolder(), BSPObject.getVersion());
 		if(!Window.skipFlipIsSelected()) {
 			Window.println("Num simple corrected brushes: "+numSimpleCorrects,Window.VERBOSITY_MAPSTATS); 
 			Window.println("Num advanced corrected brushes: "+numAdvancedCorrects,Window.VERBOSITY_MAPSTATS); 
 			Window.println("Num good brushes: "+numGoodBrushes,Window.VERBOSITY_MAPSTATS); 
 		}
-		Date end=new Date();
-		Window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,Window.VERBOSITY_ALWAYS);
+		return mapFile;
 	}
 	
 	// -decompileBrush(Brush, int, boolean)

@@ -28,7 +28,6 @@ public class DoomEditMapWriter {
 	
 	private String path;
 	private Entities data;
-	private File mapFile;
 	private int BSPVersion;
 	
 	private int currentEntity;
@@ -40,7 +39,6 @@ public class DoomEditMapWriter {
 	public DoomEditMapWriter(Entities from, String to, int BSPVersion) {
 		this.data=from;
 		this.path=to;
-		this.mapFile=new File(path);
 		this.BSPVersion=BSPVersion;
 	}
 	
@@ -52,77 +50,51 @@ public class DoomEditMapWriter {
 	// Strings to write then it'll probably be okay, but when you have on the order of 10,000 Strings
 	// it gets VERY slow, even if you concatenate them all before writing.
 	public void write() throws java.io.IOException, java.lang.InterruptedException {
-		if(!path.substring(path.length()-4).equalsIgnoreCase(".map")) {
-			mapFile=new File(path+".map");
+		// Preprocessing entity corrections
+		if(BSPVersion==42) {
+			for(int i=1;i<data.length();i++) {
+				for(int j=0;j<data.getElement(i).getNumBrushes();j++) {
+					if(data.getElement(i).getBrushes()[j].isWaterBrush()) {
+						data.getElement(0).addBrush(data.getElement(i).getBrushes()[j]);
+						// TODO: Textures on this brush
+					}
+				}
+				if(data.getElement(i).getAttribute("classname").equalsIgnoreCase("func_water")) {
+					data.delete(i);
+					i--;
+				}
+			}
 		}
-		try {
-			File absolutepath=new File(mapFile.getParent()+"\\");
-			if(!absolutepath.exists()) {
-				absolutepath.mkdir();
+		
+		byte[] header="Version 2\n".getBytes();
+		
+		byte[][] entityBytes=new byte[data.length()][];
+		int totalLength=0;
+		for(currentEntity=0;currentEntity<data.length();currentEntity++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while writing DoomEdit map.");
 			}
-			if(!mapFile.exists()) {
-				mapFile.createNewFile();
-			} else {
-				mapFile.delete();
-				mapFile.createNewFile();
-			}
-			
-			// Preprocessing entity corrections
-			if(BSPVersion==42) {
-				for(int i=1;i<data.length();i++) {
-					for(int j=0;j<data.getElement(i).getNumBrushes();j++) {
-						if(data.getElement(i).getBrushes()[j].isWaterBrush()) {
-							data.getElement(0).addBrush(data.getElement(i).getBrushes()[j]);
-							// TODO: Textures on this brush
-						}
-					}
-					if(data.getElement(i).getAttribute("classname").equalsIgnoreCase("func_water")) {
-						data.delete(i);
-						i--;
-					}
+			try {
+				entityBytes[currentEntity]=entityToByteArray(data.getElement(currentEntity));
+			} catch(java.lang.ArrayIndexOutOfBoundsException e) { // This happens when entities are added after the array is made
+				byte[][] newList=new byte[data.length()][]; // Create a new array with the new length
+				for(int j=0;j<entityBytes.length;j++) {
+					newList[j]=entityBytes[j];
 				}
+				newList[currentEntity]=entityToByteArray(data.getElement(currentEntity));
+				entityBytes=newList;
 			}
-			
-			byte[] temp;
-			
-			FileOutputStream mapWriter=new FileOutputStream(mapFile);
-			String tempString="Version 2\n";
-			temp=tempString.getBytes();
-			
-			mapWriter.write(temp);
-			
-			byte[][] entityBytes=new byte[data.length()][];
-			int totalLength=0;
-			for(currentEntity=0;currentEntity<data.length();currentEntity++) {
-				if(Thread.currentThread().interrupted()) {
-					throw new java.lang.InterruptedException("while writing DoomEdit map.");
-				}
-				try {
-					entityBytes[currentEntity]=entityToByteArray(data.getElement(currentEntity));
-				} catch(java.lang.ArrayIndexOutOfBoundsException e) { // This happens when entities are added after the array is made
-					byte[][] newList=new byte[data.length()][]; // Create a new array with the new length
-					for(int j=0;j<entityBytes.length;j++) {
-						newList[j]=entityBytes[j];
-					}
-					newList[currentEntity]=entityToByteArray(data.getElement(currentEntity));
-					entityBytes=newList;
-				}
-				totalLength+=entityBytes[currentEntity].length;
-			}
-			byte[] allEnts=new byte[totalLength];
-			int offset=0;
-			for(int i=0;i<data.length();i++) {
-				for(int j=0;j<entityBytes[i].length;j++) {
-					allEnts[offset+j]=entityBytes[i][j];
-				}
-				offset+=entityBytes[i].length;
-			}
-			mapWriter.write(allEnts);
-			mapWriter.close();
-		} catch(java.io.IOException e) {
-			Window.println("ERROR: Could not save "+mapFile.getPath()+", ensure the file is not open in another program and the path "+path+" exists",Window.VERBOSITY_ALWAYS);
-			throw e;
+			totalLength+=entityBytes[currentEntity].length;
 		}
+		byte[] allEnts=new byte[totalLength];
+		int offset=0;
+		for(int i=0;i<data.length();i++) {
+			for(int j=0;j<entityBytes[i].length;j++) {
+				allEnts[offset+j]=entityBytes[i][j];
+			}
+			offset+=entityBytes[i].length;
+		}
+		MAPMaker.write(header, allEnts, path, false);
 	}
 	
 	// -entityToByteArray()

@@ -10,6 +10,7 @@ public class DecompilerThread implements Runnable {
 	
 	private File BSPFile;
 	private DoomMap doomMap;
+	private BSP BSPObject;
 	private int jobnum;
 	private int threadnum;
 	private int openAs=-1;
@@ -43,17 +44,20 @@ public class DecompilerThread implements Runnable {
 	}
 	
 	public void run() {
+		Date begin=new Date();
 		if(!Thread.currentThread().interrupted()) {
 			try {
+				Entities output=null;
 				if(doomMap!=null) { // If this is a Doom map extracted from a WAD
 					Window.setProgress(jobnum, 0, doomMap.getSubSectors().length(), "Decompiling...");
 					WADDecompiler decompiler = new WADDecompiler(doomMap, jobnum);
-					decompiler.decompile();
+					output=decompiler.decompile();
 				} else {
 					Window.println("Opening file "+BSPFile.getAbsolutePath(),Window.VERBOSITY_ALWAYS);
 					Window.setProgress(jobnum, 0, 1, "Reading...");
 					BSPReader reader = new BSPReader(BSPFile, openAs);
 					reader.readBSP();
+					BSPObject=reader.getBSPObject();
 					if(!reader.isWAD()) {
 						try {
 							Window.setProgress(jobnum, 0, reader.getBSPObject().getBrushes().length()+reader.getBSPObject().getEntities().length(), "Decompiling...");
@@ -70,17 +74,17 @@ public class DecompilerThread implements Runnable {
 								//Window.println("ERROR: Algorithm for decompiling Quake BSPs not written yet.",Window.VERBOSITY_ALWAYS);
 								//throw new java.lang.Exception(); // Throw an exception to the exception handler to indicate it didn't work
 								QuakeDecompiler decompiler29 = new QuakeDecompiler(reader.getBSPObject(), jobnum);
-								decompiler29.decompile();
+								output=decompiler29.decompile();
 								break;
 							case BSP.TYPE_NIGHTFIRE:
 								BSP42Decompiler decompiler42 = new BSP42Decompiler(reader.getBSPObject(), jobnum);
-								decompiler42.decompile();
+								output=decompiler42.decompile();
 								break;
 							case BSP.TYPE_QUAKE2:
 							case BSP.TYPE_SIN:
 							case BSP.TYPE_SOF:
 								BSP38Decompiler decompiler38 = new BSP38Decompiler(reader.getBSPObject(), jobnum);
-								decompiler38.decompile();
+								output=decompiler38.decompile();
 								break;
 							case BSP.TYPE_SOURCE17:
 							case BSP.TYPE_SOURCE18:
@@ -90,7 +94,7 @@ public class DecompilerThread implements Runnable {
 							case BSP.TYPE_SOURCE22:
 							case BSP.TYPE_SOURCE23:
 								SourceBSPDecompiler sourceDecompiler = new SourceBSPDecompiler(reader.getBSPObject(), jobnum);
-								sourceDecompiler.decompile();
+								output=sourceDecompiler.decompile();
 								break;
 							case BSP.TYPE_QUAKE3:
 							case BSP.TYPE_RAVEN:
@@ -102,7 +106,7 @@ public class DecompilerThread implements Runnable {
 							case BSP.TYPE_MOHAA:
 							case BSP.TYPE_FAKK:
 								BSP46Decompiler decompiler46 = new BSP46Decompiler(reader.getBSPObject(), jobnum);
-								decompiler46.decompile();
+								output=decompiler46.decompile();
 								break;
 							default:
 								Window.println("ERROR: Unknown BSP version: "+reader.getVersion(), Window.VERBOSITY_ALWAYS);
@@ -110,12 +114,22 @@ public class DecompilerThread implements Runnable {
 						}
 					}
 				}
+				if(output!=null) {
+					Window.setProgress(jobnum, 1, 1, "Saving...");
+					if(doomMap==null) {
+						MAPMaker.outputMaps(output, BSPObject.getMapNameNoExtension(), BSPObject.getFolder(), BSPObject.getVersion());
+					} else {
+						MAPMaker.outputMaps(output, doomMap.getMapName(), doomMap.getFolder()+doomMap.getWadName()+"\\", doomMap.getVersion());
+					}
+				}
 				Window.setProgress(jobnum, 1, 1, "Done!");
 				Window.setProgressColor(jobnum, new Color(64, 192, 64));
+				Date end=new Date();
+				Window.println("Time taken: "+(end.getTime()-begin.getTime())+"ms"+(char)0x0D+(char)0x0A,Window.VERBOSITY_ALWAYS);
 			} catch(java.lang.InterruptedException e) {
 				Window.print("Job "+(jobnum+1)+" aborted by user.",Window.VERBOSITY_ALWAYS);
 				Window.print(" When: "+e.toString().substring(32), Window.VERBOSITY_WARNINGS);
-				Window.println();
+				Window.println(""+(char)0x0D+(char)0x0A, Window.VERBOSITY_ALWAYS);
 				Window.setProgress(jobnum, 1, 1, "Aborted!");
 				Window.setProgressColor(jobnum, new Color(255, 128, 128));
 				Thread.currentThread().interrupt();
@@ -131,6 +145,7 @@ public class DecompilerThread implements Runnable {
 					stackTrace+=trace[i].toString()+Window.LF;
 				}
 				Window.println(e.getMessage()+Window.LF+stackTrace,Window.VERBOSITY_WARNINGS);
+				Window.println();
 				Window.setProgress(jobnum, 1, 1, "ERROR! See log!");
 				Window.setProgressColor(jobnum, new Color(255, 128, 128));
 			} catch(java.lang.OutOfMemoryError e) {
@@ -139,6 +154,7 @@ public class DecompilerThread implements Runnable {
 				} else {
 					Window.println("VM ran out of memory on job "+(jobnum+1)+"."+(char)0x0D+(char)0x0A+"Please let me know on the issue tracker!"+(char)0x0D+(char)0x0A+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry",Window.VERBOSITY_ALWAYS);
 				}
+				Window.println();
 				Window.setProgress(jobnum, 1, 1, "ERROR! See log!");
 				Window.setProgressColor(jobnum, new Color(255, 128, 128));
 			}
