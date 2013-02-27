@@ -38,6 +38,7 @@ public class Model extends LumpObject {
 				firstFace=DataReader.readInt(data[56], data[57], data[58], data[59]);
 				numFaces=DataReader.readInt(data[60], data[61], data[62], data[63]);
 			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_DAIKATANA:
 			case BSP.TYPE_SIN:
 			case BSP.TYPE_SOF:
 			case BSP.TYPE_SOURCE17:

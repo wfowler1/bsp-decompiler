@@ -42,6 +42,7 @@ public class BrushSides {
 	public BrushSides(byte[] in, int type, boolean isVindictus) throws java.lang.InterruptedException {
 		switch(type) {
 			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_DAIKATANA:
 			case BSP.TYPE_SOF:
 				structLength=4;
 				break;

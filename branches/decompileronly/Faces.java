@@ -43,6 +43,7 @@ public class Faces {
 		switch(type) {
 			case BSP.TYPE_QUAKE:
 			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_DAIKATANA:
 				structLength=20;
 				break;
 			case BSP.TYPE_SIN:

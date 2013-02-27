@@ -47,6 +47,7 @@ public class Nodes {
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_SIN:
 			case BSP.TYPE_SOF:
+			case BSP.TYPE_DAIKATANA:
 				structLength=28;
 				break;
 			case BSP.TYPE_SOURCE17:

@@ -20,6 +20,7 @@ public class Brush extends LumpObject {
 		super(data);
 		switch(type) {
 			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_DAIKATANA:
 			case BSP.TYPE_SIN:
 			case BSP.TYPE_SOF:
 			case BSP.TYPE_SOURCE17:

@@ -79,6 +79,7 @@ public class Window extends JPanel implements ActionListener {
 	private static JRadioButtonMenuItem openAsSource23;
 	private static JRadioButtonMenuItem openAsQuake2;
 	private static JRadioButtonMenuItem openAsSoF;
+	private static JRadioButtonMenuItem openAsDaikatana;
 	private static JRadioButtonMenuItem openAsQuake3;
 	private static JRadioButtonMenuItem openAsCoD;
 
@@ -153,7 +154,7 @@ public class Window extends JPanel implements ActionListener {
 	private static double originBrushSize=16;
 	private static int verbosity=0;
 	private static String outputFolder="default";
-	private static double precision=0.01;
+	private static double precision=0.05;
 
 	// This constructor configures and displays the GUI
 	public Window() {
@@ -225,6 +226,9 @@ public class Window extends JPanel implements ActionListener {
 		openAsSoF=new JRadioButtonMenuItem("Soldier of Fortune");
 		openAsGroup.add(openAsSoF);
 		openAsMenu.add(openAsSoF);
+		openAsDaikatana=new JRadioButtonMenuItem("Daikatana");
+		openAsGroup.add(openAsDaikatana);
+		openAsMenu.add(openAsDaikatana);
 		openAsMenu.addSeparator();
 		openAsQuake3=new JRadioButtonMenuItem("Quake 3/Return to Castle Wolfenstein/Star Trek Elite Force");
 		openAsGroup.add(openAsQuake3);
@@ -885,6 +889,9 @@ public class Window extends JPanel implements ActionListener {
 				}
 				if(openAsSoF.isSelected()) {
 					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_SOF);
+				}
+				if(openAsDaikatana.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_DAIKATANA);
 				}
 				if(openAsQuake3.isSelected()) {
 					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_QUAKE3);

@@ -144,8 +144,9 @@ public class BSP38Decompiler {
 			Texture currentTexture;
 			boolean isDuplicate=false;
 			for(int j=i+1;j<numSides;j++) { // For each subsequent side of the brush
+				// For some reason, QUAKE 2 MAKES COPLANAR SIDES OF BRUSHES. I don't know why but it's stupid.
 				if(currentPlane.equals(BSPObject.getPlanes().getElement(BSPObject.getBrushSides().getElement(firstSide+j).getPlane()))) {
-					Window.println("WARNING: Duplicate planes in a brush, sides "+i+" and "+j,Window.VERBOSITY_WARNINGS);
+					Window.println("WARNING: Duplicate planes in entity "+currentEntity+" brush "+numBrshs+", sides "+i+" and "+j+" (BSP planes "+currentSide.getPlane()+" and "+BSPObject.getBrushSides().getElement(firstSide+j).getPlane(),Window.VERBOSITY_WARNINGS);
 					isDuplicate=true;
 				}
 			}

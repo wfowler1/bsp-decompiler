@@ -44,6 +44,7 @@ public class Leaf extends LumpObject {
 				case BSP.TYPE_SOURCE21:
 				case BSP.TYPE_SOURCE22:
 				case BSP.TYPE_SOURCE23:
+				case BSP.TYPE_DAIKATANA:
 					contents=new byte[] { data[0], data[1], data[2], data[3] };
 					firstMarkBrush=DataReader.readUShort(data[24], data[25]);
 					numMarkBrushes=DataReader.readUShort(data[26], data[27]);

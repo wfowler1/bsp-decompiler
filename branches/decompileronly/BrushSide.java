@@ -54,6 +54,7 @@ public class BrushSide extends LumpObject {
 					                      // and can therefore be used for all Source engine formats, including Portal 2.
 				case BSP.TYPE_SIN:
 				case BSP.TYPE_QUAKE2:
+				case BSP.TYPE_DAIKATANA:
 				case BSP.TYPE_SOF:
 					plane=DataReader.readUShort(data[0], data[1]);
 					texture=(int)DataReader.readShort(data[2], data[3]);

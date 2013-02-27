@@ -50,6 +50,7 @@ public class Models {
 				structLength=40;
 				break;
 			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_DAIKATANA:
 			case BSP.TYPE_COD:
 			case BSP.TYPE_COD2:
 			case BSP.TYPE_COD4:

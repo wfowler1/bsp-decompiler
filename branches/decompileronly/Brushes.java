@@ -42,6 +42,7 @@ public class Brushes {
 	public Brushes(byte[] in, int type) throws java.lang.InterruptedException {
 		switch(type) {
 			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_DAIKATANA:
 			case BSP.TYPE_SIN:
 			case BSP.TYPE_SOF:
 			case BSP.TYPE_SOURCE17:

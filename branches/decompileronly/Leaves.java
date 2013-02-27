@@ -52,6 +52,7 @@ public class Leaves {
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
 			case BSP.TYPE_SOF:
+			case BSP.TYPE_DAIKATANA:
 				structLength=32;
 				break;
 			case BSP.TYPE_COD:

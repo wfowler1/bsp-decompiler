@@ -47,6 +47,7 @@ public class MAPMaker {
 				case BSP.TYPE_SOF:
 				case BSP.TYPE_RAVEN:
 				case BSP.TYPE_QUAKE2:
+				case BSP.TYPE_DAIKATANA:
 				case BSP.TYPE_QUAKE3:
 				case BSP.TYPE_COD:
 				case BSP.TYPE_FAKK:
@@ -77,6 +78,18 @@ public class MAPMaker {
 						VMFMaker=new VMFWriter(data, Window.getOutputFolder()+"\\"+mapname,version);
 					}
 					VMFMaker.write();
+					break;
+				default:
+					Window.println("WARNING: No default format specified for BSP version "+version+", defaulting to GearCraft.", Window.VERBOSITY_WARNINGS);
+					MAP510Writer GCMAPMaker2;
+					if(Window.getOutputFolder().equals("default")) {
+						Window.println("Saving "+mapfolder+mapname+".map...",Window.VERBOSITY_ALWAYS);
+						GCMAPMaker2=new MAP510Writer(data, mapfolder+mapname,version);
+					} else {
+						Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname+".map...",Window.VERBOSITY_ALWAYS);
+						GCMAPMaker2=new MAP510Writer(data, Window.getOutputFolder()+"\\"+mapname,version);
+					}
+					GCMAPMaker2.write();
 					break;
 			}
 		} else {

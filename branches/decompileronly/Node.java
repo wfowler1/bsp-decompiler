@@ -28,6 +28,7 @@ public class Node extends LumpObject {
 			case BSP.TYPE_SIN:
 			case BSP.TYPE_SOF:
 			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_DAIKATANA:
 			case BSP.TYPE_NIGHTFIRE:
 			case BSP.TYPE_SOURCE17:
 			case BSP.TYPE_SOURCE18:

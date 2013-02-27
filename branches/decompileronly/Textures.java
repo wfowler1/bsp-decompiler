@@ -54,6 +54,7 @@ public class Textures {
 				structLength=72;
 				break;
 			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_DAIKATANA:
 			case BSP.TYPE_SOF:
 			case BSP.TYPE_STEF2:
 			case BSP.TYPE_STEF2DEMO:

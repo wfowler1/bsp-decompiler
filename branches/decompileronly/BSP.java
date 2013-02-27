@@ -27,6 +27,7 @@ public class BSP {
 	public static final int TYPE_SOURCE22=1347633772;
 	public static final int TYPE_SOURCE23=1347633773;
 	public static final int TYPE_QUAKE2=1347633775;
+	public static final int TYPE_DAIKATANA=1347633778;
 	public static final int TYPE_SOF=1347633782; // Uses the same header as Q3.
 	public static final int TYPE_QUAKE3=1347633783;
 	// public static final int TYPE_RTCW=1347633784; // Uses same algorithm and structures as Quake 3
@@ -459,6 +460,7 @@ public class BSP {
 		switch(version) {
 			case TYPE_QUAKE:
 			case TYPE_QUAKE2:
+			case TYPE_DAIKATANA:
 			case TYPE_SIN:
 			case TYPE_SOF:
 			case TYPE_SOURCE17:
@@ -505,6 +507,7 @@ public class BSP {
 				case TYPE_QUAKE2:
 				case TYPE_SIN:
 				case TYPE_SOF:
+				case TYPE_DAIKATANA:
 				case TYPE_SOURCE17:
 				case TYPE_SOURCE18:
 				case TYPE_SOURCE19:

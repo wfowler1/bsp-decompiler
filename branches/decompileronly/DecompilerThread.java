@@ -83,6 +83,7 @@ public class DecompilerThread implements Runnable {
 							case BSP.TYPE_QUAKE2:
 							case BSP.TYPE_SIN:
 							case BSP.TYPE_SOF:
+							case BSP.TYPE_DAIKATANA:
 								BSP38Decompiler decompiler38 = new BSP38Decompiler(reader.getBSPObject(), jobnum);
 								output=decompiler38.decompile();
 								break;
