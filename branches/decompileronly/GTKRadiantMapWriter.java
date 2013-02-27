@@ -122,7 +122,7 @@ public class GTKRadiantMapWriter {
 			len+=in.getAttributes()[i].length()+2; // Gonna need a newline after each attribute or they'll get jumbled together
 			if(in.getAttributes()[i].equals("{") && !in.getAttribute("classname").equals("worldspawn")) {
 				String temp="// Entity "+num+(char)0x0D+(char)0x0A+"{";
-				len+=temp.length();
+				len+=temp.length()-1;
 			}
 		}
 		out=new byte[len];
@@ -299,9 +299,9 @@ public class GTKRadiantMapWriter {
 	
 	// These methods are TODO
 	public Entity ent42ToEntRad(Entity in) {
-		//if(in.getAttribute("classname").equalsIgnoreCase("")) {
-		//	in.setAttribute("classname", "func_rotatingdoor");
-		//}
+		if(in.getAttribute("classname").equalsIgnoreCase("worldspawn")) {
+			in.deleteAttribute("mapversion");
+		}
 		return in;
 	}
 	
