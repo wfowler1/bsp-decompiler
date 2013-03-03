@@ -86,11 +86,7 @@ public class TexInfos {
 	
 	// Returns the number of elements.
 	public int length() {
-		if(elements.length==0) {
-			return length/structLength;
-		} else {
-			return elements.length;
-		}
+		return elements.length;
 	}
 	
 	public TexInfo getElement(int i) {

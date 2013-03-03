@@ -86,6 +86,7 @@ public class SourceBSPDecompiler {
 			numTotalItems++; // This entity
 			Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+originalNumEntities, "Decompiling...");
 		}
+		// Find displacement faces and generate brushes for them
 		for(int i=0;i<BSPObject.getFaces().length();i++) {
 			Face face=BSPObject.getFaces().getElement(i);
 			if(face.getDisplacement()>-1) {

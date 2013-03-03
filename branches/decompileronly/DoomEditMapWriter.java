@@ -209,6 +209,46 @@ public class DoomEditMapWriter {
 	private String brushSideToString(MAPBrushSide in) {
 		try {
 			String texture=in.getTexture();
+			if(BSPVersion==BSP.TYPE_SOURCE17 || BSPVersion==BSP.TYPE_SOURCE18 || BSPVersion==BSP.TYPE_SOURCE19 || BSPVersion==BSP.TYPE_SOURCE20 || BSPVersion==BSP.TYPE_SOURCE21 || BSPVersion==BSP.TYPE_SOURCE22 || BSPVersion==BSP.TYPE_SOURCE23) {
+				if(texture.substring(0,5).equalsIgnoreCase("maps/")) {
+					texture=texture.substring(5);
+					for(int i=0;i<texture.length();i++) {
+						if(texture.charAt(i)=='/') {
+							texture=texture.substring(i+1);
+							break;
+						}
+					}
+				}
+				// Find cubemap textures
+				int numUnderscores=0;
+				boolean validnumber=false;
+				for(int i=texture.length()-1;i>0;i--) {
+					if(texture.charAt(i)<='9' && texture.charAt(i)>='0') { // Current is a number, start building string
+						validnumber=true;
+					} else {
+						if(texture.charAt(i)=='-') { // Current is a minus sign (-).
+							if(!validnumber) {
+								break; // Make sure there's a number to add the minus sign to. If not, kill the loop.
+							}
+						} else {
+							if(texture.charAt(i)=='_') { // Current is an underscore (_)
+								if(validnumber) { // Make sure there is a number in the current string
+									numUnderscores++; // before moving on to the next one.
+									validnumber=false;
+									if(numUnderscores==3) { // If we've got all our numbers
+										texture=texture.substring(0,i); // Cut the texture string
+										break; // Kill the loop, we're done
+									}
+								} else { // No number after the underscore
+									break;
+								}
+							} else { // Not an acceptable character
+								break;
+							}
+						}
+					}
+				}
+			}
 			Plane plane=in.getPlane();
 			Vector3D textureS=in.getTextureS();
 			Vector3D textureT=in.getTextureT();
