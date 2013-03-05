@@ -51,6 +51,8 @@ public class Planes {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_DMOMAM:
+			case BSP.TYPE_VINDICTUS:
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_DAIKATANA:
 				structLength=20;

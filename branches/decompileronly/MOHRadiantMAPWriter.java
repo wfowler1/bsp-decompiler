@@ -268,15 +268,19 @@ public class MOHRadiantMAPWriter {
 						;
 					}
 				} else {
-					if(BSPVersion==BSP.TYPE_SOURCE17 || BSPVersion==BSP.TYPE_SOURCE18 || BSPVersion==BSP.TYPE_SOURCE19 || BSPVersion==BSP.TYPE_SOURCE20 || BSPVersion==BSP.TYPE_SOURCE21 || BSPVersion==BSP.TYPE_SOURCE22 || BSPVersion==BSP.TYPE_SOURCE23) {
-						if(texture.substring(0,5).equalsIgnoreCase("maps/")) {
-							texture=texture.substring(5);
-							for(int i=0;i<texture.length();i++) {
-								if(texture.charAt(i)=='/') {
-									texture=texture.substring(i+1);
-									break;
+					if(BSPVersion==BSP.TYPE_SOURCE17 || BSPVersion==BSP.TYPE_SOURCE18 || BSPVersion==BSP.TYPE_SOURCE19 || BSPVersion==BSP.TYPE_SOURCE20 || BSPVersion==BSP.TYPE_SOURCE21 || BSPVersion==BSP.TYPE_SOURCE22 || BSPVersion==BSP.TYPE_SOURCE23 || BSPVersion==BSP.TYPE_DMOMAM || BSPVersion==BSP.TYPE_VINDICTUS) {
+						try {
+							if(texture.substring(0,5).equalsIgnoreCase("maps/")) {
+								texture=texture.substring(5);
+								for(int i=0;i<texture.length();i++) {
+									if(texture.charAt(i)=='/') {
+										texture=texture.substring(i+1);
+										break;
+									}
 								}
 							}
+						} catch(java.lang.StringIndexOutOfBoundsException e) {
+							;
 						}
 						// Find cubemap textures
 						int numUnderscores=0;

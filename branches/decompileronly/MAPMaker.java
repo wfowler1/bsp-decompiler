@@ -69,6 +69,8 @@ public class MAPMaker {
 				case BSP.TYPE_SOURCE21:
 				case BSP.TYPE_SOURCE22:
 				case BSP.TYPE_SOURCE23:
+				case BSP.TYPE_VINDICTUS:
+				case BSP.TYPE_DMOMAM:
 					VMFWriter VMFMaker;
 					if(Window.getOutputFolder().equals("default")) {
 						Window.println("Saving "+mapfolder+mapname+".vmf...",Window.VERBOSITY_ALWAYS);

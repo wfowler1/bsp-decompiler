@@ -57,6 +57,8 @@ public class Vertices {
 			case BSP.TYPE_SOURCE23:
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_DAIKATANA:
+			case BSP.TYPE_VINDICTUS:
+			case BSP.TYPE_DMOMAM:
 				structLength=12;
 				break;
 			case BSP.TYPE_STEF2:

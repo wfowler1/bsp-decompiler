@@ -18,18 +18,18 @@ public class Nodes {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public Nodes(String in, int type, boolean isVindictus) throws java.lang.InterruptedException {
-		new Nodes(new File(in), type, isVindictus);
+	public Nodes(String in, int type) throws java.lang.InterruptedException {
+		new Nodes(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public Nodes(File in, int type, boolean isVindictus) throws java.lang.InterruptedException {
+	public Nodes(File in, int type) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
 			byte[] temp=new byte[(int)data.length()];
 			fileReader.read(temp);
-			new Nodes(temp, type, isVindictus);
+			new Nodes(temp, type);
 			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
@@ -39,7 +39,7 @@ public class Nodes {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public Nodes(byte[] in, int type, boolean isVindictus) throws java.lang.InterruptedException {
+	public Nodes(byte[] in, int type) throws java.lang.InterruptedException {
 		switch(type) {
 			case BSP.TYPE_QUAKE:
 				structLength=24;
@@ -57,7 +57,11 @@ public class Nodes {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_DMOMAM:
 				structLength=32;
+				break;
+			case BSP.TYPE_VINDICTUS:
+				structLength=48;
 				break;
 			case BSP.TYPE_QUAKE3:
 			case BSP.TYPE_FAKK:
@@ -72,9 +76,6 @@ public class Nodes {
 			default:
 				structLength=0; // This will cause the shit to hit the fan.
 		}
-		if(isVindictus) {
-			structLength=48;
-		}
 		int offset=0;
 		length=in.length;
 		elements=new Node[in.length/structLength];
@@ -86,7 +87,7 @@ public class Nodes {
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
-			elements[i]=new Node(bytes, type, isVindictus);
+			elements[i]=new Node(bytes, type);
 			offset+=structLength;
 		}
 	}

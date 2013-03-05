@@ -77,6 +77,8 @@ public class Window extends JPanel implements ActionListener {
 	private static JRadioButtonMenuItem openAsSource21;
 	private static JRadioButtonMenuItem openAsSource22;
 	private static JRadioButtonMenuItem openAsSource23;
+	private static JRadioButtonMenuItem openAsDMoMaM;
+	private static JRadioButtonMenuItem openAsVindictus;
 	private static JRadioButtonMenuItem openAsQuake2;
 	private static JRadioButtonMenuItem openAsSoF;
 	private static JRadioButtonMenuItem openAsDaikatana;
@@ -280,6 +282,12 @@ public class Window extends JPanel implements ActionListener {
 		openAsSource23=new JRadioButtonMenuItem("Source Engine v23");
 		openAsGroup.add(openAsSource23);
 		openAsMenu.add(openAsSource23);
+		openAsDMoMaM=new JRadioButtonMenuItem("Dark Messiah of Might and Magic");
+		openAsGroup.add(openAsDMoMaM);
+		openAsMenu.add(openAsDMoMaM);
+		openAsVindictus=new JRadioButtonMenuItem("Vindictus");
+		openAsGroup.add(openAsVindictus);
+		openAsMenu.add(openAsVindictus);
 		
 		decompAutoItem = new JRadioButtonMenuItem("Auto");
 		formatsMenu.add(decompAutoItem);
@@ -883,6 +891,12 @@ public class Window extends JPanel implements ActionListener {
 				}
 				if(openAsSource23.isSelected()) {
 					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_SOURCE23);
+				}
+				if(openAsDMoMaM.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_DMOMAM);
+				}
+				if(openAsVindictus.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_VINDICTUS);
 				}
 				if(openAsQuake2.isSelected()) {
 					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_QUAKE2);

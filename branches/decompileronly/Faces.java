@@ -18,18 +18,18 @@ public class Faces {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public Faces(String in, int type, boolean isVindictus) throws java.lang.InterruptedException {
-		new Faces(new File(in), type, isVindictus);
+	public Faces(String in, int type) throws java.lang.InterruptedException {
+		new Faces(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public Faces(File in, int type, boolean isVindictus) throws java.lang.InterruptedException {
+	public Faces(File in, int type) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
 			byte[] temp=new byte[(int)data.length()];
 			fileReader.read(temp);
-			new Faces(temp, type, isVindictus);
+			new Faces(temp, type);
 			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
@@ -39,7 +39,7 @@ public class Faces {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public Faces(byte[] in, int type, boolean isVindictus) throws java.lang.InterruptedException {
+	public Faces(byte[] in, int type) throws java.lang.InterruptedException {
 		switch(type) {
 			case BSP.TYPE_QUAKE:
 			case BSP.TYPE_QUAKE2:
@@ -56,13 +56,19 @@ public class Faces {
 				structLength=48;
 				break;
 			case BSP.TYPE_SOURCE17:
+				structLength=104;
+				break;
 			case BSP.TYPE_SOURCE18:
 			case BSP.TYPE_SOURCE19:
 			case BSP.TYPE_SOURCE20:
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_DMOMAM:
 				structLength=56;
+				break;
+			case BSP.TYPE_VINDICTUS:
+				structLength=72;
 				break;
 			case BSP.TYPE_QUAKE3:
 				structLength=104;
@@ -80,9 +86,6 @@ public class Faces {
 			default:
 				structLength=0; // This will cause the shit to hit the fan.
 		}
-		if(isVindictus) {
-			structLength=72;
-		}
 		int offset=0;
 		length=in.length;
 		elements=new Face[in.length/structLength];
@@ -94,7 +97,7 @@ public class Faces {
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
-			elements[i]=new Face(bytes, type, isVindictus);
+			elements[i]=new Face(bytes, type);
 			offset+=structLength;
 		}
 	}

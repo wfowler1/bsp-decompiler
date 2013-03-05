@@ -18,18 +18,18 @@ public class Leaves {
 	// CONSTRUCTORS
 	
 	// Accepts a filepath as a String
-	public Leaves(String in, int type, boolean isVindictus) throws java.lang.InterruptedException {
-		new Leaves(new File(in), type, isVindictus);
+	public Leaves(String in, int type) throws java.lang.InterruptedException {
+		new Leaves(new File(in), type);
 	}
 	
 	// This one accepts the input file path as a File
-	public Leaves(File in, int type, boolean isVindictus) throws java.lang.InterruptedException {
+	public Leaves(File in, int type) throws java.lang.InterruptedException {
 		data=in;
 		try {
 			FileInputStream fileReader=new FileInputStream(data);
 			byte[] temp=new byte[(int)data.length()];
 			fileReader.read(temp);
-			new Leaves(temp, type, isVindictus);
+			new Leaves(temp, type);
 			fileReader.close();
 		} catch(java.io.FileNotFoundException e) {
 			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
@@ -39,7 +39,7 @@ public class Leaves {
 	}
 	
 	// Takes a byte array, as if read from a FileInputStream
-	public Leaves(byte[] in, int type, boolean isVindictus) throws java.lang.InterruptedException {
+	public Leaves(byte[] in, int type) throws java.lang.InterruptedException {
 		switch(type) {
 			case BSP.TYPE_QUAKE:
 			case BSP.TYPE_QUAKE2:
@@ -53,7 +53,11 @@ public class Leaves {
 			case BSP.TYPE_SOURCE23:
 			case BSP.TYPE_SOF:
 			case BSP.TYPE_DAIKATANA:
+			case BSP.TYPE_DMOMAM:
 				structLength=32;
+				break;
+			case BSP.TYPE_VINDICTUS:
+				structLength=56;
 				break;
 			case BSP.TYPE_COD:
 				structLength=36;
@@ -76,9 +80,6 @@ public class Leaves {
 			default:
 				structLength=0; // This will cause the shit to hit the fan.
 		}
-		if(isVindictus) {
-			structLength=56;
-		}
 		int offset=0;
 		length=in.length;
 		elements=new Leaf[in.length/structLength];
@@ -90,7 +91,7 @@ public class Leaves {
 			for(int j=0;j<structLength;j++) {
 				bytes[j]=in[offset+j];
 			}
-			elements[i]=new Leaf(bytes, type, isVindictus);
+			elements[i]=new Leaf(bytes, type);
 			offset+=structLength;
 		}
 	}

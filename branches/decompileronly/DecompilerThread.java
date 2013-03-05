@@ -94,6 +94,8 @@ public class DecompilerThread implements Runnable {
 							case BSP.TYPE_SOURCE21:
 							case BSP.TYPE_SOURCE22:
 							case BSP.TYPE_SOURCE23:
+							case BSP.TYPE_DMOMAM:
+							case BSP.TYPE_VINDICTUS:
 								SourceBSPDecompiler sourceDecompiler = new SourceBSPDecompiler(reader.getBSPObject(), jobnum);
 								output=sourceDecompiler.decompile();
 								break;

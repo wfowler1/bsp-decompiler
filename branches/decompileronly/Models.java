@@ -63,7 +63,11 @@ public class Models {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_VINDICTUS:
 				structLength=48;
+				break;
+			case BSP.TYPE_DMOMAM:
+				structLength=52;
 				break;
 			case BSP.TYPE_NIGHTFIRE:
 				structLength=56;

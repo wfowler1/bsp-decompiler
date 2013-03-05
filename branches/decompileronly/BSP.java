@@ -10,6 +10,7 @@ public class BSP {
 	public static final int TYPE_QUAKE=29;
 	// public static final int TYPE_GOLDSRC=30; // Uses same algorithm and structures as Quake
 	public static final int TYPE_NIGHTFIRE=42;
+	public static final int TYPE_VINDICTUS=346131372;
 	public static final int TYPE_STEF2=556942937;
 	public static final int TYPE_MOHAA=892416069;
 	// public static final int TYPE_MOHBT=1095516506; // Similar enough to MOHAA to use the same structures and algorithm
@@ -32,6 +33,7 @@ public class BSP {
 	public static final int TYPE_QUAKE3=1347633783;
 	// public static final int TYPE_RTCW=1347633784; // Uses same algorithm and structures as Quake 3
 	public static final int TYPE_COD=1347633796;
+	public static final int TYPE_DMOMAM=1347895914;
 	
 	// What kind is this map?
 	private int version;
@@ -360,6 +362,10 @@ public class BSP {
 		return version;
 	}
 	
+	public void setVersion(int in) {
+		version=in;
+	}
+	
 	public Entities getEntities() {
 		return entities;
 	}
@@ -404,8 +410,8 @@ public class BSP {
 		return nodes;
 	}
 	
-	public void setNodes(byte[] data, boolean isVindictus) throws java.lang.InterruptedException {
-		nodes=new Nodes(data, version, isVindictus);
+	public void setNodes(byte[] data) throws java.lang.InterruptedException {
+		nodes=new Nodes(data, version);
 	}
 	
 	public TexInfos getTexInfo() {
@@ -420,16 +426,16 @@ public class BSP {
 		return faces;
 	}
 	
-	public void setFaces(byte[] data, boolean isVindictus) throws java.lang.InterruptedException {
-		faces=new Faces(data, version, isVindictus);
+	public void setFaces(byte[] data) throws java.lang.InterruptedException {
+		faces=new Faces(data, version);
 	}
 	
 	public Leaves getLeaves() {
 		return leaves;
 	}
 	
-	public void setLeaves(byte[] data, boolean isVindictus) throws java.lang.InterruptedException {
-		leaves=new Leaves(data, version, isVindictus);
+	public void setLeaves(byte[] data) throws java.lang.InterruptedException {
+		leaves=new Leaves(data, version);
 	}
 	
 	public NumList getMarkSurfaces() {
@@ -448,8 +454,8 @@ public class BSP {
 		return edges;
 	}
 	
-	public void setEdges(byte[] data, boolean isVindictus) throws java.lang.InterruptedException {
-		edges=new Edges(data, isVindictus);
+	public void setEdges(byte[] data, int type) throws java.lang.InterruptedException {
+		edges=new Edges(data, type);
 	}
 	
 	public NumList getSurfEdges() {
@@ -470,6 +476,8 @@ public class BSP {
 			case TYPE_SOURCE21:
 			case TYPE_SOURCE22:
 			case TYPE_SOURCE23:
+			case TYPE_DMOMAM:
+			case TYPE_VINDICTUS:
 				surfEdges=new NumList(data, NumList.TYPE_INT);
 				break;
 		}
@@ -495,32 +503,30 @@ public class BSP {
 		return brushSides;
 	}
 	
-	public void setBrushSides(byte[] data, boolean isVindictus) throws java.lang.InterruptedException {
-		brushSides=new BrushSides(data, version, isVindictus);
+	public void setBrushSides(byte[] data) throws java.lang.InterruptedException {
+		brushSides=new BrushSides(data, version);
 	}
 	
-	public void setMarkBrushes(byte[] data, boolean isVindictus) throws java.lang.InterruptedException {
-		if(isVindictus) {
-			markBrushes=new NumList(data, NumList.TYPE_UINT);
-		} else {
-			switch(version) {
-				case TYPE_QUAKE2:
-				case TYPE_SIN:
-				case TYPE_SOF:
-				case TYPE_DAIKATANA:
-				case TYPE_SOURCE17:
-				case TYPE_SOURCE18:
-				case TYPE_SOURCE19:
-				case TYPE_SOURCE20:
-				case TYPE_SOURCE21:
-				case TYPE_SOURCE22:
-				case TYPE_SOURCE23:
-					markBrushes=new NumList(data, NumList.TYPE_USHORT);
-					break;
-				case TYPE_NIGHTFIRE:
-					markBrushes=new NumList(data, NumList.TYPE_UINT);
-					break;
-			}
+	public void setMarkBrushes(byte[] data) throws java.lang.InterruptedException {
+		switch(version) {
+			case TYPE_QUAKE2:
+			case TYPE_SIN:
+			case TYPE_SOF:
+			case TYPE_DAIKATANA:
+			case TYPE_SOURCE17:
+			case TYPE_SOURCE18:
+			case TYPE_SOURCE19:
+			case TYPE_SOURCE20:
+			case TYPE_SOURCE21:
+			case TYPE_SOURCE22:
+			case TYPE_SOURCE23:
+			case TYPE_DMOMAM:
+				markBrushes=new NumList(data, NumList.TYPE_USHORT);
+				break;
+			case TYPE_NIGHTFIRE:
+			case TYPE_VINDICTUS:
+				markBrushes=new NumList(data, NumList.TYPE_UINT);
+				break;
 		}
 	}
 	
@@ -536,8 +542,8 @@ public class BSP {
 		return texDatas;
 	}
 	
-	public void setDispInfos(byte[] data, boolean isVindictus) throws java.lang.InterruptedException {
-		dispInfos=new SourceDispInfos(data, version, isVindictus);
+	public void setDispInfos(byte[] data) throws java.lang.InterruptedException {
+		dispInfos=new SourceDispInfos(data, version);
 	}
 	
 	public SourceDispInfos getDispInfos() {
@@ -548,8 +554,8 @@ public class BSP {
 		return originalFaces;
 	}
 	
-	public void setOriginalFaces(byte[] data, boolean isVindictus) throws java.lang.InterruptedException {
-		originalFaces=new Faces(data, version, isVindictus);
+	public void setOriginalFaces(byte[] data) throws java.lang.InterruptedException {
+		originalFaces=new Faces(data, version);
 	}
 	
 	public void setDispVerts(byte[] data) throws java.lang.InterruptedException {

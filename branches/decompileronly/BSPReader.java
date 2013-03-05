@@ -404,7 +404,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setNodes(readLump(offset, length), false);
+							BSPObject.setNodes(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -436,7 +436,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setFaces(readLump(offset, length), false);
+							BSPObject.setFaces(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -454,7 +454,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setLeaves(readLump(offset, length), false);
+							BSPObject.setLeaves(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -486,7 +486,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setEdges(readLump(offset, length), false);
+							BSPObject.setEdges(readLump(offset, length), version);
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -620,7 +620,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setFaces(readLump(offset, length), false);
+							BSPObject.setFaces(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -638,7 +638,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setLeaves(readLump(offset, length), false);
+							BSPObject.setLeaves(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -656,7 +656,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setMarkBrushes(readLump(offset, length), false);
+							BSPObject.setMarkBrushes(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -704,7 +704,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setBrushSides(readLump(offset, length), false);
+							BSPObject.setBrushSides(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -775,7 +775,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setBrushSides(readLump(offset, length), false);
+							BSPObject.setBrushSides(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -879,7 +879,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setBrushSides(readLump(offset, length), false);
+							BSPObject.setBrushSides(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1000,7 +1000,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setBrushSides(readLump(offset, length), false);
+							BSPObject.setBrushSides(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1120,7 +1120,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setNodes(readLump(offset, length), false);
+							BSPObject.setNodes(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1152,7 +1152,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setFaces(readLump(offset, length), false);
+							BSPObject.setFaces(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1170,7 +1170,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setLeaves(readLump(offset, length), false);
+							BSPObject.setLeaves(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1188,7 +1188,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setMarkBrushes(readLump(offset, length), false);
+							BSPObject.setMarkBrushes(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1204,7 +1204,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setEdges(readLump(offset, length), false);
+							BSPObject.setEdges(readLump(offset, length), version);
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1268,7 +1268,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setBrushSides(readLump(offset, length), false);
+							BSPObject.setBrushSides(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1338,7 +1338,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setNodes(readLump(offset, length), false);
+							BSPObject.setNodes(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1370,7 +1370,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setFaces(readLump(offset, length), false);
+							BSPObject.setFaces(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1388,7 +1388,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setLeaves(readLump(offset, length), false);
+							BSPObject.setLeaves(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1406,7 +1406,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setMarkBrushes(readLump(offset, length), false);
+							BSPObject.setMarkBrushes(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1422,7 +1422,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setEdges(readLump(offset, length), false);
+							BSPObject.setEdges(readLump(offset, length), version);
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1486,7 +1486,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setBrushSides(readLump(offset, length), false);
+							BSPObject.setBrushSides(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1588,7 +1588,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setBrushSides(readLump(offset, length), false);
+							BSPObject.setBrushSides(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1622,7 +1622,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setFaces(readLump(offset, length), false);
+							BSPObject.setFaces(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1639,11 +1639,11 @@ public class BSPReader {
 					case BSP.TYPE_SOURCE21:
 					case BSP.TYPE_SOURCE22:
 					case BSP.TYPE_SOURCE23:
+					case BSP.TYPE_DMOMAM:
 						Window.println("Source BSP",Window.VERBOSITY_ALWAYS);
 						// Left 4 Dead 2, for some reason, made the order "version, offset, length" for lump header structure,
 						// rather than the usual "offset, length, version". I guess someone at Valve got bored.
 						boolean isL4D2=false;
-						boolean isVindictus=false;
 						int lumpVersion=0;
 						offsetReader.skip(8); // Skip the VBSP and version number
 						
@@ -1707,6 +1707,15 @@ public class BSPReader {
 						try {
 							int numGamelumps=DataReader.readInt(gamelumpData[0], gamelumpData[1], gamelumpData[2], gamelumpData[3]);
 							int gamelumpOffset=4;
+							if(version==BSP.TYPE_DMOMAM) {
+								int next4=DataReader.readInt(gamelumpData[4], gamelumpData[5], gamelumpData[6], gamelumpData[7]);
+								if(next4==1) {
+									gamelumpOffset+=4;
+								} else {
+									version=BSP.TYPE_SOURCE20;
+									BSPObject.setVersion(BSP.TYPE_SOURCE20);
+								}
+							}
 							if(numGamelumps>1) {
 								byte[] staticPropLump=new byte[0];
 								int staticPropLumpVersion=0;
@@ -1716,14 +1725,18 @@ public class BSPReader {
 									int gamelumpVersion=(int)DataReader.readShort(gamelumpData[gamelumpOffset+6], gamelumpData[gamelumpOffset+7]);
 									int internalOffset=DataReader.readInt(gamelumpData[gamelumpOffset+8], gamelumpData[gamelumpOffset+9], gamelumpData[gamelumpOffset+10], gamelumpData[gamelumpOffset+11]);
 									int internalLength=DataReader.readInt(gamelumpData[gamelumpOffset+12], gamelumpData[gamelumpOffset+13], gamelumpData[gamelumpOffset+14], gamelumpData[gamelumpOffset+15]);
-									if(internalOffset<4+(16*numGamelumps) || isVindictus) { // Even if the offset is relative to start of game lump, it will never be below this. If it is, it uses this format instead.
-										isVindictus=true;
+									if((internalOffset<4+(16*numGamelumps) && version==BSP.TYPE_SOURCE20 && readAs==-1) || version==BSP.TYPE_VINDICTUS || readAs==BSP.TYPE_VINDICTUS) { // Even if the offset is relative to start of game lump, it will never be below this. If it is, it uses this format instead.
+										BSPObject.setVersion(BSP.TYPE_VINDICTUS);
+										version=BSP.TYPE_VINDICTUS;
 										gamelumpVersion=DataReader.readInt(gamelumpData[gamelumpOffset+8], gamelumpData[gamelumpOffset+9], gamelumpData[gamelumpOffset+10], gamelumpData[gamelumpOffset+11]);
 										internalOffset=DataReader.readInt(gamelumpData[gamelumpOffset+12], gamelumpData[gamelumpOffset+13], gamelumpData[gamelumpOffset+14], gamelumpData[gamelumpOffset+15]);
 										internalLength=DataReader.readInt(gamelumpData[gamelumpOffset+16], gamelumpData[gamelumpOffset+17], gamelumpData[gamelumpOffset+18], gamelumpData[gamelumpOffset+19]);
 										gamelumpOffset+=20;
 									} else {
 										gamelumpOffset+=16;
+										if(version==BSP.TYPE_DMOMAM) {
+											gamelumpOffset+=4;
+										}
 									}
 									if(internalOffset<gamelumpFileOffset) {
 										isRelativeToLumpStart=true;
@@ -1751,9 +1764,9 @@ public class BSPReader {
 							}
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
-								FileOutputStream initExceptionDebug=new FileOutputStream("GameLump.lmp");
-								initExceptionDebug.write(gamelumpData);
-								initExceptionDebug.close();
+								FileOutputStream penisinitExceptionDebug=new FileOutputStream("GameLump"+lumpVersion+".lmp");
+								penisinitExceptionDebug.write(gamelumpData);
+								penisinitExceptionDebug.close();
 							}
 							throw e;
 						}
@@ -1866,7 +1879,7 @@ public class BSPReader {
 						offsetReader.skip(4);
 						if(isL4D2) {
 							try {
-								BSPObject.setNodes(readLump(length, lumpVersion), isVindictus);
+								BSPObject.setNodes(readLump(length, lumpVersion));
 							} catch(java.lang.Exception e) {
 								if(Window.dumpLumpIsSelected()) {
 									FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1877,7 +1890,7 @@ public class BSPReader {
 							}
 						} else {
 							try {
-								BSPObject.setNodes(readLump(offset, length), isVindictus);
+								BSPObject.setNodes(readLump(offset, length));
 							} catch(java.lang.Exception e) {
 								if(Window.dumpLumpIsSelected()) {
 									FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1930,7 +1943,7 @@ public class BSPReader {
 						offsetReader.skip(4);
 						if(isL4D2) {
 							try {
-								BSPObject.setFaces(readLump(length, lumpVersion), isVindictus);
+								BSPObject.setFaces(readLump(length, lumpVersion));
 							} catch(java.lang.Exception e) {
 								if(Window.dumpLumpIsSelected()) {
 									FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1941,7 +1954,7 @@ public class BSPReader {
 							}
 						} else {
 							try {
-								BSPObject.setFaces(readLump(offset, length), isVindictus);
+								BSPObject.setFaces(readLump(offset, length));
 							} catch(java.lang.Exception e) {
 								if(Window.dumpLumpIsSelected()) {
 									FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1964,7 +1977,7 @@ public class BSPReader {
 						offsetReader.skip(4);
 						if(isL4D2) {
 							try {
-								BSPObject.setLeaves(readLump(length, lumpVersion), isVindictus);
+								BSPObject.setLeaves(readLump(length, lumpVersion));
 							} catch(java.lang.Exception e) {
 								if(Window.dumpLumpIsSelected()) {
 									FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1975,7 +1988,7 @@ public class BSPReader {
 							}
 						} else {
 							try {
-								BSPObject.setLeaves(readLump(offset, length), isVindictus);
+								BSPObject.setLeaves(readLump(offset, length));
 							} catch(java.lang.Exception e) {
 								if(Window.dumpLumpIsSelected()) {
 									FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -1998,7 +2011,7 @@ public class BSPReader {
 						offsetReader.skip(4);
 						if(isL4D2) {
 							try {
-								BSPObject.setEdges(readLump(length, lumpVersion), isVindictus);
+								BSPObject.setEdges(readLump(length, lumpVersion), version);
 							} catch(java.lang.Exception e) {
 								if(Window.dumpLumpIsSelected()) {
 									FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2009,7 +2022,7 @@ public class BSPReader {
 							}
 						} else {
 							try {
-								BSPObject.setEdges(readLump(offset, length), isVindictus);
+								BSPObject.setEdges(readLump(offset, length), version);
 							} catch(java.lang.Exception e) {
 								if(Window.dumpLumpIsSelected()) {
 									FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2096,7 +2109,7 @@ public class BSPReader {
 						offsetReader.skip(4);
 						if(isL4D2) {
 							try {
-								BSPObject.setMarkBrushes(readLump(length, lumpVersion), isVindictus);
+								BSPObject.setMarkBrushes(readLump(length, lumpVersion));
 							} catch(java.lang.Exception e) {
 								if(Window.dumpLumpIsSelected()) {
 									FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2107,7 +2120,7 @@ public class BSPReader {
 							}
 						} else {
 							try {
-								BSPObject.setMarkBrushes(readLump(offset, length), isVindictus);
+								BSPObject.setMarkBrushes(readLump(offset, length));
 							} catch(java.lang.Exception e) {
 								if(Window.dumpLumpIsSelected()) {
 									FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2160,7 +2173,7 @@ public class BSPReader {
 						offsetReader.skip(4);
 						if(isL4D2) {
 							try {
-								BSPObject.setBrushSides(readLump(length, lumpVersion), isVindictus);
+								BSPObject.setBrushSides(readLump(length, lumpVersion));
 							} catch(java.lang.Exception e) {
 								if(Window.dumpLumpIsSelected()) {
 									FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2171,7 +2184,7 @@ public class BSPReader {
 							}
 						} else {
 							try {
-								BSPObject.setBrushSides(readLump(offset, length), isVindictus);
+								BSPObject.setBrushSides(readLump(offset, length));
 							} catch(java.lang.Exception e) {
 								if(Window.dumpLumpIsSelected()) {
 									FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2194,7 +2207,7 @@ public class BSPReader {
 						offsetReader.skip(4);
 						if(isL4D2) {
 							try {
-								BSPObject.setDispInfos(readLump(length, lumpVersion), isVindictus);
+								BSPObject.setDispInfos(readLump(length, lumpVersion));
 							} catch(java.lang.Exception e) {
 								if(Window.dumpLumpIsSelected()) {
 									FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2205,7 +2218,7 @@ public class BSPReader {
 							}
 						} else {
 							try {
-								BSPObject.setDispInfos(readLump(offset, length), isVindictus);
+								BSPObject.setDispInfos(readLump(offset, length));
 							} catch(java.lang.Exception e) {
 								if(Window.dumpLumpIsSelected()) {
 									FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2226,7 +2239,7 @@ public class BSPReader {
 						offsetReader.skip(4);
 						if(isL4D2) {
 							try {
-								BSPObject.setOriginalFaces(readLump(length, lumpVersion), isVindictus);
+								BSPObject.setOriginalFaces(readLump(length, lumpVersion));
 							} catch(java.lang.Exception e) {
 								if(Window.dumpLumpIsSelected()) {
 									FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2237,7 +2250,7 @@ public class BSPReader {
 							}
 						} else {
 							try {
-								BSPObject.setOriginalFaces(readLump(offset, length), isVindictus);
+								BSPObject.setOriginalFaces(readLump(offset, length));
 							} catch(java.lang.Exception e) {
 								if(Window.dumpLumpIsSelected()) {
 									FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2509,7 +2522,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setNodes(readLump(offset, length), false);
+							BSPObject.setNodes(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2541,7 +2554,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setFaces(readLump(offset, length), false);
+							BSPObject.setFaces(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2559,7 +2572,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setLeaves(readLump(offset, length), false);
+							BSPObject.setLeaves(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2577,7 +2590,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setMarkBrushes(readLump(offset, length), false);
+							BSPObject.setMarkBrushes(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2593,7 +2606,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setEdges(readLump(offset, length), false);
+							BSPObject.setEdges(readLump(offset, length), version);
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2657,7 +2670,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setBrushSides(readLump(offset, length), false);
+							BSPObject.setBrushSides(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2745,7 +2758,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setNodes(readLump(offset, length), false);
+							BSPObject.setNodes(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2777,7 +2790,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setFaces(readLump(offset, length), false);
+							BSPObject.setFaces(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2795,7 +2808,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setLeaves(readLump(offset, length), false);
+							BSPObject.setLeaves(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2813,7 +2826,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setMarkBrushes(readLump(offset, length), false);
+							BSPObject.setMarkBrushes(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2829,7 +2842,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setEdges(readLump(offset, length), false);
+							BSPObject.setEdges(readLump(offset, length), version);
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2893,7 +2906,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setBrushSides(readLump(offset, length), false);
+							BSPObject.setBrushSides(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -2995,7 +3008,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setBrushSides(readLump(offset, length), false);
+							BSPObject.setBrushSides(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -3029,7 +3042,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setFaces(readLump(offset, length), false);
+							BSPObject.setFaces(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -3083,7 +3096,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setBrushSides(readLump(offset, length), false);
+							BSPObject.setBrushSides(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -3189,7 +3202,7 @@ public class BSPReader {
 						offsetReader.read(read); // Read 4 more bytes
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						try {
-							BSPObject.setBrushSides(readLump(offset, length), false);
+							BSPObject.setBrushSides(readLump(offset, length));
 						} catch(java.lang.Exception e) {
 							if(Window.dumpLumpIsSelected()) {
 								FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -3291,7 +3304,7 @@ public class BSPReader {
 									break;
 								case 5:
 									try {
-										BSPObject.setBrushSides(readLump(offset, length), false);
+										BSPObject.setBrushSides(readLump(offset, length));
 									} catch(java.lang.Exception e) {
 										if(Window.dumpLumpIsSelected()) {
 											FileOutputStream initExceptionDebug=new FileOutputStream("CrashLump.lmp");
@@ -3458,7 +3471,12 @@ public class BSPReader {
 									version=BSP.TYPE_SOURCE19;
 									break;
 								case 20:
-									version=BSP.TYPE_SOURCE20;
+									version2=(int)DataReader.readShort(read[2], read[3]);
+									if(version2==4) {
+										version=BSP.TYPE_DMOMAM;
+									} else {
+										version=BSP.TYPE_SOURCE20;
+									}
 									break;
 								case 21:
 									version=BSP.TYPE_SOURCE21;
@@ -3470,7 +3488,6 @@ public class BSPReader {
 									version=BSP.TYPE_SOURCE23;
 									break;
 							}
-							version2=(int)DataReader.readShort(read[2], read[3]);
 						} else {
 							if(in==1347633746) { // Reads in ASCII as "RBSP". Raven software's modification of Q3BSP, or Ritual's modification of Q2.
 								FileInputStream secondOffsetReader = new FileInputStream(BSPFile);

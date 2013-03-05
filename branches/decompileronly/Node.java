@@ -10,12 +10,12 @@ public class Node extends LumpObject {
 	private int child2=0; // since that would reference the head node causing an infinite loop.
 	
 	// CONSTRUCTORS
-	public Node(LumpObject in, int type, boolean isVindictus) {
+	public Node(LumpObject in, int type) {
 		super(in.getData());
-		new Node(in.getData(), type, isVindictus);
+		new Node(in.getData(), type);
 	}
 	
-	public Node(byte[] data, int type, boolean isVindictus) {
+	public Node(byte[] data, int type) {
 		super(data);
 		this.plane=DataReader.readInt(data[0], data[1], data[2], data[3]); // All formats I've seen use the first 4 bytes as an int, plane index
 		switch(type) { // I don't actually need to read or store node information for most of these formats.
@@ -37,6 +37,8 @@ public class Node extends LumpObject {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_VINDICTUS:
+			case BSP.TYPE_DMOMAM:
 			case BSP.TYPE_STEF2:
 			case BSP.TYPE_MOHAA:
 			case BSP.TYPE_STEF2DEMO:

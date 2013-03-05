@@ -212,8 +212,13 @@ public class SourceBSPDecompiler {
 						}
 					}
 					if(currentTexInfo!=null) {
-						SourceTexData currentTexData=BSPObject.getTexDatas().getElement(currentTexInfo.getTexture());
-						texture=BSPObject.getTextures().getTextureAtOffset((int)BSPObject.getTexTable().getElement(currentTexData.getStringTableIndex()));
+						SourceTexData currentTexData;
+						if(currentTexInfo.getTexture()>=0) { // I've only found one case where this is a problem: c2a3a in HL Source. Don't know why.
+							currentTexData=BSPObject.getTexDatas().getElement(currentTexInfo.getTexture());
+							texture=BSPObject.getTextures().getTextureAtOffset((int)BSPObject.getTexTable().getElement(currentTexData.getStringTableIndex()));
+						} else {
+							texture="tools/toolsskip";
+						}
 					}
 					double[] textureU=new double[3];
 					double[] textureV=new double[3];
@@ -222,7 +227,7 @@ public class SourceBSPDecompiler {
 					double texScaleU=1;
 					double texScaleV=1;
 					// Get the lengths of the axis vectors
-					if(texture.substring(0,6).equalsIgnoreCase("tools/") || currentTexInfo==null) {
+					if((texture.length()>6 && texture.substring(0,6).equalsIgnoreCase("tools/")) || currentTexInfo==null) {
 						// Tools textured faces do not maintain their own texture axes. Therefore, an arbitrary axis is
 						// used in the compiled map. When decompiled, these axes might smear the texture on the face. Fix that.
 						Vector3D[] axes=GenericMethods.textureAxisFromPlane(currentPlane);

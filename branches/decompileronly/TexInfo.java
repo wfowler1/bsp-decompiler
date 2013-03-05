@@ -36,8 +36,13 @@ public class TexInfo extends LumpObject {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_VINDICTUS:
 				texture=DataReader.readInt(data[68], data[69], data[70], data[71]);
 				flags=DataReader.readInt(data[64], data[65], data[66], data[67]);
+				break;
+			case BSP.TYPE_DMOMAM:
+				texture=DataReader.readInt(data[92], data[93], data[94], data[95]);
+				flags=DataReader.readInt(data[88], data[89], data[90], data[91]);
 				break;
 			case BSP.TYPE_QUAKE:
 				texture=DataReader.readInt(data[32], data[33], data[34], data[35]);

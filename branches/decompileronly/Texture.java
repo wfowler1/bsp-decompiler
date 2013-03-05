@@ -90,6 +90,8 @@ public class Texture extends LumpObject {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_VINDICTUS:
+			case BSP.TYPE_DMOMAM:
 				name=DataReader.readString(data);
 				break;
 			case BSP.TYPE_SIN:

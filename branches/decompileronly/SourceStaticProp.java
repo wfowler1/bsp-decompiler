@@ -32,6 +32,8 @@ public class SourceStaticProp extends LumpObject {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_VINDICTUS:
+			case BSP.TYPE_DMOMAM:
 				switch(version) {
 					case 5:
 					case 6:

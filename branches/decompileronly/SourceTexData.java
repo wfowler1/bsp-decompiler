@@ -2,7 +2,7 @@
 
 // Contains all the information for a single SourceTexData object
 
-public class SourceTexData {
+public class SourceTexData extends LumpObject {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
@@ -17,6 +17,7 @@ public class SourceTexData {
 	
 	// Takes everything exactly as it is stored
 	public SourceTexData(Vector3D reflectivity, int stringTableIndex, int width, int height, int view_width, int view_height) {
+		super(new byte[0]);
 		this.reflectivity=reflectivity;
 		this.stringTableIndex=stringTableIndex;
 		this.width=width;
@@ -28,6 +29,7 @@ public class SourceTexData {
 	// This constructor takes bytes in a byte array, as though
 	// it had just been read by a FileInputStream.
 	public SourceTexData(byte[] in) {
+		super(in);
 		this.reflectivity=DataReader.readPoint3F(in[0], in[1], in[2], in[3], in[4], in[5], in[6], in[7], in[8], in[9], in[10], in[11]);
 		this.stringTableIndex=DataReader.readInt(in[12], in[13], in[14], in[15]);
 		this.width=DataReader.readInt(in[16], in[17], in[18], in[19]);

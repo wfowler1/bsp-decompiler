@@ -74,6 +74,8 @@ public class Textures {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_VINDICTUS:
+			case BSP.TYPE_DMOMAM:
 				numElements=0;
 				for(int i=0;i<in.length;i++) {
 					if(in[i]==0x00) {

@@ -54,7 +54,11 @@ public class TexInfos {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_VINDICTUS:
 				structLength=72;
+				break;
+			case BSP.TYPE_DMOMAM:
+				structLength=96;
 				break;
 			default:
 				structLength=0; // This will break it.

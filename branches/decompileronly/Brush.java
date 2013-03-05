@@ -30,6 +30,8 @@ public class Brush extends LumpObject {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_VINDICTUS:
+			case BSP.TYPE_DMOMAM:
 				firstSide=DataReader.readInt(data[0], data[1], data[2], data[3]);
 				numSides=DataReader.readInt(data[4], data[5], data[6], data[7]);
 				contents=new byte[] { data[8], data[9], data[10], data[11] };
