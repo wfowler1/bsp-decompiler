@@ -152,6 +152,9 @@ public class SourceBSPDecompiler {
 			newStaticProp.setAttribute("fademindist", currentProp.getMinFadeDist()+"");
 			newStaticProp.setAttribute("fademaxdist", currentProp.getMaxFadeDist()+"");
 			newStaticProp.setAttribute("fadescale", currentProp.getForcedFadeScale()+"");
+			if(currentProp.getTargetname()!=null) {
+				newStaticProp.setAttribute("targetname", currentProp.getTargetname());
+			}
 			mapFile.add(newStaticProp);
 		}
 		for(int i=0;i<BSPObject.getCubemaps().length();i++) {

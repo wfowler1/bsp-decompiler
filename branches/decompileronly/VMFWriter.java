@@ -128,6 +128,17 @@ public class VMFWriter {
 			case DoomMap.TYPE_DOOM:
 			case DoomMap.TYPE_HEXEN:
 				break;
+			case BSP.TYPE_SOURCE17:
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_VINDICTUS:
+			case BSP.TYPE_DMOMAM:
+				in.buildConnections();
+				break;
 		}
 		if(in.isBrushBased()) {
 			in.deleteAttribute("model");
@@ -138,13 +149,13 @@ public class VMFWriter {
 		int len=0;
 		// Get the lengths of all attributes together
 		for(int i=0;i<in.getAttributes().length;i++) {
-			if(in.getAttributes()[i].equals("{")) {
+			if(in.getAttributes()[i].equals("{") && i==0) {
 				len+=10; // "world"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A;
 				if(!in.getAttribute("classname").equalsIgnoreCase("worldspawn")) {
 					len+=1; // "entity"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A; instead of world
 				}
 			} else {
-				if(in.getAttributes()[i].equals("}")) {
+				if(in.getAttributes()[i].equals("}") && i==in.getNumAttributes()-1) {
 					len+=3;
 				} else {
 					len+=in.getAttributes()[i].length()+3; // Three for a tab and a newline
@@ -157,14 +168,14 @@ public class VMFWriter {
 			if(Thread.currentThread().interrupted()) {
 				throw new java.lang.InterruptedException("while writing Hammer map.");
 			}
-			if(in.getAttributes()[i].equals("{")) {
+			if(in.getAttributes()[i].equals("{") && i==0) {
 				if(in.getAttribute("classname").equalsIgnoreCase("worldspawn")) {
 					in.getAttributes()[i]="world"+(char)0x0D+(char)0x0A+"{";
 				} else {
 					in.getAttributes()[i]="entity"+(char)0x0D+(char)0x0A+"{"; // instead of world
 				}
 			} else {
-				if(in.getAttributes()[i].equals("}")) {
+				if(in.getAttributes()[i].equals("}") && i==in.getNumAttributes()-1) {
 					int brushArraySize=0;
 					byte[][] brushes=new byte[in.getBrushes().length][];
 					for(int j=0;j<in.getBrushes().length;j++) { // For each brush in the entity

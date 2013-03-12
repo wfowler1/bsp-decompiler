@@ -15,6 +15,7 @@ public class SourceStaticProp extends LumpObject {
 	private float minFadeDist;
 	private float maxFadeDist;
 	private float forcedFadeScale=1;
+	String targetname=null;
 	
 	// CONSTRUCTORS
 	public SourceStaticProp(LumpObject in, int type, int version) {
@@ -36,6 +37,16 @@ public class SourceStaticProp extends LumpObject {
 			case BSP.TYPE_DMOMAM:
 				switch(version) {
 					case 5:
+						if(data.length==188) { // This is only for The Ship or Bloody Good Time.
+							byte[] targetnameBytes=new byte[128];
+							for(int i=0;i<128;i++) {
+								targetnameBytes[i]=data[60+i];
+							}
+							targetname=DataReader.readNullTerminatedString(targetnameBytes);
+							if(targetname.length()==0) {
+								targetname=null;
+							}
+						}
 					case 6:
 					case 7:
 					case 8:
@@ -52,6 +63,7 @@ public class SourceStaticProp extends LumpObject {
 						maxFadeDist=DataReader.readFloat(data[40], data[41], data[42], data[43]);
 					break;
 				}
+			break;
 		}
 	}
 	
@@ -90,5 +102,9 @@ public class SourceStaticProp extends LumpObject {
 	
 	public float getForcedFadeScale() {
 		return forcedFadeScale;
+	}
+	
+	public String getTargetname() {
+		return targetname;
 	}
 }

@@ -16,8 +16,8 @@ public class Entity {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
-	private String[] attributes;
-	private int numAttributes=0;
+	private String[] attributes=new String[0];
+	private String[] connections=new String[0];
 	private MAPBrush[] brushes=new MAPBrush[0];
 	
 	// CONSTRUCTORS
@@ -31,7 +31,6 @@ public class Entity {
 	}
 
 	public Entity(String classname) {
-		numAttributes=3;
 		attributes=new String[3];
 		attributes[0]="{";
 		attributes[1]="\"classname\" \""+classname+"\"";
@@ -39,13 +38,10 @@ public class Entity {
 	}
 	
 	public Entity() {
-		numAttributes=0;
-		attributes=new String[0];
 	}
 	
 	public Entity(Entity copy) {
 		attributes=new String[copy.getNumAttributes()];
-		numAttributes=copy.getNumAttributes();
 		for(int i=0;i<attributes.length;i++) {
 			attributes[i]=copy.getAttribute(i);
 		}
@@ -60,7 +56,7 @@ public class Entity {
 	// renameAttribute(String, String)
 	// Renames the specified attribute to the second String.
 	public void renameAttribute(String attribute, String to) {
-		for(int i=0;i<numAttributes;i++) {
+		for(int i=0;i<attributes.length;i++) {
 			try {
 				if(attributes[i].substring(0,attribute.length()+2).compareToIgnoreCase("\""+attribute+"\"")==0) {
 					String value=getAttribute(attribute);
@@ -76,12 +72,11 @@ public class Entity {
 	// deleteAttribute(String)
 	// Deletes the specified attribute from the attributes list. If it wasn't found it does nothing.
 	public void deleteAttribute(String attribute) {
-		int index=0;
-		boolean found=false;
-		for(index=0;index<numAttributes;index++) {
+		int i=0;
+		for(i=0;i<attributes.length;i++) {
 			try {
-				if(attributes[index].substring(0,attribute.length()+2).compareToIgnoreCase("\""+attribute+"\"")==0) {
-					found=true;
+				if(attributes[i].substring(0,attribute.length()+2).compareToIgnoreCase("\""+attribute+"\"")==0) {
+					deleteAttribute(i);
 					break; // If the attribute is found, break the loop since the appropriate index in in the variable "index"
 				}
 			} catch(StringIndexOutOfBoundsException e) { // for cases where the whole String is shorter than
@@ -90,16 +85,13 @@ public class Entity {
 				break;
 			}
 		}
-		if (found) {
-			deleteAttribute(index);
-		}
 	}
 	
 	// deleteAttribute(int)
 	// Deletes the attribute at the specified index in the list
 	public void deleteAttribute(int index) {
-		String[] newList=new String[numAttributes-1];
-		for(int i=0;i<numAttributes-1;i++) {
+		String[] newList=new String[attributes.length-1];
+		for(int i=0;i<attributes.length-1;i++) {
 			if(i<index) {
 				newList[i]=attributes[i];
 			}
@@ -108,49 +100,47 @@ public class Entity {
 			}
 		}
 		attributes=newList;
-		numAttributes--;
 	}
 	
 	// addAttribute(String)
 	// Simply adds the input String to the attribute list. This String can be anything,
 	// even containing newlines or curly braces. BE CAREFUL.
 	public void addAttribute(String in) {
-		String[] newList=new String[numAttributes+1];
-		for(int i=0;i<numAttributes;i++) { // copy the current attribute list
+		String[] newList=new String[attributes.length+1];
+		for(int i=0;i<attributes.length;i++) { // copy the current attribute list
 			newList[i]=attributes[i];
 		}
-		newList[numAttributes]=in;
+		newList[attributes.length]=in;
 		attributes=newList;
-		numAttributes++;
 	}
 	
 	// addAttributeInside(String)
 	// Does the same as above, but adds the attribute within the outermost pair
 	// of { } braces, if the entity has the braces as attributes
 	public void addAttributeInside(String in) {
-		String[] newList=new String[numAttributes+1];
-		int numopen=0;
-		boolean added=false;
-		for(int i=0;i<numAttributes;i++) { // copy the current attribute list
-			if(attributes[i].equals("{")) {
-				numopen++;
+		int addAt=attributes.length-1;
+		try {
+		for(;addAt>=0;addAt--) {
+			if(attributes[addAt].equals("}")) {
+				break;
 			}
-			if(attributes[i].equals("}")) {
-				if(numopen==1) {
-					newList[i]=in;
-					added=true;
-				} else {
-					numopen--;
-				}
-			}
-			if(!added) {
+		}
+		String[] newList=new String[attributes.length+1];
+		for(int i=0;i<newList.length;i++) {
+			if(i<addAt) {
 				newList[i]=attributes[i];
 			} else {
-				newList[i+1]=attributes[i];
+				if(i==addAt) {
+					newList[i]=in;
+				} else {
+					newList[i]=attributes[i-1];
+				}
 			}
 		}
 		attributes=newList;
-		numAttributes++;
+		} catch(java.lang.NullPointerException e) {
+			toString();
+		}
 	}
 	
 	// addAttribute(String, String)
@@ -228,6 +218,45 @@ public class Entity {
 		return (brushes.length>0 || getModelNumber()>=0);
 	}
 	
+	// This doesn't really build anything, it just fills the "connections" array with the
+	// attributes Hammer uses for entity I/O more complex than simple "fire target" systems.
+	public void buildConnections() {
+		for(int i=0;i<attributes.length;i++) {
+			int numQuotes=0;
+			int numCommas=0;
+			for(int j=0;j<attributes[i].length();j++) {
+				if(attributes[i].charAt(j)=='\"') {
+					numQuotes++;
+				}
+				if(numQuotes==3 && attributes[i].charAt(j)==',') {
+					numCommas++;
+				}
+			}
+			if(numCommas==4 || numCommas==6) {
+				addConnection(attributes[i]);
+				deleteAttribute(i);
+				i--;
+			}
+		}
+		if(connections.length>0) {
+			addAttributeInside("connections");
+			addAttributeInside("{");
+			for(int i=0;i<connections.length;i++) {
+				addAttributeInside((char)0x09+""+connections[i]);
+			}
+			addAttributeInside("}");
+		}
+	}
+	
+	public void addConnection(String st) {
+		String[] newList=new String[connections.length+1];
+		for(int i=0;i<connections.length;i++) {
+			newList[i]=connections[i];
+		}
+		newList[newList.length-1]=st;
+		connections=newList;
+	}
+	
 	// ACCESSORS/MUTATORS
 	
 	// +setData(String)
@@ -243,7 +272,7 @@ public class Entity {
 		Scanner counter=new Scanner(in);
 		counter.useDelimiter((char)0x0A+"");
 		
-		numAttributes=0;
+		int numAttributes=0;
 		while(counter.hasNext()) {
 			counter.next();
 			numAttributes++;
@@ -267,6 +296,20 @@ public class Entity {
 			while(current.length()>0 && current.charAt(current.length()-1)!='\"' && current.charAt(current.length()-1)!='{' && current.charAt(current.length()-1)!='}') {
 				current=current.substring(0,current.length()-1);
 			}
+			String temp="";
+			try {
+				for(int j=0;j<current.length();j++) {
+					// I've actually seen the \" escape character used in a map. It made Hammer go apeshit.
+					if(!(current.charAt(j)=='\\' && current.charAt(j+1)=='\"')) {
+						temp+=current.charAt(j);
+					} else {
+						j++;
+					}
+				}
+				current=temp;
+			} catch(java.lang.StringIndexOutOfBoundsException e) {
+				;
+			}
 			attributes[i]=current;
 		}
 	}
@@ -281,7 +324,7 @@ public class Entity {
 	// change it if it does, whether it's empty or not.
 	public String getAttribute(String attribute) {
 		String output="";
-		for(int i=0;i<numAttributes;i++) {
+		for(int i=0;i<attributes.length;i++) {
 			try {
 				if(attributes[i].substring(0,attribute.length()+2).compareToIgnoreCase("\""+attribute+"\"")==0) {
 					output=attributes[i].substring(attribute.length()+4,attributes[i].length()-1);
@@ -306,10 +349,22 @@ public class Entity {
 		}
 	}
 	
+	public String getConnection(int index) {
+		try {
+			return connections[index];
+		} catch(java.lang.ArrayIndexOutOfBoundsException e) {
+			return null;
+		}
+	}
+	
 	// getAttributes()
 	// Returns the attribute array as-is
 	public String[] getAttributes() {
 		return attributes;
+	}
+	
+	public String[] getConnections() {
+		return connections;
 	}
 	
 	// getBrush(int)
@@ -336,7 +391,7 @@ public class Entity {
 		if(getAttribute("classname").equalsIgnoreCase("worldspawn")) {
 			return 0;
 		} else {
-			for(int i=0;i<numAttributes;i++) {
+			for(int i=0;i<attributes.length;i++) {
 				try {
 					if(attributes[i].substring(0,7).compareToIgnoreCase("\"model\"")==0) {
 						// This substring skips the "model" "* and gets to the number
@@ -415,5 +470,9 @@ public class Entity {
 	
 	public int getNumBrushes() {
 		return brushes.length;
+	}
+	
+	public int getNumConnections() {
+		return connections.length;
 	}
 }
