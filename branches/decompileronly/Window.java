@@ -79,6 +79,7 @@ public class Window extends JPanel implements ActionListener {
 	private static JRadioButtonMenuItem openAsSource23;
 	private static JRadioButtonMenuItem openAsDMoMaM;
 	private static JRadioButtonMenuItem openAsVindictus;
+	private static JRadioButtonMenuItem openAsTacticalIntervention;
 	private static JRadioButtonMenuItem openAsQuake2;
 	private static JRadioButtonMenuItem openAsSoF;
 	private static JRadioButtonMenuItem openAsDaikatana;
@@ -288,6 +289,9 @@ public class Window extends JPanel implements ActionListener {
 		openAsVindictus=new JRadioButtonMenuItem("Vindictus");
 		openAsGroup.add(openAsVindictus);
 		openAsMenu.add(openAsVindictus);
+		openAsTacticalIntervention=new JRadioButtonMenuItem("Tactical Intervention");
+		openAsGroup.add(openAsTacticalIntervention);
+		openAsMenu.add(openAsTacticalIntervention);
 		
 		decompAutoItem = new JRadioButtonMenuItem("Auto");
 		formatsMenu.add(decompAutoItem);
@@ -897,6 +901,9 @@ public class Window extends JPanel implements ActionListener {
 				}
 				if(openAsVindictus.isSelected()) {
 					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_VINDICTUS);
+				}
+				if(openAsTacticalIntervention.isSelected()) {
+					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_TACTICALINTERVENTION);
 				}
 				if(openAsQuake2.isSelected()) {
 					runMe=new DecompilerThread(job, jobNum, newThread, BSP.TYPE_QUAKE2);

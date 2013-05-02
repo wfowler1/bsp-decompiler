@@ -48,6 +48,7 @@ public class Model extends LumpObject {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_TACTICALINTERVENTION:
 			case BSP.TYPE_VINDICTUS:
 				// In all these formats, the "head node" index comes after 9 floats.
 				headNode=DataReader.readInt(data[36], data[37], data[38], data[39]);

@@ -48,6 +48,7 @@ public class BrushSide extends LumpObject {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_TACTICALINTERVENTION:
 			case BSP.TYPE_DMOMAM:
 				this.displacement=DataReader.readShort(data[4], data[5]);
 				this.isBevel=data[6]; // In little endian format, this byte takes the least significant bits of a short

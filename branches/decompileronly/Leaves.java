@@ -51,6 +51,7 @@ public class Leaves {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_TACTICALINTERVENTION:
 			case BSP.TYPE_SOF:
 			case BSP.TYPE_DAIKATANA:
 			case BSP.TYPE_DMOMAM:

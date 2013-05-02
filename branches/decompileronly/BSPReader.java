@@ -61,7 +61,7 @@ public class BSPReader {
 	
 	// METHODS
 	
-	public void readBSP() throws java.lang.InterruptedException {
+	public void readBSP() throws java.lang.InterruptedException, java.lang.Exception {
 		try {
 			version=getVersion();
 			byte[] read=new byte[4];
@@ -1640,6 +1640,7 @@ public class BSPReader {
 					case BSP.TYPE_SOURCE22:
 					case BSP.TYPE_SOURCE23:
 					case BSP.TYPE_DMOMAM:
+					case BSP.TYPE_TACTICALINTERVENTION:
 						Window.println("Source BSP",Window.VERBOSITY_ALWAYS);
 						// Left 4 Dead 2, for some reason, made the order "version, offset, length" for lump header structure,
 						// rather than the usual "offset, length, version". I guess someone at Valve got bored.
@@ -1649,10 +1650,19 @@ public class BSPReader {
 						
 						// Lump 00
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,8);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,12);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,16);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(offset<1036) { // This is less than the total length of the file header. Probably indicates a L4D2 map.
@@ -1689,10 +1699,19 @@ public class BSPReader {
 						FileInputStream gamelumpStream=new FileInputStream(BSPFile);
 						gamelumpStream.skip(568);
 						gamelumpStream.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,24);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						gamelumpStream.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,28);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						gamelumpStream.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,0);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						gamelumpStream.close();
 						byte[] gamelumpData;
@@ -1773,10 +1792,19 @@ public class BSPReader {
 						
 						// Lump 01
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,24);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,28);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,0);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -1805,10 +1833,19 @@ public class BSPReader {
 						
 						// Lump 02
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,8);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,12);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,16);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -1837,10 +1874,19 @@ public class BSPReader {
 						
 						// Lump 03
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,24);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,28);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,0);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -1871,10 +1917,19 @@ public class BSPReader {
 						
 						// Lump 05
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,24);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,28);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,0);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -1903,10 +1958,19 @@ public class BSPReader {
 						
 						// Lump 06
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,8);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,12);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,16);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -1935,10 +1999,19 @@ public class BSPReader {
 						
 						// Lump 07
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,24);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,28);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,0);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -1969,10 +2042,19 @@ public class BSPReader {
 						
 						// Lump 10
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,8);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,12);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,16);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -2003,10 +2085,19 @@ public class BSPReader {
 						
 						// Lump 12
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,8);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,12);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,16);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -2035,10 +2126,19 @@ public class BSPReader {
 						
 						// Lump 13
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,24);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,28);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,0);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -2067,10 +2167,19 @@ public class BSPReader {
 						
 						// Lump 14
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,8);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,12);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,16);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -2101,10 +2210,19 @@ public class BSPReader {
 						
 						// Lump 17
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,24);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,28);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,0);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -2133,10 +2251,19 @@ public class BSPReader {
 						
 						// Lump 18
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,8);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,12);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,16);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -2165,10 +2292,19 @@ public class BSPReader {
 						
 						// Lump 19
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,24);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,28);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,0);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -2199,10 +2335,19 @@ public class BSPReader {
 						
 						// Lump 26
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,8);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,12);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,16);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -2231,10 +2376,19 @@ public class BSPReader {
 						
 						// Lump 27
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,24);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,28);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,0);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -2265,10 +2419,19 @@ public class BSPReader {
 						
 						// Lump 33
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,24);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,28);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,0);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -2300,10 +2463,19 @@ public class BSPReader {
 						if(Window.extractZipIsSelected()) {
 							// Lump 40
 							offsetReader.read(read); // Read 4 bytes
+							if(version==BSP.TYPE_TACTICALINTERVENTION) {
+								read=TIDecryptor.decrypt(read,8);
+							}
 							offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.read(read); // Read 4 more bytes
+							if(version==BSP.TYPE_TACTICALINTERVENTION) {
+								read=TIDecryptor.decrypt(read,12);
+							}
 							length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.read(read); // Read 4 more bytes
+							if(version==BSP.TYPE_TACTICALINTERVENTION) {
+								read=TIDecryptor.decrypt(read,16);
+							}
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
 							try {
@@ -2334,10 +2506,19 @@ public class BSPReader {
 						
 						// Lump 42
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,8);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,12);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,16);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -2366,10 +2547,19 @@ public class BSPReader {
 						
 						// Lump 43
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,24);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,28);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,0);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -2398,10 +2588,19 @@ public class BSPReader {
 						
 						// Lump 44
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,8);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,12);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,16);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -2432,10 +2631,19 @@ public class BSPReader {
 						
 						// Lump 48
 						offsetReader.read(read); // Read 4 bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,8);
+						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,12);
+						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
+						if(version==BSP.TYPE_TACTICALINTERVENTION) {
+							read=TIDecryptor.decrypt(read,16);
+						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
 						if(isL4D2) {
@@ -3377,6 +3585,9 @@ public class BSPReader {
 			fileReader.skip(offset);
 			fileReader.read(input);
 			fileReader.close();
+			if(version==BSP.TYPE_TACTICALINTERVENTION) {
+				input=TIDecryptor.decrypt(input, offset);
+			}
 		} catch(java.io.IOException e) {
 			Window.println("Unknown error reading BSP, it was working before!",Window.VERBOSITY_ALWAYS);
 		}
@@ -3451,7 +3662,7 @@ public class BSPReader {
 				if(in == 892416050) { // 892416050 reads in ASCII as "2015," the game studio which developed MoHAA
 					version=BSP.TYPE_MOHAA;
 				} else {
-				if(in == 1095516485) { // 1095516485 reads in ASCII as "EALA," the ones who developed MoHAA Spearhead and Breakthrough
+					if(in == 1095516485) { // 1095516485 reads in ASCII as "EALA," the ones who developed MoHAA Spearhead and Breakthrough
 						version=BSP.TYPE_MOHAA;
 					} else {
 						if(in == 1347633750) { // 1347633750 reads in ASCII as "VBSP." Indicates Source engine.
@@ -3489,58 +3700,62 @@ public class BSPReader {
 									break;
 							}
 						} else {
-							if(in==1347633746) { // Reads in ASCII as "RBSP". Raven software's modification of Q3BSP, or Ritual's modification of Q2.
-								FileInputStream secondOffsetReader = new FileInputStream(BSPFile);
-								secondOffsetReader.skip(8);
-								version=BSP.TYPE_RAVEN;
-								for(int i=0;i<17;i++) {
-									// Find out where the first lump starts, based on offsets.
-									// This process assumes the file header has not been tampered with in any way.
-									// Unfortunately it could inadvertantly lead to a method of decompile protection.
-									secondOffsetReader.read(read);
-									int temp=DataReader.readInt(read[0], read[1], read[2], read[3]);
-									if(temp==168) {
-										version=BSP.TYPE_SIN;
-										break;
-									} else {
-										if(temp==152) {
+							if(in == 325088789) {
+								version=BSP.TYPE_TACTICALINTERVENTION;
+							} else {
+								if(in==1347633746) { // Reads in ASCII as "RBSP". Raven software's modification of Q3BSP, or Ritual's modification of Q2.
+									FileInputStream secondOffsetReader = new FileInputStream(BSPFile);
+									secondOffsetReader.skip(8);
+									version=BSP.TYPE_RAVEN;
+									for(int i=0;i<17;i++) {
+										// Find out where the first lump starts, based on offsets.
+										// This process assumes the file header has not been tampered with in any way.
+										// Unfortunately it could inadvertantly lead to a method of decompile protection.
+										secondOffsetReader.read(read);
+										int temp=DataReader.readInt(read[0], read[1], read[2], read[3]);
+										if(temp==168) {
+											version=BSP.TYPE_SIN;
 											break;
 										} else {
-											version=1;
-										}
-									}
-									secondOffsetReader.skip(4);
-								}
-								secondOffsetReader.close();
-							} else {
-								if(in == 556942917) { // "EF2!"
-									version=BSP.TYPE_STEF2;
-								} else {
-									if(in == 1145132873 || in == 1145132880) { // "IWAD" or "PWAD"
-										wad=true;
-										version=1145132868;
-									} else {
-										if(in == 1263223110) { // "FAKK"
-											versionNumberReader.read(read);
-											version=DataReader.readInt(read[0], read[1], read[2], read[3]);
-											switch(version) {
-												case 19:
-													version=BSP.TYPE_STEF2DEMO;
-													break;
-												case 12:
-												case 42:
-													version=BSP.TYPE_FAKK;
-													break;
+											if(temp==152) {
+												break;
+											} else {
+												version=1;
 											}
+										}
+										secondOffsetReader.skip(4);
+									}
+									secondOffsetReader.close();
+								} else {
+									if(in == 556942917) { // "EF2!"
+										version=BSP.TYPE_STEF2;
+									} else {
+										if(in == 1145132873 || in == 1145132880) { // "IWAD" or "PWAD"
+											wad=true;
+											version=1145132868;
 										} else {
-											switch(in) {
-												case 29:
-												case 30:
-													version=BSP.TYPE_QUAKE;
-													break;
-												case 42:
-													version=BSP.TYPE_NIGHTFIRE;
-													break;
+											if(in == 1263223110) { // "FAKK"
+												versionNumberReader.read(read);
+												version=DataReader.readInt(read[0], read[1], read[2], read[3]);
+												switch(version) {
+													case 19:
+														version=BSP.TYPE_STEF2DEMO;
+														break;
+													case 12:
+													case 42:
+														version=BSP.TYPE_FAKK;
+														break;
+												}
+											} else {
+												switch(in) {
+													case 29:
+													case 30:
+														version=BSP.TYPE_QUAKE;
+														break;
+													case 42:
+														version=BSP.TYPE_NIGHTFIRE;
+														break;
+												}
 											}
 										}
 									}

@@ -69,6 +69,7 @@ public class Face extends LumpObject {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_TACTICALINTERVENTION:
 			case BSP.TYPE_DMOMAM:
 				plane=DataReader.readUShort(data[0], data[1]);
 				side=(int)data[2];

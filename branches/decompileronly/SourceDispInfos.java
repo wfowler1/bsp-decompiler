@@ -46,6 +46,7 @@ public class SourceDispInfos {
 			case BSP.TYPE_SOURCE19:
 			case BSP.TYPE_SOURCE20:
 			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_TACTICALINTERVENTION:
 			case BSP.TYPE_DMOMAM:
 				structLength=176;
 				break;

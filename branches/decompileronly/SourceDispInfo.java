@@ -31,6 +31,7 @@ public class SourceDispInfo extends LumpObject {
 			case BSP.TYPE_SOURCE19:
 			case BSP.TYPE_SOURCE20:
 			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_TACTICALINTERVENTION:
 			case BSP.TYPE_DMOMAM:
 				offset=136;
 				break;

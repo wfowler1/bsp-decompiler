@@ -96,6 +96,7 @@ public class DecompilerThread implements Runnable {
 							case BSP.TYPE_SOURCE23:
 							case BSP.TYPE_DMOMAM:
 							case BSP.TYPE_VINDICTUS:
+							case BSP.TYPE_TACTICALINTERVENTION:
 								SourceBSPDecompiler sourceDecompiler = new SourceBSPDecompiler(reader.getBSPObject(), jobnum);
 								output=sourceDecompiler.decompile();
 								break;
@@ -142,7 +143,7 @@ public class DecompilerThread implements Runnable {
 				} else {
 					Window.println(""+(char)0x0D+(char)0x0A+"Exception caught in job "+(jobnum+1)+": "+e+(char)0x0D+(char)0x0A+"Please let me know on the issue tracker!"+(char)0x0D+(char)0x0A+"http://code.google.com/p/jbn-bsp-lump-tools/issues/entry",Window.VERBOSITY_ALWAYS);
 				}
-				String stackTrace="";
+				String stackTrace="Stack Trace: "+(char)0x0D+(char)0x0A;
 				StackTraceElement[] trace=e.getStackTrace();
 				for(int i=0;i<trace.length;i++) {
 					stackTrace+=trace[i].toString()+Window.LF;

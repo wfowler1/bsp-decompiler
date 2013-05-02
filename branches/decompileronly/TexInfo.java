@@ -36,6 +36,7 @@ public class TexInfo extends LumpObject {
 			case BSP.TYPE_SOURCE21:
 			case BSP.TYPE_SOURCE22:
 			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_TACTICALINTERVENTION:
 			case BSP.TYPE_VINDICTUS:
 				texture=DataReader.readInt(data[68], data[69], data[70], data[71]);
 				flags=DataReader.readInt(data[64], data[65], data[66], data[67]);

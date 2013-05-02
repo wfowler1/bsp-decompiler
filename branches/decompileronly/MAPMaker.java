@@ -71,6 +71,7 @@ public class MAPMaker {
 				case BSP.TYPE_SOURCE23:
 				case BSP.TYPE_VINDICTUS:
 				case BSP.TYPE_DMOMAM:
+				case BSP.TYPE_TACTICALINTERVENTION:
 					VMFWriter VMFMaker;
 					if(Window.getOutputFolder().equals("default")) {
 						Window.println("Saving "+mapfolder+mapname+".vmf...",Window.VERBOSITY_ALWAYS);

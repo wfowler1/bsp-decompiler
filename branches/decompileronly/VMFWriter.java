@@ -137,6 +137,7 @@ public class VMFWriter {
 			case BSP.TYPE_SOURCE23:
 			case BSP.TYPE_VINDICTUS:
 			case BSP.TYPE_DMOMAM:
+			case BSP.TYPE_TACTICALINTERVENTION:
 				in.buildConnections();
 				break;
 		}
@@ -313,7 +314,7 @@ public class VMFWriter {
 						;
 					}
 				} else {
-					if(BSPVersion==BSP.TYPE_SOURCE17 || BSPVersion==BSP.TYPE_SOURCE18 || BSPVersion==BSP.TYPE_SOURCE19 || BSPVersion==BSP.TYPE_SOURCE20 || BSPVersion==BSP.TYPE_SOURCE21 || BSPVersion==BSP.TYPE_SOURCE22 || BSPVersion==BSP.TYPE_SOURCE23 || BSPVersion==BSP.TYPE_DMOMAM || BSPVersion==BSP.TYPE_VINDICTUS) {
+					if(BSPVersion==BSP.TYPE_SOURCE17 || BSPVersion==BSP.TYPE_SOURCE18 || BSPVersion==BSP.TYPE_SOURCE19 || BSPVersion==BSP.TYPE_SOURCE20 || BSPVersion==BSP.TYPE_SOURCE21 || BSPVersion==BSP.TYPE_SOURCE22 || BSPVersion==BSP.TYPE_SOURCE23 || BSPVersion==BSP.TYPE_DMOMAM || BSPVersion==BSP.TYPE_VINDICTUS || BSPVersion==BSP.TYPE_TACTICALINTERVENTION) {
 						try {
 							if(texture.substring(0,5).equalsIgnoreCase("maps/")) {
 								texture=texture.substring(5);

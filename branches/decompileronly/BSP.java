@@ -16,6 +16,7 @@ public class BSP {
 	// public static final int TYPE_MOHBT=1095516506; // Similar enough to MOHAA to use the same structures and algorithm
 	public static final int TYPE_STEF2DEMO=1263223129;
 	public static final int TYPE_FAKK=1263223152;
+	public static final int TYPE_TACTICALINTERVENTION=1268885814;
 	public static final int TYPE_COD2=1347633741; // Uses same algorithm and structures as COD1 Read differently.
 	public static final int TYPE_SIN=1347633747; // The headers for SiN and Jedi Outcast are exactly the same
 	public static final int TYPE_RAVEN=1347633748;
@@ -476,6 +477,7 @@ public class BSP {
 			case TYPE_SOURCE21:
 			case TYPE_SOURCE22:
 			case TYPE_SOURCE23:
+			case BSP.TYPE_TACTICALINTERVENTION:
 			case TYPE_DMOMAM:
 			case TYPE_VINDICTUS:
 				surfEdges=new NumList(data, NumList.TYPE_INT);
@@ -520,6 +522,7 @@ public class BSP {
 			case TYPE_SOURCE21:
 			case TYPE_SOURCE22:
 			case TYPE_SOURCE23:
+			case BSP.TYPE_TACTICALINTERVENTION:
 			case TYPE_DMOMAM:
 				markBrushes=new NumList(data, NumList.TYPE_USHORT);
 				break;
