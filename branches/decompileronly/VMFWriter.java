@@ -64,6 +64,11 @@ public class VMFWriter {
 				if(data.getElement(i).getAttribute("classname").equalsIgnoreCase("func_water")) {
 					data.delete(i);
 					i--;
+				} else {
+					if(data.getElement(i).getAttribute("classname").equalsIgnoreCase("item_ctfbase")) {
+						data.delete(i);
+						i--;
+					}
 				}
 			}
 		}
@@ -555,7 +560,7 @@ public class VMFWriter {
 					in.setAttribute("classname", "func_brush");
 					in.setAttribute("solidity", "0");
 					try {
-						if((Double.parseDouble(in.getAttribute("spawnflags")))%2.0 == 1) {
+						if(((Integer.parseInt(in.getAttribute("spawnflags"))) & ((byte)1 << 1)) != 0) {
 							in.setAttribute("StartDisabled", "1"); // If spawnflags is an odd number, the start disabled flag is set.
 						} else {
 							in.setAttribute("StartDisabled", "0");
@@ -579,6 +584,44 @@ public class VMFWriter {
 							} else {
 								if(in.getAttribute("classname").equalsIgnoreCase("info_teleport_destination")) {
 									in.setAttribute("classname", "info_target");
+								} else {
+									if(in.getAttribute("classname").equalsIgnoreCase("info_player_deathmatch")) {
+										double[] origin=in.getOrigin();
+										in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]-32));
+									} else {
+										if(in.getAttribute("classname").equalsIgnoreCase("info_ctfspawn")) {
+											if(in.getAttribute("team_no").equalsIgnoreCase("1")) {
+												in.setAttribute("classname", "ctf_combine_player_spawn");
+												in.deleteAttribute("team_no");
+											} else {
+												if(in.getAttribute("team_no").equalsIgnoreCase("2")) {
+													in.setAttribute("classname", "ctf_rebel_player_spawn");
+													in.deleteAttribute("team_no");
+												}
+											}
+											double[] origin=in.getOrigin();
+											in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]-32));
+										} else {
+											if(in.getAttribute("classname").equalsIgnoreCase("item_ctfflag")) {
+												in.deleteAttribute("skin");
+												in.deleteAttribute("goal_min");
+												in.deleteAttribute("goal_max");
+												in.deleteAttribute("model");
+												in.setAttribute("SpawnWithCaptureEnabled", "1");
+												if(in.getAttribute("goal_no").equals("1")) {
+													in.setAttribute("classname", "ctf_combine_flag");
+													in.setAttribute("targetname", "combine_flag");
+													in.deleteAttribute("goal_no");
+												} else {
+													if(in.getAttribute("goal_no").equals("2")) {
+														in.setAttribute("classname", "ctf_rebel_flag");
+														in.setAttribute("targetname", "rebel_flag");
+														in.deleteAttribute("goal_no");
+													}
+												}
+											}
+										}
+									}
 								}
 							}
 						}

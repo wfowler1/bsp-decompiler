@@ -287,7 +287,7 @@ public class MAP510Writer {
 			// Correct special textures on Q2 maps
 			if(!Window.noTexCorrectionsIsSelected()) {
 				if(BSPVersion==BSP.TYPE_QUAKE2 || BSPVersion==BSP.TYPE_SIN) { // Many of the special textures are taken care of in the decompiler method itself
-					try {             // using face flags, rather than texture names.
+					try {                                                      // using face flags, rather than texture names.
 						if(texture.substring(texture.length()-8).equalsIgnoreCase("/trigger")) {
 							texture="special/trigger";
 						} else {
@@ -872,6 +872,63 @@ public class MAP510Writer {
 				} else {
 					if(in.getAttribute("classname").equalsIgnoreCase("prop_static")) {
 						in.setAttribute("classname", "item_generic");
+					} else {
+						if(in.getAttribute("classname").equalsIgnoreCase("info_player_rebel") || in.getAttribute("classname").equalsIgnoreCase("info_player_janus") || in.getAttribute("classname").equalsIgnoreCase("ctf_rebel_player_spawn")) {
+							in.setAttribute("classname", "info_ctfspawn");
+							in.setAttribute("team_no", "2");
+							double[] origin=in.getOrigin();
+							in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+32));
+						} else {
+							if(in.getAttribute("classname").equalsIgnoreCase("info_player_combine") || in.getAttribute("classname").equalsIgnoreCase("info_player_mi6") || in.getAttribute("classname").equalsIgnoreCase("ctf_combine_player_spawn")) {
+								in.setAttribute("classname", "info_ctfspawn");
+								in.setAttribute("team_no", "1");
+								double[] origin=in.getOrigin();
+								in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+32));
+							} else {
+								if(in.getAttribute("classname").equalsIgnoreCase("info_player_deathmatch")) {
+									double[] origin=in.getOrigin();
+									in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+32));
+								} else {
+									if(in.getAttribute("classname").equalsIgnoreCase("ctf_combine_flag")) {
+										in.deleteAttribute("targetname");
+										in.deleteAttribute("SpawnWithCaptureEnabled");
+										in.setAttribute("skin", "1");
+										in.setAttribute("goal_max", "16 16 72");
+										in.setAttribute("goal_min", "-16 -16 0");
+										in.setAttribute("goal_no", "1");
+										in.setAttribute("model", "models/ctf_flag.mdl");
+										in.setAttribute("classname", "item_ctfflag");
+										Entity newFlagBase = new Entity("item_ctfbase");
+										newFlagBase.setAttribute("origin", in.getAttribute("origin"));
+										newFlagBase.setAttribute("angles", in.getAttribute("angles"));
+										newFlagBase.setAttribute("goal_max", "16 16 72");
+										newFlagBase.setAttribute("goal_min", "-16 -16 0");
+										newFlagBase.setAttribute("goal_no", "1");
+										newFlagBase.setAttribute("model", "models/ctf_flag_stand_mi6.mdl");
+										data.add(newFlagBase);
+									} else {
+										if(in.getAttribute("classname").equalsIgnoreCase("ctf_rebel_flag")) {
+											in.deleteAttribute("targetname");
+											in.deleteAttribute("SpawnWithCaptureEnabled");
+											in.setAttribute("skin", "0");
+											in.setAttribute("goal_max", "16 16 72");
+											in.setAttribute("goal_min", "-16 -16 0");
+											in.setAttribute("goal_no", "2");
+											in.setAttribute("model", "models/ctf_flag.mdl");
+											in.setAttribute("classname", "item_ctfflag");
+											Entity newFlagBase = new Entity("item_ctfbase");
+											newFlagBase.setAttribute("origin", in.getAttribute("origin"));
+											newFlagBase.setAttribute("angles", in.getAttribute("angles"));
+											newFlagBase.setAttribute("goal_max", "16 16 72");
+											newFlagBase.setAttribute("goal_min", "-16 -16 0");
+											newFlagBase.setAttribute("goal_no", "2");
+											newFlagBase.setAttribute("model", "models/ctf_flag_stand_mi6.mdl");
+											data.add(newFlagBase);
+										}
+									}
+								}
+							}
+						}
 					}
 				}
 			}

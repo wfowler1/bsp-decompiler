@@ -35,6 +35,9 @@ public class BSPReader {
 	private DoomMap[] doomMaps;
 	private BSP BSPObject;
 	
+	// Decryptor class for Tactical Intervention
+	private TIDecryptor tidecryptor;
+	
 	// CONSTRUCTORS
 	
 	// Takes a String in and assumes it is a path. That path is the path to the file
@@ -1651,17 +1654,17 @@ public class BSPReader {
 						// Lump 00
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,8);
+							read=tidecryptor.decrypt(read,8);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,12);
+							read=tidecryptor.decrypt(read,12);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,16);
+							read=tidecryptor.decrypt(read,16);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -1700,17 +1703,17 @@ public class BSPReader {
 						gamelumpStream.skip(568);
 						gamelumpStream.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,24);
+							read=tidecryptor.decrypt(read,24);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						gamelumpStream.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,28);
+							read=tidecryptor.decrypt(read,28);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						gamelumpStream.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,0);
+							read=tidecryptor.decrypt(read,0);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						gamelumpStream.close();
@@ -1793,17 +1796,17 @@ public class BSPReader {
 						// Lump 01
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,24);
+							read=tidecryptor.decrypt(read,24);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,28);
+							read=tidecryptor.decrypt(read,28);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,0);
+							read=tidecryptor.decrypt(read,0);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -1834,17 +1837,17 @@ public class BSPReader {
 						// Lump 02
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,8);
+							read=tidecryptor.decrypt(read,8);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,12);
+							read=tidecryptor.decrypt(read,12);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,16);
+							read=tidecryptor.decrypt(read,16);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -1875,17 +1878,17 @@ public class BSPReader {
 						// Lump 03
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,24);
+							read=tidecryptor.decrypt(read,24);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,28);
+							read=tidecryptor.decrypt(read,28);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,0);
+							read=tidecryptor.decrypt(read,0);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -1918,17 +1921,17 @@ public class BSPReader {
 						// Lump 05
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,24);
+							read=tidecryptor.decrypt(read,24);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,28);
+							read=tidecryptor.decrypt(read,28);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,0);
+							read=tidecryptor.decrypt(read,0);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -1959,17 +1962,17 @@ public class BSPReader {
 						// Lump 06
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,8);
+							read=tidecryptor.decrypt(read,8);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,12);
+							read=tidecryptor.decrypt(read,12);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,16);
+							read=tidecryptor.decrypt(read,16);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -2000,17 +2003,17 @@ public class BSPReader {
 						// Lump 07
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,24);
+							read=tidecryptor.decrypt(read,24);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,28);
+							read=tidecryptor.decrypt(read,28);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,0);
+							read=tidecryptor.decrypt(read,0);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -2043,17 +2046,17 @@ public class BSPReader {
 						// Lump 10
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,8);
+							read=tidecryptor.decrypt(read,8);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,12);
+							read=tidecryptor.decrypt(read,12);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,16);
+							read=tidecryptor.decrypt(read,16);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -2086,17 +2089,17 @@ public class BSPReader {
 						// Lump 12
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,8);
+							read=tidecryptor.decrypt(read,8);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,12);
+							read=tidecryptor.decrypt(read,12);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,16);
+							read=tidecryptor.decrypt(read,16);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -2127,17 +2130,17 @@ public class BSPReader {
 						// Lump 13
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,24);
+							read=tidecryptor.decrypt(read,24);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,28);
+							read=tidecryptor.decrypt(read,28);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,0);
+							read=tidecryptor.decrypt(read,0);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -2168,17 +2171,17 @@ public class BSPReader {
 						// Lump 14
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,8);
+							read=tidecryptor.decrypt(read,8);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,12);
+							read=tidecryptor.decrypt(read,12);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,16);
+							read=tidecryptor.decrypt(read,16);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -2211,17 +2214,17 @@ public class BSPReader {
 						// Lump 17
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,24);
+							read=tidecryptor.decrypt(read,24);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,28);
+							read=tidecryptor.decrypt(read,28);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,0);
+							read=tidecryptor.decrypt(read,0);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -2252,17 +2255,17 @@ public class BSPReader {
 						// Lump 18
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,8);
+							read=tidecryptor.decrypt(read,8);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,12);
+							read=tidecryptor.decrypt(read,12);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,16);
+							read=tidecryptor.decrypt(read,16);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -2293,17 +2296,17 @@ public class BSPReader {
 						// Lump 19
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,24);
+							read=tidecryptor.decrypt(read,24);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,28);
+							read=tidecryptor.decrypt(read,28);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,0);
+							read=tidecryptor.decrypt(read,0);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -2336,17 +2339,17 @@ public class BSPReader {
 						// Lump 26
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,8);
+							read=tidecryptor.decrypt(read,8);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,12);
+							read=tidecryptor.decrypt(read,12);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,16);
+							read=tidecryptor.decrypt(read,16);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -2377,17 +2380,17 @@ public class BSPReader {
 						// Lump 27
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,24);
+							read=tidecryptor.decrypt(read,24);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,28);
+							read=tidecryptor.decrypt(read,28);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,0);
+							read=tidecryptor.decrypt(read,0);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -2420,17 +2423,17 @@ public class BSPReader {
 						// Lump 33
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,24);
+							read=tidecryptor.decrypt(read,24);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,28);
+							read=tidecryptor.decrypt(read,28);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,0);
+							read=tidecryptor.decrypt(read,0);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -2464,17 +2467,17 @@ public class BSPReader {
 							// Lump 40
 							offsetReader.read(read); // Read 4 bytes
 							if(version==BSP.TYPE_TACTICALINTERVENTION) {
-								read=TIDecryptor.decrypt(read,8);
+								read=tidecryptor.decrypt(read,8);
 							}
 							offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.read(read); // Read 4 more bytes
 							if(version==BSP.TYPE_TACTICALINTERVENTION) {
-								read=TIDecryptor.decrypt(read,12);
+								read=tidecryptor.decrypt(read,12);
 							}
 							length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.read(read); // Read 4 more bytes
 							if(version==BSP.TYPE_TACTICALINTERVENTION) {
-								read=TIDecryptor.decrypt(read,16);
+								read=tidecryptor.decrypt(read,16);
 							}
 							lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 							offsetReader.skip(4);
@@ -2507,17 +2510,17 @@ public class BSPReader {
 						// Lump 42
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,8);
+							read=tidecryptor.decrypt(read,8);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,12);
+							read=tidecryptor.decrypt(read,12);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,16);
+							read=tidecryptor.decrypt(read,16);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -2548,17 +2551,17 @@ public class BSPReader {
 						// Lump 43
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,24);
+							read=tidecryptor.decrypt(read,24);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,28);
+							read=tidecryptor.decrypt(read,28);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,0);
+							read=tidecryptor.decrypt(read,0);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -2589,17 +2592,17 @@ public class BSPReader {
 						// Lump 44
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,8);
+							read=tidecryptor.decrypt(read,8);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,12);
+							read=tidecryptor.decrypt(read,12);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,16);
+							read=tidecryptor.decrypt(read,16);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -2632,17 +2635,17 @@ public class BSPReader {
 						// Lump 48
 						offsetReader.read(read); // Read 4 bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,8);
+							read=tidecryptor.decrypt(read,8);
 						}
 						offset=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,12);
+							read=tidecryptor.decrypt(read,12);
 						}
 						length=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.read(read); // Read 4 more bytes
 						if(version==BSP.TYPE_TACTICALINTERVENTION) {
-							read=TIDecryptor.decrypt(read,16);
+							read=tidecryptor.decrypt(read,16);
 						}
 						lumpVersion=DataReader.readInt(read[0], read[1], read[2], read[3]);
 						offsetReader.skip(4);
@@ -3586,7 +3589,7 @@ public class BSPReader {
 			fileReader.read(input);
 			fileReader.close();
 			if(version==BSP.TYPE_TACTICALINTERVENTION) {
-				input=TIDecryptor.decrypt(input, offset);
+				input=tidecryptor.decrypt(input, offset);
 			}
 		} catch(java.io.IOException e) {
 			Window.println("Unknown error reading BSP, it was working before!",Window.VERBOSITY_ALWAYS);
@@ -3702,6 +3705,11 @@ public class BSPReader {
 						} else {
 							if(in == 325088789) {
 								version=BSP.TYPE_TACTICALINTERVENTION;
+								FileInputStream encryptionKeyReader = new FileInputStream(BSPFile);
+								encryptionKeyReader.skip(384);
+								byte[] key = new byte[32];
+								encryptionKeyReader.read(key);
+								tidecryptor = new TIDecryptor(key);
 							} else {
 								if(in==1347633746) { // Reads in ASCII as "RBSP". Raven software's modification of Q3BSP, or Ritual's modification of Q2.
 									FileInputStream secondOffsetReader = new FileInputStream(BSPFile);
