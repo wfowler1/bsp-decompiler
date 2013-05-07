@@ -101,6 +101,13 @@ public class BSP {
 		} catch(java.lang.NullPointerException e) {
 		}
 		try {
+			Window.println("Materials lump: "+materials.getLength()+" bytes, "+materials.length()+" items",Window.VERBOSITY_MAPSTATS);
+			if(materials.getLength()!=0 && materials.getLength()%materials.length()!=0) {
+				Window.println("WARNING: Funny lump size in Materials",Window.VERBOSITY_WARNINGS);
+			}
+		} catch(java.lang.NullPointerException e) {
+		}
+		try {
 			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.length()+" items",Window.VERBOSITY_MAPSTATS);
 			if(vertices.getLength()!=0 && vertices.getLength()%vertices.length()!=0) {
 				Window.println("WARNING: Funny lump size in Vertices",Window.VERBOSITY_WARNINGS);
@@ -477,7 +484,7 @@ public class BSP {
 			case TYPE_SOURCE21:
 			case TYPE_SOURCE22:
 			case TYPE_SOURCE23:
-			case BSP.TYPE_TACTICALINTERVENTION:
+			case TYPE_TACTICALINTERVENTION:
 			case TYPE_DMOMAM:
 			case TYPE_VINDICTUS:
 				surfEdges=new NumList(data, NumList.TYPE_INT);
@@ -522,7 +529,7 @@ public class BSP {
 			case TYPE_SOURCE21:
 			case TYPE_SOURCE22:
 			case TYPE_SOURCE23:
-			case BSP.TYPE_TACTICALINTERVENTION:
+			case TYPE_TACTICALINTERVENTION:
 			case TYPE_DMOMAM:
 				markBrushes=new NumList(data, NumList.TYPE_USHORT);
 				break;

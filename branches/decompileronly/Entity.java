@@ -190,6 +190,7 @@ public class Entity {
 	// newlines and curly braces around the entity if using this method to create
 	// a new entities lump file, unless curly braces are part of the attributes
 	// array.
+	@Deprecated
 	public String toString() {
 		String out="";
 		for(int i=0;i<attributes.length;i++) {

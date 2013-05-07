@@ -54,11 +54,23 @@ public class VMFWriter {
 	public void write() throws java.io.IOException, java.lang.InterruptedException {
 		// Preprocessing entity corrections
 		if(BSPVersion==42) {
+			boolean containsWater = false;
+			double[] goodOrigin = new double[3];
 			for(int i=1;i<data.length();i++) {
 				for(int j=0;j<data.getElement(i).getNumBrushes();j++) {
-					if(data.getElement(i).getBrushes()[j].isWaterBrush()) {
+					MAPBrush currentBrush=data.getElement(i).getBrush(j);
+					if(currentBrush.isWaterBrush()) {
+						containsWater = true;
+						currentBrush.setDetail(false);
+						for(int k=0;k<currentBrush.getNumSides();k++) {
+							// If the normal vector of the side's plane is in the positive Z axis, it's on top of the brush.
+							if(currentBrush.getSide(k).getPlane().getNormal().equals(Vector3D.UP)) {
+								currentBrush.getSide(k).setTexture("dev/dev_water2"); // Better texture?
+							} else {
+								currentBrush.getSide(k).setTexture("TOOLS/TOOLSNODRAW");
+							}
+						}
 						data.getElement(0).addBrush(data.getElement(i).getBrushes()[j]);
-						// TODO: Textures on this brush
 					}
 				}
 				if(data.getElement(i).getAttribute("classname").equalsIgnoreCase("func_water")) {
@@ -68,8 +80,18 @@ public class VMFWriter {
 					if(data.getElement(i).getAttribute("classname").equalsIgnoreCase("item_ctfbase")) {
 						data.delete(i);
 						i--;
+					} else {
+						if(data.getElement(i).getAttribute("classname").equalsIgnoreCase("info_player_start")) {
+							goodOrigin = data.getElement(i).getOrigin();
+						}
 					}
 				}
+			}
+			if(containsWater) {
+				Entity lodControl = new Entity("water_lod_control");
+				lodControl.setAttribute("cheapwaterenddistance", "2000");
+				lodControl.setAttribute("cheapwaterstartdistance", "1000");
+				lodControl.setAttribute("origin", goodOrigin[0]+" "+goodOrigin[1]+" "+goodOrigin[2]);
 			}
 		}
 		
@@ -188,7 +210,7 @@ public class VMFWriter {
 						if(Thread.currentThread().interrupted()) {
 							throw new java.lang.InterruptedException("while writing Hammer map.");
 						}
-						if(in.getBrush(j).isDetailBrush()) {
+						if(in.getBrush(j).isDetailBrush() && in.getAttribute("classname").equalsIgnoreCase("worldspawn")) {
 							in.getBrush(j).setDetail(false);
 							Entity newDetailEntity=new Entity("func_detail");
 							newDetailEntity.addBrush(in.getBrush(j));
@@ -617,6 +639,16 @@ public class VMFWriter {
 														in.setAttribute("classname", "ctf_rebel_flag");
 														in.setAttribute("targetname", "rebel_flag");
 														in.deleteAttribute("goal_no");
+													}
+												}
+											} else {
+												if(in.getAttribute("classname").equalsIgnoreCase("func_ladder")) {
+													for(int i=0;i<in.getNumBrushes();i++) {
+														MAPBrush currentBrush = in.getBrush(i);
+														for(int j=0;j<currentBrush.getNumSides();j++) {
+															MAPBrushSide currentSide = currentBrush.getSide(j);
+															currentSide.setTexture("TOOLS/TOOLSINVISIBLELADDER");
+														}
 													}
 												}
 											}

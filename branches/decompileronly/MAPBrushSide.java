@@ -138,6 +138,7 @@ public class MAPBrushSide {
 	// This is on multiple lines simply for readability. the returned
 	// String will have no line breaks. This isn't used anymore for
 	// file output, this would be slower.
+	@Deprecated
 	public String toString() {
 		try {
 			return "( "+triangle[0].getX()+" "+triangle[0].getY()+" "+triangle[0].getZ()+" ) "+

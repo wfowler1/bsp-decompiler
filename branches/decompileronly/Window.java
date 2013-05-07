@@ -11,6 +11,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 import javax.swing.*;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -168,7 +170,7 @@ public class Window extends JPanel implements ActionListener {
 			;
 		}
 		
-		frame = new JFrame("BSP Decompiler by 005");
+		frame = new JFrame("BSP Decompiler v3 by 005");
 		Container pane = frame.getContentPane();
 		
 		// Set up most of the window's properties, since we definitely have a window
@@ -513,7 +515,7 @@ public class Window extends JPanel implements ActionListener {
 		table_pane = new JScrollPane(pnl_jobs);
 		
 		consoleTableSplitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, console_pane, table_pane);
-		consoleTableSplitter.setPreferredSize(new Dimension(616, 390));
+		consoleTableSplitter.setPreferredSize(new Dimension(frame.getWidth()-30, frame.getHeight()-74));
 		consoleTableSplitter.setOneTouchExpandable(true);
 		consoleTableSplitter.setDividerLocation(240);
 		
@@ -529,23 +531,27 @@ public class Window extends JPanel implements ActionListener {
 		// Maximizing/restoring the window
 		frame.addWindowStateListener(new WindowAdapter() {
 			public void windowStateChanged(WindowEvent event) {
-				consoleTableSplitter.setPreferredSize(new Dimension(frame.getWidth()-24, frame.getHeight()-70));
+				double oldDividerLocationAsPercentage = (double)consoleTableSplitter.getDividerLocation()/(double)consoleTableSplitter.getHeight();
+				consoleTableSplitter.setPreferredSize(new Dimension(frame.getWidth()-30, frame.getHeight()-74));
 				lbl_mapName.setPreferredSize(new Dimension(frame.getWidth()-315, 12));
 				for(int i=0;i<numJobs;i++) {
 					mapNames[i].setPreferredSize(new Dimension(frame.getWidth()-315, 12));
 				}
 				frame.validate();
+				consoleTableSplitter.setDividerLocation((int)(oldDividerLocationAsPercentage*consoleTableSplitter.getHeight()));
 			}
 		});
 		// Resizing the window
-		frame.addComponentListener(new ComponentAdapter() {
+		pane.addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent comp) {
-				consoleTableSplitter.setPreferredSize(new Dimension(frame.getWidth()-24, frame.getHeight()-70));
+				double oldDividerLocationAsPercentage = (double)consoleTableSplitter.getDividerLocation()/(double)consoleTableSplitter.getHeight();
+				consoleTableSplitter.setPreferredSize(new Dimension(frame.getWidth()-30, frame.getHeight()-74));
 				lbl_mapName.setPreferredSize(new Dimension(frame.getWidth()-315, 12));
 				for(int i=0;i<numJobs;i++) {
 					mapNames[i].setPreferredSize(new Dimension(frame.getWidth()-315, 12));
 				}
 				frame.validate();
+				consoleTableSplitter.setDividerLocation((int)(oldDividerLocationAsPercentage*consoleTableSplitter.getHeight()));
 			}
 		});
 		

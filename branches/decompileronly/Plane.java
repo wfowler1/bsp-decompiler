@@ -111,7 +111,7 @@ public class Plane extends LumpObject {
 		double PartSolz1 = bN.getX() * cN.getY() - bN.getY() * cN.getX();
 		double det = normal.getX() * PartSolx1 + normal.getY() * PartSoly1 + normal.getZ() * PartSolz1; // Determinant
 		if (det == 0) { // If 0, 2 or more planes are parallel.
-			return Vector3D.undefined;
+			return Vector3D.UNDEFINED;
 		}
 		// Divide by determinant to get final matrix solution, and multiply by matrix of distances to get final position.
 		return new Vector3D(

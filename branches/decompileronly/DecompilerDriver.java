@@ -19,4 +19,10 @@ public class DecompilerDriver {
 			}
 		}
 	}
+	
+	public void printOptions() {
+		System.out.println("BSP Decompiler v3 by 005");
+		System.out.println("Usage: decompiler filename0.bsp [filename1.bsp] [filename2.bsp] ...\n");
+		System.out.println("Run this program with no parameters to use the GUI.");
+	}
 }

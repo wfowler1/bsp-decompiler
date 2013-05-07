@@ -120,6 +120,7 @@ public class MAPBrush {
 	
 	// toString()
 	// DEPRECATED for use in generating mapfiles.
+	@Deprecated
 	public String toString() {
 		String out="{ // Brush "+brushnum+(char)0x0D+(char)0x0A;
 		if(isDetailBrush) {

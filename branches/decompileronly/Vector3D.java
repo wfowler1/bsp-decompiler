@@ -12,7 +12,10 @@ public class Vector3D {
 	public final int Y=1;
 	public final int Z=2;
 	
-	public static final Vector3D undefined = new Vector3D(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+	public static final Vector3D UNDEFINED = new Vector3D(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+	public static final Vector3D UP = new Vector3D(0, 0, 1);
+	public static final Vector3D FORWARD = new Vector3D(1, 0, 0);
+	public static final Vector3D RIGHT = new Vector3D(0, 1, 0);
 	
 	private double[] point=new double[3];
 	
@@ -176,6 +179,11 @@ public class Vector3D {
 		point[X]=newVector.getX();
 		point[Y]=newVector.getY();
 		point[Z]=newVector.getZ();
+	}
+	
+	public Vector3D normalized() {
+		double length=length();
+		return scale(1/length);
 	}
 	
 	// ACCESSORS/MUTATORS

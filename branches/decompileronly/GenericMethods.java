@@ -15,7 +15,7 @@ public class GenericMethods {
 			for (int iP2 = iP1 + 1; iP2 < planes.length; iP2++) {
 				for (int iP3 = iP2 + 1; iP3 < planes.length; iP3++) {
 					Vector3D testV = planes[iP1].trisect(planes[iP2], planes[iP3]);
-					if (!testV.equals(Vector3D.undefined)) {
+					if (!testV.equals(Vector3D.UNDEFINED)) {
 						boolean isCorner = true;
 						// If point is not null, test if point is behind/on all planes (if so, it is a corner).
 						for (int iTest = 0; iTest < planes.length; iTest++) {
@@ -133,7 +133,7 @@ public class GenericMethods {
 			for (int iP2 = iP1 + 1; iP2 < allplanes.length; iP2++) {
 				for (int iP3 = iP2 + 1; iP3 < allplanes.length; iP3++) {
 					Vector3D testV = allplanes[iP1].trisect(allplanes[iP2], allplanes[iP3]);
-					if (!testV.equals(Vector3D.undefined)) { // Arbitrary precision: Just checking if undefined or real.
+					if (!testV.equals(Vector3D.UNDEFINED)) { // Arbitrary precision: Just checking if UNDEFINED or real.
 						boolean hasVtx = false;
 						for (int iVtx = 0; iVtx < iallverts; iVtx++) {
 							if (allverts[iVtx].equals(testV)) {
@@ -482,7 +482,7 @@ public class GenericMethods {
 		for(int i=0;i<theVerts.length;i++) {
 			for(int j=0;j<thePlanes.length;j++) {
 				if(thePlanes[j].distance(theVerts[i]) > Window.getPrecision()) {
-					theVerts[i]=Vector3D.undefined;
+					theVerts[i]=Vector3D.UNDEFINED;
 					break; //break the inner loop, let the outer loop iterate
 				}
 			}
