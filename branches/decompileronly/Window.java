@@ -615,11 +615,13 @@ public class Window extends JPanel implements ActionListener {
 				file_selector = new JFileChooser(lastUsedFolder);
 			}
 			file_selector.setAcceptAllFileFilterUsed(false); // "all files". I would like this to be AFTER the others.
-			file_selector.addChoosableFileFilter(new CustomFileFilter("All supported files", new String[] { "BSP", "WAD", "D3DBSP" }));
+			javax.swing.filechooser.FileFilter defaultFilter = new CustomFileFilter("All supported files", new String[] { "BSP", "WAD", "D3DBSP" });
+			file_selector.addChoosableFileFilter(defaultFilter);
 			file_selector.addChoosableFileFilter(new CustomFileFilter("Binary Space Partition files", new String[] { "BSP", "D3DBSP" }));
 			file_selector.addChoosableFileFilter(new CustomFileFilter("WAD files", new String[] { "WAD" }));
-			file_selector.setAcceptAllFileFilterUsed(true); // Setting this false above then true here forces the "all files" filter to be last.
 			file_selector.setMultiSelectionEnabled(true);
+			file_selector.setAcceptAllFileFilterUsed(true); // Setting this false above then true here forces the "all files" filter to be last.
+			file_selector.setFileFilter(defaultFilter);
 			int returnVal = file_selector.showOpenDialog(this);
 			
 			if (returnVal == JFileChooser.APPROVE_OPTION) {

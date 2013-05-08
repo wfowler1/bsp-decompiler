@@ -95,11 +95,11 @@ public class VMFWriter {
 			}
 		}
 		
-		String tempString="versioninfo"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A+"	\"editorversion\" \"400\""+(char)0x0D+(char)0x0A+"	\"editorbuild\" \"3325\""+(char)0x0D+(char)0x0A+"	\"mapversion\" \"0\""+(char)0x0D+(char)0x0A+"	\"formatversion\" \"100\""+(char)0x0D+(char)0x0A+"	\"prefab\" \"0\""+(char)0x0D+(char)0x0A+"}"+(char)0x0D+(char)0x0A+"";
+		/*String tempString="versioninfo"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A+"	\"editorversion\" \"400\""+(char)0x0D+(char)0x0A+"	\"editorbuild\" \"3325\""+(char)0x0D+(char)0x0A+"	\"mapversion\" \"0\""+(char)0x0D+(char)0x0A+"	\"formatversion\" \"100\""+(char)0x0D+(char)0x0A+"	\"prefab\" \"0\""+(char)0x0D+(char)0x0A+"}"+(char)0x0D+(char)0x0A+"";
 		tempString+="visgroups"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A+"}"+(char)0x0D+(char)0x0A+"";
 		tempString+="viewsettings"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A+"	\"bSnapToGrid\" \"1\""+(char)0x0D+(char)0x0A+"	\"bShowGrid\" \"1\""+(char)0x0D+(char)0x0A+"	\"bShowLogicalGrid\" \"0\""+(char)0x0D+(char)0x0A+"	\"nGridSpacing\" \"64\""+(char)0x0D+(char)0x0A+"	\"bShow3DGrid\" \"0\""+(char)0x0D+(char)0x0A+"}"+(char)0x0D+(char)0x0A+"";
 		
-		byte[] header=tempString.getBytes();
+		byte[] header=tempString.getBytes();*/
 		
 		byte[][] entityBytes=new byte[data.length()][];
 		int totalLength=0;
@@ -127,7 +127,7 @@ public class VMFWriter {
 			}
 			offset+=entityBytes[i].length;
 		}
-		MAPMaker.write(header, allEnts, path, true);
+		MAPMaker.write(allEnts, path, true);
 	}
 	
 	// -entityToByteArray()
@@ -179,7 +179,7 @@ public class VMFWriter {
 		for(int i=0;i<in.getAttributes().length;i++) {
 			if(in.getAttributes()[i].equals("{") && i==0) {
 				len+=10; // "world"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A;
-				if(!in.getAttribute("classname").equalsIgnoreCase("worldspawn")) {
+				if(!in.attributeIs("classname", "worldspawn")) {
 					len+=1; // "entity"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A; instead of world
 				}
 			} else {
@@ -197,7 +197,7 @@ public class VMFWriter {
 				throw new java.lang.InterruptedException("while writing Hammer map.");
 			}
 			if(in.getAttributes()[i].equals("{") && i==0) {
-				if(in.getAttribute("classname").equalsIgnoreCase("worldspawn")) {
+				if(in.attributeIs("classname", "worldspawn")) {
 					in.getAttributes()[i]="world"+(char)0x0D+(char)0x0A+"{";
 				} else {
 					in.getAttributes()[i]="entity"+(char)0x0D+(char)0x0A+"{"; // instead of world
@@ -210,7 +210,7 @@ public class VMFWriter {
 						if(Thread.currentThread().interrupted()) {
 							throw new java.lang.InterruptedException("while writing Hammer map.");
 						}
-						if(in.getBrush(j).isDetailBrush() && in.getAttribute("classname").equalsIgnoreCase("worldspawn")) {
+						if(in.getBrush(j).isDetailBrush() && in.attributeIs("classname", "worldspawn")) {
 							in.getBrush(j).setDetail(false);
 							Entity newDetailEntity=new Entity("func_detail");
 							newDetailEntity.addBrush(in.getBrush(j));
@@ -470,7 +470,7 @@ public class VMFWriter {
 			in.setAttribute("angles", "0 "+in.getAttribute("angle")+" 0");
 			in.deleteAttribute("angle");
 		}
-		if(in.getAttribute("classname").equalsIgnoreCase("func_wall")) {
+		if(in.attributeIs("classname", "func_wall")) {
 			in.setAttribute("classname", "func_brush");
 			if(!in.getAttribute("targetname").equals("")) { // Really this should depend on spawnflag 2 or 4
 				in.setAttribute("solidity", "0"); // TODO: Make sure the attribute is actually "solidity"
@@ -478,15 +478,15 @@ public class VMFWriter {
 				in.setAttribute("solidity", "2");
 			}
 		} else {
-			if(in.getAttribute("classname").equalsIgnoreCase("info_player_start")) {
+			if(in.attributeIs("classname", "info_player_start")) {
 				double[] origin=in.getOrigin();
 				in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+18));
 			} else {
-				if(in.getAttribute("classname").equalsIgnoreCase("info_player_deathmatch")) {
+				if(in.attributeIs("classname", "info_player_deathmatch")) {
 					double[] origin=in.getOrigin();
 					in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+18));
 				} else {
-					if(in.getAttribute("classname").equalsIgnoreCase("light")) {
+					if(in.attributeIs("classname", "light")) {
 						String color=in.getAttribute("_color");
 						String intensity=in.getAttribute("light");
 						Scanner colorScanner=new Scanner(color);
@@ -508,7 +508,7 @@ public class VMFWriter {
 						in.deleteAttribute("light");
 						in.setAttribute("_light", lightNumbers[r]+" "+lightNumbers[g]+" "+lightNumbers[b]+" "+lightNumbers[s]);
 					} else {
-						if(in.getAttribute("classname").equalsIgnoreCase("misc_teleporter")) {
+						if(in.attributeIs("classname", "misc_teleporter")) {
 							double[] origin=in.getOrigin();
 							Vector3D mins=new Vector3D(origin[X]-24, origin[Y]-24, origin[Z]-24);
 							Vector3D maxs=new Vector3D(origin[X]+24, origin[Y]+24, origin[Z]+48);
@@ -516,7 +516,7 @@ public class VMFWriter {
 							in.deleteAttribute("origin");
 							in.setAttribute("classname", "trigger_teleport");
 						} else {
-							if(in.getAttribute("classname").equalsIgnoreCase("misc_teleporter_dest")) {
+							if(in.attributeIs("classname", "misc_teleporter_dest")) {
 								in.setAttribute("classname", "info_target");
 							}
 						}
@@ -542,7 +542,7 @@ public class VMFWriter {
 		} catch(java.lang.StringIndexOutOfBoundsException e) {
 			;
 		}
-		if(in.getAttribute("classname").equalsIgnoreCase("light_spot")) {
+		if(in.attributeIs("classname", "light_spot")) {
 			in.setAttribute("pitch", new Double(in.getAngles()[0]).toString());
 			try {
 				if(Double.parseDouble(in.getAttribute("_cone"))>90.0) {
@@ -569,7 +569,7 @@ public class VMFWriter {
 			in.renameAttribute("_cone", "_inner_cone"); 
 			in.renameAttribute("_cone2", "_cone");
 		} else {
-			if(in.getAttribute("classname").equalsIgnoreCase("func_wall")) {
+			if(in.attributeIs("classname", "func_wall")) {
 				if(in.getAttribute("rendermode").equals("0")) {
 					in.setAttribute("classname", "func_detail");
 					in.deleteAttribute("rendermode");
@@ -578,12 +578,13 @@ public class VMFWriter {
 					in.setAttribute("solidity", "2");
 				}
 			} else {
-				if(in.getAttribute("classname").equalsIgnoreCase("func_wall_toggle")) {
+				if(in.attributeIs("classname", "func_wall_toggle")) {
 					in.setAttribute("classname", "func_brush");
 					in.setAttribute("solidity", "0");
 					try {
-						if(((Integer.parseInt(in.getAttribute("spawnflags"))) & ((byte)1 << 1)) != 0) {
-							in.setAttribute("StartDisabled", "1"); // If spawnflags is an odd number, the start disabled flag is set.
+						if(in.spawnflagsSet(1)) {
+							in.setAttribute("StartDisabled", "1");
+							in.disableSpawnflags(1);
 						} else {
 							in.setAttribute("StartDisabled", "0");
 						}
@@ -591,27 +592,27 @@ public class VMFWriter {
 						in.setAttribute("StartDisabled", "0");
 					}
 				} else {
-					if(in.getAttribute("classname").equalsIgnoreCase("func_illusionary")) {
+					if(in.attributeIs("classname", "func_illusionary")) {
 						in.setAttribute("classname", "func_brush");
 						in.setAttribute("solidity", "1");
 					} else {
-						if(in.getAttribute("classname").equalsIgnoreCase("item_generic")) {
+						if(in.attributeIs("classname", "item_generic")) {
 							in.setAttribute("classname", "prop_dynamic");
 							in.setAttribute("solid", "0");
 							in.deleteAttribute("effects");
 							in.deleteAttribute("fixedlight");
 						} else {
-							if(in.getAttribute("classname").equalsIgnoreCase("env_glow")) {
+							if(in.attributeIs("classname", "env_glow")) {
 								in.setAttribute("classname", "env_sprite");
 							} else {
-								if(in.getAttribute("classname").equalsIgnoreCase("info_teleport_destination")) {
+								if(in.attributeIs("classname", "info_teleport_destination")) {
 									in.setAttribute("classname", "info_target");
 								} else {
-									if(in.getAttribute("classname").equalsIgnoreCase("info_player_deathmatch")) {
+									if(in.attributeIs("classname", "info_player_deathmatch")) {
 										double[] origin=in.getOrigin();
 										in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]-32));
 									} else {
-										if(in.getAttribute("classname").equalsIgnoreCase("info_ctfspawn")) {
+										if(in.attributeIs("classname", "info_ctfspawn")) {
 											if(in.getAttribute("team_no").equalsIgnoreCase("1")) {
 												in.setAttribute("classname", "ctf_combine_player_spawn");
 												in.deleteAttribute("team_no");
@@ -624,7 +625,7 @@ public class VMFWriter {
 											double[] origin=in.getOrigin();
 											in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]-32));
 										} else {
-											if(in.getAttribute("classname").equalsIgnoreCase("item_ctfflag")) {
+											if(in.attributeIs("classname", "item_ctfflag")) {
 												in.deleteAttribute("skin");
 												in.deleteAttribute("goal_min");
 												in.deleteAttribute("goal_max");
@@ -642,12 +643,50 @@ public class VMFWriter {
 													}
 												}
 											} else {
-												if(in.getAttribute("classname").equalsIgnoreCase("func_ladder")) {
+												if(in.attributeIs("classname", "func_ladder")) {
 													for(int i=0;i<in.getNumBrushes();i++) {
 														MAPBrush currentBrush = in.getBrush(i);
 														for(int j=0;j<currentBrush.getNumSides();j++) {
 															MAPBrushSide currentSide = currentBrush.getSide(j);
 															currentSide.setTexture("TOOLS/TOOLSINVISIBLELADDER");
+														}
+													}
+												} else {
+													if(in.attributeIs("classname", "func_door")) {
+														in.setAttribute("movedir", in.getAttribute("angles"));
+														in.deleteAttribute("angles");
+													} else {
+														if(in.attributeIs("classname", "func_button")) {
+															in.setAttribute("movedir", in.getAttribute("angles"));
+															in.deleteAttribute("angles");
+															for(int i=0;i<in.getNumBrushes();i++) {
+																MAPBrush currentBrush = in.getBrush(i);
+																for(int j=0;j<currentBrush.getNumSides();j++) {
+																	MAPBrushSide currentSide = currentBrush.getSide(j);
+																	if(currentSide.getTexture().equalsIgnoreCase("special/TRIGGER")) {
+																		currentSide.setTexture("TOOLS/TOOLSHINT"); // Hint is the only thing that still works that doesn't collide with the player
+																	}
+																}
+															}
+															if(!in.spawnflagsSet(256)) { // Nightfire's "touch activates" flag, same as source!
+																if(!in.getAttribute("health").equals("") && !in.getAttribute("health").equals("0")) {
+																	in.enableSpawnflags(512);
+																} else {
+																	in.enableSpawnflags(1024);
+																}
+															}
+														} else {
+															if(in.attributeIs("classname", "trigger_hurt")) {
+																if(in.spawnflagsSet(2)) {
+																	in.setAttribute("StartDisabled", "1");
+																}
+																if(!in.spawnflagsSet(8)) {
+																	in.setAttribute("spawnflags", "1");
+																} else {
+																	in.setAttribute("spawnflags", "0");
+																}
+																in.renameAttribute("dmg", "damage");
+															}
 														}
 													}
 												}

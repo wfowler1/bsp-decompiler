@@ -72,18 +72,9 @@ public class Entity {
 	// deleteAttribute(String)
 	// Deletes the specified attribute from the attributes list. If it wasn't found it does nothing.
 	public void deleteAttribute(String attribute) {
-		int i=0;
-		for(i=0;i<attributes.length;i++) {
-			try {
-				if(attributes[i].substring(0,attribute.length()+2).compareToIgnoreCase("\""+attribute+"\"")==0) {
-					deleteAttribute(i);
-					break; // If the attribute is found, break the loop since the appropriate index in in the variable "index"
-				}
-			} catch(StringIndexOutOfBoundsException e) { // for cases where the whole String is shorter than
-				;                                         // the name of the attribute we're looking for. Do nothing.
-			} catch(java.lang.NullPointerException e ) {
-				break;
-			}
+		int index=findAttributeIndex(attribute);
+		if(index>-1) {
+			deleteAttribute(index);
 		}
 	}
 	
@@ -217,6 +208,75 @@ public class Entity {
 	// based entity and this method returns true. If not, it returns false.
 	public boolean isBrushBased() {
 		return (brushes.length>0 || getModelNumber()>=0);
+	}
+	
+	// attributeIs(String, String)
+	// Returns true if the attribute String1 exists and is equivalent to String2
+	public boolean attributeIs(String attribute, String check) {
+		if(attributeExists(attribute)) {
+			if(getAttribute(attribute).equalsIgnoreCase(check)) {
+				return true;
+			}
+			if(attribute.equalsIgnoreCase("angles") || attribute.equalsIgnoreCase("origin") || attribute.equalsIgnoreCase("spawnflags") || attribute.equalsIgnoreCase("skin") || attribute.equalsIgnoreCase("health")) {
+				if(check.equals("") || check.equals("0") || check.equals("0 0") || check.equals("0 0 0")) {
+					if(getAttribute(attribute).equals("") || getAttribute(attribute).equals("0") || getAttribute(attribute).equals("0 0") || getAttribute(attribute).equals("0 0 0")) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+		return false;
+	}
+	
+	// findAttributeIndex(String)
+	// Returns the index of a keyvalue in this entity. If it does not exist, returns -1.
+	public int findAttributeIndex(String attribute) {
+		for(int i=0;i<attributes.length;i++) {
+			try {
+				if(attributes[i].substring(0,attribute.length()+2).compareToIgnoreCase("\""+attribute+"\"")==0) {
+					return i;
+				}
+			} catch(StringIndexOutOfBoundsException e) { // for cases where the whole String is shorter than
+				;                                         // the name of the attribute we're looking for. Do nothing.
+			} catch(java.lang.NullPointerException e ) {
+				break;
+			}
+		}
+		return -1;
+	}
+	
+	public boolean attributeExists(String attribute) {
+		return (findAttributeIndex(attribute) >= 0);
+	}
+	
+	// Bitwise spawnflags operators
+	public int getSpawnflags() {
+		try {
+			return Integer.parseInt(getAttribute("spawnflags"));
+		} catch(java.lang.NumberFormatException e) {
+			return 0;
+		}
+	}
+	
+	// Returns true if the bits in "spawnflags" corresponding to the set bits in 'check' are set
+	public boolean spawnflagsSet(int check) {
+		return ((getSpawnflags() & check) == check);
+	}
+	
+	// Toggles the bits in "spawnflags" which are set in "check"
+	public void toggleSpawnflags(int toggle) {
+		setAttribute("spawnflags", new Integer(getSpawnflags() ^ toggle).toString());
+	}
+	
+	// Disables the bits in "spawnflags" which are set in "check"
+	public void disableSpawnflags(int disable) {
+		toggleSpawnflags(getSpawnflags() & disable);
+	}
+	
+	// Enables the bits in "spawnflags" which are set in "check"
+	public void enableSpawnflags(int enable) {
+		setAttribute("spawnflags", new Integer(getSpawnflags() | enable).toString());
 	}
 	
 	// This doesn't really build anything, it just fills the "connections" array with the

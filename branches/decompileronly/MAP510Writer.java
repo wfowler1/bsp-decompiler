@@ -122,7 +122,7 @@ public class MAP510Writer {
 			}
 			offset+=entityBytes[i].length;
 		}
-		MAPMaker.write(new byte[0], allEnts, path, false);
+		MAPMaker.write(allEnts, path, false);
 	}
 	
 	// -entityToByteArray()

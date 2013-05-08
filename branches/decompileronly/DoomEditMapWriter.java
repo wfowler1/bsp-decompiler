@@ -86,15 +86,19 @@ public class DoomEditMapWriter {
 			}
 			totalLength+=entityBytes[currentEntity].length;
 		}
-		byte[] allEnts=new byte[totalLength];
+		byte[] allEnts=new byte[totalLength+header.length];
 		int offset=0;
+		for(int i=0;i<header.length;i++) {
+			allEnts[offset]=header[i];
+			offset++;
+		}
 		for(int i=0;i<data.length();i++) {
 			for(int j=0;j<entityBytes[i].length;j++) {
 				allEnts[offset+j]=entityBytes[i][j];
 			}
 			offset+=entityBytes[i].length;
 		}
-		MAPMaker.write(header, allEnts, path, false);
+		MAPMaker.write(allEnts, path, false);
 	}
 	
 	// -entityToByteArray()

@@ -130,7 +130,7 @@ public class MAPMaker {
 				VMFMaker.write();
 			}
 			if(Window.toMOH()) {
-				MOHRadiantMAPWriter MAPMaker;
+				MOHRadiantMAPWriter mapMaker;
 				if(Window.toGCMAP() || Window.toRadiantMAP()) {
 					from=new Entities(data);
 				} else {
@@ -138,15 +138,15 @@ public class MAPMaker {
 				}
 				if(Window.getOutputFolder().equals("default")) {
 					Window.println("Saving "+mapfolder+mapname+"_MOH.map...",Window.VERBOSITY_ALWAYS);
-					MAPMaker=new MOHRadiantMAPWriter(from, mapfolder+mapname+"_MOH",version);
+					mapMaker=new MOHRadiantMAPWriter(from, mapfolder+mapname+"_MOH",version);
 				} else {
 					Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname+"_MOH.map...",Window.VERBOSITY_ALWAYS);
-					MAPMaker=new MOHRadiantMAPWriter(from, Window.getOutputFolder()+"\\"+mapname+"_MOH",version);
+					mapMaker=new MOHRadiantMAPWriter(from, Window.getOutputFolder()+"\\"+mapname+"_MOH",version);
 				}
-				MAPMaker.write();
+				mapMaker.write();
 			}
 			if(Window.toGCMAP()) {
-				MAP510Writer MAPMaker;
+				MAP510Writer mapMaker;
 				if(Window.toRadiantMAP()) {
 					from=new Entities(data);
 				} else {
@@ -154,51 +154,47 @@ public class MAPMaker {
 				}
 				if(Window.getOutputFolder().equals("default")) {
 					Window.println("Saving "+mapfolder+mapname+"_gc.map...",Window.VERBOSITY_ALWAYS);
-					MAPMaker=new MAP510Writer(from, mapfolder+mapname+"_gc",version);
+					mapMaker=new MAP510Writer(from, mapfolder+mapname+"_gc",version);
 				} else {
 					Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname+"_gc.map...",Window.VERBOSITY_ALWAYS);
-					MAPMaker=new MAP510Writer(from, Window.getOutputFolder()+"\\"+mapname+"_gc",version);
+					mapMaker=new MAP510Writer(from, Window.getOutputFolder()+"\\"+mapname+"_gc",version);
 				}
-				MAPMaker.write();
+				mapMaker.write();
 			}
 			if(Window.toRadiantMAP()) {
-				GTKRadiantMapWriter MAPMaker;
+				GTKRadiantMapWriter mapMaker;
 				from=data;
 				if(Window.getOutputFolder().equals("default")) {
 					Window.println("Saving "+mapfolder+mapname+"_radiant.map...",Window.VERBOSITY_ALWAYS);
-					MAPMaker=new GTKRadiantMapWriter(data, mapfolder+mapname+"_radiant",version);
+					mapMaker=new GTKRadiantMapWriter(data, mapfolder+mapname+"_radiant",version);
 				} else {
 					Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname+"_radiant.map...",Window.VERBOSITY_ALWAYS);
-					MAPMaker=new GTKRadiantMapWriter(data, Window.getOutputFolder()+"\\"+mapname+"_radiant",version);
+					mapMaker=new GTKRadiantMapWriter(data, Window.getOutputFolder()+"\\"+mapname+"_radiant",version);
 				}
-				MAPMaker.write();
+				mapMaker.write();
 			}
 		}
-	}
-	
-	public static void write(byte[] header, byte[] data, String destination, boolean toVMF) throws java.io.IOException {
-		try{
-			if(!destination.substring(destination.length()-4).equalsIgnoreCase(".map") && !destination.substring(destination.length()-4).equalsIgnoreCase(".vmf")) {
-				if(toVMF) {
-					destination=destination+".vmf";
-				} else {
-					destination=destination+".map";
-				}
-			}
-		} catch(java.lang.StringIndexOutOfBoundsException e) {
-			if(toVMF) {
-				destination=destination+".vmf";
-			} else {
-				destination=destination+".map";
-			}
-		}
-		File mapFile=new File(destination);
-		write(header, data, mapFile);
 	}
 	
 	// If only one thread is allowed to use this method at once, only one map will be saved at once, meaning less
 	// jumping hard drive seek time used.
-	public static synchronized void write(byte[] header, byte[] data, File destination) throws java.io.IOException {
+	public static synchronized void write(byte[] data, String destinationString, boolean toVMF) throws java.io.IOException {
+		try{
+			if(!destinationString.substring(destinationString.length()-4).equalsIgnoreCase(".map") && !destinationString.substring(destinationString.length()-4).equalsIgnoreCase(".vmf")) {
+				if(toVMF) {
+					destinationString=destinationString+".vmf";
+				} else {
+					destinationString=destinationString+".map";
+				}
+			}
+		} catch(java.lang.StringIndexOutOfBoundsException e) {
+			if(toVMF) {
+				destinationString=destinationString+".vmf";
+			} else {
+				destinationString=destinationString+".map";
+			}
+		}
+		File destination=new File(destinationString);
 		try {
 			File absolutepath=new File(destination.getParent()+"\\");
 			if(!absolutepath.exists()) {
@@ -211,7 +207,6 @@ public class MAPMaker {
 				destination.createNewFile();
 			}
 			FileOutputStream mapWriter = new FileOutputStream(destination);
-			mapWriter.write(header);
 			mapWriter.write(data);
 			mapWriter.close();
 		} catch(java.io.IOException e) {
