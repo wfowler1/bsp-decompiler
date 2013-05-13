@@ -108,6 +108,7 @@ public class Window extends JPanel implements ActionListener {
 	private static JCheckBoxMenuItem chk_noFaceFlagsItem;
 	private static JCheckBoxMenuItem chk_dontCorrectEntitiesItem;
 	private static JCheckBoxMenuItem chk_dontCorrectTexturesItem;
+	private static JMenuItem setMultimanagerStackItem;
 	private static JMenuItem setErrorItem;
 	private static JMenuItem setOriginBrushSizeItem;
 	private static JMenuItem saveLogItem;
@@ -160,6 +161,7 @@ public class Window extends JPanel implements ActionListener {
 	private static int verbosity=0;
 	private static String outputFolder="default";
 	private static double precision=0.05;
+	private static int mmStack=8;
 
 	// This constructor configures and displays the GUI
 	public Window() {
@@ -384,6 +386,10 @@ public class Window extends JPanel implements ActionListener {
 		chk_dontCorrectTexturesItem.setToolTipText("Don't correct texture names depending on the output format. This will keep all original texture names, instead of those used by the proper editor.");
 		chk_dontCorrectTexturesItem.setSelected(false);
 		debugMenu.add(chk_dontCorrectTexturesItem);
+		setMultimanagerStackItem = new JMenuItem("Set multimanager stack size...");
+		setMultimanagerStackItem.setToolTipText("Set the number of multi_managers to recurse through before giving up.");
+		debugMenu.add(setMultimanagerStackItem);
+		setMultimanagerStackItem.addActionListener(this);
 		setErrorItem = new JMenuItem("Set error tolerance...");
 		setErrorItem.setToolTipText("Allows customization of error tolerance of double precision calculations.");
 		debugMenu.add(setErrorItem);
@@ -730,6 +736,28 @@ public class Window extends JPanel implements ActionListener {
 			//} else {
 				System.exit(0);
 			//}
+		}
+		
+		// Set multi_manager stack size
+		if(action.getSource() == setMultimanagerStackItem) {
+			String st=(String)JOptionPane.showInputDialog(frame,"Please enter a new multimanager stack size.\n"+
+			          "When converting other entity systems to Source Engine entity I/O, you must recurse through\n"+
+			          "multi_managers. If they reference each other in a cycle, it will loop forever. The stack prevents\n"+
+			          "this from happening. Increase this to recurse further. Current value: "+mmStack,"Enter new error tolerance",
+			          JOptionPane.QUESTION_MESSAGE,null,null,mmStack);
+			try {
+				int temp = Integer.parseInt(st);
+				if(temp<0) {
+					throw new java.lang.NumberFormatException();
+				} else {
+					mmStack=temp;
+					println("Multi_manager stack size set to "+mmStack+".",VERBOSITY_ALWAYS);
+				}
+			} catch(java.lang.NumberFormatException e) {
+				println("Invalid multi_manager stack size! Size is "+mmStack+" instead!",VERBOSITY_ALWAYS);
+			} catch(java.lang.NullPointerException e) { // Happens when user hits "cancel". Do nothing.
+				;
+			}
 		}
 		
 		// Set error tolerance
@@ -1237,6 +1265,10 @@ public class Window extends JPanel implements ActionListener {
 		} else {
 			chk_calcVertsItem.setEnabled(false);
 		}
+	}
+	
+	public static double getMMStackSize() {
+		return mmStack;
 	}
 	
 	public static double getPrecision() {

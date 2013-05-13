@@ -20,6 +20,9 @@ public class Entity {
 	private String[] connections=new String[0];
 	private MAPBrush[] brushes=new MAPBrush[0];
 	
+	// For building more Source engine connections, a simple state machine.
+	private boolean fired=false;
+	
 	// CONSTRUCTORS
 	
 	public Entity(byte[] in) {
@@ -37,7 +40,17 @@ public class Entity {
 		attributes[2]="}";
 	}
 	
+	public Entity(String[] atts) {
+		attributes=new String[atts.length+2];
+		for(int i=0;i<atts.length;i++) {
+			attributes[i+1]=atts[i];
+		}
+		attributes[0]="{";
+		attributes[attributes.length-1]="}";
+	}
+	
 	public Entity() {
+		
 	}
 	
 	public Entity(Entity copy) {
@@ -270,6 +283,7 @@ public class Entity {
 	}
 	
 	// Disables the bits in "spawnflags" which are set in "check"
+	// Alternate method: spawnflags = (disable ^ 0xFFFFFFFF) & spawnflags
 	public void disableSpawnflags(int disable) {
 		toggleSpawnflags(getSpawnflags() & disable);
 	}
@@ -316,6 +330,153 @@ public class Entity {
 		}
 		newList[newList.length-1]=st;
 		connections=newList;
+	}
+	
+	// Try to determine what Source engine input this entity would perform when "fired".
+	// "Firing" an entity is used in practically all other engines for entity I/O, but
+	// Source replaced it with the input/output system which, while more powerful, makes
+	// my job that much harder. There is no generic "Fire" input, so I need to give a
+	// best guess as to the action that will actually be performed.
+	public String onFire() {
+		if(attributeIs("classname", "func_door") || attributeIs("classname", "func_door_rotating") || attributeIs("classname", "trigger_hurt") || attributeIs("classname", "func_brush") || attributeIs("classname", "light") || attributeIs("classname", "light_spot")) {
+			return "Toggle";
+		}
+		if(attributeIs("classname", "ambient_generic")) {
+			return "ToggleSound";
+		}
+		if(attributeIs("classname", "env_message")) {
+			return "ShowMessage";
+		}
+		if(attributeIs("classname", "trigger_changelevel")) {
+			return "ChangeLevel";
+		}
+		if(attributeIs("classname", "env_global")) {
+			if(attributeIs("triggermode", "1")) {
+				return "TurnOn";
+			} else {
+				if(attributeIs("triggermode", "3")) {
+					return "Toggle";
+				} else {
+					return "TurnOff";
+				}
+			}
+		}
+		if(attributeIs("classname", "func_breakable")) {
+			return "Break";
+		}
+		if(attributeIs("classname", "func_button")) {
+			return "Press";
+		}
+		if(attributeIs("classname", "env_shake")) {
+			return "StartShake";
+		}
+		if(attributeIs("classname", "env_fade")) {
+			return "Fade";
+		}
+		if(attributeIs("classname", "env_sprite")) {
+			return "ToggleSprite";
+		}
+		return "Toggle";
+	}
+	
+	public String onEnable() {
+		if(attributeIs("classname", "func_door") || attributeIs("classname", "func_door_rotating") || attributeIs("classname", "trigger_hurt") || attributeIs("classname", "func_brush")) {
+			return "Enable";
+		}
+		if(attributeIs("classname", "ambient_generic")) {
+			return "PlaySound";
+		}
+		if(attributeIs("classname", "env_message")) {
+			return "ShowMessage";
+		}
+		if(attributeIs("classname", "trigger_changelevel")) {
+			return "ChangeLevel";
+		}
+		if(attributeIs("classname", "light") || attributeIs("classname", "light_spot")) {
+			return "TurnOn";
+		}
+		if(attributeIs("classname", "func_breakable")) {
+			return "Break";
+		}
+		if(attributeIs("classname", "env_shake")) {
+			return "StartShake";
+		}
+		if(attributeIs("classname", "env_fade")) {
+			return "Fade";
+		}
+		if(attributeIs("classname", "env_sprite")) {
+			return "ShowSprite";
+		}
+		if(attributeIs("classname", "func_button")) {
+			return "PressIn";
+		}
+		return "Enable";
+	}
+	
+	public String onDisable() {
+		if(attributeIs("classname", "func_door") || attributeIs("classname", "func_door_rotating") || attributeIs("classname", "trigger_hurt") || attributeIs("classname", "func_brush")) {
+			return "Disable";
+		}
+		if(attributeIs("classname", "ambient_generic")) {
+			return "StopSound";
+		}
+		if(attributeIs("classname", "env_message")) {
+			return "ShowMessage";
+		}
+		if(attributeIs("classname", "trigger_changelevel")) {
+			return "ChangeLevel";
+		}
+		if(attributeIs("classname", "light") || attributeIs("classname", "light_spot")) {
+			return "TurnOff";
+		}
+		if(attributeIs("classname", "func_breakable")) {
+			return "Break";
+		}
+		if(attributeIs("classname", "env_shake")) {
+			return "StopShake";
+		}
+		if(attributeIs("classname", "env_fade")) {
+			return "Fade";
+		}
+		if(attributeIs("classname", "env_sprite")) {
+			return "HideSprite";
+		}
+		if(attributeIs("classname", "func_button")) {
+			return "PressOut";
+		}
+		return "Disable";
+	}
+	
+	// Try to determine which "Output" normally causes this entity to "fire" its target.
+	public String fireAction() {
+		if(attributeIs("classname", "func_button") || attributeIs("classname", "func_rot_button") || attributeIs("classname", "momentary_rot_button")) {
+			return "OnPressed";
+		}
+		if(attributeIs("classname", "trigger_multiple") || attributeIs("classname", "trigger_once")) {
+			return "OnTrigger";
+		}
+		if(attributeIs("classname", "logic_auto")) {
+			return "OnNewGame";
+		}
+		if(attributeIs("classname", "func_door") || attributeIs("classname", "func_door_rotating")) {
+			return "OnOpen";
+		}
+		if(attributeIs("classname", "func_breakable")) {
+			return "OnBreak";
+		}
+		return "None";
+	}
+	
+	public void setFired(boolean in) {
+		fired=in;
+	}
+	
+	public static Entity cloneNoBrushes(Entity copy) {
+		return new Entity(copy.getAttributes());
+	}
+	
+	public Entity cloneNoBrushes() {
+		return new Entity(attributes);
 	}
 	
 	// ACCESSORS/MUTATORS
@@ -395,6 +556,32 @@ public class Entity {
 				;                                         // the name of the attribute we're looking for. Do nothing.
 			} catch(java.lang.NullPointerException e) {
 				break;
+			}
+		}
+		return output;
+	}
+	
+	// Gets the name of the attribute at index
+	public String getAttributeName(int index) {
+		String output = "";
+		for(int i=1;i<attributes[index].length();i++) {
+			if(attributes[index].charAt(i)=='\"' && attributes[index].charAt(i)!='\\') {
+				break;
+			} else {
+				output+=attributes[index].charAt(i);
+			}
+		}
+		return output;
+	}
+	
+	// Gets the value of the attribute at index
+	public String getAttributeValue(int index) {
+		String output = "";
+		for(int i=attributes[index].length()-2;i>4;i--) {
+			if(attributes[index].charAt(i)=='\"' && attributes[index].charAt(i)!='\\') {
+				break;
+			} else {
+				output=attributes[index].charAt(i)+output;
 			}
 		}
 		return output;

@@ -33,8 +33,11 @@ public class VMFWriter {
 	private int currentEntity;
 	
 	int nextID=1;
+	String[] numeralizedTargetnames = new String[0];
+	int[] numTargets = new int[0];
+	private int mmStackLength=0;
 	
-	private static DecimalFormat fmt = new DecimalFormat("0.##########");
+	private static final DecimalFormat fmt = new DecimalFormat("0.##########");
 	
 	// CONSTRUCTORS
 	
@@ -95,6 +98,24 @@ public class VMFWriter {
 			}
 		}
 		
+		// Correct some more attributes of entities
+		for(int i=0;i<data.length();i++) {
+			Entity current=data.getElement(i);
+			switch(BSPVersion) {
+				case BSP.TYPE_NIGHTFIRE: // Nightfire
+					current=ent42ToEntVMF(current);
+					current=parseEntityIO(current);
+					break;
+				case BSP.TYPE_QUAKE2:
+					current=ent38ToEntVMF(current);
+					current=parseEntityIO(current);
+					break;
+				case DoomMap.TYPE_DOOM:
+				case DoomMap.TYPE_HEXEN:
+					break;
+			}
+		}
+		
 		/*String tempString="versioninfo"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A+"	\"editorversion\" \"400\""+(char)0x0D+(char)0x0A+"	\"editorbuild\" \"3325\""+(char)0x0D+(char)0x0A+"	\"mapversion\" \"0\""+(char)0x0D+(char)0x0A+"	\"formatversion\" \"100\""+(char)0x0D+(char)0x0A+"	\"prefab\" \"0\""+(char)0x0D+(char)0x0A+"}"+(char)0x0D+(char)0x0A+"";
 		tempString+="visgroups"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A+"}"+(char)0x0D+(char)0x0A+"";
 		tempString+="viewsettings"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A+"	\"bSnapToGrid\" \"1\""+(char)0x0D+(char)0x0A+"	\"bShowGrid\" \"1\""+(char)0x0D+(char)0x0A+"	\"bShowLogicalGrid\" \"0\""+(char)0x0D+(char)0x0A+"	\"nGridSpacing\" \"64\""+(char)0x0D+(char)0x0A+"	\"bShow3DGrid\" \"0\""+(char)0x0D+(char)0x0A+"}"+(char)0x0D+(char)0x0A+"";
@@ -144,30 +165,7 @@ public class VMFWriter {
 		in.setAttribute("id", new Integer(nextID++).toString());
 		byte[] out;
 		double[] origin=new double[3];
-		// Correct some attributes of entities
-		switch(BSPVersion) {
-			case BSP.TYPE_NIGHTFIRE: // Nightfire
-				in=ent42ToEntVMF(in);
-				break;
-			case BSP.TYPE_QUAKE2:
-				in=ent38ToEntVMF(in);
-				break;
-			case DoomMap.TYPE_DOOM:
-			case DoomMap.TYPE_HEXEN:
-				break;
-			case BSP.TYPE_SOURCE17:
-			case BSP.TYPE_SOURCE18:
-			case BSP.TYPE_SOURCE19:
-			case BSP.TYPE_SOURCE20:
-			case BSP.TYPE_SOURCE21:
-			case BSP.TYPE_SOURCE22:
-			case BSP.TYPE_SOURCE23:
-			case BSP.TYPE_VINDICTUS:
-			case BSP.TYPE_DMOMAM:
-			case BSP.TYPE_TACTICALINTERVENTION:
-				in.buildConnections();
-				break;
-		}
+		in.buildConnections();
 		if(in.isBrushBased()) {
 			in.deleteAttribute("model");
 		}
@@ -543,7 +541,11 @@ public class VMFWriter {
 			;
 		}
 		if(in.attributeIs("classname", "light_spot")) {
-			in.setAttribute("pitch", new Double(in.getAngles()[0]).toString());
+			try {
+				in.setAttribute("pitch", new Double(in.getAngles()[0]+Double.parseDouble(in.getAttribute("pitch"))).toString());
+			} catch(java.lang.NumberFormatException e) {
+				in.setAttribute("pitch", new Double(in.getAngles()[0]).toString());
+			}
 			try {
 				if(Double.parseDouble(in.getAttribute("_cone"))>90.0) {
 					in.setAttribute("_cone", "90");
@@ -576,11 +578,13 @@ public class VMFWriter {
 				} else {
 					in.setAttribute("classname", "func_brush");
 					in.setAttribute("solidity", "2");
+					in.deleteAttribute("angles");
 				}
 			} else {
 				if(in.attributeIs("classname", "func_wall_toggle")) {
 					in.setAttribute("classname", "func_brush");
 					in.setAttribute("solidity", "0");
+					in.deleteAttribute("angles");
 					try {
 						if(in.spawnflagsSet(1)) {
 							in.setAttribute("StartDisabled", "1");
@@ -595,6 +599,7 @@ public class VMFWriter {
 					if(in.attributeIs("classname", "func_illusionary")) {
 						in.setAttribute("classname", "func_brush");
 						in.setAttribute("solidity", "1");
+						in.deleteAttribute("angles");
 					} else {
 						if(in.attributeIs("classname", "item_generic")) {
 							in.setAttribute("classname", "prop_dynamic");
@@ -654,7 +659,14 @@ public class VMFWriter {
 												} else {
 													if(in.attributeIs("classname", "func_door")) {
 														in.setAttribute("movedir", in.getAttribute("angles"));
+														in.setAttribute("noise1", in.getAttribute("movement_noise"));
+														in.deleteAttribute("movement_noise");
 														in.deleteAttribute("angles");
+														if(in.spawnflagsSet(1)) {
+															in.setAttribute("spawnpos", "1");
+															in.disableSpawnflags(1);
+														}
+														in.setAttribute("renderamt", "255");
 													} else {
 														if(in.attributeIs("classname", "func_button")) {
 															in.setAttribute("movedir", in.getAttribute("angles"));
@@ -686,9 +698,95 @@ public class VMFWriter {
 																	in.setAttribute("spawnflags", "0");
 																}
 																in.renameAttribute("dmg", "damage");
-															}
-														}
-													}
+															} else {
+																if(in.attributeIs("classname", "trigger_auto")) {
+																	in.setAttribute("classname", "logic_auto");
+																} else {
+																	if(in.attributeIs("classname", "trigger_once") || in.attributeIs("classname", "trigger_multiple")) {
+																		if(in.spawnflagsSet(8) || in.spawnflagsSet(1)) {
+																			in.disableSpawnflags(1);
+																			in.disableSpawnflags(8);
+																			in.enableSpawnflags(2);
+																		}
+																		if(in.spawnflagsSet(2)) {
+																			in.disableSpawnflags(1);
+																		} else {
+																			in.enableSpawnflags(1);
+																		}
+																	} else {
+																		if(in.attributeIs("classname", "func_door_rotating")) {
+																			if(in.spawnflagsSet(1)) {
+																				in.setAttribute("spawnpos", "1");
+																				in.disableSpawnflags(1);
+																			}
+																			in.setAttribute("noise1", in.getAttribute("movement_noise"));
+																			in.deleteAttribute("movement_noise");
+																		} else {
+																			if(in.attributeIs("classname", "trigger_push")) {
+																				in.setAttribute("pushdir", in.getAttribute("angles"));
+																				in.deleteAttribute("angles");
+																			} else {
+																				if(in.attributeIs("classname", "light_environment")) {
+																					Entity newShadowControl = new Entity("shadow_control");
+																					Entity newEnvSun = new Entity("env_sun");
+																					newShadowControl.setAttribute("angles", in.getAttribute("angles"));
+																					newEnvSun.setAttribute("angles", in.getAttribute("angles"));
+																					newShadowControl.setAttribute("origin", in.getAttribute("origin"));
+																					newEnvSun.setAttribute("origin", in.getAttribute("origin"));
+																					newShadowControl.setAttribute("color", "128 128 128");
+																					data.add(newShadowControl);
+																					data.add(newEnvSun);
+																				} else {
+																					if(in.attributeIs("classname", "func_rot_button")) {
+																						in.deleteAttribute("angles");
+																						for(int i=0;i<in.getNumBrushes();i++) {
+																							MAPBrush currentBrush = in.getBrush(i);
+																							for(int j=0;j<currentBrush.getNumSides();j++) {
+																								MAPBrushSide currentSide = currentBrush.getSide(j);
+																								if(currentSide.getTexture().equalsIgnoreCase("special/TRIGGER")) {
+																									currentSide.setTexture("TOOLS/TOOLSHINT"); // Hint is the only thing that still works that doesn't collide with the player
+																								}
+																							}
+																						}
+																						if(!in.spawnflagsSet(256)) { // Nightfire's "touch activates" flag, same as source!
+																							if(!in.getAttribute("health").equals("") && !in.getAttribute("health").equals("0")) {
+																								in.enableSpawnflags(512);
+																							} else {
+																								in.enableSpawnflags(1024);
+																							}
+																						}
+																					} else {
+																						if(in.attributeIs("classname", "func_detail")) {
+																							for(int i=0;i<in.getNumBrushes();i++) {
+																								MAPBrush currentBrush = in.getBrush(i);
+																								for(int j=0;j<currentBrush.getNumSides();j++) {
+																									MAPBrushSide currentSide = currentBrush.getSide(j);
+																									if(currentSide.getTexture().equalsIgnoreCase("special/TRIGGER")) {
+																										currentSide.setTexture("TOOLS/TOOLSHINT"); // Hint is the only thing that still works that doesn't collide with the player
+																									}
+																								}
+																							}
+																						} else {
+																							if(in.attributeIs("classname", "func_tracktrain")) {
+																								in.renameAttribute("movesnd", "MoveSound");
+																								in.renameAttribute("stopsnd", "StopSound");
+																							} else {
+																								if(in.attributeIs("classname", "path_track")) {
+																									if(in.spawnflagsSet(1)) {
+																										in.deleteAttribute("targetname");
+																									}
+																								}
+																							}
+																						}
+																					}
+																				}
+																			}
+																		}
+																	} // Lol
+																}    // so
+															}       // many
+														}          // closing
+													}             // braces
 												}
 											}
 										}
@@ -701,6 +799,147 @@ public class VMFWriter {
 			}
 		}
 		return in;
+	}
+	
+	// Turn a triggering entity (like a func_button or trigger_multiple) into a Source
+	// engine trigger using entity I/O. There's a few complications to this: There's
+	// no generic output which always acts like the triggers in other engines, and there's
+	// no "Fire" input. I try to figure out which ones are best based on their classnames
+	// but it's not 100% foolproof, and I have to add a case for every specific class.
+	public Entity parseEntityIO(Entity in) {
+		if(!in.fireAction().equals("None")) {
+			if(!in.getAttribute("target").equals("")) {
+				Entity[] targets=getTargets(in.getAttribute("target"));
+				for(int i=0;i<targets.length;i++) {
+					if(targets[i].attributeIs("classname", "multi_manager")) {
+						Entity mm = parseMultimanager(targets[i]);
+						for(int j=0;j<mm.getNumAttributes();j++) {
+							Entity[] mmTarget = getTargets(mm.getAttributeName(j));
+							if(mmTarget.length>0) {
+								in.addAttributeInside("\""+in.fireAction()+"\" \""+mm.getAttributeName(j)+","+mmTarget[0].onFire()+",,"+mm.getAttributeValue(j)+",-1\"");
+							} else {
+								in.addAttributeInside("\""+in.fireAction()+"\" \""+mm.getAttributeName(j)+",Toggle,,"+mm.getAttributeValue(j)+",-1\"");
+							}
+						}
+					} else {
+						in.addAttributeInside("\""+in.fireAction()+"\" \""+targets[i].getAttribute("targetname")+","+targets[i].onFire()+",,0,-1\"");
+					}
+				}
+			}
+			if(!in.getAttribute("killtarget").equals("")) {
+				in.addAttributeInside("\""+in.fireAction()+"\" \""+in.getAttribute("killtarget")+",Kill,,0,-1\"");
+			}
+			in.deleteAttribute("target");
+			in.deleteAttribute("killtarget");
+		}
+		return in;
+	}
+	
+	// Multimanagers are also a special case. There are none in Source. Instead, I
+	// need to add EVERY targetted entity in a multimanager to the original trigger
+	// entity as an output with the specified delay. Things get even more complicated
+	// when a multi_manager fires another multi_manager. In this case, this method will
+	// recurse on itself until all the complexity is worked out.
+	// One potential problem is if two multi_managers continuously call each other, this
+	// method will recurse infinitely until there is a stack overflow. This might happen
+	// when there is some sort of cycle going on in the map and multi_managers call each
+	// other recursively to run the cycle with a delay. I solve this with an atrificial
+	// limit of 8 multimanager recursions.
+	// TODO: It would be better to detect this problem when it happens.
+	private Entity parseMultimanager(Entity in) {
+		mmStackLength++;
+		Entity dummy = new Entity(in);
+		dummy.deleteAttribute("classname");
+		dummy.deleteAttribute("origin");
+		dummy.deleteAttribute("targetname");
+		dummy.deleteAttribute(0); // {
+		dummy.deleteAttribute(dummy.getNumAttributes()-1); // }
+		int numItr = dummy.getNumAttributes();
+		for(int i=0;i<numItr;i++) {
+			String target = dummy.getAttributeName(0);
+			String delay = dummy.getAttributeValue(0);
+			for(int j=target.length()-1;j>=0;j--) {
+				if(target.charAt(j) == '#') {
+					target=target.substring(0,j);
+					dummy.renameAttribute(dummy.getAttributeName(0), target);
+					break;
+				}
+			}
+			Entity[] targets = getTargets(target);
+			dummy.deleteAttribute(target);
+			for(int j=0;j<targets.length;j++) {
+				if(targets[j].attributeIs("classname", "multi_manager")) {
+					if(mmStackLength<=Window.getMMStackSize()) {
+						Entity mm = parseMultimanager(targets[j]);
+						for(int k=0;k<mm.getNumAttributes();k++) {
+							dummy.addAttribute(mm.getAttributeName(k), Double.toString(Double.parseDouble(mm.getAttributeValue(k))+Double.parseDouble(delay)));
+						}
+					} else {
+						Window.println("WARNING: Multimanager stack overflow on entity "+in.getAttribute("targetname")+" calling "+targets[j].getAttribute("targetname")+"!",Window.VERBOSITY_WARNINGS);
+						Window.println("This is probably because of multi_managers repeatedly calling eachother. You can increase multimanager stack size in debug options.",Window.VERBOSITY_WARNINGS);
+					}
+				} else {
+					if(targets.length>1) {
+						dummy.addAttribute(target+j, delay);
+					} else {
+						dummy.addAttribute(target, delay);
+					}
+				}
+			}
+		}
+		mmStackLength--;
+		return dummy;
+	}
+	
+	// Since Source also requires explicit enable/disable on/off events (and many
+	// entities don't support the "Toggle" input) I can't have multiple entities
+	// with the same targetname. So these need to be distinguished and tracked.
+	private Entity[] getTargets(String name) {
+		boolean numeralized = false;
+		Entity[] targets;
+		int numNumeralized = 0;
+		for(int i=0;i<numeralizedTargetnames.length;i++) {
+			if(numeralizedTargetnames[i].equals(name)) {
+				numeralized=true;
+				numNumeralized=numTargets[i];
+				break;
+			}
+		}
+		if(numeralized) {
+			targets = new Entity[numNumeralized];
+			for(int i=0;i<numNumeralized;i++) {
+				targets[i] = data.returnWithName(name+i);
+			}
+		} else {
+			targets = data.returnAllWithName(name);
+			if(targets.length>1) {
+				// Make sure each target needs its own Fire action and name
+				boolean unique=false;
+				for(int i=1;i<targets.length;i++) {
+					if(!targets[0].onFire().equals(targets[i].onFire())) {
+						unique=true;
+						break;
+					}
+				}
+				if(!unique) {
+					return new Entity[] { targets[0] };
+				}
+				String[] newList = new String[numeralizedTargetnames.length+1];
+				int[] newNumTargets = new int[newList.length];
+				for(int i=0;i<numeralizedTargetnames.length;i++) {
+					newList[i]=numeralizedTargetnames[i];
+					newNumTargets[i]=numTargets[i];
+				}
+				newList[newList.length-1]=name;
+				newNumTargets[newList.length-1]=targets.length;
+				numeralizedTargetnames=newList;
+				numTargets=newNumTargets;
+				for(int i=0;i<targets.length;i++) {
+					targets[i].setAttribute("targetname", name+i);
+				}
+			}
+		}
+		return targets;
 	}
 	
 	// ACCESSORS/MUTATORS

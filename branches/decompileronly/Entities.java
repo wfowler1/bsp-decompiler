@@ -173,22 +173,43 @@ public class Entities {
 	// Returns an array of indices of the entities with the specified attribute set to
 	// the specified value
 	public int[] findAllWithAttribute(String attribute, String value) {
-		int[] indices;
-		int num=0;
+		int[] indices = new int[0];
 		for(int i=0;i<entities.length;i++) {
-			if(entities[i].getAttribute(attribute).equalsIgnoreCase(value)) {
-				num++;
-			}
-		}
-		indices=new int[num];
-		int current=0;
-		for(int i=0;i<entities.length && current<num;i++) {
-			if(entities[i].getAttribute(attribute).equalsIgnoreCase(value)) {
-				indices[current]=i;
-				current++;
+			if(entities[i].attributeIs(attribute, value)) {
+				int[] newList = new int[indices.length+1];
+				for(int j=0;j<indices.length;j++) {
+					newList[j]=indices[j];
+				}
+				newList[newList.length-1]=i;
+				indices=newList;
 			}
 		}
 		return indices;
+	}
+	
+	// Returns the actual entities with the specified field
+	public Entity[] returnAllWithAttribute(String attribute, String value) {
+		int[] indices = findAllWithAttribute(attribute, value);
+		Entity[] ents = new Entity[indices.length];
+		for(int i=0;i<ents.length;i++) {
+			ents[i] = entities[indices[i]];
+		}
+		return ents;
+	}
+	
+	// Returns all entities with the specified targetname
+	public Entity[] returnAllWithName(String targetname) {
+		return returnAllWithAttribute("targetname", targetname);
+	}
+	
+	// Returns ONE (the first) entity with the specified targetname
+	public Entity returnWithName(String targetname) {
+		for(int i=0;i<entities.length;i++) {
+			if(entities[i].attributeIs("targetname", targetname)) {
+				return entities[i];
+			}
+		}
+		return null;
 	}
 	
 	// ACCESSORS/MUTATORS
