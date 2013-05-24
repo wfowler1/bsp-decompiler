@@ -338,7 +338,12 @@ public class Entity {
 	// my job that much harder. There is no generic "Fire" input, so I need to give a
 	// best guess as to the action that will actually be performed.
 	public String onFire() {
-		if(attributeIs("classname", "func_door") || attributeIs("classname", "func_door_rotating") || attributeIs("classname", "trigger_hurt") || attributeIs("classname", "func_brush") || attributeIs("classname", "light") || attributeIs("classname", "light_spot")) {
+		if(attributeIs("classname", "func_door") || 
+		   attributeIs("classname", "func_door_rotating") || 
+		   attributeIs("classname", "trigger_hurt") || 
+		   attributeIs("classname", "func_brush") || 
+		   attributeIs("classname", "light") || 
+		   attributeIs("classname", "light_spot")) {
 			return "Toggle";
 		}
 		if(attributeIs("classname", "ambient_generic")) {
@@ -376,11 +381,18 @@ public class Entity {
 		if(attributeIs("classname", "env_sprite")) {
 			return "ToggleSprite";
 		}
+		if(attributeIs("classname", "logic_relay")) {
+			return "Trigger";
+		}
 		return "Toggle";
 	}
 	
 	public String onEnable() {
-		if(attributeIs("classname", "func_door") || attributeIs("classname", "func_door_rotating") || attributeIs("classname", "trigger_hurt") || attributeIs("classname", "func_brush")) {
+		if(attributeIs("classname", "func_door") || 
+		   attributeIs("classname", "func_door_rotating") || 
+		   attributeIs("classname", "trigger_hurt") || 
+		   attributeIs("classname", "func_brush") ||
+		   attributeIs("classname", "logic_relay")) {
 			return "Enable";
 		}
 		if(attributeIs("classname", "ambient_generic")) {
@@ -392,7 +404,8 @@ public class Entity {
 		if(attributeIs("classname", "trigger_changelevel")) {
 			return "ChangeLevel";
 		}
-		if(attributeIs("classname", "light") || attributeIs("classname", "light_spot")) {
+		if(attributeIs("classname", "light") || 
+		   attributeIs("classname", "light_spot")) {
 			return "TurnOn";
 		}
 		if(attributeIs("classname", "func_breakable")) {
@@ -414,7 +427,11 @@ public class Entity {
 	}
 	
 	public String onDisable() {
-		if(attributeIs("classname", "func_door") || attributeIs("classname", "func_door_rotating") || attributeIs("classname", "trigger_hurt") || attributeIs("classname", "func_brush")) {
+		if(attributeIs("classname", "func_door") || 
+		   attributeIs("classname", "func_door_rotating") || 
+		   attributeIs("classname", "trigger_hurt") || 
+		   attributeIs("classname", "func_brush") ||
+		   attributeIs("classname", "logic_relay")) {
 			return "Disable";
 		}
 		if(attributeIs("classname", "ambient_generic")) {
@@ -426,7 +443,8 @@ public class Entity {
 		if(attributeIs("classname", "trigger_changelevel")) {
 			return "ChangeLevel";
 		}
-		if(attributeIs("classname", "light") || attributeIs("classname", "light_spot")) {
+		if(attributeIs("classname", "light") || 
+		   attributeIs("classname", "light_spot")) {
 			return "TurnOff";
 		}
 		if(attributeIs("classname", "func_breakable")) {
@@ -449,16 +467,21 @@ public class Entity {
 	
 	// Try to determine which "Output" normally causes this entity to "fire" its target.
 	public String fireAction() {
-		if(attributeIs("classname", "func_button") || attributeIs("classname", "func_rot_button") || attributeIs("classname", "momentary_rot_button")) {
+		if(attributeIs("classname", "func_button") || 
+		   attributeIs("classname", "func_rot_button") || 
+		   attributeIs("classname", "momentary_rot_button")) {
 			return "OnPressed";
 		}
-		if(attributeIs("classname", "trigger_multiple") || attributeIs("classname", "trigger_once")) {
+		if(attributeIs("classname", "trigger_multiple") || 
+		   attributeIs("classname", "trigger_once") ||
+		   attributeIs("classname", "logic_relay")) {
 			return "OnTrigger";
 		}
 		if(attributeIs("classname", "logic_auto")) {
 			return "OnNewGame";
 		}
-		if(attributeIs("classname", "func_door") || attributeIs("classname", "func_door_rotating")) {
+		if(attributeIs("classname", "func_door") || 
+		   attributeIs("classname", "func_door_rotating")) {
 			return "OnOpen";
 		}
 		if(attributeIs("classname", "func_breakable")) {

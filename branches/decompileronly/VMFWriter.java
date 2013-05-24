@@ -104,16 +104,20 @@ public class VMFWriter {
 			switch(BSPVersion) {
 				case BSP.TYPE_NIGHTFIRE: // Nightfire
 					current=ent42ToEntVMF(current);
-					current=parseEntityIO(current);
 					break;
 				case BSP.TYPE_QUAKE2:
 					current=ent38ToEntVMF(current);
-					current=parseEntityIO(current);
 					break;
 				case DoomMap.TYPE_DOOM:
 				case DoomMap.TYPE_HEXEN:
 					break;
 			}
+		}
+		
+		// Parse entity I/O
+		for(int i=0;i<data.length();i++) {
+			Entity current=data.getElement(i);
+			current=parseEntityIO(current);
 		}
 		
 		/*String tempString="versioninfo"+(char)0x0D+(char)0x0A+"{"+(char)0x0D+(char)0x0A+"	\"editorversion\" \"400\""+(char)0x0D+(char)0x0A+"	\"editorbuild\" \"3325\""+(char)0x0D+(char)0x0A+"	\"mapversion\" \"0\""+(char)0x0D+(char)0x0A+"	\"formatversion\" \"100\""+(char)0x0D+(char)0x0A+"	\"prefab\" \"0\""+(char)0x0D+(char)0x0A+"}"+(char)0x0D+(char)0x0A+"";
@@ -211,6 +215,12 @@ public class VMFWriter {
 						if(in.getBrush(j).isDetailBrush() && in.attributeIs("classname", "worldspawn")) {
 							in.getBrush(j).setDetail(false);
 							Entity newDetailEntity=new Entity("func_detail");
+							for(int k=0;k<in.getBrush(j).getNumSides();k++) {
+								MAPBrushSide currentSide = in.getBrush(j).getSide(k);
+								if(currentSide.getTexture().equalsIgnoreCase("special/TRIGGER")) {
+									currentSide.setTexture("TOOLS/TOOLSHINT"); // Hint is the only thing that still works that doesn't collide with the player
+								}
+							}
 							newDetailEntity.addBrush(in.getBrush(j));
 							data.add(newDetailEntity);
 							brushes[j]=new byte[0]; // No data here! The brush will be output in its entity instead.
@@ -574,6 +584,15 @@ public class VMFWriter {
 			if(in.attributeIs("classname", "func_wall")) {
 				if(in.getAttribute("rendermode").equals("0")) {
 					in.setAttribute("classname", "func_detail");
+					for(int i=0;i<in.getNumBrushes();i++) {
+						MAPBrush currentBrush = in.getBrush(i);
+						for(int j=0;j<currentBrush.getNumSides();j++) {
+							MAPBrushSide currentSide = currentBrush.getSide(j);
+							if(currentSide.getTexture().equalsIgnoreCase("special/TRIGGER")) {
+								currentSide.setTexture("TOOLS/TOOLSHINT"); // Hint is the only thing that still works that doesn't collide with the player
+							}
+						}
+					}
 					in.deleteAttribute("rendermode");
 				} else {
 					in.setAttribute("classname", "func_brush");
@@ -613,9 +632,9 @@ public class VMFWriter {
 								if(in.attributeIs("classname", "info_teleport_destination")) {
 									in.setAttribute("classname", "info_target");
 								} else {
-									if(in.attributeIs("classname", "info_player_deathmatch")) {
+									if(in.attributeIs("classname", "info_player_deathmatch") || in.attributeIs("classname", "info_player_start")) {
 										double[] origin=in.getOrigin();
-										in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]-32));
+										in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]-40));
 									} else {
 										if(in.attributeIs("classname", "info_ctfspawn")) {
 											if(in.getAttribute("team_no").equalsIgnoreCase("1")) {
@@ -628,7 +647,7 @@ public class VMFWriter {
 												}
 											}
 											double[] origin=in.getOrigin();
-											in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]-32));
+											in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]-40));
 										} else {
 											if(in.attributeIs("classname", "item_ctfflag")) {
 												in.deleteAttribute("skin");
@@ -756,25 +775,17 @@ public class VMFWriter {
 																							}
 																						}
 																					} else {
-																						if(in.attributeIs("classname", "func_detail")) {
-																							for(int i=0;i<in.getNumBrushes();i++) {
-																								MAPBrush currentBrush = in.getBrush(i);
-																								for(int j=0;j<currentBrush.getNumSides();j++) {
-																									MAPBrushSide currentSide = currentBrush.getSide(j);
-																									if(currentSide.getTexture().equalsIgnoreCase("special/TRIGGER")) {
-																										currentSide.setTexture("TOOLS/TOOLSHINT"); // Hint is the only thing that still works that doesn't collide with the player
-																									}
-																								}
-																							}
+																						if(in.attributeIs("classname", "func_tracktrain")) {
+																							in.renameAttribute("movesnd", "MoveSound");
+																							in.renameAttribute("stopsnd", "StopSound");
 																						} else {
-																							if(in.attributeIs("classname", "func_tracktrain")) {
-																								in.renameAttribute("movesnd", "MoveSound");
-																								in.renameAttribute("stopsnd", "StopSound");
+																							if(in.attributeIs("classname", "path_track")) {
+																								if(in.spawnflagsSet(1)) {
+																									in.deleteAttribute("targetname");
+																								}
 																							} else {
-																								if(in.attributeIs("classname", "path_track")) {
-																									if(in.spawnflagsSet(1)) {
-																										in.deleteAttribute("targetname");
-																									}
+																								if(in.attributeIs("classname", "trigger_relay")) {
+																									in.setAttribute("classname", "logic_relay");
 																								}
 																							}
 																						}
@@ -811,18 +822,50 @@ public class VMFWriter {
 			if(!in.getAttribute("target").equals("")) {
 				Entity[] targets=getTargets(in.getAttribute("target"));
 				for(int i=0;i<targets.length;i++) {
-					if(targets[i].attributeIs("classname", "multi_manager")) {
+					if(targets[i].attributeIs("classname", "multi_manager") || targets[i].attributeIs("classname", "multi_kill_manager")) {
 						Entity mm = parseMultimanager(targets[i]);
 						for(int j=0;j<mm.getNumAttributes();j++) {
 							Entity[] mmTarget = getTargets(mm.getAttributeName(j));
 							if(mmTarget.length>0) {
-								in.addAttributeInside("\""+in.fireAction()+"\" \""+mm.getAttributeName(j)+","+mmTarget[0].onFire()+",,"+mm.getAttributeValue(j)+",-1\"");
+								String outputAction = mmTarget[0].onFire();
+								if(targets[i].attributeIs("classname", "multi_kill_manager")) {
+									outputAction = "Kill";
+								} else {
+									if(in.attributeIs("triggerstate", "0")) {
+										outputAction = mmTarget[0].onDisable();
+									} else {
+										if(in.attributeIs("triggerstate", "1")) {
+											outputAction = mmTarget[0].onEnable();
+										}
+									}
+								}
+								if(in.attributeExists("delay")) {
+									try {
+										in.addAttributeInside("\""+in.fireAction()+"\" \""+mm.getAttributeName(j)+","+outputAction+",,"+Integer.toString(Integer.parseInt(mm.getAttributeValue(j))+Integer.parseInt(in.getAttribute("delay")))+",-1\"");
+									} catch(java.lang.NumberFormatException e) {
+										in.addAttributeInside("\""+in.fireAction()+"\" \""+mm.getAttributeName(j)+","+outputAction+",,"+mm.getAttributeValue(j)+",-1\"");
+									}
+								} else {
+									in.addAttributeInside("\""+in.fireAction()+"\" \""+mm.getAttributeName(j)+","+outputAction+",,"+mm.getAttributeValue(j)+",-1\"");
+								}
 							} else {
 								in.addAttributeInside("\""+in.fireAction()+"\" \""+mm.getAttributeName(j)+",Toggle,,"+mm.getAttributeValue(j)+",-1\"");
 							}
 						}
 					} else {
-						in.addAttributeInside("\""+in.fireAction()+"\" \""+targets[i].getAttribute("targetname")+","+targets[i].onFire()+",,0,-1\"");
+						String outputAction = targets[i].onFire();
+						if(in.attributeIs("triggerstate", "0")) {
+							outputAction = targets[i].onDisable();
+						} else {
+							if(in.attributeIs("triggerstate", "1")) {
+								outputAction = targets[i].onEnable();
+							}
+						}
+						if(in.attributeExists("delay")) {
+							in.addAttributeInside("\""+in.fireAction()+"\" \""+targets[i].getAttribute("targetname")+","+outputAction+",,"+in.getAttribute("delay")+",-1\"");
+						} else {
+							in.addAttributeInside("\""+in.fireAction()+"\" \""+targets[i].getAttribute("targetname")+","+outputAction+",,0,-1\"");
+						}
 					}
 				}
 			}
@@ -831,6 +874,8 @@ public class VMFWriter {
 			}
 			in.deleteAttribute("target");
 			in.deleteAttribute("killtarget");
+			in.deleteAttribute("triggerstate");
+			in.deleteAttribute("delay");
 		}
 		return in;
 	}
