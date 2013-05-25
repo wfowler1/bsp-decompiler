@@ -36,12 +36,16 @@ public class GTKRadiantMapWriter {
 	// it gets VERY slow, even if you concatenate them all before writing.
 	public void write() throws java.io.IOException, java.lang.InterruptedException {
 		// Preprocessing entity corrections
-		if(BSPVersion==42) {
-			for(int i=1;i<data.length();i++) {
+		if(BSPVersion==BSP.TYPE_NIGHTFIRE || BSPVersion==BSP.TYPE_QUAKE) {
+			for(int i=1;i<data.size();i++) {
 				for(int j=0;j<data.getElement(i).getNumBrushes();j++) {
 					if(data.getElement(i).getBrushes()[j].isWaterBrush()) {
-						data.getElement(0).addBrush(data.getElement(i).getBrushes()[j]);
-						// TODO: Textures on this brush
+						MAPBrush currentBrush = data.getElement(i).getBrushes()[j];
+						for(int k=0;k<currentBrush.getNumSides();k++) {
+							MAPBrushSide currentBrushSide = currentBrush.getSide(k);
+							currentBrushSide.setTexture("Shaders/liquids/clear_calm1");
+						}
+						data.getElement(0).addBrush(currentBrush);
 					}
 				}
 				if(data.getElement(i).getAttribute("classname").equalsIgnoreCase("func_water")) {
@@ -50,17 +54,32 @@ public class GTKRadiantMapWriter {
 				}
 			}
 		}
+		// Correct some attributes of entities
+		for(int i=0;i<data.size();i++) {
+			Entity current=data.getElement(i);
+			switch(BSPVersion) {
+				case BSP.TYPE_NIGHTFIRE: // Nightfire
+					current=ent42ToEntRad(current);
+					break;
+				case BSP.TYPE_QUAKE2:
+					current=ent38ToEntRad(current);
+					break;
+				case DoomMap.TYPE_DOOM:
+				case DoomMap.TYPE_HEXEN:
+					break;
+			}
+		}
 		
-		byte[][] entityBytes=new byte[data.length()][];
+		byte[][] entityBytes=new byte[data.size()][];
 		int totalLength=0;
-		for(currentEntity=0;currentEntity<data.length();currentEntity++) {
+		for(currentEntity=0;currentEntity<data.size();currentEntity++) {
 			if(Thread.currentThread().interrupted()) {
 				throw new java.lang.InterruptedException("while writing GTKRadiant map.");
 			}
 			try {
 				entityBytes[currentEntity]=entityToByteArray(data.getElement(currentEntity), currentEntity);
 			} catch(java.lang.ArrayIndexOutOfBoundsException e) { // This happens when entities are added after the array is made
-				byte[][] newList=new byte[data.length()][]; // Create a new array with the new length
+				byte[][] newList=new byte[data.size()][]; // Create a new array with the new length
 				for(int j=0;j<entityBytes.length;j++) {
 					newList[j]=entityBytes[j];
 				}
@@ -71,7 +90,7 @@ public class GTKRadiantMapWriter {
 		}
 		byte[] allEnts=new byte[totalLength];
 		int offset=0;
-		for(int i=0;i<data.length();i++) {
+		for(int i=0;i<data.size();i++) {
 			for(int j=0;j<entityBytes[i].length;j++) {
 				allEnts[offset+j]=entityBytes[i][j];
 			}
@@ -93,18 +112,6 @@ public class GTKRadiantMapWriter {
 	private byte[] entityToByteArray(Entity in, int num) throws java.lang.InterruptedException {
 		byte[] out;
 		double[] origin;
-		// Correct some attributes of entities
-		switch(BSPVersion) {
-			case BSP.TYPE_NIGHTFIRE: // Nightfire
-				in=ent42ToEntRad(in);
-				break;
-			case BSP.TYPE_QUAKE2:
-				in=ent38ToEntRad(in);
-				break;
-			case DoomMap.TYPE_DOOM:
-			case DoomMap.TYPE_HEXEN:
-				break;
-		}
 		if(in.isBrushBased()) {
 			origin=in.getOrigin();
 			in.deleteAttribute("origin");

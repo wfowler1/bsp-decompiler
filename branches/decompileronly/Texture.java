@@ -113,6 +113,117 @@ public class Texture extends LumpObject {
 	}
 	
 	// METHODS
+	public static Textures createLump(byte[] in, int type) throws java.lang.InterruptedException {
+		int numElements=-1; // For Quake and Source, which use nonconstant struct lengths
+		int[] offsets=new int[0]; // For Quake, which stores offsets to each texture definition structure, which IS a constant length
+		int structLength = 0;
+		switch(type) {
+			case BSP.TYPE_NIGHTFIRE:
+				structLength=64;
+				break;
+			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_RAVEN:
+			case BSP.TYPE_COD:
+			case BSP.TYPE_COD2:
+			case BSP.TYPE_COD4:
+				structLength=72;
+				break;
+			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_DAIKATANA:
+			case BSP.TYPE_SOF:
+			case BSP.TYPE_STEF2:
+			case BSP.TYPE_STEF2DEMO:
+			case BSP.TYPE_FAKK:
+				structLength=76;
+				break;
+			case BSP.TYPE_MOHAA:
+				structLength=140;
+				break;
+			case BSP.TYPE_SIN:
+				structLength=180;
+				break;
+			case BSP.TYPE_SOURCE17:
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_TACTICALINTERVENTION:
+			case BSP.TYPE_VINDICTUS:
+			case BSP.TYPE_DMOMAM:
+				numElements=0;
+				for(int i=0;i<in.length;i++) {
+					if(in[i]==0x00) {
+						numElements++;
+					}
+				}
+				break;
+			case BSP.TYPE_QUAKE:
+				numElements=DataReader.readInt(in[0], in[1], in[2], in[3]);
+				offsets=new int[numElements];
+				for(int i=0;i<numElements;i++) {
+					offsets[i]=DataReader.readInt(in[((i+1)*4)], in[((i+1)*4)+1], in[((i+1)*4)+2], in[((i+1)*4)+3]);
+				}
+				structLength=40;
+				break;
+		}
+		Texture[] elements;
+		if(numElements==-1) {
+			int offset=0;
+			elements=new Texture[in.length/structLength];
+			byte[] bytes=new byte[structLength];
+			for(int i=0;i<elements.length;i++) {
+				if(Thread.currentThread().interrupted()) {
+					throw new java.lang.InterruptedException("while populating Texture array");
+				}
+				for(int j=0;j<structLength;j++) {
+					bytes[j]=in[offset+j];
+				}
+				elements[i]=new Texture(bytes, type);
+				offset+=structLength;
+			}
+		} else {
+			elements=new Texture[numElements];
+			if(offsets.length!=0) { // Quake/GoldSrc
+				for(int i=0;i<numElements;i++) {
+					if(Thread.currentThread().interrupted()) {
+						throw new java.lang.InterruptedException("while populating Texture array");
+					}
+					int offset=offsets[i];
+					byte[] bytes=new byte[structLength];
+					for(int j=0;j<structLength;j++) {
+						bytes[j]=in[offset+j];
+					}
+					elements[i]=new Texture(bytes, type);
+					offset+=structLength;
+				}
+			} else {  // Source
+				int offset=0;
+				int current=0;
+				byte[] bytes=new byte[0];
+				for(int i=0;i<in.length;i++) {
+					if(Thread.currentThread().interrupted()) {
+						throw new java.lang.InterruptedException("while populating Texture array");
+					}
+					if(in[i]==(byte)0x00) { // They are null-terminated strings, of non-constant length (not padded)
+						elements[current]=new Texture(bytes, type);
+						bytes=new byte[0];
+						current++;
+					} else {
+						byte[] newList=new byte[bytes.length+1];
+						for(int j=0;j<bytes.length;j++) {
+							newList[j]=bytes[j];
+						}
+						newList[bytes.length]=in[i];
+						bytes=newList;
+					}
+					offset++;
+				}
+			}
+		}
+		return new Textures(elements, in.length, structLength);
+	}
 	
 	// ACCESSORS/MUTATORS
 	

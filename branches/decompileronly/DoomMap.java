@@ -12,8 +12,7 @@ public class DoomMap {
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
 	// This is the version of the BSP. This will determine the lumps order and aid in
-	// decompilation. Since this one never had a formal version, I'll make one up. 1
-	// is the most correct version since it really was the first version...
+	// decompilation. Since this one never had a formal version, I'll make one up.
 	public static final int TYPE_DOOM=1145132868; // "DWAD"
 	public static final int TYPE_HEXEN=1145132872; // "HWAD"
 	
@@ -25,68 +24,80 @@ public class DoomMap {
 	
 	// Each lump has its own class for handling its specific data structures.
 	// These are the only lumps we need for decompilation.
-	private DThings things;
-	private DLinedefs linedefs;
-	private DSidedefs sidedefs;
-	private Vertices vertices;
-	private DSegments segs;
-	private DSubSectors subsectors;
-	private DNodes nodes;
-	private DSectors sectors;
+	private Lump<DThing> things;
+	private Lump<DLinedef> linedefs;
+	private Lump<DSidedef> sidedefs;
+	private Lump<Vertex> vertices;
+	private Lump<DSegment> segs;
+	private Lump<DSubSector> subsectors;
+	private Lump<DNode> nodes;
+	private Lump<DSector> sectors;
 	
 	// CONSTRUCTORS
 	// This accepts a folder path and looks for the BSP there.
 	public DoomMap(String wadpath, String map) {
 		this.wadpath=wadpath;
-		if(map.charAt(0)=='E') { // ExMy format - 4 chars
-			this.mapName=map.substring(0,4);
-		} else { // MAPxx format - 5 chars
-			this.mapName=map;
-		}
+		this.mapName=map;
 	}
 
 	// METHODS
 
 	public void printBSPReport() {
 		try {
-			Window.println("Things lump: "+things.getLength()+" bytes, "+things.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Things lump: "+things.length()+" bytes, "+things.size()+" items",Window.VERBOSITY_MAPSTATS);
+			if(things.hasFunnySize()) {
+				Window.println("WARNING: Funny lump size in Things",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Things not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Linedefs lump: "+linedefs.getLength()+" bytes, "+linedefs.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Linedefs lump: "+linedefs.length()+" bytes, "+linedefs.size()+" items",Window.VERBOSITY_MAPSTATS);
+			if(linedefs.hasFunnySize()) {
+				Window.println("WARNING: Funny lump size in Linedefs",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Linedefs not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Sidedefs lump: "+sidedefs.getLength()+" bytes, "+sidedefs.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Sizedefs lump: "+sidedefs.length()+" bytes, "+sidedefs.size()+" items",Window.VERBOSITY_MAPSTATS);
+			if(sidedefs.hasFunnySize()) {
+				Window.println("WARNING: Funny lump size in Sidedefs",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Sidedefs not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Vertices lump: "+vertices.getLength()+" bytes, "+vertices.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Vertices lump: "+vertices.length()+" bytes, "+vertices.size()+" items",Window.VERBOSITY_MAPSTATS);
+			if(vertices.hasFunnySize()) {
+				Window.println("WARNING: Funny lump size in Vertices",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Vertices not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Segments lump: "+segs.getLength()+" bytes, "+segs.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Segments lump: "+segs.length()+" bytes, "+segs.size()+" items",Window.VERBOSITY_MAPSTATS);
+			if(segs.hasFunnySize()) {
+				Window.println("WARNING: Funny lump size in Segments",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Segments not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Subsectors lump: "+subsectors.getLength()+" bytes, "+subsectors.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Subsectors lump: "+subsectors.length()+" bytes, "+subsectors.size()+" items",Window.VERBOSITY_MAPSTATS);
+			if(subsectors.hasFunnySize()) {
+				Window.println("WARNING: Funny lump size in Subsectors",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Subsectors not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Nodes lump: "+nodes.getLength()+" bytes, "+nodes.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Nodes lump: "+nodes.length()+" bytes, "+nodes.size()+" items",Window.VERBOSITY_MAPSTATS);
+			if(nodes.hasFunnySize()) {
+				Window.println("WARNING: Funny lump size in Nodes",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Nodes not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 		try {
-			Window.println("Sectors lump: "+sectors.getLength()+" bytes, "+sectors.length()+" items",Window.VERBOSITY_MAPSTATS);
+			Window.println("Sectors lump: "+sectors.length()+" bytes, "+sectors.size()+" items",Window.VERBOSITY_MAPSTATS);
+			if(sectors.hasFunnySize()) {
+				Window.println("WARNING: Funny lump size in Sectors",Window.VERBOSITY_WARNINGS);
+			}
 		} catch(java.lang.NullPointerException e) {
-			Window.println("Sectors not yet parsed!",Window.VERBOSITY_MAPSTATS);
 		}
 	}
 	
@@ -126,10 +137,10 @@ public class DoomMap {
 		if(version==0) {
 			version=type;
 		}
-		things=new DThings(data, type);
+		things=DThing.createLump(data, type);
 	}
 	
-	public DThings getThings() {
+	public Lump<DThing> getThings() {
 		return things;
 	}
 	
@@ -137,58 +148,58 @@ public class DoomMap {
 		if(version==0) {
 			version=type;
 		}
-		linedefs=new DLinedefs(data, type);
+		linedefs=DLinedef.createLump(data, type);
 	}
 	
-	public DLinedefs getLinedefs() {
+	public Lump<DLinedef> getLinedefs() {
 		return linedefs;
 	}
 	
 	public void setSidedefs(byte[] data) throws java.lang.InterruptedException {
-		sidedefs=new DSidedefs(data);
+		sidedefs=DSidedef.createLump(data);
 	}
 	
-	public DSidedefs getSidedefs() {
+	public Lump<DSidedef> getSidedefs() {
 		return sidedefs;
 	}
 	
 	public void setVertices(byte[] data) throws java.lang.InterruptedException {
-		vertices=new Vertices(data, TYPE_DOOM);
+		vertices=Vertex.createLump(data, TYPE_DOOM);
 	}
 	
-	public Vertices getVertices() {
+	public Lump<Vertex> getVertices() {
 		return vertices;
 	}
 	
 	public void setSegments(byte[] data) throws java.lang.InterruptedException {
-		segs=new DSegments(data);
+		segs=DSegment.createLump(data);
 	}
 	
-	public DSegments getSegments() {
+	public Lump<DSegment> getSegments() {
 		return segs;
 	}
 	
 	public void setSubSectors(byte[] data) throws java.lang.InterruptedException {
-		subsectors=new DSubSectors(data);
+		subsectors=DSubSector.createLump(data);
 	}
 	
-	public DSubSectors getSubSectors() {
+	public Lump<DSubSector> getSubSectors() {
 		return subsectors;
 	}
 	
 	public void setNodes(byte[] data) throws java.lang.InterruptedException {
-		nodes=new DNodes(data);
+		nodes=DNode.createLump(data);
 	}
 	
-	public DNodes getNodes() {
+	public Lump<DNode> getNodes() {
 		return nodes;
 	}
 	
 	public void setSectors(byte[] data) throws java.lang.InterruptedException {
-		sectors=new DSectors(data);
+		sectors=DSector.createLump(data);
 	}
 	
-	public DSectors getSectors() {
+	public Lump<DSector> getSectors() {
 		return sectors;
 	}
 }

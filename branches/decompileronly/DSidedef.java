@@ -6,7 +6,7 @@
 // I've ever seen in a game map format. It contains three texture
 // references, and how they are used depends on adjacent sectors.
 
-public class DSidedef {
+public class DSidedef extends LumpObject {
 
 	// INITIAL DATA DEFINITION AND DECLARATION OF CONSTANTS
 
@@ -23,18 +23,8 @@ public class DSidedef {
 	
 	// CONSTRUCTORS
 	
-	public DSidedef(short xoffset, short yoffset, String highTexture, String midTexture, String lowTexture, short sector) {
-		offsets=new short[2];
-		this.offsets[X]=xoffset;
-		this.offsets[Y]=yoffset;
-		textures=new String[3];
-		this.textures[HIGH]=highTexture;
-		this.textures[MID]=midTexture;
-		this.textures[LOW]=lowTexture;
-		this.sector=sector;
-	}
-	
 	public DSidedef(byte[] in) {
+		super(in);
 		offsets=new short[2];
 		offsets[X]=DataReader.readShort(in[0], in[1]);
 		offsets[Y]=DataReader.readShort(in[2], in[3]);
@@ -53,6 +43,23 @@ public class DSidedef {
 	}
 	
 	// METHODS
+	public static Lump<DSidedef> createLump(byte[] in) throws java.lang.InterruptedException {
+		int offset=0;
+		int structLength=30;
+		DSidedef[] elements=new DSidedef[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Sidedef array");
+			}
+			for(int j=0;j<structLength;j++) {
+				bytes[j]=in[offset+j];
+			}
+			elements[i]=new DSidedef(bytes);
+			offset+=structLength;
+		}
+		return new Lump<DSidedef>(elements, in.length, structLength);
+	}
 	
 	// ACCESSORS AND MUTATORS
 	

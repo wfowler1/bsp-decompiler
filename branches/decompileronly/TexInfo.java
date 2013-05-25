@@ -67,6 +67,45 @@ public class TexInfo extends LumpObject {
 	}
 	
 	// METHODS
+	public static Lump<TexInfo> createLump(byte[] in, int type) throws java.lang.InterruptedException {
+		int structLength=0;
+		switch(type) {
+			case BSP.TYPE_NIGHTFIRE:
+				structLength=32;
+				break;
+			case BSP.TYPE_QUAKE:
+				structLength=40;
+				break;
+			case BSP.TYPE_SOURCE17:
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_TACTICALINTERVENTION:
+			case BSP.TYPE_VINDICTUS:
+				structLength=72;
+				break;
+			case BSP.TYPE_DMOMAM:
+				structLength=96;
+				break;
+		}
+		int offset=0;
+		TexInfo[] elements=new TexInfo[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating TexInfo array");
+			}
+			for(int j=0;j<structLength;j++) {
+				bytes[j]=in[offset+j];
+			}
+			elements[i]=new TexInfo(bytes, type);
+			offset+=structLength;
+		}
+		return new Lump<TexInfo>(elements, in.length, structLength);
+	}
 	
 	// ACCESSORS/MUTATORS
 	public Vector3D getSAxis() {

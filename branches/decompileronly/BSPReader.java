@@ -93,19 +93,30 @@ public class BSPReader {
 					directoryReader.read(readDirectory);
 					offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
 					length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-					String lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+					String lumpName=DataReader.readNullTerminatedString(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
 					if(Thread.currentThread().interrupted()) {
 						throw new java.lang.InterruptedException("on lump "+i+" of WAD, "+lumpName+".");
 					}
-					if( ( lumpName.substring(0,3).equals("MAP") && lumpName.charAt(3)>='0' && lumpName.charAt(3)<='9' && lumpName.charAt(4)>='0' && lumpName.charAt(4)<='9' ) || ( lumpName.charAt(0)=='E' && lumpName.charAt(2)=='M' && lumpName.charAt(1)>='0' && lumpName.charAt(1)<='9' && lumpName.charAt(3)>='0' && lumpName.charAt(3)<='9' ) ) {
-						String mapName=lumpName.substring(0,5); // Map names are always ExMy or MAPxx. Never more than five chars.
-						Window.println("Map: "+mapName,Window.VERBOSITY_ALWAYS);
+					boolean isMap = false;
+					try {
+						if( lumpName.charAt(0)=='E' && lumpName.charAt(2)=='M' && lumpName.charAt(1)>='0' && lumpName.charAt(1)<='9' && lumpName.charAt(3)>='0' && lumpName.charAt(3)<='9' ) {
+							isMap=true;
+						} else {
+							if( lumpName.substring(0,3).equals("MAP") && lumpName.charAt(3)>='0' && lumpName.charAt(3)<='9' && lumpName.charAt(4)>='0' && lumpName.charAt(4)<='9' ) {
+								isMap=true;
+							}
+						}
+					} catch(java.lang.StringIndexOutOfBoundsException e) { // Lump name was too short to be a map
+						;
+					}
+					if(isMap) {
+						Window.println("Map: "+lumpName,Window.VERBOSITY_ALWAYS);
 						// All of this code updates the maplist with a new entry
 						DoomMap[] newList=new DoomMap[doomMaps.length+1];
 						for(int j=0;j<doomMaps.length;j++) {
 							newList[j] = doomMaps[j];
 						}
-						newList[doomMaps.length]=new DoomMap(BSPFile.getPath(), mapName);
+						newList[doomMaps.length]=new DoomMap(BSPFile.getPath(), lumpName);
 						doomMaps=newList;
 						
 						if(length>0 && Window.extractZipIsSelected()) {
@@ -144,10 +155,10 @@ public class BSPReader {
 						
 						offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
 						length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-						lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+						lumpName=DataReader.readNullTerminatedString(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
 						int thingsoffset=0;
 						int thingslength=0;
-						if(lumpName.substring(0,6).equalsIgnoreCase("THINGS")) {
+						if(lumpName.equalsIgnoreCase("THINGS")) {
 							thingsoffset=offset;
 							thingslength=length;
 						}
@@ -156,7 +167,7 @@ public class BSPReader {
 						
 						offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
 						length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-						lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+						lumpName=DataReader.readNullTerminatedString(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
 						int linesoffset=0;
 						int lineslength=0;
 						if(lumpName.equalsIgnoreCase("LINEDEFS")) {
@@ -168,7 +179,7 @@ public class BSPReader {
 						
 						offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
 						length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-						lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+						lumpName=DataReader.readNullTerminatedString(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
 						if(lumpName.equalsIgnoreCase("SIDEDEFS")) {
 							try {
 								doomMaps[doomMaps.length-1].setSidedefs(readLump(offset, length));
@@ -186,7 +197,7 @@ public class BSPReader {
 						
 						offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
 						length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-						lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+						lumpName=DataReader.readNullTerminatedString(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
 						if(lumpName.equalsIgnoreCase("VERTEXES")) {
 							try {
 								doomMaps[doomMaps.length-1].setVertices(readLump(offset, length));
@@ -204,8 +215,8 @@ public class BSPReader {
 						
 						offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
 						length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-						lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
-						if(lumpName.substring(0,4).equalsIgnoreCase("SEGS")) {
+						lumpName=DataReader.readNullTerminatedString(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+						if(lumpName.equalsIgnoreCase("SEGS")) {
 							try {
 								doomMaps[doomMaps.length-1].setSegments(readLump(offset, length));
 							} catch(java.lang.Exception e) {
@@ -219,10 +230,10 @@ public class BSPReader {
 						}
 						
 						lumpReader.read(readDirectory);
-						
+					
 						offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
 						length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-						lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+						lumpName=DataReader.readNullTerminatedString(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
 						if(lumpName.equalsIgnoreCase("SSECTORS")) {
 							try {
 								doomMaps[doomMaps.length-1].setSubSectors(readLump(offset, length));
@@ -240,8 +251,8 @@ public class BSPReader {
 						
 						offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
 						length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-						lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
-						if(lumpName.substring(0,5).equalsIgnoreCase("NODES")) {
+						lumpName=DataReader.readNullTerminatedString(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+						if(lumpName.equalsIgnoreCase("NODES")) {
 							try {
 								doomMaps[doomMaps.length-1].setNodes(readLump(offset, length));
 							} catch(java.lang.Exception e) {
@@ -258,8 +269,8 @@ public class BSPReader {
 						
 						offset=DataReader.readInt(readDirectory[0], readDirectory[1], readDirectory[2], readDirectory[3]);
 						length=DataReader.readInt(readDirectory[4], readDirectory[5], readDirectory[6], readDirectory[7]);
-						lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
-						if(lumpName.substring(0,7).equalsIgnoreCase("SECTORS")) {
+						lumpName=DataReader.readNullTerminatedString(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+						if(lumpName.equalsIgnoreCase("SECTORS")) {
 							try {
 								doomMaps[doomMaps.length-1].setSectors(readLump(offset, length));
 							} catch(java.lang.Exception e) {
@@ -275,7 +286,7 @@ public class BSPReader {
 						lumpReader.skip(32);
 						lumpReader.read(readDirectory);
 						
-						lumpName=new String(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
+						lumpName=DataReader.readNullTerminatedString(new byte[] { readDirectory[8], readDirectory[9], readDirectory[10], readDirectory[11], readDirectory[12], readDirectory[13], readDirectory[14], readDirectory[15] });
 						if(lumpName.equalsIgnoreCase("BEHAVIOR")) {
 							try {
 								doomMaps[doomMaps.length-1].setThings(readLump(thingsoffset, thingslength), DoomMap.TYPE_HEXEN);
@@ -321,9 +332,9 @@ public class BSPReader {
 						}
 						
 						lumpReader.close();
-
+	
 						doomMaps[doomMaps.length-1].printBSPReport();
-
+	
 						DecompilerDriver.window.addJob(null, doomMaps[doomMaps.length-1]);
 					}
 				}

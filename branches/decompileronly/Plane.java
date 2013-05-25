@@ -1,5 +1,6 @@
 // Plane class
 // Holds the A, B, C and D components for a plane, which can be read from any given BSP.
+// Assumes the plane equation is of format Ax+By+Cz=D, or Ax+By+Cz-D=0.
 
 public class Plane extends LumpObject {
 	
@@ -143,6 +144,57 @@ public class Plane extends LumpObject {
 	
 	public String toString() {
 		return "("+normal.toString()+") "+dist;
+	}
+	
+	public static Lump<Plane> createLump(byte[] in, int type) throws java.lang.InterruptedException {
+		int structLength=0;
+		switch(type) {
+			case BSP.TYPE_QUAKE:
+			case BSP.TYPE_NIGHTFIRE:
+			case BSP.TYPE_SIN:
+			case BSP.TYPE_SOF:
+			case BSP.TYPE_SOURCE17:
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_DMOMAM:
+			case BSP.TYPE_VINDICTUS:
+			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_DAIKATANA:
+			case BSP.TYPE_TACTICALINTERVENTION:
+				structLength=20;
+				break;
+			case BSP.TYPE_STEF2:
+			case BSP.TYPE_MOHAA:
+			case BSP.TYPE_STEF2DEMO:
+			case BSP.TYPE_RAVEN:
+			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_FAKK:
+			case BSP.TYPE_COD:
+			case BSP.TYPE_COD2:
+			case BSP.TYPE_COD4:
+				structLength=16;
+				break;
+			default:
+				structLength=0; // This will cause the shit to hit the fan.
+		}
+		int offset=0;
+		Plane[] elements=new Plane[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Plane array");
+			}
+			for(int j=0;j<structLength;j++) {
+				bytes[j]=in[offset+j];
+			}
+			elements[i]=new Plane(bytes, type);
+			offset+=structLength;
+		}
+		return new Lump<Plane>(elements, in.length, structLength);
 	}
 	
 	// ACCESSORS/MUTATORS

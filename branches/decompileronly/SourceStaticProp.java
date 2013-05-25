@@ -69,6 +69,79 @@ public class SourceStaticProp extends LumpObject {
 		}
 	}
 	
+	// METHODS
+	public static SourceStaticProps createLump(byte[] in, int type, int version) throws java.lang.InterruptedException {
+		int structLength=0;
+		String[] dictionary=new String[0];
+		SourceStaticProp[] elements;
+		if(in.length>0) {
+			/*switch(type) { // It's possible to determine structlength using arithmetic rather than version numbering
+				case BSP.TYPE_SOURCE17:
+				case BSP.TYPE_SOURCE18:
+				case BSP.TYPE_SOURCE19:
+				case BSP.TYPE_SOURCE20:
+				case BSP.TYPE_SOURCE21:
+				case BSP.TYPE_SOURCE22:
+				case BSP.TYPE_SOURCE23:
+				switch(version) {
+					case 4:
+						structLength=56;
+						break;
+					case 5:
+						structLength=60;
+						break;
+					case 6:
+						structLength=64;
+						break;
+					case 7:
+						structLength=68;
+						break;
+					case 8:
+						structLength=72;
+						break;
+					case 9:
+						structLength=73; // ??? The last entry is a boolean, is it stored as a byte?
+						break;
+					default:
+						structLength=0;
+						break;
+				default:
+					structLength=0;
+			}*/
+			int offset=0;
+			dictionary=new String[DataReader.readInt(in[offset++], in[offset++], in[offset++], in[offset++])];
+			for(int i=0;i<dictionary.length;i++) {
+				byte[] temp=new byte[128];
+				for(int j=0;j<128;j++) {
+					temp[j]=in[offset++];
+				}
+				dictionary[i]=DataReader.readNullTerminatedString(temp);
+			}
+			int numLeafDefinitions=DataReader.readInt(in[offset++], in[offset++], in[offset++], in[offset++]);
+			for(int i=0;i<numLeafDefinitions;i++) {
+				offset+=2; // Each leaf index is an unsigned short, which i just want to skip
+			}
+			elements=new SourceStaticProp[DataReader.readInt(in[offset++], in[offset++], in[offset++], in[offset++])];
+			if(elements.length>0) {
+				structLength=(in.length-offset)/elements.length;
+				byte[] bytes=new byte[structLength];
+				for(int i=0;i<elements.length;i++) {
+					if(Thread.currentThread().interrupted()) {
+						throw new java.lang.InterruptedException("while populating SourceStaticProp array");
+					}
+					for(int j=0;j<structLength;j++) {
+						bytes[j]=in[offset+j];
+					}
+					elements[i]=new SourceStaticProp(bytes, type, version);
+					offset+=structLength;
+				}
+			}
+		} else {
+			elements=new SourceStaticProp[0];
+		}
+		return new SourceStaticProps(elements, dictionary, in.length);
+	}
+	
 	// ACCESSORS/MUTATORS
 	public Vector3D getOrigin() {
 		return origin;

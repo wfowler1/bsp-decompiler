@@ -4,7 +4,7 @@
 // of the area, the floor and cieling textures, the light level, the
 // type of sector and a tag number.
 
-public class DSector {
+public class DSector extends LumpObject {
 
 	// INITIAL DATA DEFINITION AND DECLARATION OF CONSTANTS
 
@@ -20,7 +20,7 @@ public class DSector {
 	
 	// CONSTRUCTORS
 	
-	public DSector(short floor, short cieling, String floorTexture, String cielingTexture, short light, short type, short tag) {
+	/*public DSector(short floor, short cieling, String floorTexture, String cielingTexture, short light, short type, short tag) {
 		this.floor=floor;
 		this.cieling=cieling;
 		this.floorTexture=floorTexture;
@@ -28,9 +28,10 @@ public class DSector {
 		this.light=light;
 		this.type=type;
 		this.tag=tag;
-	}
+	}*/
 	
 	public DSector(byte[] in) {
+		super(in);
 		floor=DataReader.readShort(in[0], in[1]);
 		cieling=DataReader.readShort(in[2], in[3]);
 		floorTexture="";
@@ -55,6 +56,23 @@ public class DSector {
 	}
 	
 	// METHODS
+	public static Lump<DSector> createLump(byte[] in) throws java.lang.InterruptedException {
+		int offset=0;
+		int structLength=26;
+		DSector[] elements=new DSector[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Sector array");
+			}
+			for(int j=0;j<structLength;j++) {
+				bytes[j]=in[offset+j];
+			}
+			elements[i]=new DSector(bytes);
+			offset+=structLength;
+		}
+		return new Lump<DSector>(elements, in.length, structLength);
+	}
 	
 	// ACCESSORS AND MUTATORS
 	

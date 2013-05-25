@@ -4,9 +4,6 @@
 // byte, ubyte, short, ushort, int, uint, or long.
 // This provides a unified structure for any number listing lumps.
 
-import java.io.FileInputStream;
-import java.io.File;
-
 public class NumList {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
@@ -18,36 +15,16 @@ public class NumList {
 	public static final int TYPE_UINT=5;
 	public static final int TYPE_LONG=6;
 	
-	private File data;
 	private int length;
 	private long[] elements;
+	private int type;
 
 	// CONSTRUCTORS
-	
-	// Accepts a filepath as a String
-	public NumList(String in, int type) throws java.lang.InterruptedException {
-		new NumList(new File(in), type);
-	}
-	
-	// This one accepts the input file path as a File
-	public NumList(File in, int type) throws java.lang.InterruptedException {
-		data=in;
-		try {
-			FileInputStream fileReader=new FileInputStream(data);
-			byte[] temp=new byte[(int)data.length()];
-			fileReader.read(temp);
-			new NumList(temp, type);
-			fileReader.close();
-		} catch(java.io.FileNotFoundException e) {
-			Window.println("ERROR: File "+data.getPath()+" not found!",Window.VERBOSITY_ALWAYS);
-		} catch(java.io.IOException e) {
-			Window.println("ERROR: File "+data.getPath()+" could not be read, ensure the file is not open in another program",Window.VERBOSITY_ALWAYS);
-		}
-	}
 	
 	// Takes a byte array, as if read from a FileInputStream
 	public NumList(byte[] in, int type) throws java.lang.InterruptedException {
 		length=in.length;
+		this.type=type;
 		switch(type) {
 			case TYPE_BYTE:
 				elements=new long[in.length];
@@ -116,16 +93,32 @@ public class NumList {
 	}
 	
 	// METHODS
+	public boolean hasFunnySize() {
+		switch(type) {
+			case TYPE_BYTE:
+			case TYPE_UBYTE:
+				return false;
+			case TYPE_SHORT:
+			case TYPE_USHORT:
+				return (length%2!=0);
+			case TYPE_INT:
+			case TYPE_UINT:
+				return (length%4!=0);
+			case TYPE_LONG:
+				return (length%8!=0);
+		}
+		return false;
+	}
 	
 	// ACCESSORS/MUTATORS
 	
 	// Returns the length (in bytes) of the lump
-	public int getLength() {
+	public int length() {
 		return length;
 	}
 	
 	// Returns the number of elements.
-	public int length() {
+	public int size() {
 		return elements.length;
 	}
 	

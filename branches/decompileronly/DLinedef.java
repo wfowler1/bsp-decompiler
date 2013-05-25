@@ -3,7 +3,7 @@
 // The linedef is a strange animal. It roughly equates to the Planes of other
 // BSP formats, but also defines what sectors are on what side.
 
-public class DLinedef {
+public class DLinedef extends LumpObject {
 
 	// INITIAL DATA DEFINITION AND DECLARATION OF CONSTANTS
 
@@ -19,6 +19,7 @@ public class DLinedef {
 	// CONSTRUCTORS
 	
 	public DLinedef(byte[] in, int type) {
+		super(in);
 		start=DataReader.readShort(in[0], in[1]);
 		end=DataReader.readShort(in[2], in[3]);
 		flags=new byte[] { in[4], in[5] };
@@ -46,6 +47,32 @@ public class DLinedef {
 	
 	public boolean isOneSided() {
 		return (right==-1 || left==-1);
+	}
+	
+	public static Lump<DLinedef> createLump(byte[] in, int type) throws java.lang.InterruptedException {
+		int structLength=0;
+		switch(type) {
+			case DoomMap.TYPE_DOOM:
+				structLength=14;
+				break;
+			case DoomMap.TYPE_HEXEN:
+				structLength=16;
+				break;
+		}
+		int offset=0;
+		DLinedef[] elements=new DLinedef[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Linedef array");
+			}
+			for(int j=0;j<structLength;j++) {
+				bytes[j]=in[offset+j];
+			}
+			elements[i]=new DLinedef(bytes, type);
+			offset+=structLength;
+		}
+		return new Lump<DLinedef>(elements, in.length, structLength);
 	}
 	
 	// ACCESSORS AND MUTATORS

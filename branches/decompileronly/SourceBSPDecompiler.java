@@ -42,7 +42,7 @@ public class SourceBSPDecompiler {
 		mapFile=BSPObject.getEntities();
 		//int numAreaPortals=0;
 		int numTotalItems=0;
-		int originalNumEntities=BSPObject.getEntities().length(); // Need to keep track of this in this algorithm, since I create more entities on the fly
+		int originalNumEntities=BSPObject.getEntities().size(); // Need to keep track of this in this algorithm, since I create more entities on the fly
 		for(int i=0;i<originalNumEntities;i++) { // For each entity
 			if(Thread.currentThread().interrupted()) {
 				throw new java.lang.InterruptedException("while processing entity "+i+".");
@@ -54,7 +54,7 @@ public class SourceBSPDecompiler {
 				double[] origin=mapFile.getElement(i).getOrigin();
 				Leaf[] leaves=BSPObject.getLeavesInModel(currentModel);
 				int numLeaves=leaves.length;
-				boolean[] brushesUsed=new boolean[BSPObject.getBrushes().length()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
+				boolean[] brushesUsed=new boolean[BSPObject.getBrushes().size()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
 				numBrshs=0; // Reset the brush count for each entity
 				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
 					Leaf currentLeaf=leaves[j];
@@ -77,17 +77,17 @@ public class SourceBSPDecompiler {
 								}
 								numBrshs++;
 								numTotalItems++;
-								Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+originalNumEntities, "Decompiling...");
+								Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().size()+originalNumEntities, "Decompiling...");
 							}
 						}
 					}
 				}
 			}
 			numTotalItems++; // This entity
-			Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+originalNumEntities, "Decompiling...");
+			Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().size()+originalNumEntities, "Decompiling...");
 		}
 		// Find displacement faces and generate brushes for them
-		for(int i=0;i<BSPObject.getFaces().length();i++) {
+		for(int i=0;i<BSPObject.getFaces().size();i++) {
 			Face face=BSPObject.getFaces().getElement(i);
 			if(face.getDisplacement()>-1) {
 				SourceDispInfo disp=BSPObject.getDispInfos().getElement(face.getDisplacement());
@@ -141,7 +141,7 @@ public class SourceBSPDecompiler {
 				mapFile.getElement(0).addBrush(displacementBrush);
 			}
 		}
-		for(int i=0;i<BSPObject.getStaticProps().length();i++) {
+		for(int i=0;i<BSPObject.getStaticProps().size();i++) {
 			Entity newStaticProp=new Entity("prop_static");
 			SourceStaticProp currentProp=BSPObject.getStaticProps().getElement(i);
 			newStaticProp.setAttribute("model", BSPObject.getStaticProps().getDictionary()[currentProp.getDictionaryEntry()]);
@@ -157,7 +157,7 @@ public class SourceBSPDecompiler {
 			}
 			mapFile.add(newStaticProp);
 		}
-		for(int i=0;i<BSPObject.getCubemaps().length();i++) {
+		for(int i=0;i<BSPObject.getCubemaps().size();i++) {
 			Entity newCubemap=new Entity("env_cubemap");
 			SourceCubemap currentCube=BSPObject.getCubemaps().getElement(i);
 			newCubemap.setAttribute("origin", currentCube.getOrigin().getX()+" "+currentCube.getOrigin().getY()+" "+currentCube.getOrigin().getZ());

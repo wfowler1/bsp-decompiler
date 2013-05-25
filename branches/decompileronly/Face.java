@@ -101,6 +101,68 @@ public class Face extends LumpObject {
 	}
 	
 	// METHODS
+	public static Lump<Face> createLump(byte[] in, int type) throws java.lang.InterruptedException {
+		int structLength=0;
+		switch(type) {
+			case BSP.TYPE_QUAKE:
+			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_DAIKATANA:
+				structLength=20;
+				break;
+			case BSP.TYPE_SIN:
+				structLength=36;
+				break;
+			case BSP.TYPE_SOF:
+				structLength=40;
+				break;
+			case BSP.TYPE_NIGHTFIRE:
+				structLength=48;
+				break;
+			case BSP.TYPE_SOURCE17:
+				structLength=104;
+				break;
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_TACTICALINTERVENTION:
+			case BSP.TYPE_DMOMAM:
+				structLength=56;
+				break;
+			case BSP.TYPE_VINDICTUS:
+				structLength=72;
+				break;
+			case BSP.TYPE_QUAKE3:
+				structLength=104;
+				break;
+			case BSP.TYPE_MOHAA:
+				structLength=108;
+				break;
+			case BSP.TYPE_STEF2:
+			case BSP.TYPE_STEF2DEMO:
+				structLength=132;
+				break;
+			case BSP.TYPE_RAVEN:
+				structLength=148;
+				break;
+		}
+		int offset=0;
+		Face[] elements=new Face[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Face array");
+			}
+			for(int j=0;j<structLength;j++) {
+				bytes[j]=in[offset+j];
+			}
+			elements[i]=new Face(bytes, type);
+			offset+=structLength;
+		}
+		return new Lump<Face>(elements, in.length, structLength);
+	}
 	
 	// ACCESSORS/MUTATORS
 	

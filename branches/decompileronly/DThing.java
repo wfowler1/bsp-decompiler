@@ -6,7 +6,7 @@
 // Some games DID expand it (such as Hexen or Strife), but they had to
 // increase the data size to do it. And it was a pain in their ass.
 
-public class DThing {
+public class DThing extends LumpObject {
 
 	// INITIAL DATA DEFINITION AND DECLARATION OF CONSTANTS
 
@@ -22,6 +22,7 @@ public class DThing {
 	// CONSTRUCTORS
 	
 	public DThing(byte[] in, int type) {
+		super(in);
 		switch(type) {
 			case DoomMap.TYPE_DOOM:
 				origin=new Vector3D(DataReader.readShort(in[0], in[1]), DataReader.readShort(in[2], in[3]));
@@ -46,6 +47,31 @@ public class DThing {
 	}
 	
 	// METHODS
+	public static Lump<DThing> createLump(byte[] in, int type) throws java.lang.InterruptedException {
+		int structLength=0;
+		switch(type) {
+			case DoomMap.TYPE_DOOM:
+				structLength=10;
+				break;
+			case DoomMap.TYPE_HEXEN:
+				structLength=20;
+				break;
+		}
+		int offset=0;
+		DThing[] elements=new DThing[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Thing array");
+			}
+			for(int j=0;j<structLength;j++) {
+				bytes[j]=in[offset+j];
+			}
+			elements[i]=new DThing(bytes, type);
+			offset+=structLength;
+		}
+		return new Lump<DThing>(elements, in.length, structLength);
+	}
 	
 	// ACCESSORS AND MUTATORS
 	

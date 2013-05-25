@@ -124,18 +124,6 @@ public class DataReader {
 	public static String readString(byte[] in) {
 		return new String(in);
 	}
-	/*
-	public static boolean bitIsSet(byte in, int bit) {
 	
-	}
-	
-	public static boolean bitIsSet(short in, int bit) {
-	
-	}
-	
-	public static boolean bitIsSet(int in, int bit) {
-	
-	}
-	*/
 	// ACCESSORS/MUTATORS
 }

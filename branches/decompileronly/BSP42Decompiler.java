@@ -53,7 +53,7 @@ public class BSP42Decompiler {
 		int numTotalItems=0;
 		// I need to go through each entity and see if it's brush-based.
 		// Worldspawn is brush-based as well as any entity with model *#.
-		for(int i=0;i<BSPObject.getEntities().length();i++) { // For each entity
+		for(int i=0;i<BSPObject.getEntities().size();i++) { // For each entity
 			if(Thread.currentThread().interrupted()) {
 				throw new java.lang.InterruptedException("while processing entity "+i+".");
 			}
@@ -65,7 +65,7 @@ public class BSP42Decompiler {
 				double[] origin=mapFile.getElement(i).getOrigin();
 				int firstLeaf=BSPObject.getModels().getElement(currentModel).getFirstLeaf();
 				int numLeaves=BSPObject.getModels().getElement(currentModel).getNumLeaves();
-				boolean[] brushesUsed=new boolean[BSPObject.getBrushes().length()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
+				boolean[] brushesUsed=new boolean[BSPObject.getBrushes().size()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
 				numBrshs=0;
 				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
 					Leaf currentLeaf=BSPObject.getLeaves().getElement(j+firstLeaf);
@@ -86,14 +86,14 @@ public class BSP42Decompiler {
 								}
 								numBrshs++;
 								numTotalItems++;
-								Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");
+								Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().size()+BSPObject.getEntities().size(), "Decompiling...");
 							}
 						}
 					}
 				}
 			}
 			numTotalItems++;
-			Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");
+			Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().size()+BSPObject.getEntities().size(), "Decompiling...");
 		}
 		if(!Window.skipFlipIsSelected()) {
 			Window.println("Num simple corrected brushes: "+numSimpleCorrects,Window.VERBOSITY_MAPSTATS); 

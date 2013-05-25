@@ -8,14 +8,14 @@ public class Vector3D {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
-	public final int X=0;
-	public final int Y=1;
-	public final int Z=2;
+	public static final int X=0;
+	public static final int Y=1;
+	public static final int Z=2;
 	
-	public static final Vector3D UNDEFINED = new Vector3D(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+	public static final Vector3D UNDEFINED = new Vector3D(Double.NaN, Double.NaN, Double.NaN);
+	public static final Vector3D RIGHT = new Vector3D(1, 0, 0);
+	public static final Vector3D FORWARD = new Vector3D(0, 1, 0);
 	public static final Vector3D UP = new Vector3D(0, 0, 1);
-	public static final Vector3D FORWARD = new Vector3D(1, 0, 0);
-	public static final Vector3D RIGHT = new Vector3D(0, 1, 0);
 	
 	private double[] point=new double[3];
 	

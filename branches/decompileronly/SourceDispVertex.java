@@ -24,6 +24,23 @@ public class SourceDispVertex extends LumpObject {
 	}
 	
 	// METHODS
+	public static SourceDispVertices createLump(byte[] in) throws java.lang.InterruptedException {
+		int offset=0;
+		int structLength=20;
+		SourceDispVertex[] elements=new SourceDispVertex[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Displacement Vertex array");
+			}
+			for(int j=0;j<structLength;j++) {
+				bytes[j]=in[offset+j];
+			}
+			elements[i]=new SourceDispVertex(bytes);
+			offset+=structLength;
+		}
+		return new SourceDispVertices(elements, in.length);
+	}
 	
 	// ACCESSORS/MUTATORS
 	

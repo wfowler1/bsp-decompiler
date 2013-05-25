@@ -43,7 +43,7 @@ public class BSP38Decompiler {
 		//int numAreaPortals=0;
 		int numTotalItems=0;
 		boolean containsAreaPortals=false;
-		for(int i=0;i<BSPObject.getEntities().length();i++) { // For each entity
+		for(int i=0;i<BSPObject.getEntities().size();i++) { // For each entity
 			if(Thread.currentThread().interrupted()) {
 				throw new java.lang.InterruptedException("while processing entity "+i+".");
 			}
@@ -59,7 +59,7 @@ public class BSP38Decompiler {
 				double[] origin=mapFile.getElement(i).getOrigin();
 				Leaf[] leaves=BSPObject.getLeavesInModel(currentModel);
 				int numLeaves=leaves.length;
-				boolean[] brushesUsed=new boolean[BSPObject.getBrushes().length()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
+				boolean[] brushesUsed=new boolean[BSPObject.getBrushes().size()]; // Keep a list of brushes already in the model, since sometimes the leaves lump references one brush several times
 				numBrshs=0; // Reset the brush count for each entity
 				for(int j=0;j<numLeaves;j++) { // For each leaf in the bunch
 					Leaf currentLeaf=leaves[j];
@@ -85,26 +85,26 @@ public class BSP38Decompiler {
 								}
 								numBrshs++;
 								numTotalItems++;
-								Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");
+								Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().size()+BSPObject.getEntities().size(), "Decompiling...");
 							}
 						}
 					}
 				}
 			}
 			numTotalItems++; // This entity
-			Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().length()+BSPObject.getEntities().length(), "Decompiling...");
+			Window.setProgress(jobnum, numTotalItems, BSPObject.getBrushes().size()+BSPObject.getEntities().size(), "Decompiling...");
 		}
 		if(containsAreaPortals) { // If this map was found to have area portals
 			int j=0;
-			for(int i=0;i<BSPObject.getBrushes().length();i++) { // For each brush in this map
+			for(int i=0;i<BSPObject.getBrushes().size();i++) { // For each brush in this map
 				if((BSPObject.getBrushes().getElement(i).getContents()[1] & ((byte)1 << 7)) != 0) { // If the brush is an area portal brush
-					for(j++;j<BSPObject.getEntities().length();j++) { // Find an areaportal entity
+					for(j++;j<BSPObject.getEntities().size();j++) { // Find an areaportal entity
 						if(BSPObject.getEntities().getElement(j).getAttribute("classname").equalsIgnoreCase("func_areaportal")) {
 							decompileBrush(BSPObject.getBrushes().getElement(i), j); // Add the brush to that entity
 							break; // And break out of the inner loop, but remember your place.
 						}
 					}
-					if(j==BSPObject.getEntities().length()) { // If we're out of entities, stop this whole thing.
+					if(j==BSPObject.getEntities().size()) { // If we're out of entities, stop this whole thing.
 						break;
 					}
 				}
@@ -157,7 +157,7 @@ public class BSP38Decompiler {
 					// It doesn't really matter if it's the actual brush's face, just as long as it provides vertices.
 					SiNFace currentFace=null;
 					boolean faceFound=false;
-					for(int j=0;j<BSP.getSFaces().length();j++) {
+					for(int j=0;j<BSP.getSFaces().size();j++) {
 						currentFace=BSP.getSFaces().getFace(j);
 						if(currentFace.getPlane()==currentSide.getPlane() && currentFace.getTexInfo()==currentSide.getTexInfo() && currentFace.getNumEdges()>1) {
 							faceFound=true;

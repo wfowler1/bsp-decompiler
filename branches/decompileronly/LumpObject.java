@@ -18,6 +18,10 @@ public class LumpObject {
 		return data;
 	}
 	
+	public void setData(byte[] in) {
+		data=in;
+	}
+	
 	public int length() {
 		return data.length;
 	}

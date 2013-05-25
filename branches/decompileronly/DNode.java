@@ -8,7 +8,7 @@
 // This simplifies my code by not needing another vector class for 2D coordinates
 // defined by signed 16-bit numbers while still using the values.
 
-public class DNode {
+public class DNode extends LumpObject {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
@@ -31,7 +31,7 @@ public class DNode {
 	// CONSTRUCTORS
 	
 	// This constructor takes all data in their proper data types
-	public DNode(short segHeadX, short segHeadY, short segTailX, short segTailY, short RRectTop,
+	/*public DNode(short segHeadX, short segHeadY, short segTailX, short segTailY, short RRectTop,
 	             short RRectBottom, short RRectLeft, short RRectRight, short LRectTop, short LRectBottom,
 	             short LRectLeft, short LRectRight, short RChild, short LChild) {
 		vecHead=new Vector3D(segHeadX, segHeadY);
@@ -48,11 +48,12 @@ public class DNode {
 		LRectangle[1] = LMaxs;
 		this.RChild=RChild;
 		this.LChild=LChild;
-	}
+	}*/
 	
 	// This constructor takes in a byte array, as though
 	// it had just been read by a FileInputStream.
 	public DNode(byte[] in) {
+		super(in);
 		vecHead=new Vector3D(DataReader.readShort(in[0], in[1]), DataReader.readShort(in[2], in[3]));
 		vecTail=new Vector3D(DataReader.readShort(in[4], in[5]), DataReader.readShort(in[6], in[7]));
 		Vector3D RMins=new Vector3D(DataReader.readShort(in[12], in[13]), DataReader.readShort(in[10], in[11]));
@@ -99,6 +100,24 @@ public class DNode {
 				}
 			}
 		}
+	}
+	
+	public static Lump<DNode> createLump(byte[] in) throws java.lang.InterruptedException {
+		int structLength=28;
+		int offset=0;
+		DNode[] elements=new DNode[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Brush array");
+			}
+			for(int j=0;j<structLength;j++) {
+				bytes[j]=in[offset+j];
+			}
+			elements[i]=new DNode(bytes);
+			offset+=structLength;
+		}
+		return new Lump<DNode>(elements, in.length, structLength);
 	}
 	
 	// ACCESSORS/MUTATORS

@@ -3,7 +3,7 @@
 // This class holds data of a single Doom line Segment
 // Not entirely sure why this structure exists. It's quite superfluous.
 
-public class DSegment {
+public class DSegment extends LumpObject {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
@@ -17,18 +17,19 @@ public class DSegment {
 	// CONSTRUCTORS
 	
 	// This one takes the components separate and in the correct data type
-	public DSegment(short startVertex, short endVertex, short angle, short lineDef, short direction, short offset) {
+	/*public DSegment(short startVertex, short endVertex, short angle, short lineDef, short direction, short offset) {
 		this.startVertex=startVertex;
 		this.endVertex=endVertex;
 		this.angle=angle;
 		this.lineDef=lineDef;
 		this.direction=direction;
 		this.offset=offset;
-	}
+	}*/
 
 	// This one takes an array of bytes (as if read directly from a file) and reads them
 	// directly into the proper data types.
 	public DSegment(byte[] in) {
+		super(in);
 		this.startVertex=DataReader.readShort(in[0], in[1]);
 		this.endVertex=DataReader.readShort(in[2], in[3]);
 		this.angle=DataReader.readShort(in[4], in[5]);
@@ -38,6 +39,23 @@ public class DSegment {
 	}
 	
 	// METHODS
+	public static Lump<DSegment> createLump(byte[] in) throws java.lang.InterruptedException {
+		int structLength=12;
+		int offset=0;
+		DSegment[] elements=new DSegment[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Segment array");
+			}
+			for(int j=0;j<structLength;j++) {
+				bytes[j]=in[offset+j];
+			}
+			elements[i]=new DSegment(bytes);
+			offset+=structLength;
+		}
+		return new Lump<DSegment>(elements, in.length, structLength);
+	}
 	
 	// ACCESSORS/MUTATORS
 	public short getStartVertex() {

@@ -49,7 +49,7 @@ public class DecompilerThread implements Runnable {
 			try {
 				Entities output=null;
 				if(doomMap!=null) { // If this is a Doom map extracted from a WAD
-					Window.setProgress(jobnum, 0, doomMap.getSubSectors().length(), "Decompiling...");
+					Window.setProgress(jobnum, 0, doomMap.getSubSectors().size(), "Decompiling...");
 					WADDecompiler decompiler = new WADDecompiler(doomMap, jobnum);
 					output=decompiler.decompile();
 				} else {
@@ -60,10 +60,10 @@ public class DecompilerThread implements Runnable {
 					BSPObject=reader.getBSPObject();
 					if(!reader.isWAD()) {
 						try {
-							Window.setProgress(jobnum, 0, reader.getBSPObject().getBrushes().length()+reader.getBSPObject().getEntities().length(), "Decompiling...");
+							Window.setProgress(jobnum, 0, reader.getBSPObject().getBrushes().size()+reader.getBSPObject().getEntities().size(), "Decompiling...");
 						} catch(java.lang.NullPointerException e) {
 							try {
-								Window.setProgress(jobnum, 0, reader.getBSPObject().getLeaves().length()+reader.getBSPObject().getEntities().length(), "Decompiling...");
+								Window.setProgress(jobnum, 0, reader.getBSPObject().getLeaves().size()+reader.getBSPObject().getEntities().size(), "Decompiling...");
 							} catch(java.lang.NullPointerException f) {
 								Window.setProgress(jobnum, 0, 1, "Decompiling..."); // What's going on here? Put in a failsafe progress bar for now
 							}

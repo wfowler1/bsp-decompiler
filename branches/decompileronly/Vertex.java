@@ -54,6 +54,59 @@ public class Vertex extends LumpObject {
 	}
 	
 	// METHODS
+	public static Lump<Vertex> createLump(byte[] in, int type) throws java.lang.InterruptedException {
+		int structLength=0;
+		switch(type) {
+			case DoomMap.TYPE_DOOM:
+				structLength=4;
+				break;
+			case BSP.TYPE_QUAKE:
+			case BSP.TYPE_NIGHTFIRE:
+			case BSP.TYPE_SIN:
+			case BSP.TYPE_SOF:
+			case BSP.TYPE_SOURCE17:
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_TACTICALINTERVENTION:
+			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_DAIKATANA:
+			case BSP.TYPE_VINDICTUS:
+			case BSP.TYPE_DMOMAM:
+				structLength=12;
+				break;
+			case BSP.TYPE_STEF2:
+			case BSP.TYPE_MOHAA:
+			case BSP.TYPE_STEF2DEMO:
+			case BSP.TYPE_QUAKE3:
+			case BSP.TYPE_COD:
+			case BSP.TYPE_FAKK:
+				structLength=44;
+				break;
+			case BSP.TYPE_RAVEN:
+				structLength=80;
+				break;
+			default:
+				structLength=0; // This will cause the shit to hit the fan.
+		}
+		int offset=0;
+		Vertex[] elements=new Vertex[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Vertex array");
+			}
+			for(int j=0;j<structLength;j++) {
+				bytes[j]=in[offset+j];
+			}
+			elements[i]=new Vertex(bytes, type);
+			offset+=structLength;
+		}
+		return new Lump<Vertex>(elements, in.length, structLength);
+	}
 	
 	// ACCESSORS/MUTATORS
 	public Vector3D getVertex() {

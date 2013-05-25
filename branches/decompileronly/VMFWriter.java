@@ -56,10 +56,10 @@ public class VMFWriter {
 	// it gets VERY slow, even if you concatenate them all before writing.
 	public void write() throws java.io.IOException, java.lang.InterruptedException {
 		// Preprocessing entity corrections
-		if(BSPVersion==42) {
+		if(BSPVersion==BSP.TYPE_NIGHTFIRE || BSPVersion==BSP.TYPE_QUAKE) {
 			boolean containsWater = false;
 			double[] goodOrigin = new double[3];
-			for(int i=1;i<data.length();i++) {
+			for(int i=1;i<data.size();i++) {
 				for(int j=0;j<data.getElement(i).getNumBrushes();j++) {
 					MAPBrush currentBrush=data.getElement(i).getBrush(j);
 					if(currentBrush.isWaterBrush()) {
@@ -99,23 +99,22 @@ public class VMFWriter {
 		}
 		
 		// Correct some more attributes of entities
-		for(int i=0;i<data.length();i++) {
+		for(int i=0;i<data.size();i++) {
 			Entity current=data.getElement(i);
 			switch(BSPVersion) {
 				case BSP.TYPE_NIGHTFIRE: // Nightfire
+				case DoomMap.TYPE_DOOM: // When I decompile the Doom format, I output Nightfire entities. Not ideal, but it works.
+				case DoomMap.TYPE_HEXEN:
 					current=ent42ToEntVMF(current);
 					break;
 				case BSP.TYPE_QUAKE2:
 					current=ent38ToEntVMF(current);
 					break;
-				case DoomMap.TYPE_DOOM:
-				case DoomMap.TYPE_HEXEN:
-					break;
 			}
 		}
 		
 		// Parse entity I/O
-		for(int i=0;i<data.length();i++) {
+		for(int i=0;i<data.size();i++) {
 			Entity current=data.getElement(i);
 			current=parseEntityIO(current);
 		}
@@ -126,16 +125,16 @@ public class VMFWriter {
 		
 		byte[] header=tempString.getBytes();*/
 		
-		byte[][] entityBytes=new byte[data.length()][];
+		byte[][] entityBytes=new byte[data.size()][];
 		int totalLength=0;
-		for(currentEntity=0;currentEntity<data.length();currentEntity++) {
+		for(currentEntity=0;currentEntity<data.size();currentEntity++) {
 			if(Thread.currentThread().interrupted()) {
 				throw new java.lang.InterruptedException("while writing Hammer map.");
 			}
 			try {
 				entityBytes[currentEntity]=entityToByteArray(data.getElement(currentEntity));
 			} catch(java.lang.ArrayIndexOutOfBoundsException e) { // This happens when entities are added after the array is made
-				byte[][] newList=new byte[data.length()][]; // Create a new array with the new length
+				byte[][] newList=new byte[data.size()][]; // Create a new array with the new length
 				for(int j=0;j<entityBytes.length;j++) {
 					newList[j]=entityBytes[j];
 				}
@@ -146,7 +145,7 @@ public class VMFWriter {
 		}
 		byte[] allEnts=new byte[totalLength];
 		int offset=0;
-		for(int i=0;i<data.length();i++) {
+		for(int i=0;i<data.size();i++) {
 			for(int j=0;j<entityBytes[i].length;j++) {
 				allEnts[offset+j]=entityBytes[i][j];
 			}
@@ -205,7 +204,7 @@ public class VMFWriter {
 					in.getAttributes()[i]="entity"+(char)0x0D+(char)0x0A+"{"; // instead of world
 				}
 			} else {
-				if(in.getAttributes()[i].equals("}") && i==in.getNumAttributes()-1) {
+				if(/*in.getAttributes()[i].equals("}") && */i==in.getNumAttributes()-1) {
 					int brushArraySize=0;
 					byte[][] brushes=new byte[in.getBrushes().length][];
 					for(int j=0;j<in.getBrushes().length;j++) { // For each brush in the entity
@@ -213,7 +212,7 @@ public class VMFWriter {
 							throw new java.lang.InterruptedException("while writing Hammer map.");
 						}
 						if(in.getBrush(j).isDetailBrush() && in.attributeIs("classname", "worldspawn")) {
-							in.getBrush(j).setDetail(false);
+							in.getBrush(j).setDetail(false); // Otherwise it will add an infinite number of func_details to the array
 							Entity newDetailEntity=new Entity("func_detail");
 							for(int k=0;k<in.getBrush(j).getNumSides();k++) {
 								MAPBrushSide currentSide = in.getBrush(j).getSide(k);
@@ -786,6 +785,14 @@ public class VMFWriter {
 																							} else {
 																								if(in.attributeIs("classname", "trigger_relay")) {
 																									in.setAttribute("classname", "logic_relay");
+																								} else {
+																									if(in.attributeIs("classname", "trigger_counter")) {
+																										in.setAttribute("classname", "math_counter");
+																										in.setAttribute("max", in.getAttribute("count"));
+																										in.setAttribute("min", "0");
+																										in.setAttribute("startvalue", "0");
+																										in.deleteAttribute("count");
+																									}
 																								}
 																							}
 																						}
@@ -841,12 +848,12 @@ public class VMFWriter {
 								}
 								if(in.attributeExists("delay")) {
 									try {
-										in.addAttributeInside("\""+in.fireAction()+"\" \""+mm.getAttributeName(j)+","+outputAction+",,"+Integer.toString(Integer.parseInt(mm.getAttributeValue(j))+Integer.parseInt(in.getAttribute("delay")))+",-1\"");
+										in.addAttributeInside("\""+in.fireAction()+"\" \""+mm.getAttributeName(j)+","+outputAction+","+Integer.toString(Integer.parseInt(mm.getAttributeValue(j))+Integer.parseInt(in.getAttribute("delay")))+",-1\"");
 									} catch(java.lang.NumberFormatException e) {
-										in.addAttributeInside("\""+in.fireAction()+"\" \""+mm.getAttributeName(j)+","+outputAction+",,"+mm.getAttributeValue(j)+",-1\"");
+										in.addAttributeInside("\""+in.fireAction()+"\" \""+mm.getAttributeName(j)+","+outputAction+","+mm.getAttributeValue(j)+",-1\"");
 									}
 								} else {
-									in.addAttributeInside("\""+in.fireAction()+"\" \""+mm.getAttributeName(j)+","+outputAction+",,"+mm.getAttributeValue(j)+",-1\"");
+									in.addAttributeInside("\""+in.fireAction()+"\" \""+mm.getAttributeName(j)+","+outputAction+","+mm.getAttributeValue(j)+",-1\"");
 								}
 							} else {
 								in.addAttributeInside("\""+in.fireAction()+"\" \""+mm.getAttributeName(j)+",Toggle,,"+mm.getAttributeValue(j)+",-1\"");
@@ -862,9 +869,9 @@ public class VMFWriter {
 							}
 						}
 						if(in.attributeExists("delay")) {
-							in.addAttributeInside("\""+in.fireAction()+"\" \""+targets[i].getAttribute("targetname")+","+outputAction+",,"+in.getAttribute("delay")+",-1\"");
+							in.addAttributeInside("\""+in.fireAction()+"\" \""+targets[i].getAttribute("targetname")+","+outputAction+","+in.getAttribute("delay")+",-1\"");
 						} else {
-							in.addAttributeInside("\""+in.fireAction()+"\" \""+targets[i].getAttribute("targetname")+","+outputAction+",,0,-1\"");
+							in.addAttributeInside("\""+in.fireAction()+"\" \""+targets[i].getAttribute("targetname")+","+outputAction+",0,-1\"");
 						}
 					}
 				}

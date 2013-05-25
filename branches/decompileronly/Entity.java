@@ -12,7 +12,7 @@
 
 import java.util.Scanner; // Perfect for String handling
 
-public class Entity {
+public class Entity extends LumpObject {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 	
@@ -26,6 +26,7 @@ public class Entity {
 	// CONSTRUCTORS
 	
 	public Entity(byte[] in) {
+		super(in);
 		String me="";
 		for(int i=0;i<in.length;i++) {
 			me+=(char)in[i];
@@ -34,6 +35,7 @@ public class Entity {
 	}
 
 	public Entity(String classname) {
+		super(new byte[0]);
 		attributes=new String[3];
 		attributes[0]="{";
 		attributes[1]="\"classname\" \""+classname+"\"";
@@ -41,6 +43,7 @@ public class Entity {
 	}
 	
 	public Entity(String[] atts) {
+		super(new byte[0]);
 		attributes=new String[atts.length+2];
 		for(int i=0;i<atts.length;i++) {
 			attributes[i+1]=atts[i];
@@ -50,10 +53,12 @@ public class Entity {
 	}
 	
 	public Entity() {
+		super(new byte[0]);
 		
 	}
 	
 	public Entity(Entity copy) {
+		super(copy.getData());
 		attributes=new String[copy.getNumAttributes()];
 		for(int i=0;i<attributes.length;i++) {
 			attributes[i]=copy.getAttribute(i);
@@ -323,6 +328,7 @@ public class Entity {
 		}
 	}
 	
+	// Unused; would probably cause issues
 	public void addConnection(String st) {
 		String[] newList=new String[connections.length+1];
 		for(int i=0;i<connections.length;i++) {
@@ -344,47 +350,50 @@ public class Entity {
 		   attributeIs("classname", "func_brush") || 
 		   attributeIs("classname", "light") || 
 		   attributeIs("classname", "light_spot")) {
-			return "Toggle";
+			return "Toggle,";
 		}
 		if(attributeIs("classname", "ambient_generic")) {
-			return "ToggleSound";
+			return "ToggleSound,";
 		}
 		if(attributeIs("classname", "env_message")) {
-			return "ShowMessage";
+			return "ShowMessage,";
 		}
 		if(attributeIs("classname", "trigger_changelevel")) {
-			return "ChangeLevel";
+			return "ChangeLevel,";
 		}
 		if(attributeIs("classname", "env_global")) {
 			if(attributeIs("triggermode", "1")) {
-				return "TurnOn";
+				return "TurnOn,";
 			} else {
 				if(attributeIs("triggermode", "3")) {
-					return "Toggle";
+					return "Toggle,";
 				} else {
-					return "TurnOff";
+					return "TurnOff,";
 				}
 			}
 		}
 		if(attributeIs("classname", "func_breakable")) {
-			return "Break";
+			return "Break,";
 		}
 		if(attributeIs("classname", "func_button")) {
-			return "Press";
+			return "Press,";
 		}
 		if(attributeIs("classname", "env_shake")) {
-			return "StartShake";
+			return "StartShake,";
 		}
 		if(attributeIs("classname", "env_fade")) {
-			return "Fade";
+			return "Fade,";
 		}
 		if(attributeIs("classname", "env_sprite")) {
-			return "ToggleSprite";
+			return "ToggleSprite,";
 		}
 		if(attributeIs("classname", "logic_relay")) {
-			return "Trigger";
+			return "Trigger,";
 		}
-		return "Toggle";
+		if(attributeIs("classname", "math_counter")) {
+			return "Add,1";
+		}
+		return "Toggle,";
 	}
 	
 	public String onEnable() {
@@ -392,38 +401,39 @@ public class Entity {
 		   attributeIs("classname", "func_door_rotating") || 
 		   attributeIs("classname", "trigger_hurt") || 
 		   attributeIs("classname", "func_brush") ||
-		   attributeIs("classname", "logic_relay")) {
-			return "Enable";
+		   attributeIs("classname", "logic_relay") ||
+		   attributeIs("classname", "math_counter")) {
+			return "Enable,";
 		}
 		if(attributeIs("classname", "ambient_generic")) {
-			return "PlaySound";
+			return "PlaySound,";
 		}
 		if(attributeIs("classname", "env_message")) {
-			return "ShowMessage";
+			return "ShowMessage,";
 		}
 		if(attributeIs("classname", "trigger_changelevel")) {
-			return "ChangeLevel";
+			return "ChangeLevel,";
 		}
 		if(attributeIs("classname", "light") || 
 		   attributeIs("classname", "light_spot")) {
-			return "TurnOn";
+			return "TurnOn,";
 		}
 		if(attributeIs("classname", "func_breakable")) {
-			return "Break";
+			return "Break,";
 		}
 		if(attributeIs("classname", "env_shake")) {
-			return "StartShake";
+			return "StartShake,";
 		}
 		if(attributeIs("classname", "env_fade")) {
-			return "Fade";
+			return "Fade,";
 		}
 		if(attributeIs("classname", "env_sprite")) {
-			return "ShowSprite";
+			return "ShowSprite,";
 		}
 		if(attributeIs("classname", "func_button")) {
-			return "PressIn";
+			return "PressIn,";
 		}
-		return "Enable";
+		return "Enable,";
 	}
 	
 	public String onDisable() {
@@ -431,38 +441,39 @@ public class Entity {
 		   attributeIs("classname", "func_door_rotating") || 
 		   attributeIs("classname", "trigger_hurt") || 
 		   attributeIs("classname", "func_brush") ||
-		   attributeIs("classname", "logic_relay")) {
-			return "Disable";
+		   attributeIs("classname", "logic_relay") ||
+		   attributeIs("classname", "math_counter")) {
+			return "Disable,";
 		}
 		if(attributeIs("classname", "ambient_generic")) {
-			return "StopSound";
+			return "StopSound,";
 		}
 		if(attributeIs("classname", "env_message")) {
-			return "ShowMessage";
+			return "ShowMessage,";
 		}
 		if(attributeIs("classname", "trigger_changelevel")) {
-			return "ChangeLevel";
+			return "ChangeLevel,";
 		}
 		if(attributeIs("classname", "light") || 
 		   attributeIs("classname", "light_spot")) {
-			return "TurnOff";
+			return "TurnOff,";
 		}
 		if(attributeIs("classname", "func_breakable")) {
-			return "Break";
+			return "Break,";
 		}
 		if(attributeIs("classname", "env_shake")) {
-			return "StopShake";
+			return "StopShake,";
 		}
 		if(attributeIs("classname", "env_fade")) {
-			return "Fade";
+			return "Fade,";
 		}
 		if(attributeIs("classname", "env_sprite")) {
-			return "HideSprite";
+			return "HideSprite,";
 		}
 		if(attributeIs("classname", "func_button")) {
-			return "PressOut";
+			return "PressOut,";
 		}
-		return "Disable";
+		return "Disable,";
 	}
 	
 	// Try to determine which "Output" normally causes this entity to "fire" its target.
@@ -487,6 +498,9 @@ public class Entity {
 		if(attributeIs("classname", "func_breakable")) {
 			return "OnBreak";
 		}
+		if(attributeIs("classname", "math_counter")) {
+			return "OnHitMax";
+		}
 		return "None";
 	}
 	
@@ -500,6 +514,61 @@ public class Entity {
 	
 	public Entity cloneNoBrushes() {
 		return new Entity(attributes);
+	}
+	
+	public static Entities createLump(byte[] data) throws java.lang.InterruptedException {
+		int count=0;
+		boolean inQuotes=false; // Keep track of whether or not we're currently in a set of quotation marks.
+		// I came across a map where the idiot map maker used { and } within a value. This broke the code prior to revision 55.
+		for(int i=0;i<data.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while counting Entities");
+			}
+			if(inQuotes) {
+				if(data[i]=='\"' && inQuotes) {
+					inQuotes=false;
+				}
+			} else {
+				if(data[i]=='\"') {
+					inQuotes=true;
+				} else {
+					if(data[i] == '{') {
+						count++;
+					}
+				}
+			}
+		}
+		Entity[] entities = new Entity[count];
+		// I'd love to use Scanner here, but Scanner doesn't like using delimiters
+		// with "{" or "}" in them, which I NEED
+		char currentChar; // The current character being read in the file. This is necessary because
+		                  // we need to know exactly when the { and } characters occur and capture
+								// all text between them.
+		int offset=0;
+		for(int i=0;i<entities.length;i++) { // For every entity
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Entity array");
+			}
+			String current=""; // This will be the resulting entity, fed into the Entity class
+			currentChar=(char)data[offset]; // begin reading the file
+			while(currentChar!='{') { // Eat bytes until we find the beginning of an entity structure
+				offset++;
+				currentChar=(char)data[offset];
+			}
+			inQuotes=false;
+			do {
+				if(currentChar=='\"') {
+					inQuotes=!inQuotes;
+				}
+				current+=currentChar+""; // adds characters to the current string
+				offset++;
+				currentChar=(char)data[offset];
+			} while(currentChar!='}' || inQuotes); // Read bytes until we find the end of the current entity structure
+			current+=currentChar+""; // adds the '}' to the current string
+			entities[i]=new Entity();
+			entities[i].setData(current);
+		}
+		return new Entities(entities, data.length);
 	}
 	
 	// ACCESSORS/MUTATORS

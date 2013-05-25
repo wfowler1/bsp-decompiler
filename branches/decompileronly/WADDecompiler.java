@@ -52,11 +52,11 @@ public class WADDecompiler {
 		world.setAttribute("mapversion", "510");
 		mapFile.add(world);
 		
-		String[] lowerWallTextures=new String[doomMap.getSidedefs().length()];
-		String[] midWallTextures=new String[doomMap.getSidedefs().length()];
-		String[] higherWallTextures=new String[doomMap.getSidedefs().length()];
+		String[] lowerWallTextures=new String[doomMap.getSidedefs().size()];
+		String[] midWallTextures=new String[doomMap.getSidedefs().size()];
+		String[] higherWallTextures=new String[doomMap.getSidedefs().size()];
 		
-		short[] sectorTag=new short[doomMap.getSectors().length()];
+		short[] sectorTag=new short[doomMap.getSectors().size()];
 		String playerStartOrigin="";
 		
 		// Since Doom relied on sectors to define a cieling and floor height, and nothing else,
@@ -65,7 +65,7 @@ public class WADDecompiler {
 		// respective infinities. For a GC/Hammer map, however, this cannot be the case.
 		int ZMin=32767;  // Even though the values in the map will never exceed these, use ints here to avoid
 		int ZMax=-32768; // overflows, in case the map DOES go within 32 units of these values.
-		for(int i=0;i<doomMap.getSectors().length();i++) {
+		for(int i=0;i<doomMap.getSectors().size();i++) {
 			if(Thread.currentThread().interrupted()) {
 				throw new java.lang.InterruptedException("while finding min and max Z values.");
 			}
@@ -85,15 +85,15 @@ public class WADDecompiler {
 		// left child of that node. These are extremely important, as the parent defines
 		// boundaries for the children, as well as inheriting further boundaries from its
 		// parents. These boundaries are invaluable for forming brushes.
-		int[] nodeparents = new int[doomMap.getNodes().length()];
-		boolean[] nodeIsLeft = new boolean[doomMap.getNodes().length()];
+		int[] nodeparents = new int[doomMap.getNodes().size()];
+		boolean[] nodeIsLeft = new boolean[doomMap.getNodes().size()];
 		
-		for(int i=0;i<doomMap.getNodes().length();i++) {
+		for(int i=0;i<doomMap.getNodes().size();i++) {
 			if(Thread.currentThread().interrupted()) {
 				throw new java.lang.InterruptedException("while iterating through binary tree.");
 			}
 			nodeparents[i]=-1; // There should only be one node left with -1 as a parent. This SHOULD be the root.
-			for(int j=0;j<doomMap.getNodes().length();j++) {
+			for(int j=0;j<doomMap.getNodes().size();j++) {
 				if(doomMap.getNodes().getElement(j).getChild1() == i) {
 					nodeparents[i]=j;
 					break;
@@ -108,25 +108,25 @@ public class WADDecompiler {
 		}
 		
 		// Keep a list of what subsectors belong to which sector
-		int[] subsectorSectors = new int[doomMap.getSubSectors().length()];
+		int[] subsectorSectors = new int[doomMap.getSubSectors().size()];
 		// Keep a list of what sidedefs belong to what subsector as well
-		int[][] subsectorSidedefs = new int[doomMap.getSubSectors().length()][];
+		int[][] subsectorSidedefs = new int[doomMap.getSubSectors().size()][];
 		
-		short[][] sideDefShifts=new short[2][doomMap.getSidedefs().length()];
+		short[][] sideDefShifts=new short[2][doomMap.getSidedefs().size()];
 		
 		// Figure out what sector each subsector belongs to, and what node is its parent.
 		// Depending on sector "tags" this will help greatly in creation of brushbased entities,
 		// and also helps in finding subsector floor and cieling heights.
-		int[] ssparents = new int[doomMap.getSubSectors().length()];
-		boolean[] ssIsLeft = new boolean[doomMap.getSubSectors().length()];
-		for(int i=0;i<doomMap.getSubSectors().length();i++) {
+		int[] ssparents = new int[doomMap.getSubSectors().size()];
+		boolean[] ssIsLeft = new boolean[doomMap.getSubSectors().size()];
+		for(int i=0;i<doomMap.getSubSectors().size();i++) {
 			if(Thread.currentThread().interrupted()) {
 				throw new java.lang.InterruptedException("while processing subsector "+i+".");
 			}
 			Window.println("Populating texture lists for subsector "+i,Window.VERBOSITY_BRUSHCREATION);
 			// First, find the subsector's parent and whether it is the left or right child.
 			ssparents[i]=-1; // No subsector should have a -1 in here
-			for(int j=0;j<doomMap.getNodes().length();j++) {
+			for(int j=0;j<doomMap.getNodes().size();j++) {
 				// When a node references a subsector, it is not referenced by negative
 				// index, as future BSP versions do. The bits 0-14 ARE the index, and
 				// bit 15 (which is the sign bit in two's compliment math) determines
@@ -195,16 +195,16 @@ public class WADDecompiler {
 				}
 			}
 		}
-		boolean[] linedefFlagsDealtWith=new boolean[doomMap.getLinedefs().length()];
-		boolean[] linedefSpecialsDealtWith=new boolean[doomMap.getLinedefs().length()];
+		boolean[] linedefFlagsDealtWith=new boolean[doomMap.getLinedefs().size()];
+		boolean[] linedefSpecialsDealtWith=new boolean[doomMap.getLinedefs().size()];
 		
-		MAPBrush[][] sectorFloorBrushes=new MAPBrush[doomMap.getSectors().length()][0];
-		MAPBrush[][] sectorCielingBrushes=new MAPBrush[doomMap.getSectors().length()][0];
+		MAPBrush[][] sectorFloorBrushes=new MAPBrush[doomMap.getSectors().size()][0];
+		MAPBrush[][] sectorCielingBrushes=new MAPBrush[doomMap.getSectors().size()][0];
 		
 		// For one-sided linedefs referenced by more than one subsector
-		boolean[] outsideBrushAlreadyCreated=new boolean[doomMap.getLinedefs().length()];
+		boolean[] outsideBrushAlreadyCreated=new boolean[doomMap.getLinedefs().size()];
 		
-		for(int i=0;i<doomMap.getSubSectors().length();i++) {
+		for(int i=0;i<doomMap.getSubSectors().size();i++) {
 			if(Thread.currentThread().interrupted()) {
 				throw new java.lang.InterruptedException("while creating brushes for subsector "+i+".");
 			}
@@ -677,11 +677,11 @@ public class WADDecompiler {
 					mapFile.add(hurtMe);
 					break;
 			}
-			Window.setProgress(jobnum, i+1, doomMap.getSubSectors().length(), "Decompiling...");
+			Window.setProgress(jobnum, i+1, doomMap.getSubSectors().size(), "Decompiling...");
 		}
 		
 		// Add the brushes to the map, as world by default, or entities if they are supported.
-		for(int i=0;i<doomMap.getSectors().length();i++) {
+		for(int i=0;i<doomMap.getSectors().size();i++) {
 			if(Thread.currentThread().interrupted()) {
 				throw new java.lang.InterruptedException("while adding brushes to world from sector "+i+".");
 			}
@@ -717,7 +717,7 @@ public class WADDecompiler {
 					}
 					mapFile.add(newDoor);
 				} else {
-					for(int j=0;j<doomMap.getLinedefs().length();j++) {
+					for(int j=0;j<doomMap.getLinedefs().size();j++) {
 						DLinedef currentLinedef=doomMap.getLinedefs().getElement(j);
 						int linedefTriggerType=currentLinedef.getAction();
 						if(doomMap.getVersion()==doomMap.TYPE_HEXEN) {
@@ -883,7 +883,7 @@ public class WADDecompiler {
 		}
 		
 		// Convert THINGS
-		for(int i=0;i<doomMap.getThings().length();i++) {
+		for(int i=0;i<doomMap.getThings().size();i++) {
 			if(Thread.currentThread().interrupted()) {
 				throw new java.lang.InterruptedException("while creating entity for thing "+i+".");
 			}
@@ -891,7 +891,7 @@ public class WADDecompiler {
 			// To find the true height of a thing, I need to iterate through nodes until I come to a subsector
 			// definition. Then I need to use the floor height of the sector that subsector belongs to.
 			Vector3D origin=currentThing.getOrigin();
-			int subsectorIndex=doomMap.getNodes().length()-1;
+			int subsectorIndex=doomMap.getNodes().size()-1;
 			while(subsectorIndex>=0) { // Once child is negative, subsector is found
 				DNode currentNode=doomMap.getNodes().getElement(subsectorIndex);
 				Vector3D start=currentNode.getVecHead();
@@ -1037,7 +1037,7 @@ public class WADDecompiler {
 	
 	private int getLowestNeighborCielingHeight(int sector) {
 		int lowestNeighborCielingHeight=32768;
-		for(int j=0;j<doomMap.getLinedefs().length();j++) {
+		for(int j=0;j<doomMap.getLinedefs().size();j++) {
 			DLinedef currentLinedef=doomMap.getLinedefs().getElement(j);
 			if(!currentLinedef.isOneSided()) {
 				DSector neighbor=null;
@@ -1058,7 +1058,7 @@ public class WADDecompiler {
 	
 	private int getLowestNeighborFloorHeight(int sector) {
 		int lowestNeighborFloorHeight=32768;
-		for(int k=0;k<doomMap.getLinedefs().length();k++) {
+		for(int k=0;k<doomMap.getLinedefs().size();k++) {
 			DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
 			if(!currentSearchLinedef.isOneSided()) {
 				DSector neighbor=null;
@@ -1079,7 +1079,7 @@ public class WADDecompiler {
 	
 	private int getHighestNeighborCielingHeight(int sector) {
 		int highestNeighborCielingHeight=-32768;
-		for(int j=0;j<doomMap.getLinedefs().length();j++) {
+		for(int j=0;j<doomMap.getLinedefs().size();j++) {
 			DLinedef currentLinedef=doomMap.getLinedefs().getElement(j);
 			if(!currentLinedef.isOneSided()) {
 				DSector neighbor=null;
@@ -1100,7 +1100,7 @@ public class WADDecompiler {
 	
 	private int getHighestNeighborFloorHeight(int sector) {
 		int highestNeighborFloorHeight=-32768;
-		for(int k=0;k<doomMap.getLinedefs().length();k++) {
+		for(int k=0;k<doomMap.getLinedefs().size();k++) {
 			DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
 			if(!currentSearchLinedef.isOneSided()) {
 				DSector neighbor=null;
@@ -1122,7 +1122,7 @@ public class WADDecompiler {
 	private int getNextLowestNeighborCielingHeight(int sector) {
 		int nextLowestNeighborCielingHeight=32768;
 		int current=doomMap.getSectors().getElement(sector).getCielingHeight();
-		for(int j=0;j<doomMap.getLinedefs().length();j++) {
+		for(int j=0;j<doomMap.getLinedefs().size();j++) {
 			DLinedef currentLinedef=doomMap.getLinedefs().getElement(j);
 			if(!currentLinedef.isOneSided()) {
 				DSector neighbor=null;
@@ -1144,7 +1144,7 @@ public class WADDecompiler {
 	private int getNextLowestNeighborFloorHeight(int sector) {
 		int nextLowestNeighborFloorHeight=32768;
 		int current=doomMap.getSectors().getElement(sector).getFloorHeight();
-		for(int k=0;k<doomMap.getLinedefs().length();k++) {
+		for(int k=0;k<doomMap.getLinedefs().size();k++) {
 			DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
 			if(!currentSearchLinedef.isOneSided()) {
 				DSector neighbor=null;
@@ -1166,7 +1166,7 @@ public class WADDecompiler {
 	private int getNextHighestNeighborCielingHeight(int sector) {
 		int nextHighestNeighborCielingHeight=-32768;
 		int current=doomMap.getSectors().getElement(sector).getCielingHeight();
-		for(int j=0;j<doomMap.getLinedefs().length();j++) {
+		for(int j=0;j<doomMap.getLinedefs().size();j++) {
 			DLinedef currentLinedef=doomMap.getLinedefs().getElement(j);
 			if(!currentLinedef.isOneSided()) {
 				DSector neighbor=null;
@@ -1188,7 +1188,7 @@ public class WADDecompiler {
 	private int getNextHighestNeighborFloorHeight(int sector) {
 		int nextHighestNeighborFloorHeight=-32768;
 		int current=doomMap.getSectors().getElement(sector).getFloorHeight();
-		for(int k=0;k<doomMap.getLinedefs().length();k++) {
+		for(int k=0;k<doomMap.getLinedefs().size();k++) {
 			DLinedef currentSearchLinedef=doomMap.getLinedefs().getElement(k);
 			if(!currentSearchLinedef.isOneSided()) {
 				DSector neighbor=null;

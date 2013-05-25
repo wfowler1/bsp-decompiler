@@ -54,6 +54,44 @@ public class Edge extends LumpObject {
 	}
 	
 	// METHODS
+	public static Lump<Edge> createLump(byte[] in, int type) throws java.lang.InterruptedException {
+		int structLength=0;
+		switch(type) {
+			case BSP.TYPE_QUAKE:
+			case BSP.TYPE_SIN:
+			case BSP.TYPE_DAIKATANA:
+			case BSP.TYPE_SOURCE17:
+			case BSP.TYPE_SOURCE18:
+			case BSP.TYPE_SOURCE19:
+			case BSP.TYPE_SOURCE20:
+			case BSP.TYPE_SOURCE21:
+			case BSP.TYPE_SOURCE22:
+			case BSP.TYPE_SOURCE23:
+			case BSP.TYPE_TACTICALINTERVENTION:
+			case BSP.TYPE_DMOMAM:
+			case BSP.TYPE_QUAKE2:
+			case BSP.TYPE_SOF:
+				structLength=4;
+				break;
+			case BSP.TYPE_VINDICTUS:
+				structLength=8;
+				break;
+		}
+		int offset=0;
+		Edge[] elements=new Edge[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Edge array");
+			}
+			for(int j=0;j<structLength;j++) {
+				bytes[j]=in[offset+j];
+			}
+			elements[i]=new Edge(bytes, type);
+			offset+=structLength;
+		}
+		return new Lump<Edge>(elements, in.length, structLength);
+	}
 	
 	// ACCESSORS/MUTATORS
 	

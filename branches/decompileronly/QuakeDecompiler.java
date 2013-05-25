@@ -44,7 +44,7 @@ public class QuakeDecompiler {
 		int numTotalItems=0;
 		// I need to go through each entity and see if it's brush-based.
 		// Worldspawn is brush-based as well as any entity with model *#.
-		for(int i=0;i<BSPObject.getEntities().length();i++) { // For each entity
+		for(int i=0;i<BSPObject.getEntities().size();i++) { // For each entity
 			if(Thread.currentThread().interrupted()) {
 				throw new java.lang.InterruptedException("while processing entity "+i+".");
 			}
@@ -155,7 +155,7 @@ public class QuakeDecompiler {
 				}
 			}
 			numTotalItems++;
-			Window.setProgress(jobnum, numTotalItems, BSPObject.getEntities().length(), "Decompiling...");
+			Window.setProgress(jobnum, numTotalItems, BSPObject.getEntities().size(), "Decompiling...");
 		}
 		/*if(!Window.skipFlipIsSelected()) {
 			Window.println("Num simple corrected brushes: "+numSimpleCorrects,Window.VERBOSITY_MAPSTATS); 

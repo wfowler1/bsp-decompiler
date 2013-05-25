@@ -39,6 +39,23 @@ public class SourceTexData extends LumpObject {
 	}
 	
 	// METHODS
+	public static Lump<SourceTexData> createLump(byte[] in) throws java.lang.InterruptedException {
+		int structLength=32;
+		int offset=0;
+		SourceTexData[] elements=new SourceTexData[in.length/structLength];
+		byte[] bytes=new byte[structLength];
+		for(int i=0;i<elements.length;i++) {
+			if(Thread.currentThread().interrupted()) {
+				throw new java.lang.InterruptedException("while populating Texture Data array");
+			}
+			for(int j=0;j<structLength;j++) {
+				bytes[j]=in[offset+j];
+			}
+			elements[i]=new SourceTexData(bytes);
+			offset+=structLength;
+		}
+		return new Lump<SourceTexData>(elements, in.length, structLength);
+	}
 	
 	// ACCESSORS/MUTATORS
 	public void setReflectivity(Vector3D in) {

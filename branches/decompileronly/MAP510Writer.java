@@ -54,7 +54,7 @@ public class MAP510Writer {
 	// it gets VERY slow, even if you concatenate them all before writing.
 	public void write() throws java.io.IOException, java.lang.InterruptedException {
 		// Preprocessing entity corrections
-		for(int i=0;i<data.length();i++) {
+		for(int i=0;i<data.size();i++) {
 			if(data.getElement(i).isBrushBased()) {
 				data.getElement(i).deleteAttribute("model");
 			}
@@ -62,7 +62,7 @@ public class MAP510Writer {
 		if(BSPVersion!=42) {
 			Entity waterEntity=null;
 			boolean newEnt=false;
-			for(int i=0;i<data.length();i++) {
+			for(int i=0;i<data.size();i++) {
 				if(data.getElement(i).getAttribute("classname").equalsIgnoreCase("func_water")) {
 					waterEntity=data.getElement(i);
 					break;
@@ -95,17 +95,57 @@ public class MAP510Writer {
 				data.add(waterEntity);
 			}
 		}
+		// Correct some attributes of entities
+		for(int i=0;i<data.size();i++) {
+			Entity current=data.getElement(i);
+			switch(BSPVersion) {
+				case BSP.TYPE_QUAKE3:
+				case BSP.TYPE_FAKK:
+				case BSP.TYPE_RAVEN:
+				case BSP.TYPE_MOHAA:
+				case BSP.TYPE_STEF2:
+				case BSP.TYPE_STEF2DEMO:
+					current=ent46ToEntM510(current);
+					break;
+				case BSP.TYPE_NIGHTFIRE: // Nightfire
+					current=ent42ToEntM510(current);
+					break;
+				case BSP.TYPE_QUAKE2:
+				case BSP.TYPE_SIN:
+				case BSP.TYPE_SOF:
+					current=ent38ToEntM510(current);
+					break;
+				case DoomMap.TYPE_DOOM:
+				case DoomMap.TYPE_HEXEN:
+					break;
+				case BSP.TYPE_COD:
+					current=ent59ToEntM510(current);
+					break;
+				case BSP.TYPE_SOURCE17:
+				case BSP.TYPE_SOURCE18:
+				case BSP.TYPE_SOURCE19:
+				case BSP.TYPE_SOURCE20:
+				case BSP.TYPE_SOURCE21:
+				case BSP.TYPE_SOURCE22:
+				case BSP.TYPE_SOURCE23:
+				case BSP.TYPE_DMOMAM:
+				case BSP.TYPE_VINDICTUS:
+				case BSP.TYPE_TACTICALINTERVENTION:
+					current=entSourceToEntM510(current);
+					break;
+			}
+		}
 		
-		byte[][] entityBytes=new byte[data.length()][];
+		byte[][] entityBytes=new byte[data.size()][];
 		int totalLength=0;
-		for(currentEntity=0;currentEntity<data.length();currentEntity++) {
+		for(currentEntity=0;currentEntity<data.size();currentEntity++) {
 			if(Thread.currentThread().interrupted()) {
 				throw new java.lang.InterruptedException("while writing GearCraft map.");
 			}
 			try {
 				entityBytes[currentEntity]=entityToByteArray(data.getElement(currentEntity), currentEntity);
 			} catch(java.lang.ArrayIndexOutOfBoundsException e) { // This happens when entities are added after the array is made
-				byte[][] newList=new byte[data.length()][]; // Create a new array with the new length
+				byte[][] newList=new byte[data.size()][]; // Create a new array with the new length
 				for(int j=0;j<entityBytes.length;j++) {
 					newList[j]=entityBytes[j];
 				}
@@ -116,7 +156,7 @@ public class MAP510Writer {
 		}
 		byte[] allEnts=new byte[totalLength];
 		int offset=0;
-		for(int i=0;i<data.length();i++) {
+		for(int i=0;i<data.size();i++) {
 			for(int j=0;j<entityBytes[i].length;j++) {
 				allEnts[offset+j]=entityBytes[i][j];
 			}
@@ -138,43 +178,6 @@ public class MAP510Writer {
 	private byte[] entityToByteArray(Entity in, int num) throws java.lang.InterruptedException {
 		byte[] out;
 		double[] origin=in.getOrigin();
-		// Correct some attributes of entities
-		switch(BSPVersion) {
-			case BSP.TYPE_QUAKE3:
-			case BSP.TYPE_FAKK:
-			case BSP.TYPE_RAVEN:
-			case BSP.TYPE_MOHAA:
-			case BSP.TYPE_STEF2:
-			case BSP.TYPE_STEF2DEMO:
-				in=ent46ToEntM510(in);
-				break;
-			case BSP.TYPE_NIGHTFIRE: // Nightfire
-				in=ent42ToEntM510(in);
-				break;
-			case BSP.TYPE_QUAKE2:
-			case BSP.TYPE_SIN:
-			case BSP.TYPE_SOF:
-				in=ent38ToEntM510(in);
-				break;
-			case DoomMap.TYPE_DOOM:
-			case DoomMap.TYPE_HEXEN:
-				break;
-			case BSP.TYPE_COD:
-				in=ent59ToEntM510(in);
-				break;
-			case BSP.TYPE_SOURCE17:
-			case BSP.TYPE_SOURCE18:
-			case BSP.TYPE_SOURCE19:
-			case BSP.TYPE_SOURCE20:
-			case BSP.TYPE_SOURCE21:
-			case BSP.TYPE_SOURCE22:
-			case BSP.TYPE_SOURCE23:
-			case BSP.TYPE_DMOMAM:
-			case BSP.TYPE_VINDICTUS:
-			case BSP.TYPE_TACTICALINTERVENTION:
-				in=entSourceToEntM510(in);
-				break;
-		}
 		if(in.getAttribute("classname").equalsIgnoreCase("worldspawn")) {
 			in.setAttribute("mapversion", "510");
 			if(ctfEnts) {
@@ -877,17 +880,17 @@ public class MAP510Writer {
 							in.setAttribute("classname", "info_ctfspawn");
 							in.setAttribute("team_no", "2");
 							double[] origin=in.getOrigin();
-							in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+32));
+							in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+40));
 						} else {
 							if(in.getAttribute("classname").equalsIgnoreCase("info_player_combine") || in.getAttribute("classname").equalsIgnoreCase("info_player_mi6") || in.getAttribute("classname").equalsIgnoreCase("ctf_combine_player_spawn")) {
 								in.setAttribute("classname", "info_ctfspawn");
 								in.setAttribute("team_no", "1");
 								double[] origin=in.getOrigin();
-								in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+32));
+								in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+40));
 							} else {
 								if(in.getAttribute("classname").equalsIgnoreCase("info_player_deathmatch")) {
 									double[] origin=in.getOrigin();
-									in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+32));
+									in.setAttribute("origin", origin[X]+" "+origin[Y]+" "+(origin[Z]+40));
 								} else {
 									if(in.getAttribute("classname").equalsIgnoreCase("ctf_combine_flag")) {
 										in.deleteAttribute("targetname");

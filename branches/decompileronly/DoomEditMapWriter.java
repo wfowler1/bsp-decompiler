@@ -52,7 +52,7 @@ public class DoomEditMapWriter {
 	public void write() throws java.io.IOException, java.lang.InterruptedException {
 		// Preprocessing entity corrections
 		if(BSPVersion==42) {
-			for(int i=1;i<data.length();i++) {
+			for(int i=1;i<data.size();i++) {
 				for(int j=0;j<data.getElement(i).getNumBrushes();j++) {
 					if(data.getElement(i).getBrushes()[j].isWaterBrush()) {
 						data.getElement(0).addBrush(data.getElement(i).getBrushes()[j]);
@@ -65,19 +65,25 @@ public class DoomEditMapWriter {
 				}
 			}
 		}
+		// Correct some attributes of entities
+		// TODO
+		/*switch(BSPVersion) {
+			default:
+				break;
+		}*/
 		
 		byte[] header="Version 2\n".getBytes();
 		
-		byte[][] entityBytes=new byte[data.length()][];
+		byte[][] entityBytes=new byte[data.size()][];
 		int totalLength=0;
-		for(currentEntity=0;currentEntity<data.length();currentEntity++) {
+		for(currentEntity=0;currentEntity<data.size();currentEntity++) {
 			if(Thread.currentThread().interrupted()) {
 				throw new java.lang.InterruptedException("while writing DoomEdit map.");
 			}
 			try {
 				entityBytes[currentEntity]=entityToByteArray(data.getElement(currentEntity));
 			} catch(java.lang.ArrayIndexOutOfBoundsException e) { // This happens when entities are added after the array is made
-				byte[][] newList=new byte[data.length()][]; // Create a new array with the new length
+				byte[][] newList=new byte[data.size()][]; // Create a new array with the new length
 				for(int j=0;j<entityBytes.length;j++) {
 					newList[j]=entityBytes[j];
 				}
@@ -92,7 +98,7 @@ public class DoomEditMapWriter {
 			allEnts[offset]=header[i];
 			offset++;
 		}
-		for(int i=0;i<data.length();i++) {
+		for(int i=0;i<data.size();i++) {
 			for(int j=0;j<entityBytes[i].length;j++) {
 				allEnts[offset+j]=entityBytes[i][j];
 			}
@@ -114,12 +120,6 @@ public class DoomEditMapWriter {
 	private byte[] entityToByteArray(Entity in) throws java.lang.InterruptedException {
 		byte[] out;
 		double[] origin=new double[3];
-		// Correct some attributes of entities
-		switch(BSPVersion) {
-			// TODO
-			default:
-				break;
-		}
 		if(in.isBrushBased()) {
 			in.deleteAttribute("model");
 		}
