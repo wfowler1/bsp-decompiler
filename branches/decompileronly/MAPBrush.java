@@ -112,9 +112,9 @@ public class MAPBrush {
 	}
 	
 	// Moves the brush by the Vector.
-	public void shift(Vector3D shiftVector) {
+	public void translate(Vector3D shiftVector) {
 		for(int i=0;i<sides.length;i++) {
-			sides[i].shift(shiftVector);
+			sides[i].translate(shiftVector);
 		}
 	}
 	

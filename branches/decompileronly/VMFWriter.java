@@ -224,7 +224,7 @@ public class VMFWriter {
 							data.add(newDetailEntity);
 							brushes[j]=new byte[0]; // No data here! The brush will be output in its entity instead.
 						} else {
-							in.getBrush(j).shift(new Vector3D(origin));
+							in.getBrush(j).translate(new Vector3D(origin));
 							brushes[j]=brushToByteArray(in.getBrush(j));
 							brushArraySize+=brushes[j].length;
 						}

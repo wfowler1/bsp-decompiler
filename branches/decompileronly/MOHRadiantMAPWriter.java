@@ -154,7 +154,7 @@ public class MOHRadiantMAPWriter {
 							throw new java.lang.InterruptedException("while writing MOHRadiant map.");
 						}
 						// models with origin brushes need to be offset into their in-use position
-						in.getBrush(j).shift(new Vector3D(origin));
+						in.getBrush(j).translate(new Vector3D(origin));
 						brushes[j]=brushToByteArray(in.getBrush(j), j);
 						brushArraySize+=brushes[j].length;
 					}

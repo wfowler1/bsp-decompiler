@@ -54,11 +54,6 @@ public class MAP510Writer {
 	// it gets VERY slow, even if you concatenate them all before writing.
 	public void write() throws java.io.IOException, java.lang.InterruptedException {
 		// Preprocessing entity corrections
-		for(int i=0;i<data.size();i++) {
-			if(data.getElement(i).isBrushBased()) {
-				data.getElement(i).deleteAttribute("model");
-			}
-		}
 		if(BSPVersion!=42) {
 			Entity waterEntity=null;
 			boolean newEnt=false;
@@ -209,8 +204,6 @@ public class MAP510Writer {
 						if(Thread.currentThread().interrupted()) {
 							throw new java.lang.InterruptedException("while writing GearCraft map.");
 						}
-						// models with origin brushes need to be offset into their in-use position
-						in.getBrush(j).shift(new Vector3D(origin));
 						brushes[j]=brushToByteArray(in.getBrush(j), j);
 						brushArraySize+=brushes[j].length;
 					}
@@ -554,9 +547,14 @@ public class MAP510Writer {
 		if(in.isBrushBased()) {
 			double[] origin=in.getOrigin();
 			in.deleteAttribute("origin");
+			in.deleteAttribute("model");
 			if((origin[0]!=0 || origin[1]!=0 || origin[2]!=0) && !Window.noOriginBrushesIsSelected()) { // If this brush uses the "origin" attribute
 				MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
 				in.addBrush(newOriginBrush);
+			}
+			for(int i=0;i<in.getNumBrushes();i++) {
+				MAPBrush currentBrush=in.getBrush(i);
+				currentBrush.translate(new Vector3D(origin));
 			}
 		}
 		return in;
@@ -567,11 +565,16 @@ public class MAP510Writer {
 		if(in.isBrushBased()) {
 			double[] origin=in.getOrigin();
 			in.deleteAttribute("origin");
+			in.deleteAttribute("model");
 			if(in.getAttribute("classname").equalsIgnoreCase("func_rotating")) { // TODO: What entities require origin brushes in CoD?
 				if((origin[0]!=0 || origin[1]!=0 || origin[2]!=0) && !Window.noOriginBrushesIsSelected()) { // If this brush uses the "origin" attribute
 					MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
 					in.addBrush(newOriginBrush);
 				}
+			}
+			for(int i=0;i<in.getNumBrushes();i++) {
+				MAPBrush currentBrush=in.getBrush(i);
+				currentBrush.translate(new Vector3D(origin));
 			}
 		} else {
 			if(in.getAttribute("classname").equalsIgnoreCase("light")) {
@@ -607,6 +610,21 @@ public class MAP510Writer {
 	// the Nightfire engine had no support for area portals. But it should save map
 	// porters some time, especially when it comes to the Capture The Flag mod.
 	public Entity ent46ToEntM510(Entity in) {
+		if(in.isBrushBased()) {
+			double[] origin=in.getOrigin();
+			in.deleteAttribute("origin");
+			in.deleteAttribute("model");
+			if(in.attributeIs("classname", "func_rotating") || in.attributeIs("classname", "func_rotatingdoor")) { // TODO: What entities require origin brushes in CoD?
+				if((origin[0]!=0 || origin[1]!=0 || origin[2]!=0) && !Window.noOriginBrushesIsSelected()) { // If this brush uses the "origin" attribute
+					MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
+					in.addBrush(newOriginBrush);
+				}
+			}
+			for(int i=0;i<in.getNumBrushes();i++) {
+				MAPBrush currentBrush=in.getBrush(i);
+				currentBrush.translate(new Vector3D(origin));
+			}
+		}
 		if(in.getAttribute("classname").equalsIgnoreCase("team_CTF_blueflag")) { // Blue flag
 			in.setAttribute("classname", "item_ctfflag");
 			in.setAttribute("skin", "1"); // 0 for PHX, 1 for MI6
@@ -689,10 +707,6 @@ public class MAP510Writer {
 									} else {
 										if(in.getAttribute("classname").equalsIgnoreCase("func_rotatingdoor")) {
 											in.setAttribute("classname", "func_door_rotating");
-											double[] origin=in.getOrigin();
-											in.deleteAttribute("origin");
-											MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
-											in.addBrush(newOriginBrush);
 										} else {
 											if(in.getAttribute("classname").equalsIgnoreCase("info_pathnode")) {
 												in.setAttribute("classname", "info_node");
@@ -742,6 +756,21 @@ public class MAP510Writer {
 		if(!in.getAttribute("angle").equals("")) {
 			in.setAttribute("angles", "0 "+in.getAttribute("angle")+" 0");
 			in.deleteAttribute("angle");
+		}
+		if(in.isBrushBased()) {
+			double[] origin=in.getOrigin();
+			in.deleteAttribute("origin");
+			in.deleteAttribute("model");
+			if(in.attributeIs("classname", "func_rotating")) { // TODO: What entities require origin brushes in CoD?
+				if((origin[0]!=0 || origin[1]!=0 || origin[2]!=0) && !Window.noOriginBrushesIsSelected()) { // If this brush uses the "origin" attribute
+					MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
+					in.addBrush(newOriginBrush);
+				}
+			}
+			for(int i=0;i<in.getNumBrushes();i++) {
+				MAPBrush currentBrush=in.getBrush(i);
+				currentBrush.translate(new Vector3D(origin));
+			}
 		}
 		if(in.getAttribute("classname").equalsIgnoreCase("func_wall")) {
 			if(!in.getAttribute("targetname").equals("")) { // Really this should depend on spawnflag 2 or 4
@@ -847,6 +876,21 @@ public class MAP510Writer {
 	}
 	
 	private Entity entSourceToEntM510(Entity in) {
+		if(in.isBrushBased()) {
+			double[] origin=in.getOrigin();
+			in.deleteAttribute("origin");
+			in.deleteAttribute("model");
+			if(in.attributeIs("classname", "func_door_rotating")) { // TODO: What entities require origin brushes?
+				if((origin[0]!=0 || origin[1]!=0 || origin[2]!=0) && !Window.noOriginBrushesIsSelected()) { // If this brush uses the "origin" attribute
+					MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
+					in.addBrush(newOriginBrush);
+				}
+			}
+			for(int i=0;i<in.getNumBrushes();i++) {
+				MAPBrush currentBrush=in.getBrush(i);
+				currentBrush.translate(new Vector3D(origin));
+			}
+		}
 		if(in.getAttribute("classname").equalsIgnoreCase("func_breakable_surf")) {
 			in.setAttribute("classname", "func_breakable");
 		} else {

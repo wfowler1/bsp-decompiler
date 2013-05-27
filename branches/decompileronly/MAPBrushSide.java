@@ -168,9 +168,9 @@ public class MAPBrushSide {
 		plane.flip();
 	}
 	
-	// shift(Vector3D)
+	// translate(Vector3D)
 	// Shifts the brush side and its points by the amounts in the input Vector
-	public void shift(Vector3D shift) {
+	public void translate(Vector3D shift) {
 		try {
 			if(shift.getX()!=0 || shift.getY()!=0 || shift.getZ()!=0) {
 				triangle[0]=triangle[0].add(shift);
@@ -179,7 +179,7 @@ public class MAPBrushSide {
 				plane=new Plane(triangle);
 			}
 		} catch(java.lang.Exception e) {
-			Window.println("WARNING: Failed to shift triangle:"+e+(char)0x0D+(char)0x0A+triangle[0]+(char)0x0D+(char)0x0A+triangle[1]+(char)0x0D+(char)0x0A+triangle[2]+(char)0x0D+(char)0x0A+"Adding: "+shift,Window.VERBOSITY_ALWAYS);
+			Window.println("WARNING: Failed to translate triangle:"+e+(char)0x0D+(char)0x0A+triangle[0]+(char)0x0D+(char)0x0A+triangle[1]+(char)0x0D+(char)0x0A+triangle[2]+(char)0x0D+(char)0x0A+"Adding: "+shift,Window.VERBOSITY_ALWAYS);
 		}
 	}
 	
