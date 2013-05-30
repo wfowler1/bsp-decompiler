@@ -397,13 +397,15 @@ public class Entity extends LumpObject {
 	}
 	
 	public String onEnable() {
-		if(attributeIs("classname", "func_door") || 
-		   attributeIs("classname", "func_door_rotating") || 
-		   attributeIs("classname", "trigger_hurt") || 
+		if(attributeIs("classname", "trigger_hurt") || 
 		   attributeIs("classname", "func_brush") ||
 		   attributeIs("classname", "logic_relay") ||
 		   attributeIs("classname", "math_counter")) {
 			return "Enable,";
+		}
+		if(attributeIs("classname", "func_door") || 
+		   attributeIs("classname", "func_door_rotating")) {
+			return "Open,";
 		}
 		if(attributeIs("classname", "ambient_generic")) {
 			return "PlaySound,";
@@ -437,13 +439,15 @@ public class Entity extends LumpObject {
 	}
 	
 	public String onDisable() {
-		if(attributeIs("classname", "func_door") || 
-		   attributeIs("classname", "func_door_rotating") || 
-		   attributeIs("classname", "trigger_hurt") || 
+		if(attributeIs("classname", "trigger_hurt") || 
 		   attributeIs("classname", "func_brush") ||
 		   attributeIs("classname", "logic_relay") ||
 		   attributeIs("classname", "math_counter")) {
 			return "Disable,";
+		}
+		if(attributeIs("classname", "func_door") || 
+		   attributeIs("classname", "func_door_rotating")) {
+			return "Close,";
 		}
 		if(attributeIs("classname", "ambient_generic")) {
 			return "StopSound,";
@@ -657,7 +661,7 @@ public class Entity extends LumpObject {
 	public String getAttributeName(int index) {
 		String output = "";
 		for(int i=1;i<attributes[index].length();i++) {
-			if(attributes[index].charAt(i)=='\"' && attributes[index].charAt(i)!='\\') {
+			if(attributes[index].charAt(i)=='\"' && attributes[index].charAt(i-1)!='\\') {
 				break;
 			} else {
 				output+=attributes[index].charAt(i);
@@ -670,13 +674,17 @@ public class Entity extends LumpObject {
 	public String getAttributeValue(int index) {
 		String output = "";
 		for(int i=attributes[index].length()-2;i>4;i--) {
-			if(attributes[index].charAt(i)=='\"' && attributes[index].charAt(i)!='\\') {
+			if(attributes[index].charAt(i)=='\"' && attributes[index].charAt(i-1)!='\\') {
 				break;
 			} else {
 				output=attributes[index].charAt(i)+output;
 			}
 		}
 		return output;
+	}
+	
+	public void setAttribute(int index, String val) {
+		attributes[index]=val;
 	}
 	
 	// getAttribute(int)
@@ -768,6 +776,18 @@ public class Entity extends LumpObject {
 		if(!done) {
 			addAttributeInside(attribute, value);
 		}
+	}
+	
+	public void setAttributeValue(int index, String value) {
+		String current="";
+		for(int i=1;i<attributes[index].length();i++) {
+			if(attributes[index].charAt(i)=='\"' && attributes[index].charAt(i)!='\\') {
+				break;
+			} else {
+				current+=attributes[index].charAt(i);
+			}
+		}
+		attributes[index]="\""+current+"\" \""+value+"\"";
 	}
 	
 	// getOrigin()

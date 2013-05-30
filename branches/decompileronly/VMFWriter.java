@@ -832,21 +832,29 @@ public class VMFWriter {
 					if(targets[i].attributeIs("classname", "multi_manager") || targets[i].attributeIs("classname", "multi_kill_manager")) {
 						Entity mm = parseMultimanager(targets[i]);
 						for(int j=0;j<mm.getNumAttributes();j++) {
+							String st=mm.getAttributeName(j);
+							String outputAction = "";
+							try {
+								if(st.substring(st.length()-12).equals("_KiLlMePlZ"+(char)0x08+(char)0xFB)) {
+									outputAction = "Kill,";
+									mm.setAttribute(j, "\""+st.substring(0, st.length()-12)+"\" \""+mm.getAttributeValue(j)+"\"");
+								}
+							} catch(java.lang.StringIndexOutOfBoundsException e) {
+								;
+							}
 							Entity[] mmTarget = getTargets(mm.getAttributeName(j));
 							if(mmTarget.length>0) {
-								String outputAction = mmTarget[0].onFire();
-								if(targets[i].attributeIs("classname", "multi_kill_manager")) {
-									outputAction = "Kill";
+								if(outputAction.equals("")) {
+									outputAction = mmTarget[0].onFire();
+								}
+								if(in.attributeIs("triggerstate", "0")) {
+									outputAction = mmTarget[0].onDisable();
 								} else {
-									if(in.attributeIs("triggerstate", "0")) {
-										outputAction = mmTarget[0].onDisable();
-									} else {
-										if(in.attributeIs("triggerstate", "1")) {
-											outputAction = mmTarget[0].onEnable();
-										}
+									if(in.attributeIs("triggerstate", "1")) {
+										outputAction = mmTarget[0].onEnable();
 									}
 								}
-								if(in.attributeExists("delay")) {
+								if(in.attributeIs("classname", "logic_relay") && in.attributeExists("delay")) {
 									try {
 										in.addAttributeInside("\""+in.fireAction()+"\" \""+mm.getAttributeName(j)+","+outputAction+","+Integer.toString(Integer.parseInt(mm.getAttributeValue(j))+Integer.parseInt(in.getAttribute("delay")))+",-1\"");
 									} catch(java.lang.NumberFormatException e) {
@@ -920,21 +928,29 @@ public class VMFWriter {
 			Entity[] targets = getTargets(target);
 			dummy.deleteAttribute(target);
 			for(int j=0;j<targets.length;j++) {
-				if(targets[j].attributeIs("classname", "multi_manager")) {
-					if(mmStackLength<=Window.getMMStackSize()) {
-						Entity mm = parseMultimanager(targets[j]);
-						for(int k=0;k<mm.getNumAttributes();k++) {
-							dummy.addAttribute(mm.getAttributeName(k), Double.toString(Double.parseDouble(mm.getAttributeValue(k))+Double.parseDouble(delay)));
-						}
+				if(in.attributeIs("classname", "multi_kill_manager")) {
+					if(targets.length>1) {
+						dummy.addAttribute(target+j+"_KiLlMePlZ"+(char)0x08+(char)0xFB, delay);
 					} else {
-						Window.println("WARNING: Multimanager stack overflow on entity "+in.getAttribute("targetname")+" calling "+targets[j].getAttribute("targetname")+"!",Window.VERBOSITY_WARNINGS);
-						Window.println("This is probably because of multi_managers repeatedly calling eachother. You can increase multimanager stack size in debug options.",Window.VERBOSITY_WARNINGS);
+						dummy.addAttribute(target+"_KiLlMePlZ"+(char)0x08+(char)0xFB, delay);
 					}
 				} else {
-					if(targets.length>1) {
-						dummy.addAttribute(target+j, delay);
+					if(targets[j].attributeIs("classname", "multi_manager") || targets[j].attributeIs("classname", "multi_kill_manager")) {
+						if(mmStackLength<=Window.getMMStackSize()) {
+							Entity mm = parseMultimanager(targets[j]);
+							for(int k=0;k<mm.getNumAttributes();k++) {
+								dummy.addAttribute(mm.getAttributeName(k), Double.toString(Double.parseDouble(mm.getAttributeValue(k))+Double.parseDouble(delay)));
+							}
+						} else {
+							Window.println("WARNING: Multimanager stack overflow on entity "+in.getAttribute("targetname")+" calling "+targets[j].getAttribute("targetname")+"!",Window.VERBOSITY_WARNINGS);
+							Window.println("This is probably because of multi_managers repeatedly calling eachother. You can increase multimanager stack size in debug options.",Window.VERBOSITY_WARNINGS);
+						}
 					} else {
-						dummy.addAttribute(target, delay);
+						if(targets.length>1) {
+							dummy.addAttribute(target+j, delay);
+						} else {
+							dummy.addAttribute(target, delay);
+						}
 					}
 				}
 			}

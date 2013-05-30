@@ -746,12 +746,14 @@ public class Window extends JPanel implements ActionListener {
 			          "this from happening. Increase this to recurse further. Current value: "+mmStack,"Enter new error tolerance",
 			          JOptionPane.QUESTION_MESSAGE,null,null,mmStack);
 			try {
-				int temp = Integer.parseInt(st);
-				if(temp<0) {
-					throw new java.lang.NumberFormatException();
-				} else {
-					mmStack=temp;
-					println("Multi_manager stack size set to "+mmStack+".",VERBOSITY_ALWAYS);
+				if(st.length()>0) {
+					int temp = Integer.parseInt(st);
+					if(temp<0) {
+						throw new java.lang.NumberFormatException();
+					} else {
+						mmStack=temp;
+						println("Multi_manager stack size set to "+mmStack+".",VERBOSITY_ALWAYS);
+					}
 				}
 			} catch(java.lang.NumberFormatException e) {
 				println("Invalid multi_manager stack size! Size is "+mmStack+" instead!",VERBOSITY_ALWAYS);
@@ -810,12 +812,14 @@ public class Window extends JPanel implements ActionListener {
 			String st=(String)JOptionPane.showInputDialog(frame,"Please enter number of concurrent decompiles allowed.\n"+
 			          "Current value: "+numThreads,"Enter new thread amount",JOptionPane.QUESTION_MESSAGE,null,null,numThreads);
 			try {
-				int temp = Integer.parseInt(st);
-				if(temp<1) {
-					throw new java.lang.NumberFormatException();
-				} else {
-					numThreads=temp;
-					println("Num threads set to "+numThreads+".",VERBOSITY_ALWAYS);
+				if(st.length()>0) {
+					int temp = Integer.parseInt(st);
+					if(temp<1) {
+						throw new java.lang.NumberFormatException();
+					} else {
+						numThreads=temp;
+						println("Num threads set to "+numThreads+".",VERBOSITY_ALWAYS);
+					}
 				}
 			} catch(java.lang.NumberFormatException e) {
 				println("Invalid number of threads! Thread count remains "+numThreads+" instead!",VERBOSITY_ALWAYS);
