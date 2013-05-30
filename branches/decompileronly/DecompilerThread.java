@@ -15,6 +15,9 @@ public class DecompilerThread implements Runnable {
 	private int threadnum;
 	private int openAs=-1;
 	
+	private int nextEntID=0;
+	private int nextBrushSideID=0;
+	
 	public DecompilerThread(File BSPFile, int jobnum, int threadnum) {
 		// Set up global variables
 		this.BSPFile=BSPFile;
@@ -68,7 +71,7 @@ public class DecompilerThread implements Runnable {
 								Window.setProgress(jobnum, 0, 1, "Decompiling..."); // What's going on here? Put in a failsafe progress bar for now
 							}
 						}
-							
+						
 						switch(reader.getVersion()) {
 							case BSP.TYPE_QUAKE:
 								//Window.println("ERROR: Algorithm for decompiling Quake BSPs not written yet.",Window.VERBOSITY_ALWAYS);

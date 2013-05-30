@@ -122,7 +122,7 @@ public class MOHRadiantMAPWriter {
 			in.deleteAttribute("origin");
 			in.deleteAttribute("model");
 			if(origin[0]!=0 || origin[1]!=0 || origin[2]!=0) { // If this entity uses the "origin" attribute
-				MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
+				MAPBrush newOriginBrush=MAPBrush.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
 				in.addBrush(newOriginBrush);
 			}
 		} else {

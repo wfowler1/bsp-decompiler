@@ -29,7 +29,7 @@ public class DoomMap {
 	private Lump<DSidedef> sidedefs;
 	private Lump<Vertex> vertices;
 	private Lump<DSegment> segs;
-	private Lump<DSubSector> subsectors;
+	private Lump<Edge> subsectors;
 	private Lump<DNode> nodes;
 	private Lump<DSector> sectors;
 	
@@ -180,10 +180,10 @@ public class DoomMap {
 	}
 	
 	public void setSubSectors(byte[] data) throws java.lang.InterruptedException {
-		subsectors=DSubSector.createLump(data);
+		subsectors=Edge.createLump(data, TYPE_DOOM);
 	}
 	
-	public Lump<DSubSector> getSubSectors() {
+	public Lump<Edge> getSubSectors() {
 		return subsectors;
 	}
 	

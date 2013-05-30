@@ -20,6 +20,7 @@ public class MAPBrushSide {
 	private String material;
 	private double lgtScale;
 	private double lgtRot;
+	private int id=-1;
 	
 	private MAPDisplacement disp=null;
 	
@@ -92,7 +93,7 @@ public class MAPBrushSide {
 	public MAPBrushSide(Plane plane, String inTexture, double[] inTextureS, double inTextureShiftS, double[] inTextureT, double inTextureShiftT, float inTexRot,
 	                    double inTexScaleX, double inTexScaleY, int inFlags, String inMaterial, double inLgtScale, double inLgtRot) {
 		this.plane=plane;
-		triangle=GenericMethods.extrapPlanePoints(plane);
+		triangle=plane.generatePlanePoints(plane);
 		texture=inTexture;
 		textureS=new Vector3D(inTextureS);
 		textureShiftS=inTextureShiftS;
@@ -245,7 +246,7 @@ public class MAPBrushSide {
 	
 	public void setPlane(Plane in) {
 		plane=in;
-		triangle=GenericMethods.extrapPlanePoints(plane);
+		triangle=plane.generatePlanePoints(plane);
 		planeDefined=true;
 		triangleDefined=false;
 	}
@@ -316,5 +317,9 @@ public class MAPBrushSide {
 	
 	public float getTexRot() {
 		return texRot;
+	}
+	
+	public int getID() {
+		return id;
 	}
 }

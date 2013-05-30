@@ -549,7 +549,7 @@ public class MAP510Writer {
 			in.deleteAttribute("origin");
 			in.deleteAttribute("model");
 			if((origin[0]!=0 || origin[1]!=0 || origin[2]!=0) && !Window.noOriginBrushesIsSelected()) { // If this brush uses the "origin" attribute
-				MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
+				MAPBrush newOriginBrush=MAPBrush.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
 				in.addBrush(newOriginBrush);
 			}
 			for(int i=0;i<in.getNumBrushes();i++) {
@@ -568,7 +568,7 @@ public class MAP510Writer {
 			in.deleteAttribute("model");
 			if(in.getAttribute("classname").equalsIgnoreCase("func_rotating")) { // TODO: What entities require origin brushes in CoD?
 				if((origin[0]!=0 || origin[1]!=0 || origin[2]!=0) && !Window.noOriginBrushesIsSelected()) { // If this brush uses the "origin" attribute
-					MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
+					MAPBrush newOriginBrush=MAPBrush.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
 					in.addBrush(newOriginBrush);
 				}
 			}
@@ -616,7 +616,7 @@ public class MAP510Writer {
 			in.deleteAttribute("model");
 			if(in.attributeIs("classname", "func_rotating") || in.attributeIs("classname", "func_rotatingdoor")) { // TODO: What entities require origin brushes in CoD?
 				if((origin[0]!=0 || origin[1]!=0 || origin[2]!=0) && !Window.noOriginBrushesIsSelected()) { // If this brush uses the "origin" attribute
-					MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
+					MAPBrush newOriginBrush=MAPBrush.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
 					in.addBrush(newOriginBrush);
 				}
 			}
@@ -763,7 +763,7 @@ public class MAP510Writer {
 			in.deleteAttribute("model");
 			if(in.attributeIs("classname", "func_rotating")) { // TODO: What entities require origin brushes in CoD?
 				if((origin[0]!=0 || origin[1]!=0 || origin[2]!=0) && !Window.noOriginBrushesIsSelected()) { // If this brush uses the "origin" attribute
-					MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
+					MAPBrush newOriginBrush=MAPBrush.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
 					in.addBrush(newOriginBrush);
 				}
 			}
@@ -855,7 +855,7 @@ public class MAP510Writer {
 												double[] origin=in.getOrigin();
 												Vector3D mins=new Vector3D(origin[X]-24, origin[Y]-24, origin[Z]-24);
 												Vector3D maxs=new Vector3D(origin[X]+24, origin[Y]+24, origin[Z]+48);
-												in.addBrush(GenericMethods.createBrush(mins,maxs,"special/trigger"));
+												in.addBrush(MAPBrush.createBrush(mins,maxs,"special/trigger"));
 												in.deleteAttribute("origin");
 												in.setAttribute("classname", "trigger_teleport");
 											} else {
@@ -882,7 +882,7 @@ public class MAP510Writer {
 			in.deleteAttribute("model");
 			if(in.attributeIs("classname", "func_door_rotating")) { // TODO: What entities require origin brushes?
 				if((origin[0]!=0 || origin[1]!=0 || origin[2]!=0) && !Window.noOriginBrushesIsSelected()) { // If this brush uses the "origin" attribute
-					MAPBrush newOriginBrush=GenericMethods.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
+					MAPBrush newOriginBrush=MAPBrush.createBrush(new Vector3D(-Window.getOriginBrushSize(),-Window.getOriginBrushSize(),-Window.getOriginBrushSize()),new Vector3D(Window.getOriginBrushSize(),Window.getOriginBrushSize(),Window.getOriginBrushSize()),"special/origin");
 					in.addBrush(newOriginBrush);
 				}
 			}

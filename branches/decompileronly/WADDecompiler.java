@@ -146,7 +146,7 @@ public class WADDecompiler {
 			
 			// Second, figure out what sector a subsector belongs to, and the type of sector it is.
 			subsectorSectors[i]=-1;
-			DSubSector currentsubsector=doomMap.getSubSectors().getElement(i);
+			Edge currentsubsector=doomMap.getSubSectors().getElement(i);
 			subsectorSidedefs[i]=new int[currentsubsector.getNumSegs()];
 			for(int j=0;j<currentsubsector.getNumSegs();j++) { // For each segment the subsector references
 				DSegment currentsegment=doomMap.getSegments().getElement(currentsubsector.getFirstSeg()+j);
@@ -210,7 +210,7 @@ public class WADDecompiler {
 			}
 			Window.println("Creating brushes for subsector "+i,Window.VERBOSITY_BRUSHCREATION);
 			
-			DSubSector currentsubsector=doomMap.getSubSectors().getElement(i);
+			Edge currentsubsector=doomMap.getSubSectors().getElement(i);
 			
 			// Third, create a few brushes out of the geometry.
 			MAPBrush cielingBrush=new MAPBrush(numBrshs++, 0, false);
@@ -349,9 +349,9 @@ public class WADDecompiler {
 						}
 						MAPBrush outsideBrush=null;
 						if(lowestFloor<=highestCieling) {
-							outsideBrush = GenericMethods.createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], "special/nodraw", new Vector3D(linestart.getX(), linestart.getY(), ZMin), new Vector3D(lineend.getX(), lineend.getY(), ZMax), sideDefShifts[X][subsectorSidedefs[i][j]], sideDefShifts[Y][subsectorSidedefs[i][j]], lowerUnpegged, currentSector.getCielingHeight(), currentSector.getFloorHeight());
+							outsideBrush = MAPBrush.createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], "special/nodraw", new Vector3D(linestart.getX(), linestart.getY(), ZMin), new Vector3D(lineend.getX(), lineend.getY(), ZMax), sideDefShifts[X][subsectorSidedefs[i][j]], sideDefShifts[Y][subsectorSidedefs[i][j]], lowerUnpegged, currentSector.getCielingHeight(), currentSector.getFloorHeight());
 						} else {
-							outsideBrush = GenericMethods.createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], "special/nodraw", new Vector3D(linestart.getX(), linestart.getY(), lowestFloor), new Vector3D(lineend.getX(), lineend.getY(), highestCieling), sideDefShifts[X][subsectorSidedefs[i][j]], sideDefShifts[Y][subsectorSidedefs[i][j]], lowerUnpegged, currentSector.getCielingHeight(), currentSector.getFloorHeight());
+							outsideBrush = MAPBrush.createFaceBrush(midWallTextures[subsectorSidedefs[i][j]], "special/nodraw", new Vector3D(linestart.getX(), linestart.getY(), lowestFloor), new Vector3D(lineend.getX(), lineend.getY(), highestCieling), sideDefShifts[X][subsectorSidedefs[i][j]], sideDefShifts[Y][subsectorSidedefs[i][j]], lowerUnpegged, currentSector.getCielingHeight(), currentSector.getFloorHeight());
 						}
 						world.addBrush(outsideBrush);
 					}
@@ -367,11 +367,11 @@ public class WADDecompiler {
 					if(!linedefFlagsDealtWith[currentseg.getLinedef()]) {
 						linedefFlagsDealtWith[currentseg.getLinedef()]=true;
 						if(!((currentLinedef.getFlags()[0] & ((byte)1 << 0)) == 0)) { // Flag 0x0001 indicates "solid" but doesn't block bullets. It is assumed for all one-sided.
-							MAPBrush solidBrush = GenericMethods.createFaceBrush("special/clip", "special/clip", linestart, lineend,0,0, false,0,0);
+							MAPBrush solidBrush = MAPBrush.createFaceBrush("special/clip", "special/clip", linestart, lineend,0,0, false,0,0);
 							world.addBrush(solidBrush);
 						} else {
 							if(!((currentLinedef.getFlags()[0] & ((byte)1 << 1)) == 0)) { // Flag 0x0002 indicates "monster clip".
-								MAPBrush solidBrush = GenericMethods.createFaceBrush("special/enemyclip", "special/enemyclip", linestart, lineend,0,0, false,0,0);
+								MAPBrush solidBrush = MAPBrush.createFaceBrush("special/enemyclip", "special/enemyclip", linestart, lineend,0,0, false,0,0);
 								world.addBrush(solidBrush);
 							}
 						}
@@ -387,7 +387,7 @@ public class WADDecompiler {
 					if(currentLinedef.getAction()!=0 && !linedefSpecialsDealtWith[currentseg.getLinedef()]) {
 						linedefSpecialsDealtWith[currentseg.getLinedef()]=true;
 						Entity trigger=null;
-						MAPBrush triggerBrush = GenericMethods.createFaceBrush("special/trigger", "special/trigger", linestart, lineend,0,0, false,0,0);
+						MAPBrush triggerBrush = MAPBrush.createFaceBrush("special/trigger", "special/trigger", linestart, lineend,0,0, false,0,0);
 						if(doomMap.getVersion()==DoomMap.TYPE_HEXEN) {
 							boolean[] bitset=new boolean[16];
 							for(int k=0;k<8;k++) {
@@ -599,7 +599,7 @@ public class WADDecompiler {
 			// since they all have the same sides.
 			int[] badSides=new int[0];
 			if(!Window.dontCullIsSelected()) {
-				badSides=GenericMethods.findUnusedPlanes(cielingBrush);
+				badSides=MAPBrush.findUnusedPlanes(cielingBrush);
 				// Need to iterate backward, since these lists go from low indices to high, and
 				// the index of all subsequent items changes when something before it is removed.
 				if(cielingBrush.getNumSides()-badSides.length<4) {

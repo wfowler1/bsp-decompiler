@@ -196,6 +196,74 @@ public class Plane extends LumpObject {
 		}
 		return new Lump<Plane>(elements, in.length, structLength);
 	}
+
+	public static Vector3D[] generatePlanePoints(Plane in) {
+		Window.println("Calculating arbitrary plane points",Window.VERBOSITY_BRUSHCREATION);
+		double planePointCoef=Window.getPlanePointCoef();
+		Vector3D[] plane=new Vector3D[3];
+		// Figure out if the plane is parallel to two of the axes. If so it can be reproduced easily
+		if(in.getB()==0 && in.getC()==0) { // parallel to plane YZ
+			plane[0]=new Vector3D(in.getDist()/in.getA(), -planePointCoef, planePointCoef);
+			plane[1]=new Vector3D(in.getDist()/in.getA(), 0, 0);
+			plane[2]=new Vector3D(in.getDist()/in.getA(), planePointCoef, planePointCoef);
+			if(in.getA()>0) {
+				plane=Plane.flip(plane);
+			}
+		} else {
+			if(in.getA()==0 && in.getC()==0) { // parallel to plane XZ
+				plane[0]=new Vector3D(planePointCoef, in.getDist()/in.getB(), -planePointCoef);
+				plane[1]=new Vector3D(0, in.getDist()/in.getB(), 0);
+				plane[2]=new Vector3D(planePointCoef, in.getDist()/in.getB(), planePointCoef);
+				if(in.getB()>0) {
+					plane=Plane.flip(plane);
+				}
+			} else {
+				if(in.getA()==0 && in.getB()==0) { // parallel to plane XY
+					plane[0]=new Vector3D(-planePointCoef, planePointCoef, in.getDist()/in.getC());
+					plane[1]=new Vector3D(0, 0, in.getDist()/in.getC());
+					plane[2]=new Vector3D(planePointCoef, planePointCoef, in.getDist()/in.getC());
+					if(in.getC()>0) {
+						plane=Plane.flip(plane);
+					}
+				} else { // If you reach this point the plane is not parallel to any two-axis plane.
+					if(in.getA()==0) { // parallel to X axis
+						plane[0]=new Vector3D(-planePointCoef, planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*in.getB()-in.getDist())/in.getC());
+						plane[1]=new Vector3D(0, 0, in.getDist()/in.getC());
+						plane[2]=new Vector3D(planePointCoef, planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*in.getB()-in.getDist())/in.getC());
+						if(in.getC()>0) {
+							plane=Plane.flip(plane);
+						}
+					} else {
+						if(in.getB()==0) { // parallel to Y axis
+							plane[0]=new Vector3D(-(planePointCoef*planePointCoef*in.getC()-in.getDist())/in.getA(), -planePointCoef, planePointCoef*planePointCoef);
+							plane[1]=new Vector3D(in.getDist()/in.getA(), 0, 0);
+							plane[2]=new Vector3D(-(planePointCoef*planePointCoef*in.getC()-in.getDist())/in.getA(), planePointCoef, planePointCoef*planePointCoef);
+							if(in.getA()>0) {
+								plane=Plane.flip(plane);
+							}
+						} else {
+							if(in.getC()==0) { // parallel to Z axis
+								plane[0]=new Vector3D(planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*in.getA()-in.getDist())/in.getB(), -planePointCoef);
+								plane[1]=new Vector3D(0, in.getDist()/in.getB(), 0);
+								plane[2]=new Vector3D(planePointCoef*planePointCoef, -(planePointCoef*planePointCoef*in.getA()-in.getDist())/in.getB(), planePointCoef);
+								if(in.getB()>0) {
+									plane=Plane.flip(plane);
+								}
+							} else { // If you reach this point the plane is not parallel to any axis. Therefore, any two coordinates will give a third.
+								plane[0]=new Vector3D(-planePointCoef, planePointCoef*planePointCoef, -(-planePointCoef*in.getA()+planePointCoef*planePointCoef*in.getB()-in.getDist())/in.getC());
+								plane[1]=new Vector3D(0, 0, in.getDist()/in.getC());
+								plane[2]=new Vector3D(planePointCoef, planePointCoef*planePointCoef, -(planePointCoef*in.getA()+planePointCoef*planePointCoef*in.getB()-in.getDist())/in.getC());
+								if(in.getC()>0) {
+									plane=Plane.flip(plane);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return plane;
+	}
 	
 	// ACCESSORS/MUTATORS
 	

@@ -223,7 +223,7 @@ public class BSP46Decompiler {
 			double VAxisLength=1;
 			double texScaleS=1;
 			double texScaleT=1;
-			Vector3D[] textureAxes=GenericMethods.textureAxisFromPlane(currentPlane);
+			Vector3D[] textureAxes=TexInfo.textureAxisFromPlane(currentPlane);
 			double originShiftS=(textureAxes[0].getX()*origin[X])+(textureAxes[0].getY()*origin[Y])+(textureAxes[0].getZ()*origin[Z]);
 			double originShiftT=(textureAxes[1].getX()*origin[X])+(textureAxes[1].getY()*origin[Y])+(textureAxes[1].getZ()*origin[Z]);
 			double textureShiftS;
@@ -277,7 +277,7 @@ public class BSP46Decompiler {
 			// the useless sides from one brush, and delete those sides from all of them,
 			// since they all have the same sides.
 			if(!Window.dontCullIsSelected() && numSides>6) {
-				int[] badSides=GenericMethods.findUnusedPlanes(mapBrush);
+				int[] badSides=MAPBrush.findUnusedPlanes(mapBrush);
 				// Need to iterate backward, since these lists go from low indices to high, and
 				// the index of all subsequent items changes when something before it is removed.
 				if(mapBrush.getNumSides()-badSides.length<4) {
@@ -293,18 +293,18 @@ public class BSP46Decompiler {
 		if(!Window.skipFlipIsSelected()) {
 			if(mapBrush.hasBadSide()) { // If there's a side that might be backward
 				if(mapBrush.hasGoodSide()) { // If there's a side that is forward
-					mapBrush=GenericMethods.SimpleCorrectPlanes(mapBrush);
+					mapBrush=MAPBrush.SimpleCorrectPlanes(mapBrush);
 					numSimpleCorrects++;
 					if(Window.calcVertsIsSelected()) { // This is performed in advancedcorrect, so don't use it if that's happening
 						try {
-							mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+							mapBrush=MAPBrush.CalcBrushVertices(mapBrush);
 						} catch(java.lang.NullPointerException e) {
 							Window.println("WARNING: Brush vertex calculation failed on entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",Window.VERBOSITY_WARNINGS);
 						}
 					}
 				} else { // If no forward side exists
 					try {
-						mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush);
+						mapBrush=MAPBrush.AdvancedCorrectPlanes(mapBrush);
 						numAdvancedCorrects++;
 					} catch(java.lang.ArithmeticException e) {
 						Window.println("WARNING: Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",Window.VERBOSITY_WARNINGS);
@@ -316,7 +316,7 @@ public class BSP46Decompiler {
 		} else {
 			if(Window.calcVertsIsSelected()) { // This is performed in advancedcorrect, so don't use it if that's happening
 				try {
-					mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+					mapBrush=MAPBrush.CalcBrushVertices(mapBrush);
 				} catch(java.lang.NullPointerException e) {
 					Window.println("WARNING: Brush vertex calculation failed on entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",Window.VERBOSITY_WARNINGS);
 				}

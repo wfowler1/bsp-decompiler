@@ -150,7 +150,7 @@ public class QuakeDecompiler {
 					Texture currentTexture=BSPObject.getTextures().getElement(currentTexInfo.getTexture());
 					String texture=currentTexture.getName();
 					
-					MAPBrush faceBrush = GenericMethods.createBrushFromWind(froms, tos, texture, "special/nodraw", currentTexInfo);
+					MAPBrush faceBrush = MAPBrush.createBrushFromWind(froms, tos, texture, "special/nodraw", currentTexInfo);
 					mapFile.getElement(i).addBrush(faceBrush);
 				}
 			}

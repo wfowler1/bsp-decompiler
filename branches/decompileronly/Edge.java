@@ -1,6 +1,7 @@
 // Edge class
 
 // Holds all the data for an edge in a Quake, Half-Life, or Quake 2 map.
+// Doubles as a subsector class for Doom maps, has accessors for them.
 
 public class Edge extends LumpObject {
 	
@@ -24,7 +25,7 @@ public class Edge extends LumpObject {
 		secondVertex=inSecondVertex;
 	}
 	
-	// This constructor takes 20 bytes in a byte array, as though
+	// This constructor takes bytes in a byte array, as though
 	// it had just been read by a FileInputStream.
 	public Edge(byte[] in, int type) {
 		super(in);
@@ -43,6 +44,8 @@ public class Edge extends LumpObject {
 			case BSP.TYPE_DMOMAM:
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_SOF:
+			case DoomMap.TYPE_DOOM:
+			case DoomMap.TYPE_HEXEN:
 				firstVertex=DataReader.readUShort(in[0], in[1]);
 				secondVertex=DataReader.readUShort(in[2], in[3]);
 				break;
@@ -71,6 +74,8 @@ public class Edge extends LumpObject {
 			case BSP.TYPE_DMOMAM:
 			case BSP.TYPE_QUAKE2:
 			case BSP.TYPE_SOF:
+			case DoomMap.TYPE_DOOM:
+			case DoomMap.TYPE_HEXEN:
 				structLength=4;
 				break;
 			case BSP.TYPE_VINDICTUS:
@@ -109,5 +114,13 @@ public class Edge extends LumpObject {
 	
 	public void setSecondVertex(int in) {
 		secondVertex=in;
+	}
+	
+	public int getNumSegs() {
+		return firstVertex;
+	}
+	
+	public int getFirstSeg() {
+		return secondVertex;
 	}
 }

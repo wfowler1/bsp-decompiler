@@ -519,7 +519,7 @@ public class VMFWriter {
 							double[] origin=in.getOrigin();
 							Vector3D mins=new Vector3D(origin[X]-24, origin[Y]-24, origin[Z]-24);
 							Vector3D maxs=new Vector3D(origin[X]+24, origin[Y]+24, origin[Z]+48);
-							in.addBrush(GenericMethods.createBrush(mins,maxs,"tools/toolstrigger"));
+							in.addBrush(MAPBrush.createBrush(mins,maxs,"tools/toolstrigger"));
 							in.deleteAttribute("origin");
 							in.setAttribute("classname", "trigger_teleport");
 						} else {

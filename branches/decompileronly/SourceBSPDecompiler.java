@@ -95,7 +95,7 @@ public class SourceBSPDecompiler {
 				if(face.getTexture()>-1) {
 					currentTexInfo=BSPObject.getTexInfo().getElement(face.getTexture());
 				} else {
-					Vector3D[] axes=GenericMethods.textureAxisFromPlane(BSPObject.getPlanes().getElement(face.getPlane()));
+					Vector3D[] axes=TexInfo.textureAxisFromPlane(BSPObject.getPlanes().getElement(face.getPlane()));
 					currentTexInfo=new TexInfo(axes[0], 0, axes[1], 0, 0, BSPObject.findTexDataWithTexture("tools/toolsclip"));
 				}
 				SourceTexData currentTexData=BSPObject.getTexDatas().getElement(currentTexInfo.getTexture());
@@ -134,7 +134,7 @@ public class SourceBSPDecompiler {
 					}
 				}
 				
-				MAPBrush displacementBrush = GenericMethods.createBrushFromWind(froms, tos, texture, "TOOLS/TOOLSNODRAW", currentTexInfo);
+				MAPBrush displacementBrush = MAPBrush.createBrushFromWind(froms, tos, texture, "TOOLS/TOOLSNODRAW", currentTexInfo);
 				
 				MAPDisplacement mapdisp=new MAPDisplacement(disp, BSPObject.getDispVerts().getVertsInDisp(disp.getDispVertStart(), disp.getPower()));
 				displacementBrush.getSide(0).setDisplacement(mapdisp);
@@ -233,7 +233,7 @@ public class SourceBSPDecompiler {
 					if((texture.length()>6 && texture.substring(0,6).equalsIgnoreCase("tools/")) || currentTexInfo==null) {
 						// Tools textured faces do not maintain their own texture axes. Therefore, an arbitrary axis is
 						// used in the compiled map. When decompiled, these axes might smear the texture on the face. Fix that.
-						Vector3D[] axes=GenericMethods.textureAxisFromPlane(currentPlane);
+						Vector3D[] axes=TexInfo.textureAxisFromPlane(currentPlane);
 						textureU=axes[0].getPoint();
 						textureV=axes[1].getPoint();
 					} else {
@@ -268,18 +268,18 @@ public class SourceBSPDecompiler {
 		if(!Window.skipFlipIsSelected()) {
 			if(mapBrush.hasBadSide()) { // If there's a side that might be backward
 				if(mapBrush.hasGoodSide()) { // If there's a side that is forward
-					mapBrush=GenericMethods.SimpleCorrectPlanes(mapBrush);
+					mapBrush=MAPBrush.SimpleCorrectPlanes(mapBrush);
 					numSimpleCorrects++;
 					if(Window.calcVertsIsSelected()) { // This is performed in advancedcorrect, so don't use it if that's happening
 						try {
-							mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+							mapBrush=MAPBrush.CalcBrushVertices(mapBrush);
 						} catch(java.lang.NullPointerException e) {
 							Window.println("WARNING: Brush vertex calculation failed on entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",Window.VERBOSITY_WARNINGS);
 						}
 					}
 				} else { // If no forward side exists
 					try {
-						mapBrush=GenericMethods.AdvancedCorrectPlanes(mapBrush);
+						mapBrush=MAPBrush.AdvancedCorrectPlanes(mapBrush);
 						numAdvancedCorrects++;
 					} catch(java.lang.ArithmeticException e) {
 						Window.println("WARNING: Plane correct returned 0 triangles for entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",Window.VERBOSITY_WARNINGS);
@@ -291,7 +291,7 @@ public class SourceBSPDecompiler {
 		} else {
 			if(Window.calcVertsIsSelected()) { // This is performed in advancedcorrect, so don't use it if that's happening
 				try {
-					mapBrush=GenericMethods.CalcBrushVertices(mapBrush);
+					mapBrush=MAPBrush.CalcBrushVertices(mapBrush);
 				} catch(java.lang.NullPointerException e) {
 					Window.println("WARNING: Brush vertex calculation failed on entity "+mapBrush.getEntnum()+" brush "+mapBrush.getBrushnum()+"",Window.VERBOSITY_WARNINGS);
 				}
@@ -311,7 +311,7 @@ public class SourceBSPDecompiler {
 	}
 	
 	public TexInfo createPerpTexInfo(Plane in) {
-		Vector3D[] axes=GenericMethods.textureAxisFromPlane(in);
+		Vector3D[] axes=TexInfo.textureAxisFromPlane(in);
 		return new TexInfo(axes[0], 0, axes[1], 0, 0, BSPObject.findTexDataWithTexture("tools/toolsclip"));
 	} 
 }
