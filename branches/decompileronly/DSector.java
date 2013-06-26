@@ -34,22 +34,8 @@ public class DSector extends LumpObject {
 		super(in);
 		floor=DataReader.readShort(in[0], in[1]);
 		cieling=DataReader.readShort(in[2], in[3]);
-		floorTexture="";
-		for(int i=0;i<8;i++) {
-			if(in[i+4] != (byte)0x00) {
-				floorTexture+=(char)in[i+4];
-			} else {
-				break;
-			}
-		}
-		cielingTexture="";
-		for(int i=0;i<8;i++) {
-			if(in[i+12] != (byte)0x00) {
-				cielingTexture+=(char)in[i+12];
-			} else {
-				break;
-			}
-		}
+		floorTexture=DataReader.readNullTerminatedString(new byte[] { in[4], in[5], in[6], in[7], in[8], in[9], in[10], in[11] });
+		cielingTexture=DataReader.readNullTerminatedString(new byte[] { in[12], in[13], in[14], in[15], in[16], in[17], in[18], in[19] });
 		light=DataReader.readShort(in[20], in[21]);
 		type=DataReader.readShort(in[22], in[23]);
 		tag=DataReader.readShort(in[24], in[25]);

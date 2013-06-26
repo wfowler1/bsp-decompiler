@@ -1016,6 +1016,10 @@ public class Window extends JPanel implements ActionListener {
 		print(out+LF,priority);
 	}
 	
+	protected static void println(String out) {
+		print(out+LF,VERBOSITY_ALWAYS);
+	}
+	
 	protected static void println() {
 		print(LF,VERBOSITY_ALWAYS);
 	}

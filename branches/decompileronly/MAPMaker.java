@@ -16,7 +16,6 @@ public class MAPMaker {
 			switch(version) {
 				// Gearcraft
 				case BSP.TYPE_NIGHTFIRE:
-				case DoomMap.TYPE_DOOM: // I don't know where else to put this
 					MAP510Writer GCMAPMaker;
 					if(Window.getOutputFolder().equals("default")) {
 						Window.println("Saving "+mapfolder+mapname+".map...",Window.VERBOSITY_ALWAYS);
@@ -79,6 +78,17 @@ public class MAPMaker {
 					} else {
 						Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname+".vmf...",Window.VERBOSITY_ALWAYS);
 						VMFMaker=new VMFWriter(data, Window.getOutputFolder()+"\\"+mapname,version);
+					}
+					VMFMaker.write();
+					break;
+				case DoomMap.TYPE_DOOM: // DoomEdit seems somehow appropriate.
+					DoomEditMapWriter DOOMMAPMaker;
+					if(Window.getOutputFolder().equals("default")) {
+						Window.println("Saving "+mapfolder+mapname+".map...",Window.VERBOSITY_ALWAYS);
+						DOOMMAPMaker=new DoomEditMapWriter(data, mapfolder+mapname,version);
+					} else {
+						Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname+".vmf...",Window.VERBOSITY_ALWAYS);
+						DOOMMAPMaker=new DoomEditMapWriter(data, Window.getOutputFolder()+"\\"+mapname,version);
 					}
 					VMFMaker.write();
 					break;

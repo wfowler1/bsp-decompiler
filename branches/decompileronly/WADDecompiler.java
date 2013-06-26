@@ -49,7 +49,6 @@ public class WADDecompiler {
 		
 		mapFile=new Entities();
 		Entity world = new Entity("worldspawn");
-		world.setAttribute("mapversion", "510");
 		mapFile.add(world);
 		
 		String[] lowerWallTextures=new String[doomMap.getSidedefs().size()];
@@ -216,7 +215,7 @@ public class WADDecompiler {
 			MAPBrush cielingBrush=new MAPBrush(numBrshs++, 0, false);
 			MAPBrush floorBrush=new MAPBrush(numBrshs++, 0, false);
 			MAPBrush midBrush=new MAPBrush(numBrshs++, 0, false);
-			MAPBrush damageBrush=new MAPBrush(numBrshs++, 0, false);
+			MAPBrush sectorTriggerBrush=new MAPBrush(numBrshs++, 0, false);
 			DSector currentSector=doomMap.getSectors().getElement(subsectorSectors[i]);
 			
 			Vector3D[] roofPlane=new Vector3D[3];
@@ -363,7 +362,7 @@ public class WADDecompiler {
 					} else {
 						midTShift+=currentSector.getCielingHeight();
 					}
-					mid=new MAPBrushSide(plane, midWallTextures[subsectorSidedefs[i][j]], texS, SShift, texT, midTShift, 0, 1, 1, 0, "wld_lightmap", 16, 0);
+					mid=new MAPBrushSide(plane, midWallTextures[subsectorSidedefs[i][j]], texS, SShift, texT, midTShift, 0, 1, 1, 0, "wld_masked", 16, 0);
 					if(!linedefFlagsDealtWith[currentseg.getLinedef()]) {
 						linedefFlagsDealtWith[currentseg.getLinedef()]=true;
 						if(!((currentLinedef.getFlags()[0] & ((byte)1 << 0)) == 0)) { // Flag 0x0001 indicates "solid" but doesn't block bullets. It is assumed for all one-sided.
@@ -376,14 +375,7 @@ public class WADDecompiler {
 							}
 						}
 					}
-					int othersideindex=-1;
-					if(currentLinedef.getRight()==subsectorSidedefs[i][j]) {
-						othersideindex=currentLinedef.getLeft();
-					}
-					if(currentLinedef.getLeft()==subsectorSidedefs[i][j]) {
-						othersideindex=currentLinedef.getRight();
-					}
-					DSidedef otherside=doomMap.getSidedefs().getElement(othersideindex);
+					DSidedef otherside=doomMap.getSidedefs().getElement(currentLinedef.getLeft());
 					if(currentLinedef.getAction()!=0 && !linedefSpecialsDealtWith[currentseg.getLinedef()]) {
 						linedefSpecialsDealtWith[currentseg.getLinedef()]=true;
 						Entity trigger=null;
@@ -528,7 +520,7 @@ public class WADDecompiler {
 				cielingBrush.add(high);
 				midBrush.add(mid);
 				floorBrush.add(low);
-				damageBrush.add(damage);
+				sectorTriggerBrush.add(damage);
 			}
 			
 			MAPBrushSide roof=new MAPBrushSide(roofPlane, "special/nodraw", roofTexS, 0, roofTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
@@ -539,8 +531,8 @@ public class WADDecompiler {
 			MAPBrushSide bottom=new MAPBrushSide(bottomPlane, "special/nodraw", bottomTexS, 0, bottomTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 			MAPBrushSide invertedFloor=new MAPBrushSide(Plane.flip(floorPlane), "special/trigger", floorTexS, 0, floorTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
 			MAPBrushSide damageTop=new MAPBrushSide(new Vector3D[] { floorPlane[0].add(new Vector3D(0,0,1)), floorPlane[1].add(new Vector3D(0,0,1)), floorPlane[2].add(new Vector3D(0,0,1)) }, "special/trigger", floorTexS, 0, floorTexT, 0, 0, 1, 1, 0, "wld_lightmap", 16, 0);
-			damageBrush.add(damageTop);
-			damageBrush.add(invertedFloor);
+			sectorTriggerBrush.add(damageTop);
+			sectorTriggerBrush.add(invertedFloor);
 
 			midBrush.add(top);
 			midBrush.add(bottom);
@@ -589,7 +581,7 @@ public class WADDecompiler {
 				cielingBrush.add(high);
 				midBrush.add(mid);
 				floorBrush.add(low);
-				damageBrush.add(damage);
+				sectorTriggerBrush.add(damage);
 				
 				leftSide=nodeIsLeft[nextNode];
 				nextNode=nodeparents[nextNode];
@@ -643,38 +635,96 @@ public class WADDecompiler {
 				mapFile.add(middleEnt);
 			}
 			Entity hurtMe=new Entity("trigger_hurt");
+			Entity triggerSecret=new Entity("trigger_bondsecret");
 			switch(currentSector.getType()) {
-				case 4:
-				case 11:
-				case 16:
+				case 4:  // 20% damage/s with lighting properties
+				case 11: // 20% damage/s
+				case 16: // 20% damage/s plus end level when player is almost dead
 					hurtMe.setAttribute("dmg", "40");
-					if(damageBrush.getNumSides()-badSides.length>=4) {
-						for(int j=badSides.length-1;j>-1;j--) {
-							damageBrush.delete(badSides[j]);
+					if(!Window.dontCullIsSelected()) {
+						if(sectorTriggerBrush.getNumSides()-badSides.length>=4) {
+							for(int j=badSides.length-1;j>-1;j--) {
+								sectorTriggerBrush.delete(badSides[j]);
+							}
 						}
 					}
-					hurtMe.addBrush(damageBrush);
+					hurtMe.addBrush(sectorTriggerBrush);
 					mapFile.add(hurtMe);
 					break;
-				case 5:
+				case 5: // 10% damage/s
 					hurtMe.setAttribute("dmg", "20");
-					if(damageBrush.getNumSides()-badSides.length>=4) {
-						for(int j=badSides.length-1;j>-1;j--) {
-							damageBrush.delete(badSides[j]);
+					if(!Window.dontCullIsSelected()) {
+						if(sectorTriggerBrush.getNumSides()-badSides.length>=4) {
+							for(int j=badSides.length-1;j>-1;j--) {
+								sectorTriggerBrush.delete(badSides[j]);
+							}
 						}
 					}
-					hurtMe.addBrush(damageBrush);
+					hurtMe.addBrush(sectorTriggerBrush);
 					mapFile.add(hurtMe);
 					break;
-				case 7:
+				case 7: // 5% damage/s
 					hurtMe.setAttribute("dmg", "10");
-					if(damageBrush.getNumSides()-badSides.length>=4) {
-						for(int j=badSides.length-1;j>-1;j--) {
-							damageBrush.delete(badSides[j]);
+					if(!Window.dontCullIsSelected()) {
+						if(sectorTriggerBrush.getNumSides()-badSides.length>=4) {
+							for(int j=badSides.length-1;j>-1;j--) {
+								sectorTriggerBrush.delete(badSides[j]);
+							}
 						}
 					}
-					hurtMe.addBrush(damageBrush);
+					hurtMe.addBrush(sectorTriggerBrush);
 					mapFile.add(hurtMe);
+					break;
+				case 9: // "secret"
+					triggerSecret.setAttribute("Sound", "common/mission_success.wav");
+					if(!Window.dontCullIsSelected()) {
+						if(sectorTriggerBrush.getNumSides()-badSides.length>=4) {
+							for(int j=badSides.length-1;j>-1;j--) {
+								sectorTriggerBrush.delete(badSides[j]);
+							}
+						}
+					}
+					triggerSecret.addBrush(sectorTriggerBrush);
+					mapFile.add(triggerSecret);
+					break;
+				case 10: // 30 seconds after level start, "close" like a door
+					if(currentSector.getTag()==0) {
+						sectorTag[subsectorSectors[i]]=-3;
+					}
+					break;
+				case 14: // 300 seconds after level start, "open" like a door
+					if(currentSector.getTag()==0) {
+						sectorTag[subsectorSectors[i]]=-4;
+					}
+					break;
+				default:
+					if(!Window.dontCullIsSelected()) {
+						if(sectorTriggerBrush.getNumSides()-badSides.length>=4) {
+							for(int j=badSides.length-1;j>-1;j--) {
+								sectorTriggerBrush.delete(badSides[j]);
+							}
+						}
+					}
+					if((currentSector.getType() & 96) != 0) { // "Generalized" pain sectors
+						if((currentSector.getType() & 96) == 32) {
+							hurtMe.setAttribute("dmg", "10");
+						} else {
+							if((currentSector.getType() & 96) == 64) {
+								hurtMe.setAttribute("dmg", "20");
+							} else {
+								if((currentSector.getType() & 96) == 96) {
+									hurtMe.setAttribute("dmg", "40");
+								}
+							}
+						}
+						hurtMe.addBrush(sectorTriggerBrush);
+						mapFile.add(hurtMe);
+					}
+					if((currentSector.getType() & 128) == 128) { // "Generalized" secret trigger
+						triggerSecret.setAttribute("Sound", "common/mission_success.wav");
+						triggerSecret.addBrush(sectorTriggerBrush);
+						mapFile.add(triggerSecret);
+					}
 					break;
 			}
 			Window.setProgress(jobnum, i+1, doomMap.getSubSectors().size(), "Decompiling...");
@@ -695,7 +745,7 @@ public class WADDecompiler {
 					cielingsUsed[j]=true;
 				}
 			} else {
-				if(sectorTag[i]==-1 || sectorTag[i]==-2) { // I'm using this to mean a door with no tag number
+				if(sectorTag[i]==-1 || sectorTag[i]==-2 || sectorTag[i]==-3 || sectorTag[i]==-4) { // I'm using this to mean a door with no tag number
 					Entity newDoor=new Entity("func_door");
 					newDoor.setAttribute("speed", "60");
 					newDoor.setAttribute("angles", "270 0 0");
@@ -707,6 +757,23 @@ public class WADDecompiler {
 						if(sectorTag[i]==-2) {
 							newDoor.setAttribute("wait", "-1");
 						}
+					}
+					if(sectorTag[i]==-3) {
+						Entity triggerAuto=new Entity("trigger_auto");
+						triggerAuto.setAttribute("target", "sectornum"+i+"door_mm");
+						Entity multiManager=new Entity("multi_manager");
+						multiManager.setAttribute("sectornum"+i+"door", "30");
+						mapFile.add(triggerAuto);
+						mapFile.add(multiManager);
+					}
+					if(sectorTag[i]==-4) {
+						newDoor.setAttribute("Spawnflags", "1");
+						Entity triggerAuto=new Entity("trigger_auto");
+						triggerAuto.setAttribute("target", "sectornum"+i+"door_mm");
+						Entity multiManager=new Entity("multi_manager");
+						multiManager.setAttribute("sectornum"+i+"door", "300");
+						mapFile.add(triggerAuto);
+						mapFile.add(multiManager);
 					}
 					int lowestNeighborCielingHeight=getLowestNeighborCielingHeight(i);
 					int lip=ZMax-lowestNeighborCielingHeight+4;
@@ -911,7 +978,7 @@ public class WADDecompiler {
 			}
 			
 			Entity thing=null;
-			// Things from both Doom and Hexen here
+			// Things from both Doom. Currently converting to appropriate Doom 3 entities.
 			switch(currentThing.getClassNum()) {
 				case 1: // Single player spawn
 				case 2: // coop
@@ -941,22 +1008,22 @@ public class WADDecompiler {
 					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
 					break;
 				case 17: // Big cell pack
-					thing=new Entity("ammo_bondmine");
+					thing=new Entity("ammo_cells_large");
 					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
 					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
 					break;
 				case 82: // Super shotgun
-					thing=new Entity("weapon_pdw90");
+					thing=new Entity("weapon_shotgun_double");
 					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
 					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
 					break;
 				case 2001: // Shotgun
-					thing=new Entity("weapon_frinesi");
+					thing=new Entity("weapon_shotgun");
 					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
 					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
 					break;
 				case 2002: // Chaingun
-					thing=new Entity("weapon_minigun");
+					thing=new Entity("weapon_chaingun");
 					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
 					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
 					break;
@@ -966,61 +1033,55 @@ public class WADDecompiler {
 					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
 					break;
 				case 2004: // Plasma gun
-					thing=new Entity("weapon_grenadelauncher");
+					thing=new Entity("weapon_plasmagun");
 					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
 					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
 					break;
 				case 2005: // Chainsaw
-					thing=new Entity("weapon_ronin");
+					thing=new Entity("weapon_chainsaw");
 					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
 					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
 					break;
 				case 2006: // BFG9000
-					thing=new Entity("weapon_laserrifle");
+					thing=new Entity("weapon_bfg");
 					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
 					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
 					break;
 				case 2007: // Ammo clip
-					thing=new Entity("ammo_pp9");
+					thing=new Entity("ammo_clip_small");
 					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
 					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
 					break;
 				case 2008: // Shotgun shells
-					thing=new Entity("ammo_mini");
+					thing=new Entity("ammo_shells_small");
 					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
 					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
 					break;
 				case 2010: // Rocket
-					thing=new Entity("ammo_darts");
+					thing=new Entity("ammo_rockets_small");
 					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
 					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
 					break;
 				case 2046: // Box of Rockets
-					thing=new Entity("ammo_rocketlauncher");
+					thing=new Entity("ammo_rockets_large");
 					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
 					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
 					break;
 				case 2047: // Cell pack
-					thing=new Entity("ammo_grenadelauncher");
+					thing=new Entity("ammo_cells_small");
 					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
 					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
 					break;
 				case 2048: // Box of ammo
-					thing=new Entity("ammo_mp9");
+					thing=new Entity("ammo_bullets_large");
 					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
 					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
 					break;
 				case 2049: // Box of shells
-					thing=new Entity("ammo_shotgun");
+					thing=new Entity("ammo_shells_large");
 					thing.setAttribute("origin", origin.getX()+" "+origin.getY()+" "+origin.getZ());
 					thing.setAttribute("angles", "0 "+currentThing.getAngle()+" 0");
 					break;
-			}
-			
-			if(doomMap.getVersion()==DoomMap.TYPE_HEXEN) { // Hexen only
-			
-			} else { // Doom only
-				
 			}
 			
 			if(thing!=null) {
@@ -1029,7 +1090,7 @@ public class WADDecompiler {
 		}
 		
 		Entity playerequip=new Entity("game_player_equip");
-		playerequip.setAttribute("weapon_pp9", "1");
+		playerequip.setAttribute("weapon_pistol", "1");
 		playerequip.setAttribute("origin", playerStartOrigin);
 		mapFile.add(playerequip);
 		return mapFile;

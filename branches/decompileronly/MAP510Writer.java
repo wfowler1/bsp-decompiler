@@ -112,6 +112,7 @@ public class MAP510Writer {
 					break;
 				case DoomMap.TYPE_DOOM:
 				case DoomMap.TYPE_HEXEN:
+					current=entDoomToEntM510(current);
 					break;
 				case BSP.TYPE_COD:
 					current=ent59ToEntM510(current);
@@ -971,6 +972,69 @@ public class MAP510Writer {
 											newFlagBase.setAttribute("goal_no", "2");
 											newFlagBase.setAttribute("model", "models/ctf_flag_stand_mi6.mdl");
 											data.add(newFlagBase);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return in;
+	}
+	
+	private Entity entDoomToEntM510(Entity in) {
+		if(in.attributeIs("classname", "weapon_pistol")) {
+			in.setAttribute("classname", "weapon_p99");
+		} else {
+			if(in.attributeIs("classname", "ammo_cells_large")) {
+				in.setAttribute("classname", "ammo_bondmine");
+			} else {
+				if(in.attributeIs("classname", "weapon_shotgun_double")) {
+					in.setAttribute("classname", "weapon_pdw90");
+				} else {
+					if(in.attributeIs("classname", "weapon_shotgun")) {
+						in.setAttribute("classname", "weapon_frinesi");
+					} else {
+						if(in.attributeIs("classname", "weapon_chaingun")) {
+							in.setAttribute("classname", "weapon_minigun");
+						} else {
+							if(in.attributeIs("classname", "weapon_plasmagun")) {
+								in.setAttribute("classname", "weapon_grenadelauncher");
+							} else {
+								if(in.attributeIs("classname", "weapon_chainsaw")) {
+									in.setAttribute("classname", "weapon_ronin");
+								} else {
+									if(in.attributeIs("classname", "weapon_bfg")) {
+										in.setAttribute("classname", "weapon_laserrifle");
+									} else {
+										if(in.attributeIs("classname", "ammo_clip_small")) {
+											in.setAttribute("classname", "ammo_p99");
+										} else {
+											if(in.attributeIs("classname", "ammo_shells_small")) {
+												in.setAttribute("classname", "ammo_mini");
+											} else {
+												if(in.attributeIs("classname", "ammo_rockets_small")) {
+													in.setAttribute("classname", "ammo_darts");
+												} else {
+													if(in.attributeIs("classname", "ammo_rockets_large")) {
+														in.setAttribute("classname", "ammo_rocketlauncher");
+													} else {
+														if(in.attributeIs("classname", "ammo_cells_small")) {
+															in.setAttribute("classname", "ammo_grenadelauncher");
+														} else {
+															if(in.attributeIs("classname", "ammo_bullets_large")) {
+																in.setAttribute("classname", "ammo_mp9");
+															} else {
+																if(in.attributeIs("classname", "ammo_shells_large")) {
+																	in.setAttribute("classname", "ammo_shotgun");
+																}
+															}
+														}
+													}
+												}
+											}
 										}
 									}
 								}
