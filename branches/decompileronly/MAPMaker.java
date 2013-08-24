@@ -90,7 +90,7 @@ public class MAPMaker {
 						Window.println("Saving "+Window.getOutputFolder()+"\\"+mapname+".vmf...",Window.VERBOSITY_ALWAYS);
 						DOOMMAPMaker=new DoomEditMapWriter(data, Window.getOutputFolder()+"\\"+mapname,version);
 					}
-					VMFMaker.write();
+					DOOMMAPMaker.write();
 					break;
 				default:
 					Window.println("WARNING: No default format specified for BSP version "+version+", defaulting to GearCraft.", Window.VERBOSITY_WARNINGS);
