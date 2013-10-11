@@ -3,6 +3,8 @@
 // will be left as null. Then it will be fed into a universal decompile method
 // which should be able to perform its job based on what data is stored.
 
+import java.util.Stack;
+
 public class BSP {
 	
 	// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
@@ -282,13 +284,13 @@ public class BSP {
 		} catch(java.lang.ArrayIndexOutOfBoundsException e) {
 			return nodeLeaves;
 		}
-		NodeStack nodestack = new NodeStack();
+		Stack nodestack = new Stack<Node>();
 		nodestack.push(headNode);
  
 		Node currentNode;
 
-		while (!nodestack.isEmpty()) {
-			currentNode = nodestack.pop();
+		while (!nodestack.empty()) {
+			currentNode = (Node)nodestack.pop();
 			int right = currentNode.getChild2();
 			if (right >= 0) {
 				nodestack.push(nodes.getElement(right));
@@ -626,7 +628,7 @@ public class BSP {
 	// Contains a "stack" of Nodes. This aids greatly in the
 	// traversal of a BSP tree without use of recursion.
 	
-	private class NodeStack {
+	/*private class NodeStack {
 		
 		// INITIAL DATA DECLARATION AND DEFINITION OF CONSTANTS
 		
@@ -672,5 +674,5 @@ public class BSP {
 		public int getSize() {
 			return stack.length;
 		}
-	}
+	}*/
 }
