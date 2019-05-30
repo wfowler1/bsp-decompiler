@@ -18,8 +18,6 @@ namespace Decompiler {
 		/// <param name="worldPosition">The world coordinates of the entity using this <see cref="TextureInfo"/>. Usually <c>Vector3d.zero</c>.</param>
 		/// <returns>A <see cref="TextureInfo"/> object for use in MAP output.</returns>
 		public static TextureInfo BSP2MAPTexInfo(this TextureInfo texInfo, Vector3d worldPosition) {
-			// There's a lot of weird vector math going on here, don't try to understand it.
-			// Suffice it to say, this is the tried-and-true method of getting what we need.
 			double uScale = 1.0 / texInfo.uAxis.magnitude;
 			double vScale = 1.0 / texInfo.vAxis.magnitude;
 			Vector3d uAxis = texInfo.uAxis.normalized;

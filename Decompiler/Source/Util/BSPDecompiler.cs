@@ -279,12 +279,12 @@ namespace Decompiler {
 					    _bsp.version == MapType.Source21 ||
 					    _bsp.version == MapType.Source22 ||
 					    _bsp.version == MapType.Source23 ||
-						 _bsp.version == MapType.Source27 ||
-						 _bsp.version == MapType.Vindictus ||
-						 _bsp.version == MapType.DMoMaM ||
-						 _bsp.version == MapType.L4D2 ||
+					    _bsp.version == MapType.Source27 ||
+					    _bsp.version == MapType.Vindictus ||
+					    _bsp.version == MapType.DMoMaM ||
+					    _bsp.version == MapType.L4D2 ||
 					    _bsp.version == MapType.TacticalInterventionEncrypted ||
-						_bsp.version == MapType.Titanfall) {
+					    _bsp.version == MapType.Titanfall) {
 						texInfo = _bsp.texInfo[brushSide.texture];
 						TextureData currentTexData;
 						// I've only found one case where this is bad: c2a3a in HL Source. Don't know why.
@@ -307,7 +307,7 @@ namespace Decompiler {
 			}
 
 			TextureInfo outputTexInfo;
-			if (texInfo != null) {
+			if (texInfo.data != null && texInfo.data.Length > 0) {
 				outputTexInfo = texInfo.BSP2MAPTexInfo(worldPosition);
 			} else {
 				Vector3d[] newAxes = TextureInfo.TextureAxisFromPlane(plane);
