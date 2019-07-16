@@ -65,15 +65,18 @@ namespace Decompiler {
 		/// <param name="leaves">A <see cref="List"/> of <see cref="Leaf"/> objects to get <see cref="Brush"/> references from.</param>
 		/// <returns>All the <see cref="Brush"/> objects referenced from the given <see cref="Leaf"/> objects.</returns>
 		public static List<Brush> GetBrushesInLeafList(this BSP bsp, IEnumerable<Leaf> leaves) {
-			// Use HashSet here. A Brush may be referenced through many Leafs. The default pointer hash should prevent that.
-			HashSet<Brush> brushes = new HashSet<Brush>();
+			List<Brush> brushes = new List<Brush>();
+			bool[] brushesUsed = new bool[bsp.brushes.Count];
 			foreach (Leaf leaf in leaves) {
 				List<long> markBrushesInLeaf = bsp.GetReferencedObjects<long>(leaf, "markBrushes");
 				foreach (long markBrush in markBrushesInLeaf) {
-					brushes.Add(bsp.brushes[(int)markBrush]);
+					if (!brushesUsed[(int)markBrush]) {
+						brushes.Add(bsp.brushes[(int)markBrush]);
+						brushesUsed[(int)markBrush] = true;
+					}
 				}
 			}
-			return brushes.ToList<Brush>();
+			return brushes;
 		}
 
 		/// <summary>
