@@ -126,11 +126,11 @@ namespace Decompiler {
 
 			string extension = deepCopy ? "_gc.map" : ".map";
 			if (string.IsNullOrEmpty(_master.settings.outputFolder)) {
-				_master.Print("Writing file " + _mapDirectory + _mapName + extension + " for Gearcraft");
-				File.WriteAllText(_mapDirectory + _mapName + extension, output);
+				_master.Print("Writing file " + Path.Combine(_mapDirectory, _mapName + extension) + " for Gearcraft");
+				File.WriteAllText(Path.Combine(_mapDirectory, _mapName + extension), output);
 			} else {
-				_master.Print("Writing file " + _master.settings.outputFolder + _mapName + extension + " for Gearcraft");
-				File.WriteAllText(_master.settings.outputFolder + _mapName + extension, output);
+				_master.Print("Writing file " + Path.Combine(_master.settings.outputFolder, _mapName + extension) + " for Gearcraft");
+				File.WriteAllText(Path.Combine(_master.settings.outputFolder, _mapName + extension), output);
 			}
 		}
 
@@ -147,11 +147,11 @@ namespace Decompiler {
 
 			string extension = deepCopy ? "_moh.map" : ".map";
 			if (string.IsNullOrEmpty(_master.settings.outputFolder)) {
-				_master.Print("Writing file " + _mapDirectory + _mapName + extension + " for MoHRadiant");
-				File.WriteAllText(_mapDirectory + _mapName + extension, output);
+				_master.Print("Writing file " + Path.Combine(_mapDirectory, _mapName + extension) + " for MoHRadiant");
+				File.WriteAllText(Path.Combine(_mapDirectory, _mapName + extension), output);
 			} else {
-				_master.Print("Writing file " + _master.settings.outputFolder + _mapName + extension + " for MoHRadiant");
-				File.WriteAllText(_master.settings.outputFolder + _mapName + extension, output);
+				_master.Print("Writing file " + Path.Combine(_master.settings.outputFolder, _mapName + extension) + " for MoHRadiant");
+				File.WriteAllText(Path.Combine(_master.settings.outputFolder, _mapName + extension), output);
 			}
 		}
 
@@ -168,11 +168,11 @@ namespace Decompiler {
 
 			string extension = deepCopy ? "_cod.map" : ".map";
 			if (string.IsNullOrEmpty(_master.settings.outputFolder)) {
-				_master.Print("Writing file " + _mapDirectory + _mapName + extension + " for CoDRadiant");
-				File.WriteAllText(_mapDirectory + _mapName + extension, output);
+				_master.Print("Writing file " + Path.Combine(_mapDirectory, _mapName + extension) + " for CoDRadiant");
+				File.WriteAllText(Path.Combine(_mapDirectory, _mapName + extension), output);
 			} else {
-				_master.Print("Writing file " + _master.settings.outputFolder + _mapName + extension + " for CoDRadiant");
-				File.WriteAllText(_master.settings.outputFolder + _mapName + extension, output);
+				_master.Print("Writing file " + Path.Combine(_master.settings.outputFolder, _mapName + extension) + " for CoDRadiant");
+				File.WriteAllText(Path.Combine(_master.settings.outputFolder, _mapName + extension), output);
 			}
 		}
 
@@ -189,11 +189,11 @@ namespace Decompiler {
 
 			string extension = deepCopy ? "_radiant.map" : ".map";
 			if (string.IsNullOrEmpty(_master.settings.outputFolder)) {
-				_master.Print("Writing file " + _mapDirectory + _mapName + extension + " for Radiant");
-				File.WriteAllText(_mapDirectory + _mapName + extension, output);
+				_master.Print("Writing file " + Path.Combine(_mapDirectory, _mapName + extension) + " for Radiant");
+				File.WriteAllText(Path.Combine(_mapDirectory, _mapName + extension), output);
 			} else {
-				_master.Print("Writing file " + _master.settings.outputFolder + _mapName + extension + " for Radiant");
-				File.WriteAllText(_master.settings.outputFolder + _mapName + extension, output);
+				_master.Print("Writing file " + Path.Combine(_master.settings.outputFolder, _mapName + extension) + " for Radiant");
+				File.WriteAllText(Path.Combine(_master.settings.outputFolder, _mapName + extension), output);
 			}
 		}
 
@@ -210,11 +210,11 @@ namespace Decompiler {
 
 			string extension = deepCopy ? "_doom.map" : ".map";
 			if (string.IsNullOrEmpty(_master.settings.outputFolder)) {
-				_master.Print("Writing file " + _mapDirectory + _mapName + extension + " for DoomEdit");
-				File.WriteAllText(_mapDirectory + _mapName + extension, output);
+				_master.Print("Writing file " + Path.Combine(_mapDirectory, _mapName + extension) + " for DoomEdit");
+				File.WriteAllText(Path.Combine(_mapDirectory, _mapName + extension), output);
 			} else {
-				_master.Print("Writing file " + _master.settings.outputFolder + _mapName + extension + " for DoomEdit");
-				File.WriteAllText(_master.settings.outputFolder + _mapName + extension, output);
+				_master.Print("Writing file " + Path.Combine(_master.settings.outputFolder, _mapName + extension) + " for DoomEdit");
+				File.WriteAllText(Path.Combine(_master.settings.outputFolder, _mapName + extension), output);
 			}
 		}
 
@@ -231,11 +231,11 @@ namespace Decompiler {
 
 			string extension = ".vmf";
 			if (string.IsNullOrEmpty(_master.settings.outputFolder)) {
-				_master.Print("Writing file " + _mapDirectory + _mapName + extension + " for Hammer");
-				File.WriteAllText(_mapDirectory + _mapName + extension, output);
+				_master.Print("Writing file " + Path.Combine(_mapDirectory, _mapName + extension) + " for Hammer");
+				File.WriteAllText(Path.Combine(_mapDirectory, _mapName + extension), output);
 			} else {
-				_master.Print("Writing file " + _master.settings.outputFolder + _mapName + extension + " for Hammer");
-				File.WriteAllText(_master.settings.outputFolder + _mapName + extension, output);
+				_master.Print("Writing file " + Path.Combine(_master.settings.outputFolder, _mapName + extension) + " for Hammer");
+				File.WriteAllText(Path.Combine(_master.settings.outputFolder, _mapName + extension), output);
 			}
 		}
 
