@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 using LibBSP;
 
@@ -122,7 +123,7 @@ namespace Decompiler {
 		/// <param name="mohTerrain">The <see cref="MAPTerrainMoHAA"/> to convert.</param>
 		/// <returns><see cref="MAPTerrainEF2"/> with the same shader and heightmap as <paramref name="mohTerrain"/>.</returns>
 		private MAPTerrainEF2 ConvertToEF2Terrain(MAPTerrainMoHAA mohTerrain) {
-			if (mohTerrain.size == new Vector2d(9, 9)) {
+			if (mohTerrain.size == new Vector2(9, 9)) {
 				MAPTerrainMoHAA.Partition partition = mohTerrain.partitions[0];
 				MAPTerrainEF2 ef2Terrain = new MAPTerrainEF2() {
 					side = 9,
@@ -134,15 +135,15 @@ namespace Decompiler {
 					texScaleY = partition.textureScale[1],
 					flags = 1024, // maybe don't hardcode this?
 					sideLength = 512,
-					start = new Vector3d(mohTerrain.origin.x, mohTerrain.origin.y, 0),
-					IF = Vector4d.zero,
-					LF = Vector4d.zero,
+					start = new Vector3(mohTerrain.origin.X, mohTerrain.origin.Y, 0),
+					IF = Vector4.Zero,
+					LF = Vector4.Zero,
 					heightMap = new float[9, 9],
 					alphaMap = new float[9, 9]
 				};
 				for (int y = 0; y < ef2Terrain.heightMap.GetLength(0); ++y) {
 					for (int x = 0; x < ef2Terrain.heightMap.GetLength(1); ++x) {
-						ef2Terrain.heightMap[y, x] = mohTerrain.vertices[(y * (int)mohTerrain.size.y) + x].height + (float)mohTerrain.origin.z;
+						ef2Terrain.heightMap[y, x] = mohTerrain.vertices[(y * (int)mohTerrain.size.Y) + x].height + (float)mohTerrain.origin.Z;
 					}
 				}
 				return ef2Terrain;
@@ -156,12 +157,12 @@ namespace Decompiler {
 		/// <param name="entity"><see cref="Entity"/> to postprocess.</param>
 		private void PostProcessEntity(Entity entity) {
 			if (entity.brushBased) {
-				Vector3d origin = entity.origin;
+				Vector3 origin = entity.origin;
 				entity.Remove("origin");
 				entity.Remove("model");
-				if (origin != Vector3d.zero) {
+				if (origin != Vector3.Zero) {
 					// If this brush has an origin
-					MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3d(-16, -16, -16), new Vector3d(16, 16, 16), "common/origin");
+					MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "common/origin");
 					entity.brushes.Add(neworiginBrush);
 				}
 				foreach (MAPBrush brush in entity.brushes) {

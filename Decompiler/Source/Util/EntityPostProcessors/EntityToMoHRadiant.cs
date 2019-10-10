@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 using LibBSP;
 
@@ -110,12 +111,12 @@ namespace Decompiler {
 		/// <param name="entity"><see cref="Entity"/> to postprocess.</param>
 		private void PostProcessEntity(Entity entity) {
 			if (entity.brushBased) {
-				Vector3d origin = entity.origin;
+				Vector3 origin = entity.origin;
 				entity.Remove("origin");
 				entity.Remove("model");
-				if (origin != Vector3d.zero) {
+				if (origin != Vector3.Zero) {
 					// If this brush has an origin
-					MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3d(-16, -16, -16), new Vector3d(16, 16, 16), "common/origin");
+					MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "common/origin");
 					entity.brushes.Add(neworiginBrush);
 				}
 				foreach (MAPBrush brush in entity.brushes) {

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Runtime.Serialization.Formatters.Binary;
 
 using LibBSP;
+using System.Reflection;
 
 namespace Decompiler {
 	/// <summary>
@@ -118,7 +119,7 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="deepCopy">If <c>true</c>, the <see cref="Entities"/> will be deep copied to preserve the original ones, so postprocessing for this format won't interfere with others.</param>
 		public void WriteGearcraft(bool deepCopy = false) {
-			Entities myEntities = deepCopy ? DeepCopy<Entities>(_entities) : _entities;
+			Entities myEntities = deepCopy ? (Entities)DeepCopy(_entities) : _entities;
 			EntityToGearcraft entityPostProcessor = new EntityToGearcraft(myEntities, _version, _master);
 			entityPostProcessor.PostProcessEntities();
 			GearcraftMapGenerator mapMaker = new GearcraftMapGenerator(myEntities, _master);
@@ -139,7 +140,7 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="deepCopy">If <c>true</c>, the <see cref="Entities"/> will be deep copied to preserve the original ones, so postprocessing for this format won't interfere with others.</param>
 		public void WriteMoHRadiant(bool deepCopy = false) {
-			Entities myEntities = deepCopy ? DeepCopy<Entities>(_entities) : _entities;
+			Entities myEntities = deepCopy ? (Entities)DeepCopy(_entities) : _entities;
 			EntityToMoHRadiant entityPostProcessor = new EntityToMoHRadiant(myEntities, _version, _master);
 			entityPostProcessor.PostProcessEntities();
 			MoHRadiantMapGenerator mapMaker = new MoHRadiantMapGenerator(myEntities, _master);
@@ -160,7 +161,7 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="deepCopy">If <c>true</c>, the <see cref="Entities"/> will be deep copied to preserve the original ones, so postprocessing for this format won't interfere with others.</param>
 		public void WriteCoDRadiant(bool deepCopy = false) {
-			Entities myEntities = deepCopy ? DeepCopy<Entities>(_entities) : _entities;
+			Entities myEntities = deepCopy ? (Entities)DeepCopy(_entities) : _entities;
 			EntityToCoDRadiant entityPostProcessor = new EntityToCoDRadiant(myEntities, _version, _master);
 			entityPostProcessor.PostProcessEntities();
 			CoDRadiantMapGenerator mapMaker = new CoDRadiantMapGenerator(myEntities, _master);
@@ -181,7 +182,7 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="deepCopy">If <c>true</c>, the <see cref="Entities"/> will be deep copied to preserve the original ones, so postprocessing for this format won't interfere with others.</param>
 		public void WriteRadiant(bool deepCopy = false) {
-			Entities myEntities = deepCopy ? DeepCopy<Entities>(_entities) : _entities;
+			Entities myEntities = deepCopy ? (Entities)DeepCopy(_entities) : _entities;
 			EntityToRadiant entityPostProcessor = new EntityToRadiant(myEntities, _version, _master);
 			entityPostProcessor.PostProcessEntities();
 			RadiantMapGenerator mapMaker = new RadiantMapGenerator(myEntities, _master);
@@ -202,7 +203,7 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="deepCopy">If <c>true</c>, the <see cref="Entities"/> will be deep copied to preserve the original ones, so postprocessing for this format won't interfere with others.</param>
 		public void WriteDoomEdit(bool deepCopy = false) {
-			Entities myEntities = deepCopy ? DeepCopy<Entities>(_entities) : _entities;
+			Entities myEntities = deepCopy ? (Entities)DeepCopy(_entities) : _entities;
 			EntityToDoomEdit entityPostProcessor = new EntityToDoomEdit(myEntities, _version, _master);
 			entityPostProcessor.PostProcessEntities();
 			DoomEditMapGenerator mapMaker = new DoomEditMapGenerator(myEntities, _master);
@@ -223,7 +224,7 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="deepCopy">If <c>true</c>, the <see cref="Entities"/> will be deep copied to preserve the original ones, so postprocessing for this format won't interfere with others.</param>
 		public void WriteHammer(bool deepCopy = false) {
-			Entities myEntities = deepCopy ? DeepCopy<Entities>(_entities) : _entities;
+			Entities myEntities = deepCopy ? (Entities)DeepCopy(_entities) : _entities;
 			EntityToHammer entityPostProcessor = new EntityToHammer(myEntities, _version, _master);
 			entityPostProcessor.PostProcessEntities();
 			HammerMapGenerator mapMaker = new HammerMapGenerator(myEntities, _master);
@@ -240,20 +241,53 @@ namespace Decompiler {
 		}
 
 		/// <summary>
-		/// Performs a basic deep copy through serialization.
+		/// Performs a basic deep copy through reflection.
 		/// </summary>
-		/// <remarks>
-		/// By: Jon von Gillern
-		/// From: http://weblogs.asp.net/gunnarpeipman/archive/2007/10/07/net-and-deep-copy.aspx
-		/// </remarks>
-		private static T DeepCopy<T>(T obj) {
-			MemoryStream ms = new MemoryStream();
-			BinaryFormatter bf = new BinaryFormatter();
-			bf.Serialize(ms, obj);
-			ms.Seek(0, SeekOrigin.Begin);
-			T retval = (T)bf.Deserialize(ms);
-			ms.Close();
-			return retval;
+		public static object DeepCopy(object obj) {
+			if (obj == null) {
+				return null;
+			}
+			Type type = obj.GetType();
+
+			if (type.IsValueType || type == typeof(string)) {
+				return obj;
+			} else if (type.IsArray) {
+				Type elementType = type.GetElementType();
+				Array array = obj as Array;
+				Array copied = Array.CreateInstance(elementType, array.Length);
+				for (int i = 0; i < array.Length; i++) {
+					copied.SetValue(DeepCopy(array.GetValue(i)), i);
+				}
+				return Convert.ChangeType(copied, type);
+			} else if (type.IsClass) {
+				if (type.GetConstructor(new Type[] { }) == null) {
+					return obj;
+				}
+				object instance = Activator.CreateInstance(type);
+				Type currentType = instance.GetType();
+				while (currentType != null) {
+					// FlattenHierarchy does not work with NonPublic.
+					FieldInfo[] fields = currentType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+					foreach (FieldInfo field in fields) {
+						object fieldValue = field.GetValue(obj);
+						if (fieldValue == null) {
+							continue;
+						}
+						if (currentType.Name == "Lump`1" && field.Name == "<Bsp>k__BackingField") {
+							field.SetValue(instance, fieldValue);
+						} else if (currentType.Name == "Entity" && field.Name == "<Parent>k__BackingField") {
+							field.SetValue(instance, fieldValue);
+						} else {
+							field.SetValue(instance, DeepCopy(fieldValue));
+						}
+					}
+
+					currentType = currentType.BaseType;
+				}
+				return instance;
+			} else {
+				throw new ArgumentException("Unable to DeepCopy type " + type.Name + ".");
+			}
 		}
 
 	}

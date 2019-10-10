@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 using LibBSP;
 
@@ -165,7 +166,7 @@ namespace Decompiler {
 		/// <param name="brush">The <see cref="Brush"/> to process.</param>
 		/// <param name="worldPosition">The position of the parent <see cref="Entity"/> in the world. This is important for calculating UVs on solids.</param>
 		/// <returns>The processed <see cref="MAPBrush"/> object, to be added to an <see cref="Entity"/> object.</returns>
-		private MAPBrush ProcessBrush(Brush brush, Vector3d worldPosition) {
+		private MAPBrush ProcessBrush(Brush brush, Vector3 worldPosition) {
 			List<BrushSide> sides;
 			// CoD BSPs store brush sides sequentially so the brush structure doesn't reference a first side.
 			if (brush.firstSide < 0) {
@@ -198,14 +199,14 @@ namespace Decompiler {
 		/// <param name="sideIndex">The index of this side reference in the parent <see cref="Brush"/>. Important for Call of Duty series maps, since
 		/// the first six <see cref="BrushSide"/>s in a <see cref="Brush"/> don't contain <see cref="Plane"/> references.</param>
 		/// <returns>The processed <see cref="MAPBrushSode"/> object, to be added to a <see cref="Brush"/> object.</returns>
-		private MAPBrushSide ProcessBrushSide(BrushSide brushSide, Vector3d worldPosition, int sideIndex) {
+		private MAPBrushSide ProcessBrushSide(BrushSide brushSide, Vector3 worldPosition, int sideIndex) {
 			if (brushSide.bevel) { return null; }
 			MAPBrushSide mapBrushSide;
 			// The things we'll need to define a .MAP brush side
 			string texture;
 			string material = "wld_lightmap";
 			TextureInfo texInfo;
-			Vector3d[] threePoints;
+			Vector3[] threePoints;
 			Plane plane;
 			int flags = 0;
 
@@ -226,8 +227,8 @@ namespace Decompiler {
 				if (_bsp.texInfo != null) {
 					texInfo = _bsp.texInfo[face.textureInfo];
 				} else {
-					Vector3d[] newAxes = TextureInfo.TextureAxisFromPlane(plane);
-					texInfo = new TextureInfo(newAxes[0], newAxes[1], Vector2d.zero, Vector2d.one, flags, -1, 0);
+					Vector3[] newAxes = TextureInfo.TextureAxisFromPlane(plane);
+					texInfo = new TextureInfo(newAxes[0], newAxes[1], Vector2.Zero, Vector2.One, flags, -1, 0);
 				}
 				flags = _master.settings.noFaceFlags ? 0 : face.flags;
 				if (face.material >= 0) {
@@ -300,8 +301,8 @@ namespace Decompiler {
 						texInfo = textureDef.texAxes;
 					}
 				} else {
-					Vector3d[] newAxes = TextureInfo.TextureAxisFromPlane(plane);
-					texInfo = new TextureInfo(newAxes[0], newAxes[1], Vector2d.zero, Vector2d.one, flags, -1, 0);
+					Vector3[] newAxes = TextureInfo.TextureAxisFromPlane(plane);
+					texInfo = new TextureInfo(newAxes[0], newAxes[1], Vector2.Zero, Vector2.One, flags, -1, 0);
 					texture = "**cliptexture**";
 				}
 			}
@@ -310,8 +311,8 @@ namespace Decompiler {
 			if (texInfo.Data != null && texInfo.Data.Length > 0) {
 				outputTexInfo = texInfo.BSP2MAPTexInfo(worldPosition);
 			} else {
-				Vector3d[] newAxes = TextureInfo.TextureAxisFromPlane(plane);
-				outputTexInfo = new TextureInfo(newAxes[0], newAxes[1], Vector2d.zero, Vector2d.one, 0, -1, 0);
+				Vector3[] newAxes = TextureInfo.TextureAxisFromPlane(plane);
+				outputTexInfo = new TextureInfo(newAxes[0], newAxes[1], Vector2.Zero, Vector2.One, 0, -1, 0);
 			}
 
 			mapBrushSide = new MAPBrushSide() {
@@ -371,35 +372,35 @@ namespace Decompiler {
 			int flags = _bsp.textures[face.texture].flags;
 			List<Vertex> vertices = _bsp.GetReferencedObjects<Vertex>(face, "vertices");
 			int side = (int)Math.Sqrt(vertices.Count);
-			Vector2d mins = new Vector2d(Double.PositiveInfinity, Double.PositiveInfinity);
-			Vector2d maxs = new Vector2d(Double.NegativeInfinity, Double.NegativeInfinity);
-			Vector3d start = Vector3d.undefined;
+			Vector2 mins = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
+			Vector2 maxs = new Vector2(float.NegativeInfinity, float.NegativeInfinity);
+			Vector3 start = new Vector3(float.NaN, float.NaN, float.NaN);
 			foreach (Vertex v in vertices) {
-				if (v.position.x < mins.x) {
-					mins.x = v.position.x;
+				if (v.position.X < mins.X) {
+					mins.X = v.position.X;
 				}
-				if (v.position.x > maxs.x) {
-					maxs.x = v.position.x;
+				if (v.position.X > maxs.X) {
+					maxs.X = v.position.X;
 				}
-				if (v.position.y < mins.y) {
-					mins.y = v.position.y;
+				if (v.position.Y < mins.Y) {
+					mins.Y = v.position.Y;
 				}
-				if (v.position.y > maxs.y) {
-					maxs.y = v.position.y;
+				if (v.position.Y > maxs.Y) {
+					maxs.Y = v.position.Y;
 				}
-				if (v.position.x == mins.x && v.position.y == mins.y) {
+				if (v.position.X == mins.X && v.position.Y == mins.Y) {
 					start = v.position;
 				}
 			}
-			start.z = 0;
-			double sideLength = maxs.x - mins.x;
-			double gridUnit = sideLength / (side - 1);
+			start.Z = 0;
+			float sideLength = maxs.X - mins.X;
+			float gridUnit = sideLength / (side - 1);
 			float[,] heightMap = new float[side, side];
 			float[,] alphaMap = new float[side, side];
 			foreach (Vertex v in vertices) {
-				int col = (int)Math.Round((v.position.x - mins.x) / gridUnit);
-				int row = (int)Math.Round((v.position.y - mins.y) / gridUnit);
-				heightMap[row, col] = (float)(v.position.z);
+				int col = (int)Math.Round((v.position.X - mins.X) / gridUnit);
+				int row = (int)Math.Round((v.position.Y - mins.Y) / gridUnit);
+				heightMap[row, col] = v.position.Z;
 			}
 			return new MAPTerrainEF2() {
 				side = side,
@@ -412,8 +413,8 @@ namespace Decompiler {
 				flags = flags,
 				sideLength = sideLength,
 				start = start,
-				IF = Vector4d.zero,
-				LF = Vector4d.zero,
+				IF = Vector4.Zero,
+				LF = Vector4.Zero,
 				heightMap = heightMap,
 				alphaMap = alphaMap
 			};
@@ -429,12 +430,12 @@ namespace Decompiler {
 			string shader = _bsp.textures[lodTerrain.texture].name;
 			MAPTerrainMoHAA.Partition partition = new MAPTerrainMoHAA.Partition() {
 				shader = shader,
-				textureScale = new double[] { 1, 1 },
+				textureScale = new float[] { 1, 1 },
 			};
 			MAPTerrainMoHAA terrain = new MAPTerrainMoHAA() {
-				size = new Vector2d(9, 9),
+				size = new Vector2(9, 9),
 				flags = ((lodTerrain.flags & (1 << 6)) > 0) ? 1 : 0,
-				origin = new Vector3d(lodTerrain.x * 64, lodTerrain.y * 64, lodTerrain.baseZ),
+				origin = new Vector3(lodTerrain.x * 64, lodTerrain.y * 64, lodTerrain.baseZ),
 			};
 			terrain.partitions.Add(partition);
 			terrain.partitions.Add(partition);
@@ -460,9 +461,9 @@ namespace Decompiler {
 		private MAPDisplacement ProcessDisplacement(DisplacementInfo displacement) {
 			int power = displacement.power;
 			int first = displacement.dispVertStart;
-			Vector3d start = displacement.startPosition;
+			Vector3 start = displacement.startPosition;
 			int numVertsInRow = (int)Math.Pow(2, power) + 1;
-			Vector3d[,] normals = new Vector3d[numVertsInRow, numVertsInRow];
+			Vector3[,] normals = new Vector3[numVertsInRow, numVertsInRow];
 			float[,] distances = new float[numVertsInRow, numVertsInRow];
 			float[,] alphas = new float[numVertsInRow, numVertsInRow];
 			for (int i = 0; i < numVertsInRow; ++i) {
@@ -502,18 +503,18 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="face">The <see cref="Face"/> to find a triangle for.</param>
 		/// <returns>Three points defining a triangle which define the plane which <paramref name="face"/> lies on.</returns>
-		private Vector3d[] GetPointsForFace(Face face, BrushSide brushSide) {
-			Vector3d[] ret;
+		private Vector3[] GetPointsForFace(Face face, BrushSide brushSide) {
+			Vector3[] ret;
 			if (face.numVertices > 2) {
-				ret = new Vector3d[3];
-				double bestArea = 0;
+				ret = new Vector3[3];
+				float bestArea = 0;
 				for (int i = 0; i < face.numIndices / 3; ++i) {
-					Vector3d[] temp = new Vector3d[] {
+					Vector3[] temp = new Vector3[] {
 						_bsp.vertices[(int)(face.firstVertex + _bsp.indices[face.firstIndex + (i * 3)])].position,
 						_bsp.vertices[(int)(face.firstVertex + _bsp.indices[face.firstIndex + 1 + (i * 3)])].position,
 						_bsp.vertices[(int)(face.firstVertex + _bsp.indices[face.firstIndex + 2 + (i * 3)])].position
 					};
-					double area = Vector3d.SqrTriangleArea(temp[0], temp[1], temp[2]);
+					float area = Vector3Extensions.TriangleAreaSquared(temp[0], temp[1], temp[2]);
 					if (area > bestArea) {
 						bestArea = area;
 						ret = temp;
@@ -532,7 +533,7 @@ namespace Decompiler {
 				ret = _bsp.planes[brushSide.plane].GenerateThreePoints();
 			} else {
 				_master.Print("WARNING: Brush side with no points!");
-				return new Vector3d[3];
+				return new Vector3[3];
 			}
 			return ret;
 		}

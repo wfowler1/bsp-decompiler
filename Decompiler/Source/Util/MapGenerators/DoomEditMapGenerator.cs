@@ -102,17 +102,17 @@ namespace Decompiler {
 		/// <param name="sb">A <see cref="StringBuilder"/> object to append processed data from <paramref name="brushside"/> to.</param>
 		private void ParseBrushSide(MAPBrushSide brushside, StringBuilder sb) {
 			sb.Append("  ( ")
-			.Append(brushside.plane.normal.x.ToString("###0.##########", format))
+			.Append(brushside.plane.Normal.X.ToString("###0.##########", format))
 			.Append(" ")
-			.Append(brushside.plane.normal.y.ToString("###0.##########", format))
+			.Append(brushside.plane.Normal.Y.ToString("###0.##########", format))
 			.Append(" ")
-			.Append(brushside.plane.normal.z.ToString("###0.##########", format))
+			.Append(brushside.plane.Normal.Z.ToString("###0.##########", format))
 			.Append(" ")
-			.Append(brushside.plane.distance.ToString("###0.##########", format))
+			.Append(brushside.plane.D.ToString("###0.##########", format))
 			.Append(" ) ( ( 1 0 ")
-			.Append(brushside.textureInfo.translation.x.ToString("###0.##########", format))
+			.Append(brushside.textureInfo.translation.X.ToString("###0.##########", format))
 			.Append(" ) ( 0 1 ")
-			.Append(brushside.textureInfo.translation.y.ToString("###0.##########", format))
+			.Append(brushside.textureInfo.translation.Y.ToString("###0.##########", format))
 			.Append(" ) ) \"")
 			.Append(brushside.texture)
 			.Append("\" 0 0 0\r\n");
@@ -127,24 +127,24 @@ namespace Decompiler {
 			sb.Append(" patchDef2\r\n {\r\n  ")
 			.Append(patch.texture)
 			.Append("\r\n  ( ")
-			.Append((int)Math.Round(patch.dims.x))
+			.Append((int)Math.Round(patch.dims.X))
 			.Append(" ")
-			.Append((int)Math.Round(patch.dims.y))
+			.Append((int)Math.Round(patch.dims.Y))
 			.Append(" 0 0 0 )\r\n  (\r\n");
-			for (int i = 0; i < patch.dims.x; ++i) {
+			for (int i = 0; i < patch.dims.X; ++i) {
 				sb.Append("   (  ");
-				for (int j = 0; j < patch.dims.y; ++j) {
-					Vertex vertex = patch.points[((int)Math.Round(patch.dims.x) * j) + i];
+				for (int j = 0; j < patch.dims.Y; ++j) {
+					Vertex vertex = patch.points[((int)Math.Round(patch.dims.X) * j) + i];
 					sb.Append("( ")
-					.Append(vertex.position.x.ToString("###0.#####", format))
+					.Append(vertex.position.X.ToString("###0.#####", format))
 					.Append(" ")
-					.Append(vertex.position.y.ToString("###0.#####", format))
+					.Append(vertex.position.Y.ToString("###0.#####", format))
 					.Append(" ")
-					.Append(vertex.position.z.ToString("###0.#####", format))
+					.Append(vertex.position.Z.ToString("###0.#####", format))
 					.Append(" ")
-					.Append(vertex.uv0.x.ToString("###0.#####", format))
+					.Append(vertex.uv0.X.ToString("###0.#####", format))
 					.Append(" ")
-					.Append(vertex.uv0.y.ToString("###0.#####", format))
+					.Append(vertex.uv0.Y.ToString("###0.#####", format))
 					.Append(" ) ");
 				}
 				sb.Append(")\r\n");

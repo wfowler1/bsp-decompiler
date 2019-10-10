@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 using LibBSP;
 
@@ -92,7 +93,7 @@ namespace Decompiler {
 
 				if (hasWater && !_entities.Any(entity => { return entity.className.Equals("water_lod_control", StringComparison.InvariantCultureIgnoreCase); })) {
 					Entity pointEntity = _entities.Find(entity => { return !entity.brushBased; });
-					Vector3d origin = Vector3d.zero;
+					Vector3 origin = Vector3.Zero;
 					if (pointEntity != null) {
 						origin = pointEntity.origin;
 					}
@@ -175,7 +176,7 @@ namespace Decompiler {
 		/// <param name="brush">The <see cref="MAPBrush"/> to make into a water brush.</param>
 		private void ConvertToWater(MAPBrush brush) {
 			foreach (MAPBrushSide side in brush.sides) {
-				if (side.plane.normal == Vector3d.up) {
+				if (side.plane.Normal == Vector3.UnitZ) {
 					side.texture = "dev/dev_water2";
 				} else {
 					side.texture = "TOOLS/TOOLSNODRAW";
@@ -190,26 +191,26 @@ namespace Decompiler {
 		/// <param name="mohTerrain">The <see cref="MAPTerrainMoHAA"/> to convert.</param>
 		/// <returns><see cref="MAPBrush"/> containing a <see cref="MAPDisplacement"/> imitating the heightmap of <paramref name="terrain"/>.</returns>
 		private MAPBrush ConvertToDisplacement(MAPTerrainMoHAA terrain) {
-			if (terrain.size == new Vector2d(9, 9)) {
+			if (terrain.size == new Vector2(9, 9)) {
 				MAPTerrainMoHAA.Partition partition = terrain.partitions[0];
 				MAPBrush newBrush = CreateBrushForTerrain(terrain.origin, 512, terrain.flags > 0, partition.shader, partition.rotation,
-				                                          new float[] { (float)partition.textureScale[0], (float)partition.textureScale[1] },
+				                                          new float[] { partition.textureScale[0], partition.textureScale[1] },
 				                                          new float[] { partition.textureShift[0], partition.textureShift[1] });
 				MAPBrushSide newSide = newBrush.sides[0];
 				MAPDisplacement newDisplacement = new MAPDisplacement() {
 					power = 3,
 					start = terrain.origin,
-					normals = new Vector3d[9, 9],
+					normals = new Vector3[9, 9],
 					distances = new float[9, 9],
 					alphas = new float[9, 9],
 				};
-				for (int y = 0; y < terrain.size.y; ++y) {
-					for (int x = 0; x < terrain.size.x; ++x) {
-						newDisplacement.normals[y, x] = Vector3d.up;
+				for (int y = 0; y < terrain.size.Y; ++y) {
+					for (int x = 0; x < terrain.size.X; ++x) {
+						newDisplacement.normals[y, x] = Vector3.UnitZ;
 						if (terrain.flags > 0) {
-							newDisplacement.distances[y, x] = terrain.vertices[(x * (int)terrain.size.y) + y].height;
+							newDisplacement.distances[y, x] = terrain.vertices[(x * (int)terrain.size.Y) + y].height;
 						} else {
-							newDisplacement.distances[y, x] = terrain.vertices[(y * (int)terrain.size.y) + x].height;
+							newDisplacement.distances[y, x] = terrain.vertices[(y * (int)terrain.size.Y) + x].height;
 						}
 					}
 				}
@@ -228,19 +229,19 @@ namespace Decompiler {
 		private MAPBrush ConvertToDisplacement(MAPTerrainEF2 terrain) {
 			if (terrain.side == 9) {
 				MAPBrush newBrush = CreateBrushForTerrain(terrain.start, terrain.sideLength, false, terrain.texture, terrain.texRot,
-				                                          new float[] { (float)terrain.texScaleX, (float)terrain.texScaleY },
-				                                          new float[] { (float)terrain.textureShiftS, (float)terrain.textureShiftT });
+				                                          new float[] { terrain.texScaleX, terrain.texScaleY },
+				                                          new float[] { terrain.textureShiftS, terrain.textureShiftT });
 				MAPBrushSide newSide = newBrush.sides[0];
 				MAPDisplacement newDisplacement = new MAPDisplacement() {
 					power = 3,
 					start = terrain.start,
-					normals = new Vector3d[9, 9],
+					normals = new Vector3[9, 9],
 					distances = new float[9, 9],
 					alphas = new float[9, 9],
 				};
 				for (int y = 0; y < terrain.side; ++y) {
 					for (int x = 0; x < terrain.side; ++x) {
-						newDisplacement.normals[y, x] = Vector3d.up;
+						newDisplacement.normals[y, x] = Vector3.UnitZ;
 						newDisplacement.distances[y, x] = terrain.heightMap[y, x];
 					}
 				}
@@ -261,32 +262,32 @@ namespace Decompiler {
 		/// <param name="textureScale">The scale of the texture on the first side.</param>
 		/// <param name="textureShift">The position of the texture on the first side.</param>
 		/// <returns>A <see cref="MAPBrush"/> with <paramref name="texture"/> applied to the first face with the passed attributes.</returns>
-		private MAPBrush CreateBrushForTerrain(Vector3d origin, double side, bool inverted, string texture, double rotation, float[] textureScale, float[] textureShift) {
-			Vector3d[] froms = new Vector3d[] {
+		private MAPBrush CreateBrushForTerrain(Vector3 origin, float side, bool inverted, string texture, float rotation, float[] textureScale, float[] textureShift) {
+			Vector3[] froms = new Vector3[] {
 				origin,
-				new Vector3d(origin.x, origin.y + side, origin.z),
-				new Vector3d(origin.x + side, origin.y + side, origin.z),
-				new Vector3d(origin.x + side, origin.y, origin.z),
+				new Vector3(origin.X, origin.Y + side, origin.Z),
+				new Vector3(origin.X + side, origin.Y + side, origin.Z),
+				new Vector3(origin.X + side, origin.Y, origin.Z),
 			};
-			Vector3d[] tos = new Vector3d[] {
-				new Vector3d(origin.x, origin.y + side, origin.z),
-				new Vector3d(origin.x + side, origin.y + side, origin.z),
-				new Vector3d(origin.x + side, origin.y, origin.z),
+			Vector3[] tos = new Vector3[] {
+				new Vector3(origin.X, origin.Y + side, origin.Z),
+				new Vector3(origin.X + side, origin.Y + side, origin.Z),
+				new Vector3(origin.X + side, origin.Y, origin.Z),
 				origin,
 			};
 			if (inverted) {
-				Vector3d temp = froms[1];
+				Vector3 temp = froms[1];
 				froms[1] = froms[3];
 				froms[3] = temp;
 				temp = tos[0];
 				tos[0] = tos[2];
 				tos[2] = temp;
 			}
-			Vector3d[] axes = TextureInfo.TextureAxisFromPlane(new Plane(froms));
+			Vector3[] axes = TextureInfo.TextureAxisFromPlane(Plane.CreateFromVertices(froms[0], froms[2], froms[1]));
 			TextureInfo newTextureInfo = new TextureInfo(axes[0], axes[1],
-			                                             new Vector2d(textureShift[0], textureShift[1]),
-			                                             new Vector2d(textureScale[0], textureScale[1]),
-			                                             0, 0, 0);
+			                                             new Vector2(textureShift[0], textureShift[1]),
+			                                             new Vector2(textureScale[0], textureScale[1]),
+			                                             0, 0, rotation);
 			return MAPBrushExtensions.CreateBrushFromWind(froms, tos, texture, "tools/toolsnodraw", newTextureInfo, 32);
 		}
 
@@ -296,7 +297,7 @@ namespace Decompiler {
 		/// <param name="entity"><see cref="Entity"/> to postprocess.</param>
 		private void PostProcessEntity(Entity entity) {
 			if (entity.brushBased) {
-				Vector3d origin = entity.origin;
+				Vector3 origin = entity.origin;
 				entity.Remove("model");
 				foreach (MAPBrush brush in entity.brushes) {
 					brush.Translate(origin);
@@ -348,17 +349,17 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="entity">The <see cref="Entity"/> to parse.</param>
 		private void PostProcessNightfireEntity(Entity entity) {
-			if (entity.angles.x != 0) {
-				entity.angles = new Vector3d(-entity.angles.x, entity.angles.y, entity.angles.z);
+			if (entity.angles.X != 0) {
+				entity.angles = new Vector3(-entity.angles.X, entity.angles.Y, entity.angles.Z);
 			}
 			if (!entity["body"].Equals("")) {
 				entity.RenameKey("body", "SetBodyGroup");
 			}
-			if ((Vector3d)entity.GetVector("rendercolor") == Vector3d.zero) {
+			if (entity.GetVector("rendercolor") == Vector4.Zero) {
 				entity["rendercolor"] = "255 255 255";
 			}
-			if (entity.angles == Vector3d.back) {
-				entity.angles = new Vector3d(-90, 0, 0);
+			if (entity.angles == new Vector3(0, -1, 0)) {
+				entity.angles = new Vector3(-90, 0, 0);
 			}
 			string modelName = entity["model"];
 			if (modelName.Length >= 4 && modelName.Substring(modelName.Length - 4).Equals(".spz", StringComparison.InvariantCultureIgnoreCase)) {
@@ -367,7 +368,7 @@ namespace Decompiler {
 
 			switch (entity.className.ToLower()) {
 				case "light_spot": {
-					entity["pitch"] = (entity.angles.x + entity.GetFloat("pitch", 0)).ToString();
+					entity["pitch"] = (entity.angles.X + entity.GetFloat("pitch", 0)).ToString();
 					float cone = entity.GetFloat("_cone", 0);
 					if (cone > 90) { cone = 90; }
 					if (cone < 0) { cone = 0; }
@@ -435,8 +436,8 @@ namespace Decompiler {
 				}
 				case "info_player_deathmatch":
 				case "info_player_start": {
-					Vector3d origin = entity.origin;
-					entity.origin = new Vector3d(origin.x, origin.y, (origin.z - 40));
+					Vector3 origin = entity.origin;
+					entity.origin = new Vector3(origin.X, origin.Y, (origin.Z - 40));
 					break;
 				}
 				case "item_ctfflag": {
@@ -618,28 +619,28 @@ namespace Decompiler {
 				}
 				case "info_player_start":
 				case "info_player_deathmatch": {
-					Vector3d origin = entity.origin;
-					entity.origin = new Vector3d(origin.x, origin.y, (origin.z + 18));
+					Vector3 origin = entity.origin;
+					entity.origin = new Vector3(origin.X, origin.Y, (origin.Z + 18));
 					break;
 				}
 				case "light": {
-					Vector3d color;
+					Vector4 color;
 					if (entity.ContainsKey("_color")) {
 						color = entity.GetVector("_color");
 					} else {
-						color = Vector3d.one;
+						color = Vector4.One;
 					}
 					color *= 255;
 					float intensity = entity.GetFloat("light", 1);
 					entity.Remove("_color");
 					entity.Remove("light");
-					entity["_light"] = color.x + " " + color.y + " " + color.z + " " + intensity;
+					entity["_light"] = color.X + " " + color.Y + " " + color.Z + " " + intensity;
 					break;
 				}
 				case "misc_teleporter": {
-					Vector3d origin = entity.origin;
-					Vector3d mins = new Vector3d(origin.x - 24, origin.y - 24, origin.z - 24);
-					Vector3d maxs = new Vector3d(origin.x + 24, origin.y + 24, origin.z + 48);
+					Vector3 origin = entity.origin;
+					Vector3 mins = new Vector3(origin.X - 24, origin.Y - 24, origin.Z - 24);
+					Vector3 maxs = new Vector3(origin.X + 24, origin.Y + 24, origin.Z + 48);
 					entity.brushes.Add(MAPBrushExtensions.CreateCube(mins, maxs, "tools/toolstrigger"));
 					entity.Remove("origin");
 					entity["classname"] = "trigger_teleport";
@@ -664,17 +665,17 @@ namespace Decompiler {
 
 			switch (entity["classname"].ToLower()) {
 				case "light": {
-					Vector3d color;
+					Vector4 color;
 					if (entity.ContainsKey("_color")) {
 						color = entity.GetVector("_color");
 					} else {
-						color = Vector3d.one;
+						color = Vector4.One;
 					}
 					color *= 255;
 					float intensity = entity.GetFloat("light", 1);
 					entity.Remove("_color");
 					entity.Remove("light");
-					entity["_light"] = color.x + " " + color.y + " " + color.z + " " + intensity;
+					entity["_light"] = color.X + " " + color.Y + " " + color.Z + " " + intensity;
 					break;
 				}
 				case "func_rotatingdoor": {
@@ -694,7 +695,7 @@ namespace Decompiler {
 		/// <param name="entity">The <see cref="Entity"/> to parse I/O connections for.</param>
 		public void ParseEntityIO(Entity entity) {
 			if (!(entity["target"] == "")) {
-				double delay = entity.GetFloat("delay", 0.0f);
+				float delay = entity.GetFloat("delay", 0.0f);
 				if (!entity["target"].Equals("")) {
 					Entity[] targets = GetTargets(entity["target"]);
 					foreach (Entity target in targets) {
@@ -756,7 +757,7 @@ namespace Decompiler {
 			List<string> delete = new List<string>();
 			foreach (KeyValuePair<string, string> kvp in dummy) {
 				string targetname = kvp.Key;
-				double delay = dummy.GetFloat(kvp.Key, 0.0f);
+				float delay = dummy.GetFloat(kvp.Key, 0.0f);
 				for (int i = targetname.Length - 1; i >= 0; --i) {
 					if (targetname[i] == '#') {
 						targetname = targetname.Substring(0, i);

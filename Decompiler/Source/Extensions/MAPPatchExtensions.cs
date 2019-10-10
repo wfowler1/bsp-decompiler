@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 using LibBSP;
 
@@ -15,9 +16,9 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="mapBrushSide">This <see cref="MAPPatch"/>.</param>
 		/// <param name="v">Translation vector.</param>
-		public static void Translate(this MAPPatch mapPatch, Vector3d v) {
+		public static void Translate(this MAPPatch mapPatch, Vector3 v) {
 			for (int i = 0; i < mapPatch.points.Length; ++i) {
-				mapPatch.points[i].Translate(v);
+				VertexExtensions.Translate(mapPatch.points[i], v);
 			}
 		}
 

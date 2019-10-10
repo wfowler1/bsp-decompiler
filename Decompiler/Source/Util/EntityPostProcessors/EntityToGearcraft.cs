@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 using LibBSP;
 
@@ -165,12 +166,12 @@ namespace Decompiler {
 		/// <param name="entity">The <see cref="Entity"/> to parse.</param>
 		private void PostProcessNightfireEntity(Entity entity) {
 			if (entity.brushBased) {
-				Vector3d origin = entity.origin;
+				Vector3 origin = entity.origin;
 				entity.Remove("origin");
 				entity.Remove("model");
-				if (origin != Vector3d.zero) {
+				if (origin != Vector3.Zero) {
 					// If this brush has an origin
-					MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3d(-16, -16, -16), new Vector3d(16, 16, 16), "special/origin");
+					MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "special/origin");
 					entity.brushes.Add(neworiginBrush);
 				}
 				foreach (MAPBrush brush in entity.brushes) {
@@ -186,13 +187,13 @@ namespace Decompiler {
 		private void PostProcessSourceEntity(Entity entity) {
 			entity.Remove("hammerid");
 			if (entity.brushBased) {
-				Vector3d origin = entity.origin;
+				Vector3 origin = entity.origin;
 				entity.Remove("origin");
 				entity.Remove("model");
 				if (entity.ValueIs("classname", "func_door_rotating")) {
 					// TODO: What entities require origin brushes?
-					if (origin != Vector3d.zero) {
-						MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3d(-16, -16, -16), new Vector3d(16, 16, 16), "special/origin");
+					if (origin != Vector3.Zero) {
+						MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "special/origin");
 						entity.brushes.Add(neworiginBrush);
 					}
 				}
@@ -250,8 +251,8 @@ namespace Decompiler {
 					goto case "info_player_deathmatch";
 				}
 				case "info_player_deathmatch": {
-					Vector3d origin = entity.origin;
-					entity["origin"] = origin.x + " " + origin.y + " " + (origin.z + 40);
+					Vector3 origin = entity.origin;
+					entity["origin"] = origin.X + " " + origin.Y + " " + (origin.Z + 40);
 					break;
 				}
 				case "ctf_combine_flag": {
@@ -301,14 +302,14 @@ namespace Decompiler {
 		/// <param name="entity">The <see cref="Entity"/> to parse.</param>
 		private void PostProcessCoDEntity(Entity entity) {
 			if (entity.brushBased) {
-				Vector3d origin = entity.origin;
+				Vector3 origin = entity.origin;
 				entity.Remove("origin");
 				entity.Remove("model");
 				if (entity["classname"].ToUpper().Equals("func_rotating".ToUpper())) {
 					// TODO: What entities require origin brushes in CoD?
-					if (origin == Vector3d.zero) {
+					if (origin == Vector3.Zero) {
 						// If this brush uses the "origin" attribute
-						MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3d(-16, -16, -16), new Vector3d(16, 16, 16), "special/origin");
+						MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "special/origin");
 						entity.brushes.Add(neworiginBrush);
 					}
 				}
@@ -353,12 +354,12 @@ namespace Decompiler {
 				entity.Remove("angle");
 			}
 			if (entity.brushBased) {
-				Vector3d origin = entity.origin;
+				Vector3 origin = entity.origin;
 				entity.Remove("origin");
 				entity.Remove("model");
 				if (entity.ValueIs("classname", "func_rotating")) {
-					if (origin != Vector3d.zero) {
-						MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3d(-16, -16, -16), new Vector3d(16, 16, 16), "special/origin");
+					if (origin != Vector3.Zero) {
+						MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "special/origin");
 						entity.brushes.Add(neworiginBrush);
 					}
 				}
@@ -427,28 +428,28 @@ namespace Decompiler {
 				case "info_player_start":
 				case "info_player_coop":
 				case "info_player_deathmatch": {
-					Vector3d origin = entity.origin;
-					entity["origin"] = origin.x + " " + origin.y + " " + (origin.z + 18);
+					Vector3 origin = entity.origin;
+					entity["origin"] = origin.X + " " + origin.Y + " " + (origin.Z + 18);
 					break;
 				}
 				case "light": {
-					Vector3d color;
+					Vector4 color;
 					if (entity.ContainsKey("_color")) {
 						color = entity.GetVector("_color");
 					} else {
-						color = Vector3d.one;
+						color = Vector4.One;
 					}
 					color *= 255;
 					float intensity = entity.GetFloat("light", 1);
 					entity.Remove("_color");
 					entity.Remove("light");
-					entity["_light"] = color.x + " " + color.y + " " + color.z + " " + intensity;
+					entity["_light"] = color.X + " " + color.Y + " " + color.Z + " " + intensity;
 					break;
 				}
 				case "misc_teleporter": {
-					Vector3d origin = entity.origin;
-					Vector3d mins = new Vector3d(origin.x - 24, origin.y - 24, origin.z - 24);
-					Vector3d maxs = new Vector3d(origin.x + 24, origin.y + 24, origin.z + 48);
+					Vector3 origin = entity.origin;
+					Vector3 mins = new Vector3(origin.X - 24, origin.Y - 24, origin.Z - 24);
+					Vector3 maxs = new Vector3(origin.X + 24, origin.Y + 24, origin.Z + 48);
 					entity.brushes.Add(MAPBrushExtensions.CreateCube(mins, maxs, "special/trigger"));
 					entity.Remove("origin");
 					entity["classname"] = "trigger_teleport";
@@ -467,13 +468,13 @@ namespace Decompiler {
 		/// <param name="entity">The <see cref="Entity"/> to parse.</param>
 		private void PostProcessQuake3Entity(Entity entity) {
 			if (entity.brushBased) {
-				Vector3d origin = entity.origin;
+				Vector3 origin = entity.origin;
 				entity.Remove("origin");
 				entity.Remove("model");
 				if (entity.ValueIs("classname", "func_rotating") || entity.ValueIs("classname", "func_rotatingdoor")) {
 					// TODO: What entities require origin brushes in Quake 3?
-					if (origin != Vector3d.zero) {
-						MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3d(-16, -16, -16), new Vector3d(16, 16, 16), "special/origin");
+					if (origin != Vector3.Zero) {
+						MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "special/origin");
 						entity.brushes.Add(neworiginBrush);
 					}
 				}
@@ -550,22 +551,22 @@ namespace Decompiler {
 				case "info_player_start":
 				case "info_player_coop":
 				case "info_player_deathmatch": {
-					Vector3d origin = entity.origin;
-					entity["origin"] = origin.x + " " + origin.y + " " + (origin.z + 24);
+					Vector3 origin = entity.origin;
+					entity["origin"] = origin.X + " " + origin.Y + " " + (origin.Z + 24);
 					break;
 				}
 				case "light": {
-					Vector3d color;
+					Vector4 color;
 					if (entity.ContainsKey("_color")) {
 						color = entity.GetVector("_color");
 					} else {
-						color = Vector3d.one;
+						color = Vector4.One;
 					}
 					color *= 255;
 					float intensity = entity.GetFloat("light", 1);
 					entity.Remove("_color");
 					entity.Remove("light");
-					entity["_light"] = color.x + " " + color.y + " " + color.z + " " + intensity;
+					entity["_light"] = color.X + " " + color.Y + " " + color.Z + " " + intensity;
 					break;
 				}
 				case "func_rotatingdoor": {

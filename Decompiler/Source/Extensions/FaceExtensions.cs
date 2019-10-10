@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 using LibBSP;
 
@@ -31,16 +32,16 @@ namespace Decompiler {
 					texture = texData.name;
 				}
 			} else {
-				Vector3d[] axes = TextureInfo.TextureAxisFromPlane(bsp.planes[face.plane]);
-				texInfo = new TextureInfo(axes[0], axes[1], Vector2d.zero, Vector2d.one, 0, -1, 0);
+				Vector3[] axes = TextureInfo.TextureAxisFromPlane(bsp.planes[face.plane]);
+				texInfo = new TextureInfo(axes[0], axes[1], Vector2.Zero, Vector2.One, 0, -1, 0);
 				texture = "**cliptexture**";
 			}
 			
-			TextureInfo outputTexInfo = texInfo.BSP2MAPTexInfo(Vector3d.zero);
+			TextureInfo outputTexInfo = texInfo.BSP2MAPTexInfo(Vector3.Zero);
 
 			// Turn vertices and edges into arrays of vectors
-			Vector3d[] froms = new Vector3d[face.numEdges];
-			Vector3d[] tos = new Vector3d[face.numEdges];
+			Vector3[] froms = new Vector3[face.numEdges];
+			Vector3[] tos = new Vector3[face.numEdges];
 			for (int i = 0; i < face.numEdges; ++i) {
 				if (bsp.surfEdges[face.firstEdge + i] > 0) {
 					froms[i] = bsp.vertices[bsp.edges[(int)bsp.surfEdges[face.firstEdge + i]].firstVertex].position;

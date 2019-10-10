@@ -131,45 +131,45 @@ namespace Decompiler {
 			sb.Append("\t\tside\r\n\t\t{\r\n\t\t\t\"id\" \"")
 			.Append(_nextID)
 			.Append("\"\r\n\t\t\t\"plane\" \"(")
-			.Append(brushside.vertices[0].x.ToString("###0.######", format))
+			.Append(brushside.vertices[0].X.ToString("###0.######", format))
 			.Append(" ")
-			.Append(brushside.vertices[0].y.ToString("###0.######", format))
+			.Append(brushside.vertices[0].Y.ToString("###0.######", format))
 			.Append(" ")
-			.Append(brushside.vertices[0].z.ToString("###0.######", format))
+			.Append(brushside.vertices[0].Z.ToString("###0.######", format))
 			.Append(") (")
-			.Append(brushside.vertices[1].x.ToString("###0.######", format))
+			.Append(brushside.vertices[1].X.ToString("###0.######", format))
 			.Append(" ")
-			.Append(brushside.vertices[1].y.ToString("###0.######", format))
+			.Append(brushside.vertices[1].Y.ToString("###0.######", format))
 			.Append(" ")
-			.Append(brushside.vertices[1].z.ToString("###0.######", format))
+			.Append(brushside.vertices[1].Z.ToString("###0.######", format))
 			.Append(") (")
-			.Append(brushside.vertices[2].x.ToString("###0.######", format))
+			.Append(brushside.vertices[2].X.ToString("###0.######", format))
 			.Append(" ")
-			.Append(brushside.vertices[2].y.ToString("###0.######", format))
+			.Append(brushside.vertices[2].Y.ToString("###0.######", format))
 			.Append(" ")
-			.Append(brushside.vertices[2].z.ToString("###0.######", format))
+			.Append(brushside.vertices[2].Z.ToString("###0.######", format))
 			.Append(")\"\r\n\t\t\t\"material\" \"")
 			.Append(brushside.texture)
 			.Append("\"\r\n\t\t\t\"uaxis\" \"[")
-			.Append(brushside.textureInfo.uAxis.x.ToString("###0.######", format))
+			.Append(brushside.textureInfo.uAxis.X.ToString("###0.######", format))
 			.Append(" ")
-			.Append(brushside.textureInfo.uAxis.y.ToString("###0.######", format))
+			.Append(brushside.textureInfo.uAxis.Y.ToString("###0.######", format))
 			.Append(" ")
-			.Append(brushside.textureInfo.uAxis.z.ToString("###0.######", format))
+			.Append(brushside.textureInfo.uAxis.Z.ToString("###0.######", format))
 			.Append(" ")
-			.Append(brushside.textureInfo.translation.x.ToString("###0.######", format))
+			.Append(brushside.textureInfo.translation.X.ToString("###0.######", format))
 			.Append("] ")
-			.Append(brushside.textureInfo.scale.x.ToString("###0.####", format))
+			.Append(brushside.textureInfo.scale.X.ToString("###0.####", format))
 			.Append("\"\r\n\t\t\t\"vaxis\" \"[")
-			.Append(brushside.textureInfo.vAxis.x.ToString("###0.######", format))
+			.Append(brushside.textureInfo.vAxis.X.ToString("###0.######", format))
 			.Append(" ")
-			.Append(brushside.textureInfo.vAxis.y.ToString("###0.######", format))
+			.Append(brushside.textureInfo.vAxis.Y.ToString("###0.######", format))
 			.Append(" ")
-			.Append(brushside.textureInfo.vAxis.z.ToString("###0.######", format))
+			.Append(brushside.textureInfo.vAxis.Z.ToString("###0.######", format))
 			.Append(" ")
-			.Append(brushside.textureInfo.translation.y.ToString("###0.######", format))
+			.Append(brushside.textureInfo.translation.Y.ToString("###0.######", format))
 			.Append("] ")
-			.Append(brushside.textureInfo.scale.y.ToString("###0.####", format))
+			.Append(brushside.textureInfo.scale.Y.ToString("###0.####", format))
 			.Append("\"\r\n\t\t\t\"rotation\" \"")
 			.Append(brushside.textureInfo.rotation.ToString("###0.####", format))
 			.Append("\"\r\n\t\t\t\"lightmapscale\" \"")
@@ -186,11 +186,11 @@ namespace Decompiler {
 			sb.Append("\t\t\tdispinfo\r\n\t\t\t{\r\n\t\t\t\t\"power\" \"")
 			.Append(displacement.power)
 			.Append("\"\r\n\t\t\t\t\"startposition\" \"[")
-			.Append(displacement.start.x.ToString("###0.######", format))
+			.Append(displacement.start.X.ToString("###0.######", format))
 			.Append(" ")
-			.Append(displacement.start.y.ToString("###0.######", format))
+			.Append(displacement.start.Y.ToString("###0.######", format))
 			.Append(" ")
-			.Append(displacement.start.z.ToString("###0.######", format))
+			.Append(displacement.start.Z.ToString("###0.######", format))
 			.Append("]\"\r\n\t\t\t\t\"elevation\" \"0\"\r\n\t\t\t\t\"subdiv\" \"0\"\r\n\t\t\t\tnormals\r\n\t\t\t\t{\r\n");
 			for (int i = 0; i < displacement.normals.GetLength(0); ++i) {
 				sb.Append("\t\t\t\t\t\"row")
@@ -200,11 +200,11 @@ namespace Decompiler {
 					if (j > 0) {
 						sb.Append(" ");
 					}
-					sb.Append(displacement.normals[i, j].x.ToString("###0.######", format));
+					sb.Append(displacement.normals[i, j].X.ToString("###0.######", format));
 					sb.Append(" ");
-					sb.Append(displacement.normals[i, j].y.ToString("###0.######", format));
+					sb.Append(displacement.normals[i, j].Y.ToString("###0.######", format));
 					sb.Append(" ");
-					sb.Append(displacement.normals[i, j].z.ToString("###0.######", format));
+					sb.Append(displacement.normals[i, j].Z.ToString("###0.######", format));
 				}
 				sb.Append("\"\r\n");
 			}

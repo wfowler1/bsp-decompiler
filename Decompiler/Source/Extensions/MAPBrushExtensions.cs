@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 using LibBSP;
 
@@ -15,8 +16,8 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="mapBrush">This <see cref="MAPBrush"/>.</param>
 		/// <param name="v">Translation vector.</param>
-		public static void Translate(this MAPBrush mapBrush, Vector3d v) {
-			if (v == Vector3d.zero) {
+		public static void Translate(this MAPBrush mapBrush, Vector3 v) {
+			if (v == Vector3.Zero) {
 				return;
 			}
 			foreach (MAPBrushSide side in mapBrush.sides) {
@@ -45,16 +46,16 @@ namespace Decompiler {
 		/// <param name="yScale">The scale of the texture along the T axis.</param>
 		/// <param name="depth">The desired depth of the brush, how far the back should extend from the front.</param>
 		/// <returns>A <see cref="MAPBrush"/> object created using the passed vertices and texture information.</returns>
-		public static MAPBrush CreateBrushFromWind(IList<Vector3d> froms, IList<Vector3d> tos, string texture, string backtex, TextureInfo texInfo, float depth) {
-			Vector3d[] planepts = new Vector3d[3];
+		public static MAPBrush CreateBrushFromWind(IList<Vector3> froms, IList<Vector3> tos, string texture, string backtex, TextureInfo texInfo, float depth) {
+			Vector3[] planepts = new Vector3[3];
 			List<MAPBrushSide> sides = new List<MAPBrushSide>(froms.Count + 2); // Each edge, plus a front and back side
 
 			planepts[0] = froms[0];
 			planepts[1] = tos[0];
 			planepts[2] = tos[1];
-			Plane plane = new Plane(planepts);
+			Plane plane = Plane.CreateFromVertices(planepts[0], planepts[2], planepts[1]);
 			sides.Add(new MAPBrushSide() {
-				vertices = new Vector3d[] { planepts[0], planepts[1], planepts[2] },
+				vertices = new Vector3[] { planepts[0], planepts[1], planepts[2] },
 				plane = plane,
 				texture = texture,
 				textureInfo = texInfo,
@@ -63,18 +64,18 @@ namespace Decompiler {
 				lgtRot = 0
 			});
 
-			Vector3d reverseNormal = -plane.normal;
+			Vector3 reverseNormal = -plane.Normal;
 
 			planepts[0] = froms[0] + (reverseNormal * depth);
 			planepts[1] = tos[1] + (reverseNormal * depth);
 			planepts[2] = tos[0] + (reverseNormal * depth);
-			Plane backplane = new Plane(planepts);
-			Vector3d[] generatedAxes = TextureInfo.TextureAxisFromPlane(backplane);
+			Plane backplane = Plane.CreateFromVertices(planepts[0], planepts[2], planepts[1]);
+			Vector3[] generatedAxes = TextureInfo.TextureAxisFromPlane(backplane);
 			sides.Add(new MAPBrushSide() {
-				vertices = new Vector3d[] { planepts[0], planepts[1], planepts[2] },
+				vertices = new Vector3[] { planepts[0], planepts[1], planepts[2] },
 				plane = backplane,
 				texture = backtex,
-				textureInfo = new TextureInfo(generatedAxes[0], generatedAxes[1], Vector2d.zero, Vector2d.one, 0, 0, 0),
+				textureInfo = new TextureInfo(generatedAxes[0], generatedAxes[1], Vector2.Zero, Vector2.One, 0, 0, 0),
 				material = "wld_lightmap",
 				lgtScale = 16,
 				lgtRot = 0
@@ -85,13 +86,13 @@ namespace Decompiler {
 				planepts[0] = froms[i];
 				planepts[1] = froms[i] + (reverseNormal * depth);
 				planepts[2] = tos[i];
-				Plane sideplane = new Plane(planepts);
+				Plane sideplane = Plane.CreateFromVertices(planepts[0], planepts[2], planepts[1]);
 				generatedAxes = TextureInfo.TextureAxisFromPlane(sideplane);
 				sides.Add(new MAPBrushSide() {
-					vertices = new Vector3d[] { planepts[0], planepts[1], planepts[2] },
+					vertices = new Vector3[] { planepts[0], planepts[1], planepts[2] },
 					plane = sideplane,
 					texture = backtex,
-					textureInfo = new TextureInfo(generatedAxes[0], generatedAxes[1], Vector2d.zero, Vector2d.one, 0, 0, 0),
+					textureInfo = new TextureInfo(generatedAxes[0], generatedAxes[1], Vector2.Zero, Vector2.One, 0, 0, 0),
 					material = "wld_lightmap",
 					lgtScale = 16,
 					lgtRot = 0
@@ -110,65 +111,65 @@ namespace Decompiler {
 		/// <param name="maxs">The maximum extents of the new brush.</param>
 		/// <param name="texture">The texture to use on this brush.</param>
 		/// <returns>The resulting <see cref="MAPBrush"/> object.</returns>
-		public static MAPBrush CreateCube(Vector3d mins, Vector3d maxs, string texture) {
+		public static MAPBrush CreateCube(Vector3 mins, Vector3 maxs, string texture) {
 			MAPBrush newBrush = new MAPBrush();
-			Vector3d[][] planes = new Vector3d[6][];
+			Vector3[][] planes = new Vector3[6][];
 			for (int i = 0; i < 6; ++i) {
-				planes[i] = new Vector3d[3];
+				planes[i] = new Vector3[3];
 			} // Six planes for a cube brush, three vertices for each plane
-			double[][] textureS = new double[6][];
+			float[][] textureS = new float[6][];
 			for (int i = 0; i < 6; ++i) {
-				textureS[i] = new double[3];
+				textureS[i] = new float[3];
 			}
-			double[][] textureT = new double[6][];
+			float[][] textureT = new float[6][];
 			for (int i = 0; i < 6; ++i) {
-				textureT[i] = new double[3];
+				textureT[i] = new float[3];
 			}
 			// The planes and their texture scales
 			// I got these from an origin brush created by Gearcraft. Don't worry where these numbers came from, they work.
 			// Top
-			planes[0][0] = new Vector3d(mins.x, maxs.y, maxs.z);
-			planes[0][1] = new Vector3d(maxs.x, maxs.y, maxs.z);
-			planes[0][2] = new Vector3d(maxs.x, mins.y, maxs.z);
+			planes[0][0] = new Vector3(mins.X, maxs.Y, maxs.Z);
+			planes[0][1] = new Vector3(maxs.X, maxs.Y, maxs.Z);
+			planes[0][2] = new Vector3(maxs.X, mins.Y, maxs.Z);
 			textureS[0][0] = 1;
 			textureT[0][1] = -1;
 			// Bottom
-			planes[1][0] = new Vector3d(mins.x, mins.y, mins.z);
-			planes[1][1] = new Vector3d(maxs.x, mins.y, mins.z);
-			planes[1][2] = new Vector3d(maxs.x, maxs.y, mins.z);
+			planes[1][0] = new Vector3(mins.X, mins.Y, mins.Z);
+			planes[1][1] = new Vector3(maxs.X, mins.Y, mins.Z);
+			planes[1][2] = new Vector3(maxs.X, maxs.Y, mins.Z);
 			textureS[1][0] = 1;
 			textureT[1][1] = -1;
 			// Left
-			planes[2][0] = new Vector3d(mins.x, maxs.y, maxs.z);
-			planes[2][1] = new Vector3d(mins.x, mins.y, maxs.z);
-			planes[2][2] = new Vector3d(mins.x, mins.y, mins.z);
+			planes[2][0] = new Vector3(mins.X, maxs.Y, maxs.Z);
+			planes[2][1] = new Vector3(mins.X, mins.Y, maxs.Z);
+			planes[2][2] = new Vector3(mins.X, mins.Y, mins.Z);
 			textureS[2][1] = 1;
 			textureT[2][2] = -1;
 			// Right
-			planes[3][0] = new Vector3d(maxs.x, maxs.y, mins.z);
-			planes[3][1] = new Vector3d(maxs.x, mins.y, mins.z);
-			planes[3][2] = new Vector3d(maxs.x, mins.y, maxs.z);
+			planes[3][0] = new Vector3(maxs.X, maxs.Y, mins.Z);
+			planes[3][1] = new Vector3(maxs.X, mins.Y, mins.Z);
+			planes[3][2] = new Vector3(maxs.X, mins.Y, maxs.Z);
 			textureS[3][1] = 1;
 			textureT[3][2] = -1;
 			// Near
-			planes[4][0] = new Vector3d(maxs.x, maxs.y, maxs.z);
-			planes[4][1] = new Vector3d(mins.x, maxs.y, maxs.z);
-			planes[4][2] = new Vector3d(mins.x, maxs.y, mins.z);
+			planes[4][0] = new Vector3(maxs.X, maxs.Y, maxs.Z);
+			planes[4][1] = new Vector3(mins.X, maxs.Y, maxs.Z);
+			planes[4][2] = new Vector3(mins.X, maxs.Y, mins.Z);
 			textureS[4][0] = 1;
 			textureT[4][2] = -1;
 			// Far
-			planes[5][0] = new Vector3d(maxs.x, mins.y, mins.z);
-			planes[5][1] = new Vector3d(mins.x, mins.y, mins.z);
-			planes[5][2] = new Vector3d(mins.x, mins.y, maxs.z);
+			planes[5][0] = new Vector3(maxs.X, mins.Y, mins.Z);
+			planes[5][1] = new Vector3(mins.X, mins.Y, mins.Z);
+			planes[5][2] = new Vector3(mins.X, mins.Y, maxs.Z);
 			textureS[5][0] = 1;
 			textureT[5][2] = -1;
 
 			for (int i = 0; i < 6; i++) {
 				MAPBrushSide currentSide = new MAPBrushSide() {
 					vertices = planes[i],
-					plane = new Plane(planes[i]),
+					plane = Plane.CreateFromVertices(planes[i][0], planes[i][2], planes[i][1]),
 					texture = texture,
-					textureInfo = new TextureInfo(new Vector3d(textureS[i]), new Vector3d(textureT[i]), Vector2d.zero, Vector2d.one, 0, 0, 0),
+					textureInfo = new TextureInfo(new Vector3(textureS[i][0], textureS[i][1], textureS[i][2]), new Vector3(textureT[i][0], textureT[i][1], textureT[i][2]), Vector2.Zero, Vector2.One, 0, 0, 0),
 					material = "wld_lightmap",
 					lgtScale = 16,
 					lgtRot = 0

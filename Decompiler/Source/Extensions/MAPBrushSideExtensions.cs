@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 using LibBSP;
 
@@ -15,11 +16,11 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="mapBrushSide">This <see cref="MAPBrushSide"/>.</param>
 		/// <param name="v">Translation vector.</param>
-		public static void Translate(this MAPBrushSide mapBrushSide, Vector3d v) {
+		public static void Translate(this MAPBrushSide mapBrushSide, Vector3 v) {
 			for (int i = 0; i < mapBrushSide.vertices.Length; ++i) {
 				mapBrushSide.vertices[i] += v;
 			}
-			mapBrushSide.plane = new Plane(mapBrushSide.vertices);
+			mapBrushSide.plane = Plane.CreateFromVertices(mapBrushSide.vertices[0], mapBrushSide.vertices[2], mapBrushSide.vertices[1]);
 		}
 
 	}
