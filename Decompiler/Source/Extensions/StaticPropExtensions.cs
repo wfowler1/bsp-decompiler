@@ -18,16 +18,16 @@ namespace Decompiler {
 		/// <returns><see cref="Entity"/> representation of this <see cref="StaticProp"/>.</returns>
 		public static Entity ToEntity(this StaticProp prop, IList<string> dictionary) {
 			Entity entity = new Entity("prop_static");
-			entity["model"] = dictionary[prop.dictionaryEntry];
-			entity["skin"] = prop.skin.ToString();
-			entity.origin = prop.origin;
-			entity.angles = prop.angles;
-			entity["solid"] = prop.solidity.ToString();
-			entity["fademindist"] = prop.minFadeDist.ToString();
-			entity["fademaxdist"] = prop.maxFadeDist.ToString();
-			entity["fadescale"] = prop.forcedFadeScale.ToString();
-			if (prop.targetname != null) {
-				entity["targetname"] = prop.targetname;
+			entity["model"] = dictionary[prop.ModelIndex];
+			entity["skin"] = prop.Skin.ToString();
+			entity.Origin = prop.Origin;
+			entity.Angles = prop.Angles;
+			entity["solid"] = prop.Solidity.ToString();
+			entity["fademindist"] = prop.MinimumFadeDistance.ToString();
+			entity["fademaxdist"] = prop.MaximumFadeDistance.ToString();
+			entity["fadescale"] = prop.ForcedFadeScale.ToString();
+			if (prop.Name != null) {
+				entity["targetname"] = prop.Name;
 			}
 			return entity;
 		}

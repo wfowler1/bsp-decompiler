@@ -20,7 +20,7 @@ namespace Decompiler {
 		/// within the passed <see cref="Model"/> object, or <c>null</c> if the BSP doesn't have faces.
 		/// </returns>
 		public static List<Face> GetFacesInModel(this BSP bsp, Model model) {
-			if (model.firstFace >= 0) {
+			if (model.FirstFaceIndex >= 0) {
 				return bsp.GetReferencedObjects<Face>(model, "faces");
 			}
 
@@ -42,17 +42,17 @@ namespace Decompiler {
 		/// brushes, but Quake 2 and Source require a full tree traversal.
 		/// </remarks>
 		public static List<Brush> GetBrushesInModel(this BSP bsp, Model model) {
-			if (model.firstBrush >= 0) {
+			if (model.FirstBrushIndex >= 0) {
 				return bsp.GetReferencedObjects<Brush>(model, "brushes");
 			}
 
-			if (model.firstLeaf >= 0) {
+			if (model.FirstLeafIndex >= 0) {
 				List<Leaf> leavesInModel = bsp.GetReferencedObjects<Leaf>(model, "leaves");
 				return bsp.GetBrushesInLeafList(leavesInModel);
 			}
 
-			if (model.headNode >= 0) {
-				return bsp.GetBrushesInLeafList(bsp.GetLeavesInTree(bsp.nodes[model.headNode]));
+			if (model.HeadNodeIndex >= 0) {
+				return bsp.GetBrushesInLeafList(bsp.GetLeavesInTree(bsp.nodes[model.HeadNodeIndex]));
 			}
 
 			return new List<Brush>(0);
@@ -103,13 +103,13 @@ namespace Decompiler {
 
 			while (!(nodestack.Count == 0)) {
 				currentNode = nodestack.Pop();
-				int right = currentNode.child2;
+				int right = currentNode.Child2Index;
 				if (right >= 0) {
 					nodestack.Push(bsp.nodes[right]);
 				} else {
 					leaves.Add(bsp.leaves[(right * -1) - 1]);
 				}
-				int left = currentNode.child1;
+				int left = currentNode.Child1Index;
 				if (left >= 0) {
 					nodestack.Push(bsp.nodes[left]);
 				} else {

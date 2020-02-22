@@ -22,17 +22,17 @@ namespace Decompiler {
 		public static MAPBrush CreateBrush(this Face face, BSP bsp, float depth) {
 			TextureInfo texInfo;
 			string texture;
-			if (face.textureInfo >= 0) {
-				texInfo = bsp.texInfo[face.textureInfo];
+			if (face.TextureInfoIndex >= 0) {
+				texInfo = bsp.texInfo[face.TextureInfoIndex];
 				if (bsp.texDatas != null) {
-					TextureData texData = bsp.texDatas[texInfo.texture];
-					texture = bsp.textures.GetTextureAtOffset((uint)bsp.texTable[texData.stringTableIndex]);
+					TextureData texData = bsp.texDatas[texInfo.TextureIndex];
+					texture = bsp.textures.GetTextureAtOffset((uint)bsp.texTable[texData.TextureStringOffsetIndex]);
 				} else {
-					Texture texData = bsp.textures[texInfo.texture];
-					texture = texData.name;
+					Texture texData = bsp.textures[texInfo.TextureIndex];
+					texture = texData.Name;
 				}
 			} else {
-				Vector3[] axes = TextureInfo.TextureAxisFromPlane(bsp.planes[face.plane]);
+				Vector3[] axes = TextureInfo.TextureAxisFromPlane(bsp.planes[face.PlaneIndex]);
 				texInfo = new TextureInfo(axes[0], axes[1], Vector2.Zero, Vector2.One, 0, -1, 0);
 				texture = "**cliptexture**";
 			}
@@ -40,15 +40,15 @@ namespace Decompiler {
 			TextureInfo outputTexInfo = texInfo.BSP2MAPTexInfo(Vector3.Zero);
 
 			// Turn vertices and edges into arrays of vectors
-			Vector3[] froms = new Vector3[face.numEdges];
-			Vector3[] tos = new Vector3[face.numEdges];
-			for (int i = 0; i < face.numEdges; ++i) {
-				if (bsp.surfEdges[face.firstEdge + i] > 0) {
-					froms[i] = bsp.vertices[bsp.edges[(int)bsp.surfEdges[face.firstEdge + i]].firstVertex].position;
-					tos[i] = bsp.vertices[bsp.edges[(int)bsp.surfEdges[face.firstEdge + i]].secondVertex].position;
+			Vector3[] froms = new Vector3[face.NumEdgeIndices];
+			Vector3[] tos = new Vector3[face.NumEdgeIndices];
+			for (int i = 0; i < face.NumEdgeIndices; ++i) {
+				if (bsp.surfEdges[face.FirstEdgeIndexIndex + i] > 0) {
+					froms[i] = bsp.vertices[bsp.edges[(int)bsp.surfEdges[face.FirstEdgeIndexIndex + i]].FirstVertexIndex].position;
+					tos[i] = bsp.vertices[bsp.edges[(int)bsp.surfEdges[face.FirstEdgeIndexIndex + i]].SecondVertexIndex].position;
 				} else {
-					tos[i] = bsp.vertices[bsp.edges[(int)bsp.surfEdges[face.firstEdge + i] * (-1)].firstVertex].position;
-					froms[i] = bsp.vertices[bsp.edges[(int)bsp.surfEdges[face.firstEdge + i] * (-1)].secondVertex].position;
+					tos[i] = bsp.vertices[bsp.edges[(int)bsp.surfEdges[face.FirstEdgeIndexIndex + i] * (-1)].FirstVertexIndex].position;
+					froms[i] = bsp.vertices[bsp.edges[(int)bsp.surfEdges[face.FirstEdgeIndexIndex + i] * (-1)].SecondVertexIndex].position;
 				}
 			}
 

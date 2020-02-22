@@ -20,7 +20,7 @@ namespace Decompiler {
 		public static bool IsDetail(this Brush brush, BSP bsp) {
 			switch (bsp.version) {
 				case MapType.Nightfire: {
-					return ((brush.contents & (1 << 9)) != 0);
+					return ((brush.Contents & (1 << 9)) != 0);
 				}
 				case MapType.Quake3:
 				case MapType.Raven:
@@ -31,9 +31,9 @@ namespace Decompiler {
 				case MapType.STEF2Demo:
 				case MapType.MOHAA:
 				case MapType.FAKK: {
-					int texture = brush.texture;
+					int texture = brush.TextureIndex;
 					if (texture >= 0) {
-						return ((bsp.textures[texture].contents & (1 << 27)) != 0);
+						return ((bsp.textures[texture].Contents & (1 << 27)) != 0);
 					}
 					return false;
 				}
@@ -52,7 +52,7 @@ namespace Decompiler {
 				case MapType.SoF:
 				case MapType.Daikatana:
 				case MapType.Quake2: {
-					return ((brush.contents & (1 << 27)) != 0);
+					return ((brush.Contents & (1 << 27)) != 0);
 				}
 			}
 			return false;
@@ -67,10 +67,10 @@ namespace Decompiler {
 		public static bool IsWater(this Brush brush, BSP bsp) {
 			switch (bsp.version) {
 				case MapType.Quake: {
-					return brush.contents == -3;
+					return brush.Contents == -3;
 				}
 				case MapType.Nightfire: {
-					return ((brush.contents & (1 << 20)) != 0);
+					return ((brush.Contents & (1 << 20)) != 0);
 				}
 				case MapType.Quake3:
 				case MapType.Raven:
@@ -81,9 +81,9 @@ namespace Decompiler {
 				case MapType.STEF2Demo:
 				case MapType.MOHAA:
 				case MapType.FAKK: {
-					int texture = brush.texture;
+					int texture = brush.TextureIndex;
 					if (texture >= 0) {
-						return ((bsp.textures[texture].contents & (1 << 5)) != 0);
+						return ((bsp.textures[texture].Contents & (1 << 5)) != 0);
 					}
 					return false;
 				}
@@ -102,7 +102,7 @@ namespace Decompiler {
 				case MapType.SoF:
 				case MapType.Daikatana:
 				case MapType.Quake2: {
-					return ((brush.contents & (1 << 5)) != 0);
+					return ((brush.Contents & (1 << 5)) != 0);
 				}
 			}
 			return false;
@@ -117,9 +117,9 @@ namespace Decompiler {
 		public static bool IsManVis(this Brush brush, BSP bsp) {
 			switch (bsp.version) {
 				case MapType.MOHAA: {
-					int texture = brush.texture;
+					int texture = brush.TextureIndex;
 					if (texture >= 0) {
-						return bsp.textures[texture].flags == 0x40010990;
+						return bsp.textures[texture].Flags == 0x40010990;
 					}
 					return false;
 				}

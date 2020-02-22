@@ -16,7 +16,7 @@ namespace Decompiler {
 		/// <param name="model">This <see cref="StaticModel"/>.</param>
 		/// <returns><see cref="Entity"/> representation of this <see cref="StaticModel"/>.</returns>
 		public static Entity ToEntity(this StaticModel model) {
-			string name = model.name.Replace("//", "/").Trim('/').ToLower();
+			string name = model.Name.Replace("//", "/").Trim('/').ToLower();
 			string classname;
 			if (modelToEntityMap.ContainsKey(name)) {
 				classname = modelToEntityMap[name];
@@ -24,10 +24,10 @@ namespace Decompiler {
 				classname = "static_model";
 			}
 			Entity entity = new Entity(classname);
-			entity["model"] = model.name;
-			entity.origin = model.origin;
-			entity.angles = model.angles;
-			entity["scale"] = model.scale.ToString();
+			entity["model"] = model.Name;
+			entity.Origin = model.Origin;
+			entity.Angles = model.Angles;
+			entity["scale"] = model.Scale.ToString();
 			entity["angle"] = "0";
 			return entity;
 		}

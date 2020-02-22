@@ -110,9 +110,9 @@ namespace Decompiler {
 			.Append(" ")
 			.Append(brushside.plane.D.ToString("###0.##########", format))
 			.Append(" ) ( ( 1 0 ")
-			.Append(brushside.textureInfo.translation.X.ToString("###0.##########", format))
+			.Append(brushside.textureInfo.Translation.X.ToString("###0.##########", format))
 			.Append(" ) ( 0 1 ")
-			.Append(brushside.textureInfo.translation.Y.ToString("###0.##########", format))
+			.Append(brushside.textureInfo.Translation.Y.ToString("###0.##########", format))
 			.Append(" ) ) \"")
 			.Append(brushside.texture)
 			.Append("\" 0 0 0\r\n");

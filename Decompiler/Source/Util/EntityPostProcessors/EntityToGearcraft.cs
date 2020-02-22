@@ -33,7 +33,7 @@ namespace Decompiler {
 		/// </summary>
 		public void PostProcessEntities() {
 			// There should really only be one of these. But someone might have screwed with the map...
-			List<Entity> worldspawns = _entities.FindAll(entity => { return entity.className.Equals("worldspawn", StringComparison.InvariantCultureIgnoreCase); });
+			List<Entity> worldspawns = _entities.FindAll(entity => { return entity.ClassName.Equals("worldspawn", StringComparison.InvariantCultureIgnoreCase); });
 			foreach (Entity entity in worldspawns) {
 				entity["mapversion"] = "510";
 			}
@@ -108,7 +108,7 @@ namespace Decompiler {
 		/// <param name="entities">An enumerable list of <see cref="Entity"/> objects to search through.</param>
 		/// <returns>Returns <c>true</c> if there exist Capture the Flag entities in <paramref name="entities"/>.</returns>
 		private static bool DetectCTF(IEnumerable<Entity> entities) {
-			return entities.Any<Entity>(entity => (entity.className == "team_ctf" || entity.className == "ctf_flag_hardcorps"));
+			return entities.Any<Entity>(entity => (entity.ClassName == "team_ctf" || entity.ClassName == "ctf_flag_hardcorps"));
 		}
 
 		/// <summary>
@@ -165,8 +165,8 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="entity">The <see cref="Entity"/> to parse.</param>
 		private void PostProcessNightfireEntity(Entity entity) {
-			if (entity.brushBased) {
-				Vector3 origin = entity.origin;
+			if (entity.IsBrushBased) {
+				Vector3 origin = entity.Origin;
 				entity.Remove("origin");
 				entity.Remove("model");
 				if (origin != Vector3.Zero) {
@@ -186,8 +186,8 @@ namespace Decompiler {
 		/// <param name="entity">The <see cref="Entity"/> to parse.</param>
 		private void PostProcessSourceEntity(Entity entity) {
 			entity.Remove("hammerid");
-			if (entity.brushBased) {
-				Vector3 origin = entity.origin;
+			if (entity.IsBrushBased) {
+				Vector3 origin = entity.Origin;
 				entity.Remove("origin");
 				entity.Remove("model");
 				if (entity.ValueIs("classname", "func_door_rotating")) {
@@ -251,7 +251,7 @@ namespace Decompiler {
 					goto case "info_player_deathmatch";
 				}
 				case "info_player_deathmatch": {
-					Vector3 origin = entity.origin;
+					Vector3 origin = entity.Origin;
 					entity["origin"] = origin.X + " " + origin.Y + " " + (origin.Z + 40);
 					break;
 				}
@@ -301,8 +301,8 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="entity">The <see cref="Entity"/> to parse.</param>
 		private void PostProcessCoDEntity(Entity entity) {
-			if (entity.brushBased) {
-				Vector3 origin = entity.origin;
+			if (entity.IsBrushBased) {
+				Vector3 origin = entity.Origin;
 				entity.Remove("origin");
 				entity.Remove("model");
 				if (entity["classname"].ToUpper().Equals("func_rotating".ToUpper())) {
@@ -353,8 +353,8 @@ namespace Decompiler {
 				entity["angles"] = "0 " + entity["angle"] + " 0";
 				entity.Remove("angle");
 			}
-			if (entity.brushBased) {
-				Vector3 origin = entity.origin;
+			if (entity.IsBrushBased) {
+				Vector3 origin = entity.Origin;
 				entity.Remove("origin");
 				entity.Remove("model");
 				if (entity.ValueIs("classname", "func_rotating")) {
@@ -428,7 +428,7 @@ namespace Decompiler {
 				case "info_player_start":
 				case "info_player_coop":
 				case "info_player_deathmatch": {
-					Vector3 origin = entity.origin;
+					Vector3 origin = entity.Origin;
 					entity["origin"] = origin.X + " " + origin.Y + " " + (origin.Z + 18);
 					break;
 				}
@@ -447,7 +447,7 @@ namespace Decompiler {
 					break;
 				}
 				case "misc_teleporter": {
-					Vector3 origin = entity.origin;
+					Vector3 origin = entity.Origin;
 					Vector3 mins = new Vector3(origin.X - 24, origin.Y - 24, origin.Z - 24);
 					Vector3 maxs = new Vector3(origin.X + 24, origin.Y + 24, origin.Z + 48);
 					entity.brushes.Add(MAPBrushExtensions.CreateCube(mins, maxs, "special/trigger"));
@@ -467,8 +467,8 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="entity">The <see cref="Entity"/> to parse.</param>
 		private void PostProcessQuake3Entity(Entity entity) {
-			if (entity.brushBased) {
-				Vector3 origin = entity.origin;
+			if (entity.IsBrushBased) {
+				Vector3 origin = entity.Origin;
 				entity.Remove("origin");
 				entity.Remove("model");
 				if (entity.ValueIs("classname", "func_rotating") || entity.ValueIs("classname", "func_rotatingdoor")) {
@@ -551,7 +551,7 @@ namespace Decompiler {
 				case "info_player_start":
 				case "info_player_coop":
 				case "info_player_deathmatch": {
-					Vector3 origin = entity.origin;
+					Vector3 origin = entity.Origin;
 					entity["origin"] = origin.X + " " + origin.Y + " " + (origin.Z + 24);
 					break;
 				}

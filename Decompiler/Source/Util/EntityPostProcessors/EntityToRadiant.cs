@@ -33,7 +33,7 @@ namespace Decompiler {
 		/// </summary>
 		public void PostProcessEntities() {
 			// There should really only be one of these. But someone might have screwed with the map...
-			List<Entity> worldspawns = _entities.FindAll(entity => { return entity.className.Equals("worldspawn", StringComparison.InvariantCultureIgnoreCase); });
+			List<Entity> worldspawns = _entities.FindAll(entity => { return entity.ClassName.Equals("worldspawn", StringComparison.InvariantCultureIgnoreCase); });
 
 			// TODO: This is awful. Let's rework the enum to have internal ways to check engine forks.
 			if (_version != MapType.Quake3 &&
@@ -54,7 +54,7 @@ namespace Decompiler {
 					}
 				}
 				// Make sure all func_water entities get converted to Radiant.
-				List<Entity> waters = _entities.FindAll(entity => { return entity.className.Equals("func_water", StringComparison.InvariantCultureIgnoreCase); });
+				List<Entity> waters = _entities.FindAll(entity => { return entity.ClassName.Equals("func_water", StringComparison.InvariantCultureIgnoreCase); });
 				if (waters.Any()) {
 					// Parse water entities into just water brushes
 					foreach (Entity water in waters) {
@@ -79,7 +79,7 @@ namespace Decompiler {
 				foreach (MAPBrush brush in _entities[i].brushes) {
 					if (brush.isDetail) {
 						foreach (MAPBrushSide side in brush.sides) {
-							side.textureInfo.flags = side.textureInfo.flags | 134217728;
+							side.textureInfo.Flags = side.textureInfo.Flags | 134217728;
 						}
 					}
 				}
@@ -156,8 +156,8 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="entity"><see cref="Entity"/> to postprocess.</param>
 		private void PostProcessEntity(Entity entity) {
-			if (entity.brushBased) {
-				Vector3 origin = entity.origin;
+			if (entity.IsBrushBased) {
+				Vector3 origin = entity.Origin;
 				entity.Remove("origin");
 				entity.Remove("model");
 				if (origin != Vector3.Zero) {
@@ -182,7 +182,7 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="entity">The <see cref="Entity"/> to parse.</param>
 		private void PostProcessNightfireEntity(Entity entity) {
-			switch (entity.className.ToLower()) {
+			switch (entity.ClassName.ToLower()) {
 				case "func_door_rotating": {
 					entity["classname"] = "func_rotatingdoor";
 					break;

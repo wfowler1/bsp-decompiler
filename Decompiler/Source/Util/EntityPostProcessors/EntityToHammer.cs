@@ -37,7 +37,7 @@ namespace Decompiler {
 		/// </summary>
 		public void PostProcessEntities() {
 			// There should really only be one of these. But someone might have screwed with the map...
-			List<Entity> worldspawns = _entities.FindAll(entity => { return entity.className.Equals("worldspawn", StringComparison.InvariantCultureIgnoreCase); });
+			List<Entity> worldspawns = _entities.FindAll(entity => { return entity.ClassName.Equals("worldspawn", StringComparison.InvariantCultureIgnoreCase); });
 
 			// TODO: This is awful. Let's rework the enum to have internal ways to check engine forks.
 			if (_version != MapType.Source17 &&
@@ -81,7 +81,7 @@ namespace Decompiler {
 					}
 				}
 				// Make sure all func_water entities get converted to Source.
-				List<Entity> waters = _entities.FindAll(entity => { return entity.className.Equals("func_water", StringComparison.InvariantCultureIgnoreCase); });
+				List<Entity> waters = _entities.FindAll(entity => { return entity.ClassName.Equals("func_water", StringComparison.InvariantCultureIgnoreCase); });
 				if (waters.Any()) {
 					hasWater = true;
 					// Parse water entities into just water brushes
@@ -91,16 +91,16 @@ namespace Decompiler {
 					}
 				}
 
-				if (hasWater && !_entities.Any(entity => { return entity.className.Equals("water_lod_control", StringComparison.InvariantCultureIgnoreCase); })) {
-					Entity pointEntity = _entities.Find(entity => { return !entity.brushBased; });
+				if (hasWater && !_entities.Any(entity => { return entity.ClassName.Equals("water_lod_control", StringComparison.InvariantCultureIgnoreCase); })) {
+					Entity pointEntity = _entities.Find(entity => { return !entity.IsBrushBased; });
 					Vector3 origin = Vector3.Zero;
 					if (pointEntity != null) {
-						origin = pointEntity.origin;
+						origin = pointEntity.Origin;
 					}
 					Entity lodControl = new Entity("water_lod_control");
 					lodControl["cheapwaterenddistance"] = "2000";
 					lodControl["cheapwaterstartdistance"] = "1000";
-					lodControl.origin = origin;
+					lodControl.Origin = origin;
 				}
 			}
 
@@ -296,8 +296,8 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="entity"><see cref="Entity"/> to postprocess.</param>
 		private void PostProcessEntity(Entity entity) {
-			if (entity.brushBased) {
-				Vector3 origin = entity.origin;
+			if (entity.IsBrushBased) {
+				Vector3 origin = entity.Origin;
 				entity.Remove("model");
 				foreach (MAPBrush brush in entity.brushes) {
 					brush.Translate(origin);
@@ -349,8 +349,8 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="entity">The <see cref="Entity"/> to parse.</param>
 		private void PostProcessNightfireEntity(Entity entity) {
-			if (entity.angles.X != 0) {
-				entity.angles = new Vector3(-entity.angles.X, entity.angles.Y, entity.angles.Z);
+			if (entity.Angles.X != 0) {
+				entity.Angles = new Vector3(-entity.Angles.X, entity.Angles.Y, entity.Angles.Z);
 			}
 			if (!entity["body"].Equals("")) {
 				entity.RenameKey("body", "SetBodyGroup");
@@ -358,17 +358,17 @@ namespace Decompiler {
 			if (entity.GetVector("rendercolor") == Vector4.Zero) {
 				entity["rendercolor"] = "255 255 255";
 			}
-			if (entity.angles == new Vector3(0, -1, 0)) {
-				entity.angles = new Vector3(-90, 0, 0);
+			if (entity.Angles == new Vector3(0, -1, 0)) {
+				entity.Angles = new Vector3(-90, 0, 0);
 			}
 			string modelName = entity["model"];
 			if (modelName.Length >= 4 && modelName.Substring(modelName.Length - 4).Equals(".spz", StringComparison.InvariantCultureIgnoreCase)) {
 				entity["model"] = modelName.Substring(0, modelName.Length - 4) + ".spr";
 			}
 
-			switch (entity.className.ToLower()) {
+			switch (entity.ClassName.ToLower()) {
 				case "light_spot": {
-					entity["pitch"] = (entity.angles.X + entity.GetFloat("pitch", 0)).ToString();
+					entity["pitch"] = (entity.Angles.X + entity.GetFloat("pitch", 0)).ToString();
 					float cone = entity.GetFloat("_cone", 0);
 					if (cone > 90) { cone = 90; }
 					if (cone < 0) { cone = 0; }
@@ -436,8 +436,8 @@ namespace Decompiler {
 				}
 				case "info_player_deathmatch":
 				case "info_player_start": {
-					Vector3 origin = entity.origin;
-					entity.origin = new Vector3(origin.X, origin.Y, (origin.Z - 40));
+					Vector3 origin = entity.Origin;
+					entity.Origin = new Vector3(origin.X, origin.Y, (origin.Z - 40));
 					break;
 				}
 				case "item_ctfflag": {
@@ -619,8 +619,8 @@ namespace Decompiler {
 				}
 				case "info_player_start":
 				case "info_player_deathmatch": {
-					Vector3 origin = entity.origin;
-					entity.origin = new Vector3(origin.X, origin.Y, (origin.Z + 18));
+					Vector3 origin = entity.Origin;
+					entity.Origin = new Vector3(origin.X, origin.Y, (origin.Z + 18));
 					break;
 				}
 				case "light": {
@@ -638,7 +638,7 @@ namespace Decompiler {
 					break;
 				}
 				case "misc_teleporter": {
-					Vector3 origin = entity.origin;
+					Vector3 origin = entity.Origin;
 					Vector3 mins = new Vector3(origin.X - 24, origin.Y - 24, origin.Z - 24);
 					Vector3 maxs = new Vector3(origin.X + 24, origin.Y + 24, origin.Z + 48);
 					entity.brushes.Add(MAPBrushExtensions.CreateCube(mins, maxs, "tools/toolstrigger"));
@@ -679,7 +679,7 @@ namespace Decompiler {
 					break;
 				}
 				case "func_rotatingdoor": {
-					entity.className = "func_door_rotating";
+					entity.ClassName = "func_door_rotating";
 					break;
 				}
 			}

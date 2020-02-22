@@ -125,9 +125,9 @@ namespace Decompiler {
 			.Append(" ) ")
 			.Append(brushside.texture)
 			.Append(" ")
-			.Append(brushside.textureInfo.translation.X.ToString("###0.######", format))
+			.Append(brushside.textureInfo.Translation.X.ToString("###0.######", format))
 			.Append(" ")
-			.Append(brushside.textureInfo.translation.Y.ToString("###0.######", format))
+			.Append(brushside.textureInfo.Translation.Y.ToString("###0.######", format))
 			.Append(" ")
 			.Append(brushside.textureInfo.rotation.ToString("###0.00", format))
 			.Append(" ")
@@ -135,7 +135,7 @@ namespace Decompiler {
 			.Append(" ")
 			.Append(brushside.textureInfo.scale.Y.ToString("###0.######", format))
 			.Append(" ")
-			.Append(brushside.textureInfo.flags)
+			.Append(brushside.textureInfo.Flags)
 			.Append(" 0 0");
 			if (isDetail) {
 				sb.Append(" +surfaceparm detail");

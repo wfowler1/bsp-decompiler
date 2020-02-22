@@ -34,7 +34,7 @@ namespace Decompiler {
 		/// </summary>
 		public void PostProcessEntities() {
 			// There should really only be one of these. But someone might have screwed with the map...
-			List<Entity> worldspawns = _entities.FindAll(entity => { return entity.className.Equals("worldspawn", StringComparison.InvariantCultureIgnoreCase); });
+			List<Entity> worldspawns = _entities.FindAll(entity => { return entity.ClassName.Equals("worldspawn", StringComparison.InvariantCultureIgnoreCase); });
 
 			if (_version != MapType.CoD) {
 				// Make sure all water brushes currently in the worldspawn get converted to Source.
@@ -46,7 +46,7 @@ namespace Decompiler {
 					}
 				}
 				// Make sure all func_water entities get converted to Source.
-				List<Entity> waters = _entities.FindAll(entity => { return entity.className.Equals("func_water", StringComparison.InvariantCultureIgnoreCase); });
+				List<Entity> waters = _entities.FindAll(entity => { return entity.ClassName.Equals("func_water", StringComparison.InvariantCultureIgnoreCase); });
 				if (waters.Any()) {
 					// Parse water entities into just water brushes
 					foreach (Entity water in waters) {
@@ -96,8 +96,8 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="entity"><see cref="Entity"/> to postprocess.</param>
 		private void PostProcessEntity(Entity entity) {
-			if (entity.brushBased) {
-				Vector3 origin = entity.origin;
+			if (entity.IsBrushBased) {
+				Vector3 origin = entity.Origin;
 				entity.Remove("origin");
 				entity.Remove("model");
 				if (origin != Vector3.Zero) {
@@ -122,7 +122,7 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="entity">The <see cref="Entity"/> to parse.</param>
 		private void PostProcessNightfireEntity(Entity entity) {
-			switch (entity.className.ToLower()) {
+			switch (entity.ClassName.ToLower()) {
 				case "worldspawn": {
 					entity.Remove("mapversion");
 					break;

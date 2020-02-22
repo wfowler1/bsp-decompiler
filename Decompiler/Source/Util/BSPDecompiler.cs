@@ -48,7 +48,7 @@ namespace Decompiler {
 			}
 			if (_bsp.staticProps != null) {
 				foreach (StaticProp prop in _bsp.staticProps) {
-					entities.Add(prop.ToEntity(_bsp.staticProps.dictionary));
+					entities.Add(prop.ToEntity(_bsp.staticProps.ModelDictionary));
 					++_itemsProcessed;
 					ReportProgress();
 				}
@@ -77,7 +77,7 @@ namespace Decompiler {
 		/// <param name="entity">The <see cref="Entity"/> to process.</param>
 		/// <remarks>This method does not return anything, since the <see cref="Entity"/> object is modified by reference.</remarks>
 		private void ProcessEntity(Entity entity) {
-			int modelNumber = entity.modelNumber;
+			int modelNumber = entity.ModelNumber;
 			// If this Entity has no modelNumber, then this is a no-op. No processing is needed.
 			// A modelnumber of 0 indicates the world entity.
 			if (modelNumber >= 0) {
@@ -86,8 +86,8 @@ namespace Decompiler {
 					List<Brush> brushes = _bsp.GetBrushesInModel(model);
 					if (brushes != null) {
 						foreach (Brush brush in brushes) {
-							MAPBrush result = ProcessBrush(brush, entity.origin);
-							result.isWater |= (entity.className == "func_water");
+							MAPBrush result = ProcessBrush(brush, entity.Origin);
+							result.isWater |= (entity.ClassName == "func_water");
 							if (_master.settings.brushesToWorld) {
 								_bsp.entities.GetWithAttribute("classname", "worldspawn").brushes.Add(result);
 							} else {
@@ -98,7 +98,7 @@ namespace Decompiler {
 						}
 					}
 				}
-				if (model.numLeafPatches > 0 && _bsp.markSurfaces != null && _bsp.patches != null) {
+				if (model.NumPatchIndices > 0 && _bsp.markSurfaces != null && _bsp.patches != null) {
 					HashSet<Patch> patches = new HashSet<Patch>();
 					List<long> leafPatchesInModel = _bsp.GetReferencedObjects<long>(model, "markSurfaces");
 					foreach (long leafPatch in leafPatchesInModel) {
@@ -107,7 +107,7 @@ namespace Decompiler {
 						}
 					}
 					foreach (Patch patch in patches) {
-						if (_bsp.version != MapType.CoD || patch.patchType == 0) {
+						if (_bsp.version != MapType.CoD || patch.Type == 0) {
 							MAPPatch mappatch = ProcessPatch(patch);
 							MAPBrush newBrush = new MAPBrush();
 							newBrush.patch = mappatch;
@@ -118,22 +118,22 @@ namespace Decompiler {
 				if (_bsp.faces != null) {
 					List<Face> surfaces = _bsp.GetFacesInModel(model);
 					foreach (Face face in surfaces) {
-						if (face.displacement >= 0) {
+						if (face.DisplacementIndex >= 0) {
 							if (modelNumber != 0) {
 								_master.Print("WARNING: Displacement not part of world in " + _bsp.MapNameNoExtension);
 							}
-							MAPDisplacement displacement = ProcessDisplacement(_bsp.dispInfos[face.displacement]);
+							MAPDisplacement displacement = ProcessDisplacement(_bsp.dispInfos[face.DisplacementIndex]);
 							MAPBrush newBrush = face.CreateBrush(_bsp, 32);
 							newBrush.sides[0].displacement = displacement;
 							// If we are not decompiling to VMF, vis will need to skip this brush.
 							newBrush.isDetail = true;
 							entity.brushes.Add(newBrush);
-						} else if (face.flags == 2) {
+						} else if (face.Type == 2) {
 							MAPPatch patch = ProcessPatch(face);
 							MAPBrush newBrush = new MAPBrush();
 							newBrush.patch = patch;
 							entity.brushes.Add(newBrush);
-						} else if ((_bsp.version == MapType.STEF2 || _bsp.version == MapType.STEF2Demo) && face.flags == 5) {
+						} else if ((_bsp.version == MapType.STEF2 || _bsp.version == MapType.STEF2Demo) && face.Type == 5) {
 							if (modelNumber != 0) {
 								_master.Print("WARNING: Terrain not part of world in " + _bsp.MapNameNoExtension);
 							}
@@ -169,9 +169,9 @@ namespace Decompiler {
 		private MAPBrush ProcessBrush(Brush brush, Vector3 worldPosition) {
 			List<BrushSide> sides;
 			// CoD BSPs store brush sides sequentially so the brush structure doesn't reference a first side.
-			if (brush.firstSide < 0) {
-				sides = _bsp.brushSides.GetRange(_currentSideIndex, brush.numSides);
-				_currentSideIndex += brush.numSides;
+			if (brush.FirstSideIndex < 0) {
+				sides = _bsp.brushSides.GetRange(_currentSideIndex, brush.NumSides);
+				_currentSideIndex += brush.NumSides;
 			} else {
 				sides = _bsp.GetReferencedObjects<BrushSide>(brush, "brushSides");
 			}
@@ -200,7 +200,7 @@ namespace Decompiler {
 		/// the first six <see cref="BrushSide"/>s in a <see cref="Brush"/> don't contain <see cref="Plane"/> references.</param>
 		/// <returns>The processed <see cref="MAPBrushSode"/> object, to be added to a <see cref="Brush"/> object.</returns>
 		private MAPBrushSide ProcessBrushSide(BrushSide brushSide, Vector3 worldPosition, int sideIndex) {
-			if (brushSide.bevel) { return null; }
+			if (brushSide.IsBevel) { return null; }
 			MAPBrushSide mapBrushSide;
 			// The things we'll need to define a .MAP brush side
 			string texture;
@@ -211,67 +211,67 @@ namespace Decompiler {
 			int flags = 0;
 
 			// If we have a face reference here, let's use it!
-			if (brushSide.face >= 0) {
-				Face face = _bsp.faces[brushSide.face];
+			if (brushSide.FaceIndex >= 0) {
+				Face face = _bsp.faces[brushSide.FaceIndex];
 				// In Nightfire, faces with "256" flag set should be ignored
-				if ((face.flags & (1 << 8)) != 0) { return null; }
-				texture = (_master.settings.replace512WithNull && (face.flags & (1 << 9)) != 0) ? "**nulltexture**" : _bsp.textures[face.texture].name;
+				if ((face.Type & (1 << 8)) != 0) { return null; }
+				texture = (_master.settings.replace512WithNull && (face.Type & (1 << 9)) != 0) ? "**nulltexture**" : _bsp.textures[face.TextureIndex].Name;
 				threePoints = GetPointsForFace(face, brushSide);
-				if (face.plane >= 0 && face.plane < _bsp.planes.Count) {
-					plane = _bsp.planes[face.plane];
-				} else if (brushSide.plane >= 0 && brushSide.plane < _bsp.planes.Count) {
-					plane = _bsp.planes[brushSide.plane];
+				if (face.PlaneIndex >= 0 && face.PlaneIndex < _bsp.planes.Count) {
+					plane = _bsp.planes[face.PlaneIndex];
+				} else if (brushSide.PlaneIndex >= 0 && brushSide.PlaneIndex < _bsp.planes.Count) {
+					plane = _bsp.planes[brushSide.PlaneIndex];
 				} else {
 					plane = new Plane(0, 0, 0, 0);
 				}
 				if (_bsp.texInfo != null) {
-					texInfo = _bsp.texInfo[face.textureInfo];
+					texInfo = _bsp.texInfo[face.TextureInfoIndex];
 				} else {
 					Vector3[] newAxes = TextureInfo.TextureAxisFromPlane(plane);
 					texInfo = new TextureInfo(newAxes[0], newAxes[1], Vector2.Zero, Vector2.One, flags, -1, 0);
 				}
-				flags = _master.settings.noFaceFlags ? 0 : face.flags;
-				if (face.material >= 0) {
-					material = _bsp.materials[face.material].name;
+				flags = _master.settings.noFaceFlags ? 0 : face.Type;
+				if (face.MaterialIndex >= 0) {
+					material = _bsp.materials[face.MaterialIndex].Name;
 				}
 			} else {
 				// TODO: This is awful. Let's rework the enum to have internal ways to check engine forks.
 				if (_bsp.version == MapType.CoD || _bsp.version == MapType.CoD2 || _bsp.version == MapType.CoD4) {
 					switch (sideIndex) {
 						case 0: { // XMin
-							plane = new Plane(-1, 0, 0, -brushSide.dist);
+							plane = new Plane(-1, 0, 0, -brushSide.Distance);
 							break;
 						}
 						case 1: { // XMax
-							plane = new Plane(1, 0, 0, brushSide.dist);
+							plane = new Plane(1, 0, 0, brushSide.Distance);
 							break;
 						}
 						case 2: { // YMin
-							plane = new Plane(0, -1, 0, -brushSide.dist);
+							plane = new Plane(0, -1, 0, -brushSide.Distance);
 							break;
 						}
 						case 3: { // YMax
-							plane = new Plane(0, 1, 0, brushSide.dist);
+							plane = new Plane(0, 1, 0, brushSide.Distance);
 							break;
 						}
 						case 4: { // ZMin
-							plane = new Plane(0, 0, -1, -brushSide.dist);
+							plane = new Plane(0, 0, -1, -brushSide.Distance);
 							break;
 						}
 						case 5: { // ZMax
-							plane = new Plane(0, 0, 1, brushSide.dist);
+							plane = new Plane(0, 0, 1, brushSide.Distance);
 							break;
 						}
 						default: {
-							plane = _bsp.planes[brushSide.plane];
+							plane = _bsp.planes[brushSide.PlaneIndex];
 							break;
 						}
 					}
 				} else {
-					plane = _bsp.planes[brushSide.plane];
+					plane = _bsp.planes[brushSide.PlaneIndex];
 				}
 				threePoints = plane.GenerateThreePoints();
-				if (brushSide.texture >= 0) {
+				if (brushSide.TextureIndex >= 0) {
 					// TODO: This is awful. Let's rework the enum to have internal ways to check engine forks.
 					if (_bsp.version == MapType.Source17 ||
 					    _bsp.version == MapType.Source18 ||
@@ -286,19 +286,19 @@ namespace Decompiler {
 					    _bsp.version == MapType.L4D2 ||
 					    _bsp.version == MapType.TacticalInterventionEncrypted ||
 					    _bsp.version == MapType.Titanfall) {
-						texInfo = _bsp.texInfo[brushSide.texture];
+						texInfo = _bsp.texInfo[brushSide.TextureIndex];
 						TextureData currentTexData;
 						// I've only found one case where this is bad: c2a3a in HL Source. Don't know why.
-						if (texInfo.texture >= 0) {
-							currentTexData = _bsp.texDatas[texInfo.texture];
-							texture = _bsp.textures.GetTextureAtOffset((uint)_bsp.texTable[currentTexData.stringTableIndex]);
+						if (texInfo.TextureIndex >= 0) {
+							currentTexData = _bsp.texDatas[texInfo.TextureIndex];
+							texture = _bsp.textures.GetTextureAtOffset((uint)_bsp.texTable[currentTexData.TextureStringOffsetIndex]);
 						} else {
 							texture = "**skiptexture**";
 						}
 					} else {
-						Texture textureDef = _bsp.textures[brushSide.texture];
-						texture = textureDef.name;
-						texInfo = textureDef.texAxes;
+						Texture textureDef = _bsp.textures[brushSide.TextureIndex];
+						texture = textureDef.Name;
+						texInfo = textureDef.TextureInfo;
 					}
 				} else {
 					Vector3[] newAxes = TextureInfo.TextureAxisFromPlane(plane);
@@ -338,8 +338,8 @@ namespace Decompiler {
 		private MAPPatch ProcessPatch(Face face) {
 			List<Vertex> vertices = _bsp.GetReferencedObjects<Vertex>(face, "vertices");
 			return new MAPPatch() {
-				dims = face.patchSize,
-				texture = _bsp.textures[face.texture].name,
+				dims = face.PatchSize,
+				texture = _bsp.textures[face.TextureIndex].Name,
 				points = vertices.ToArray<Vertex>()
 			};
 		}
@@ -354,8 +354,8 @@ namespace Decompiler {
 		private MAPPatch ProcessPatch(Patch patch) {
 			List<Vertex> vertices = _bsp.GetReferencedObjects<Vertex>(patch, "patchVerts");
 			return new MAPPatch() {
-				dims = patch.dimensions,
-				texture = _bsp.textures[patch.shader].name,
+				dims = patch.Dimensions,
+				texture = _bsp.textures[patch.ShaderIndex].Name,
 				points = vertices.ToArray<Vertex>()
 			};
 		}
@@ -368,8 +368,8 @@ namespace Decompiler {
 		/// <param name="face">The <see cref="Face"/> object to process.</param>
 		/// <returns>A <see cref="MAPPatch"/> object to be added to a <see cref="MAPBrush"/> object.</returns>
 		private MAPTerrainEF2 ProcessEF2Terrain(Face face) {
-			string texture = _bsp.textures[face.texture].name;
-			int flags = _bsp.textures[face.texture].flags;
+			string texture = _bsp.textures[face.TextureIndex].Name;
+			int flags = _bsp.textures[face.TextureIndex].Flags;
 			List<Vertex> vertices = _bsp.GetReferencedObjects<Vertex>(face, "vertices");
 			int side = (int)Math.Sqrt(vertices.Count);
 			Vector2 mins = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
@@ -427,15 +427,15 @@ namespace Decompiler {
 		/// <param name="lodTerrain">The <see cref="LODTerrain"/> object to process.</param>
 		/// <returns>A <see cref="MAPTerrainMoHAA"/> object to be added to a <see cref="MAPBrush"/> object.</returns>
 		private MAPTerrainMoHAA ProcessTerrainMoHAA(LODTerrain lodTerrain) {
-			string shader = _bsp.textures[lodTerrain.texture].name;
+			string shader = _bsp.textures[lodTerrain.TextureIndex].Name;
 			MAPTerrainMoHAA.Partition partition = new MAPTerrainMoHAA.Partition() {
 				shader = shader,
 				textureScale = new float[] { 1, 1 },
 			};
 			MAPTerrainMoHAA terrain = new MAPTerrainMoHAA() {
 				size = new Vector2(9, 9),
-				flags = ((lodTerrain.flags & (1 << 6)) > 0) ? 1 : 0,
-				origin = new Vector3(lodTerrain.x * 64, lodTerrain.y * 64, lodTerrain.baseZ),
+				flags = ((lodTerrain.Flags & (1 << 6)) > 0) ? 1 : 0,
+				origin = new Vector3(lodTerrain.X * 64, lodTerrain.Y * 64, lodTerrain.BaseZ),
 			};
 			terrain.partitions.Add(partition);
 			terrain.partitions.Add(partition);
@@ -444,7 +444,7 @@ namespace Decompiler {
 			for (int i = 0; i < 9; ++i) {
 				for (int j = 0; j < 9; ++j) {
 					MAPTerrainMoHAA.Vertex vertex = new MAPTerrainMoHAA.Vertex() {
-						height = lodTerrain.heightmap[i, j] * 2,
+						height = lodTerrain.Heightmap[i, j] * 2,
 					};
 					terrain.vertices.Add(vertex);
 				}
@@ -453,24 +453,24 @@ namespace Decompiler {
 		}
 
 		/// <summary>
-		/// Processes a <see cref="DisplacementInfo"/> object into a state where it can be output into a file that Hammer can read.
+		/// Processes a <see cref="Displacement"/> object into a state where it can be output into a file that Hammer can read.
 		/// For Source engine forks only.
 		/// </summary>
-		/// <param name="displacement">The <see cref="DisplacementInfo"/> object to process.</param>
+		/// <param name="displacement">The <see cref="Displacement"/> object to process.</param>
 		/// <returns>A <see cref="MAPDisplacement"/> object to be added to a <see cref="MAPBrushSide"/>.</returns>
-		private MAPDisplacement ProcessDisplacement(DisplacementInfo displacement) {
-			int power = displacement.power;
-			int first = displacement.dispVertStart;
-			Vector3 start = displacement.startPosition;
+		private MAPDisplacement ProcessDisplacement(Displacement displacement) {
+			int power = displacement.Power;
+			int first = displacement.FirstVertexIndex;
+			Vector3 start = displacement.StartPosition;
 			int numVertsInRow = (int)Math.Pow(2, power) + 1;
 			Vector3[,] normals = new Vector3[numVertsInRow, numVertsInRow];
 			float[,] distances = new float[numVertsInRow, numVertsInRow];
 			float[,] alphas = new float[numVertsInRow, numVertsInRow];
 			for (int i = 0; i < numVertsInRow; ++i) {
 				for (int j = 0; j < numVertsInRow; ++j) {
-					normals[i, j] = _bsp.dispVerts[first + (i * numVertsInRow) + j].normal;
-					distances[i, j] = _bsp.dispVerts[first + (i * numVertsInRow) + j].dist;
-					alphas[i, j] = _bsp.dispVerts[first + (i * numVertsInRow) + j].alpha;
+					normals[i, j] = _bsp.dispVerts[first + (i * numVertsInRow) + j].Normal;
+					distances[i, j] = _bsp.dispVerts[first + (i * numVertsInRow) + j].Magnitude;
+					alphas[i, j] = _bsp.dispVerts[first + (i * numVertsInRow) + j].Alpha;
 				}
 			}
 
@@ -505,14 +505,14 @@ namespace Decompiler {
 		/// <returns>Three points defining a triangle which define the plane which <paramref name="face"/> lies on.</returns>
 		private Vector3[] GetPointsForFace(Face face, BrushSide brushSide) {
 			Vector3[] ret;
-			if (face.numVertices > 2) {
+			if (face.NumVertices > 2) {
 				ret = new Vector3[3];
 				float bestArea = 0;
-				for (int i = 0; i < face.numIndices / 3; ++i) {
+				for (int i = 0; i < face.NumIndices / 3; ++i) {
 					Vector3[] temp = new Vector3[] {
-						_bsp.vertices[(int)(face.firstVertex + _bsp.indices[face.firstIndex + (i * 3)])].position,
-						_bsp.vertices[(int)(face.firstVertex + _bsp.indices[face.firstIndex + 1 + (i * 3)])].position,
-						_bsp.vertices[(int)(face.firstVertex + _bsp.indices[face.firstIndex + 2 + (i * 3)])].position
+						_bsp.vertices[(int)(face.FirstVertexIndex + _bsp.indices[face.FirstIndexIndex + (i * 3)])].position,
+						_bsp.vertices[(int)(face.FirstVertexIndex + _bsp.indices[face.FirstIndexIndex + 1 + (i * 3)])].position,
+						_bsp.vertices[(int)(face.FirstVertexIndex + _bsp.indices[face.FirstIndexIndex + 2 + (i * 3)])].position
 					};
 					float area = Vector3Extensions.TriangleAreaSquared(temp[0], temp[1], temp[2]);
 					if (area > bestArea) {
@@ -524,13 +524,13 @@ namespace Decompiler {
 					return ret;
 				}
 			}
-			if (face.numEdges > 0) {
+			if (face.NumEdgeIndices > 0) {
 				// TODO: Edges = triangles
 			}
-			if (face.plane >= 0 && face.plane < _bsp.planes.Count) {
-				ret = _bsp.planes[face.plane].GenerateThreePoints();
-			} else if (brushSide.plane >= 0 && brushSide.plane < _bsp.planes.Count) {
-				ret = _bsp.planes[brushSide.plane].GenerateThreePoints();
+			if (face.PlaneIndex >= 0 && face.PlaneIndex < _bsp.planes.Count) {
+				ret = _bsp.planes[face.PlaneIndex].GenerateThreePoints();
+			} else if (brushSide.PlaneIndex >= 0 && brushSide.PlaneIndex < _bsp.planes.Count) {
+				ret = _bsp.planes[brushSide.PlaneIndex].GenerateThreePoints();
 			} else {
 				_master.Print("WARNING: Brush side with no points!");
 				return new Vector3[3];

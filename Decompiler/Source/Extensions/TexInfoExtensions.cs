@@ -19,12 +19,12 @@ namespace Decompiler {
 		/// <param name="worldPosition">The world coordinates of the entity using this <see cref="TextureInfo"/>. Usually <c>Vector3.zero</c>.</param>
 		/// <returns>A <see cref="TextureInfo"/> object for use in MAP output.</returns>
 		public static TextureInfo BSP2MAPTexInfo(this TextureInfo texInfo, Vector3 worldPosition) {
-			float uScale = 1.0f / texInfo.uAxis.Length();
-			float vScale = 1.0f / texInfo.vAxis.Length();
-			Vector3 uAxis = Vector3.Normalize(texInfo.uAxis);
-			Vector3 vAxis = Vector3.Normalize(texInfo.vAxis);
-			float uTranslate = texInfo.translation.X - Vector3.Dot(texInfo.uAxis, worldPosition);
-			float vTranslate = texInfo.translation.Y - Vector3.Dot(texInfo.vAxis, worldPosition);
+			float uScale = 1.0f / texInfo.UAxis.Length();
+			float vScale = 1.0f / texInfo.VAxis.Length();
+			Vector3 uAxis = Vector3.Normalize(texInfo.UAxis);
+			Vector3 vAxis = Vector3.Normalize(texInfo.VAxis);
+			float uTranslate = texInfo.Translation.X - Vector3.Dot(texInfo.UAxis, worldPosition);
+			float vTranslate = texInfo.Translation.Y - Vector3.Dot(texInfo.VAxis, worldPosition);
 			return new TextureInfo(uAxis, vAxis, new Vector2(uTranslate, vTranslate), new Vector2(uScale, vScale), 0, -1, 0);
 		}
 
@@ -43,24 +43,24 @@ namespace Decompiler {
 				texInfo.scale = new Vector2(texInfo.scale.X, 1);
 			}
 			// Validate translations
-			if (float.IsInfinity(texInfo.translation.X) || float.IsNaN(texInfo.translation.X)) {
-				texInfo.translation = new Vector2(0, texInfo.translation.Y);
+			if (float.IsInfinity(texInfo.Translation.X) || float.IsNaN(texInfo.Translation.X)) {
+				texInfo.Translation = new Vector2(0, texInfo.Translation.Y);
 			}
-			if (float.IsInfinity(texInfo.translation.Y) || float.IsNaN(texInfo.translation.Y)) {
-				texInfo.translation = new Vector2(texInfo.translation.X, 0);
+			if (float.IsInfinity(texInfo.Translation.Y) || float.IsNaN(texInfo.Translation.Y)) {
+				texInfo.Translation = new Vector2(texInfo.Translation.X, 0);
 			}
 			// Validate axis components
-			if (float.IsInfinity(texInfo.uAxis.X) || float.IsNaN(texInfo.uAxis.X) || float.IsInfinity(texInfo.uAxis.Y) || float.IsNaN(texInfo.uAxis.Y) || float.IsInfinity(texInfo.uAxis.Z) || float.IsNaN(texInfo.uAxis.Z) || texInfo.uAxis == Vector3.Zero) {
-				texInfo.uAxis = TextureInfo.TextureAxisFromPlane(plane)[0];
+			if (float.IsInfinity(texInfo.UAxis.X) || float.IsNaN(texInfo.UAxis.X) || float.IsInfinity(texInfo.UAxis.Y) || float.IsNaN(texInfo.UAxis.Y) || float.IsInfinity(texInfo.UAxis.Z) || float.IsNaN(texInfo.UAxis.Z) || texInfo.UAxis == Vector3.Zero) {
+				texInfo.UAxis = TextureInfo.TextureAxisFromPlane(plane)[0];
 			}
-			if (float.IsInfinity(texInfo.vAxis.X) || float.IsNaN(texInfo.vAxis.X) || float.IsInfinity(texInfo.vAxis.Y) || float.IsNaN(texInfo.vAxis.Y) || float.IsInfinity(texInfo.vAxis.Z) || float.IsNaN(texInfo.vAxis.Z) || texInfo.vAxis == Vector3.Zero) {
-				texInfo.vAxis = TextureInfo.TextureAxisFromPlane(plane)[1];
+			if (float.IsInfinity(texInfo.VAxis.X) || float.IsNaN(texInfo.VAxis.X) || float.IsInfinity(texInfo.VAxis.Y) || float.IsNaN(texInfo.VAxis.Y) || float.IsInfinity(texInfo.VAxis.Z) || float.IsNaN(texInfo.VAxis.Z) || texInfo.VAxis == Vector3.Zero) {
+				texInfo.VAxis = TextureInfo.TextureAxisFromPlane(plane)[1];
 			}
 			// Validate axes relative to plane ("Texture axis perpendicular to face")
-			if (Math.Abs(Vector3.Dot(Vector3.Cross(texInfo.uAxis, texInfo.vAxis), plane.Normal)) < 0.01) {
+			if (Math.Abs(Vector3.Dot(Vector3.Cross(texInfo.UAxis, texInfo.VAxis), plane.Normal)) < 0.01) {
 				Vector3[] newAxes = TextureInfo.TextureAxisFromPlane(plane);
-				texInfo.uAxis = newAxes[0];
-				texInfo.vAxis = newAxes[1];
+				texInfo.UAxis = newAxes[0];
+				texInfo.VAxis = newAxes[1];
 			}
 		}
 
