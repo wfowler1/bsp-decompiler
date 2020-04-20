@@ -82,6 +82,7 @@ namespace Decompiler {
 			// A modelnumber of 0 indicates the world entity.
 			if (modelNumber >= 0) {
 				Model model = _bsp.models[modelNumber];
+
 				if (_bsp.brushes != null) {
 					List<Brush> brushes = _bsp.GetBrushesInModel(model);
 					if (brushes != null) {
@@ -98,9 +99,10 @@ namespace Decompiler {
 						}
 					}
 				}
+
 				if (model.NumPatchIndices > 0 && _bsp.markSurfaces != null && _bsp.patches != null) {
 					HashSet<Patch> patches = new HashSet<Patch>();
-					List<long> leafPatchesInModel = _bsp.GetReferencedObjects<long>(model, "markSurfaces");
+					List<long> leafPatchesInModel = _bsp.GetReferencedObjects<long>(model, "patchIndices");
 					foreach (long leafPatch in leafPatchesInModel) {
 						if (leafPatch >= 0) {
 							patches.Add(_bsp.patches[(int)leafPatch]);
@@ -115,6 +117,7 @@ namespace Decompiler {
 						}
 					}
 				}
+
 				if (_bsp.faces != null) {
 					List<Face> surfaces = _bsp.GetFacesInModel(model);
 					foreach (Face face in surfaces) {
