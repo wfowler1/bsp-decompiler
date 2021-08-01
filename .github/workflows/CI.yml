@@ -1,25 +1,28 @@
-name: CI
+name: C++ CI
 
 on:
   push:
     paths-ignore:
-      - .gitignore
-      - README.md
+      - '*.md'
+      - 'LICENSE*'
   pull_request:
     paths-ignore:
-      - .gitignore
-      - README.md
+      - '*.md'
+      - 'LICENSE*'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 1 * *' # Monthly
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2019
     steps:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
     - uses: microsoft/setup-msbuild@v1.0.2
     - name: Build
-      run: msbuild /m /nologo /t:Build /p:Configuration=Release /p:AllowedReferenceRelatedFileExtensions=none /p:DefineConstants="NOVERIFY" Decompiler.sln
+      run: msbuild /m /nologo /t:Build /p:Configuration=ReleaseDecompiler.sln
     - name: Prepare artifacts
       run: rm Decompiler/bin/Release/* -Include *.config, *.pdb
     - uses: actions/upload-artifact@v2
