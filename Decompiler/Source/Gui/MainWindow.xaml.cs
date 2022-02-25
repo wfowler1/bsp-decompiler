@@ -95,7 +95,7 @@ namespace Decompiler.GUI {
 			_OpenAsChecked = e.Source as MenuItem;
 			if (_OpenAsChecked != null) {
 				_OpenAsChecked.IsChecked = true;
-				openAs = (MapType)Int32.Parse(_OpenAsChecked.Tag.ToString());
+				openAs = (MapType)int.Parse(_OpenAsChecked.Tag.ToString());
 			}
 		}
 

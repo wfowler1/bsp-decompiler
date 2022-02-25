@@ -39,19 +39,7 @@ namespace Decompiler {
 			// There should really only be one of these. But someone might have screwed with the map...
 			List<Entity> worldspawns = _entities.FindAll(entity => { return entity.ClassName.Equals("worldspawn", StringComparison.InvariantCultureIgnoreCase); });
 
-			// TODO: This is awful. Let's rework the enum to have internal ways to check engine forks.
-			if (_version != MapType.Source17 &&
-				 _version != MapType.Source18 &&
-				 _version != MapType.Source19 &&
-				 _version != MapType.Source20 &&
-				 _version != MapType.Source21 &&
-				 _version != MapType.Source22 &&
-				 _version != MapType.Source23 &&
-				 _version != MapType.Source27 &&
-				 _version != MapType.L4D2 &&
-				 _version != MapType.DMoMaM &&
-				 _version != MapType.Vindictus &&
-				 _version != MapType.TacticalInterventionEncrypted) {
+			if (_version.IsSubtypeOf(MapType.Source)) {
 				bool hasWater = false;
 				// Make sure all water brushes currently in the world get converted to Source.
 				foreach (Entity worldspawn in worldspawns) {
@@ -135,20 +123,7 @@ namespace Decompiler {
 			}
 
 			if (!_master.settings.noEntCorrection) {
-				// TODO: This is awful. Let's rework the enum to have internal ways to check engine forks.
-				if (_version != MapType.Source17 &&
-					 _version != MapType.Source18 &&
-					 _version != MapType.Source19 &&
-					 _version != MapType.Source20 &&
-					 _version != MapType.Source21 &&
-					 _version != MapType.Source22 &&
-					 _version != MapType.Source23 &&
-					 _version != MapType.Source27 &&
-					 _version != MapType.L4D2 &&
-					 _version != MapType.DMoMaM &&
-					 _version != MapType.Vindictus &&
-					 _version != MapType.TacticalInterventionEncrypted &&
-					 _version != MapType.Titanfall) {
+				if (_version.IsSubtypeOf(MapType.Source)) {
 					for (int i = 0; i < _entities.Count; ++i) {
 						ParseEntityIO(_entities[i]);
 					}
@@ -303,44 +278,15 @@ namespace Decompiler {
 					brush.Translate(origin);
 				}
 			}
-			switch (_version) {
-				case MapType.Quake2:
-				case MapType.SiN:
-				case MapType.SoF: {
-					PostProcessQuake2Entity(entity);
-					break;
-				}
-				case MapType.Nightfire: {
-					PostProcessNightfireEntity(entity);
-					break;
-				}
-				case MapType.Source17:
-				case MapType.Source18:
-				case MapType.Source19:
-				case MapType.Source20:
-				case MapType.Source21:
-				case MapType.Source22:
-				case MapType.Source23:
-				case MapType.L4D2:
-				case MapType.DMoMaM:
-				case MapType.Vindictus:
-				case MapType.TacticalInterventionEncrypted:
-				case MapType.Titanfall: {
-					PostProcessSourceEntity(entity);
-					break;
-				}
-				case MapType.Quake3:
-				case MapType.FAKK:
-				case MapType.Raven:
-				case MapType.MOHAA:
-				case MapType.STEF2:
-				case MapType.STEF2Demo:
-				case MapType.CoD:
-				case MapType.CoD2:
-				case MapType.CoD4: {
-					PostProcessQuake3Entity(entity);
-					break;
-				}
+
+			if (_version.IsSubtypeOf(MapType.Quake2)) {
+				PostProcessQuake2Entity(entity);
+			} else if (_version == MapType.Nightfire) {
+				PostProcessNightfireEntity(entity);
+			} else if (_version.IsSubtypeOf(MapType.Source)) {
+				PostProcessSourceEntity(entity);
+			} else if (_version.IsSubtypeOf(MapType.Quake3)) {
+				PostProcessQuake3Entity(entity);
 			}
 		}
 
@@ -879,41 +825,15 @@ namespace Decompiler {
 				foreach (MAPBrushSide brushSide in brush.sides) {
 					brushSide.textureInfo.Validate(brushSide.plane);
 					PostProcessSpecialTexture(brushSide);
-					switch (_version) {
-						case MapType.Nightfire: {
-							PostProcessNightfireTexture(brushSide);
-							break;
-						}
-						case MapType.Quake2: {
-							PostProcessQuake2Texture(brushSide);
-							break;
-						}
-						case MapType.Source17:
-						case MapType.Source18:
-						case MapType.Source19:
-						case MapType.Source20:
-						case MapType.Source21:
-						case MapType.Source22:
-						case MapType.Source23:
-						case MapType.Source27:
-						case MapType.L4D2:
-						case MapType.DMoMaM:
-						case MapType.Vindictus:
-						case MapType.TacticalInterventionEncrypted:
-						case MapType.Titanfall: {
-							PostProcessSourceTexture(brushSide);
-							break;
-						}
-						case MapType.Quake3:
-						case MapType.MOHAA:
-						case MapType.CoD:
-						case MapType.STEF2:
-						case MapType.STEF2Demo:
-						case MapType.Raven:
-						case MapType.FAKK: {
-							PostProcessQuake3Texture(brushSide);
-							break;
-						}
+
+					if (_version == MapType.Nightfire) {
+						PostProcessNightfireTexture(brushSide);
+					} else if (_version.IsSubtypeOf(MapType.Quake2)) {
+						PostProcessQuake2Texture(brushSide);
+					} else if (_version.IsSubtypeOf(MapType.Source)) {
+						PostProcessSourceTexture(brushSide);
+					} else if (_version.IsSubtypeOf(MapType.Quake3)) {
+						PostProcessQuake3Texture(brushSide);
 					}
 				}
 			}

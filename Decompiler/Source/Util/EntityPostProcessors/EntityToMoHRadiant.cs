@@ -36,7 +36,7 @@ namespace Decompiler {
 			// There should really only be one of these. But someone might have screwed with the map...
 			List<Entity> worldspawns = _entities.FindAll(entity => { return entity.ClassName.Equals("worldspawn", StringComparison.InvariantCultureIgnoreCase); });
 			
-			if (_version != MapType.MOHAA) {
+			if (!_version.IsSubtypeOf(MapType.MOHAA)) {
 				// Make sure all water brushes currently in the worldspawn get converted to Source.
 				foreach (Entity worldspawn in worldspawns) {
 					foreach (MAPBrush brush in worldspawn.brushes) {
@@ -123,11 +123,9 @@ namespace Decompiler {
 					brush.Translate(origin);
 				}
 			}
-			switch (_version) {
-				case MapType.Nightfire: {
-					PostProcessNightfireEntity(entity);
-					break;
-				}
+
+			if (_version == MapType.Nightfire) {
+				PostProcessNightfireEntity(entity);
 			}
 		}
 
@@ -159,37 +157,12 @@ namespace Decompiler {
 				foreach (MAPBrushSide brushSide in brush.sides) {
 					brushSide.textureInfo.Validate(brushSide.plane);
 					PostProcessSpecialTexture(brushSide);
-					switch (_version) {
-						case MapType.Nightfire: {
-							PostProcessNightfireTexture(brushSide);
-							break;
-						}
-						case MapType.Source17:
-						case MapType.Source18:
-						case MapType.Source19:
-						case MapType.Source20:
-						case MapType.Source21:
-						case MapType.Source22:
-						case MapType.Source23:
-						case MapType.Source27:
-						case MapType.DMoMaM:
-						case MapType.L4D2:
-						case MapType.Vindictus:
-						case MapType.TacticalInterventionEncrypted:
-						case MapType.Titanfall: {
-							PostProcessSourceTexture(brushSide);
-							break;
-						}
-						case MapType.Quake3:
-						case MapType.MOHAA:
-						case MapType.CoD:
-						case MapType.STEF2:
-						case MapType.STEF2Demo:
-						case MapType.Raven:
-						case MapType.FAKK: {
-							PostProcessQuake3Texture(brushSide);
-							break;
-						}
+					if (_version == MapType.Nightfire) {
+						PostProcessNightfireTexture(brushSide);
+					} else if (_version.IsSubtypeOf(MapType.Source)) {
+						PostProcessSourceTexture(brushSide);
+					} else if (_version.IsSubtypeOf(MapType.Quake3)) {
+						PostProcessQuake3Texture(brushSide);
 					}
 				}
 				if (brush.patch != null) {

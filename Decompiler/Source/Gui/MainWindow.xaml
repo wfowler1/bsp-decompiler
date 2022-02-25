@@ -24,37 +24,43 @@
 				<MenuItem Header="Open _as...">
 					<MenuItem Header="_Auto" Tag="0" Click="OpenAs_Click" IsChecked="True" x:Name="miOpenAsAuto" />
 					<Separator />
-					<MenuItem Header="Quake/GoldSrc" Tag="29" Click="OpenAs_Click" />
-					<MenuItem Header="007: Nightfire" Tag="42" Click="OpenAs_Click" />
-					<MenuItem Header="Quake 2" Tag="1347633775" Click="OpenAs_Click" />
-					<MenuItem Header="SiN" Tag="1347633747" Click="OpenAs_Click" />
-					<MenuItem Header="Soldier of Fortune" Tag="1347633782" Click="OpenAs_Click" />
-					<MenuItem Header="Daikatana" Tag="1347633778" Click="OpenAs_Click" />
+					<MenuItem Header="Quake" Tag="16777216" Click="OpenAs_Click" />
+					<MenuItem Header="GoldSrc (Half-Life)" Tag="16842752" Click="OpenAs_Click" />
+					<MenuItem Header="Half-Life Blue Shift" Tag="16842753" Click="OpenAs_Click" />
 					<Separator />
-					<MenuItem Header="Quake 3/Return to Castle Wolfenstein/Star Trek Elite Force" Tag="1347633783" Click="OpenAs_Click" />
-					<MenuItem Header="Medal of Honor: Allied Assault/Spearhead/Breakthrough" Tag="892416069" Click="OpenAs_Click" />
-					<MenuItem Header="Star Trek Elite Force 2" Tag="556942937" Click="OpenAs_Click" />
-					<MenuItem Header="Star Trek Elite Force 2 Demo" Tag="1263223129" Click="OpenAs_Click" />
-					<MenuItem Header="Jedi Outcast/Soldier of Fortune 2" Tag="1347633748" Click="OpenAs_Click" />
-					<MenuItem Header="Heavy Metal FAKK2/American McGee's Alice" Tag="1263223152" Click="OpenAs_Click" />
+					<MenuItem Header="Quake 2" Tag="33554432" Click="OpenAs_Click" />
+					<MenuItem Header="Daikatana" Tag="33554433" Click="OpenAs_Click" />
+					<MenuItem Header="Soldier of Fortune" Tag="33554434" Click="OpenAs_Click" />
+					<MenuItem Header="SiN" Tag="33554436" Click="OpenAs_Click" />
 					<Separator />
-					<MenuItem Header="Call of Duty" Tag="1347633796" Click="OpenAs_Click" />
-					<MenuItem Header="Call of Duty 2" Tag="1347633741" Click="OpenAs_Click" />
-					<MenuItem Header="Call of Duty 4" Tag="1347633759" Click="OpenAs_Click" />
+					<MenuItem Header="Quake 3/Star Trek Elite Force" Tag="67108864" Click="OpenAs_Click" />
+					<MenuItem Header="Return to Castle Wolfenstein/Enemy Territory" Tag="67108865" Click="OpenAs_Click" />
+					<MenuItem Header="Jedi Outcast/Academy/Soldier of Fortune 2" Tag="67174400" Click="OpenAs_Click" />
+					<MenuItem Header="Call of Duty" Tag="67239936" Click="OpenAs_Click" />
+					<MenuItem Header="Call of Duty 2" Tag="67239937" Click="OpenAs_Click" />
+					<MenuItem Header="Call of Duty 4" Tag="67239938" Click="OpenAs_Click" />
+					<MenuItem Header="Star Trek Elite Force 2" Tag="67371264" Click="OpenAs_Click" />
+					<MenuItem Header="Star Trek Elite Force 2 Demo" Tag="67371265" Click="OpenAs_Click" />
+					<MenuItem Header="Medal of Honor: Allied Assault" Tag="67371520" Click="OpenAs_Click" />
+					<MenuItem Header="Medal of Honor: Allied Assault Spearhead/Breakthrough" Tag="67371521" Click="OpenAs_Click" />
+					<MenuItem Header="Heavy Metal FAKK2" Tag="67372032" Click="OpenAs_Click" />
+					<MenuItem Header="American McGee's Alice" Tag="67372033" Click="OpenAs_Click" />
 					<Separator />
-					<MenuItem Header="Source Engine v17" Tag="1347633767" Click="OpenAs_Click" />
-					<MenuItem Header="Source Engine v18" Tag="1347633768" Click="OpenAs_Click" />
-					<MenuItem Header="Source Engine v19" Tag="1347633769" Click="OpenAs_Click" />
-					<MenuItem Header="Source Engine v20" Tag="1347633770" Click="OpenAs_Click" />
-					<MenuItem Header="Source Engine v21" Tag="1347633771" Click="OpenAs_Click" />
-					<MenuItem Header="Source Engine v22" Tag="1347633772" Click="OpenAs_Click" />
-					<MenuItem Header="Source Engine v23" Tag="1347633773" Click="OpenAs_Click" />
-					<MenuItem Header="Source Engine v27" Tag="1347633777" Click="OpenAs_Click" />
-					<MenuItem Header="Left 4 Dead 2" Tag="1347633774" Click="OpenAs_Click" />
-					<MenuItem Header="Dark Messiah of Might and Magic" Tag="1347895914" Click="OpenAs_Click" />
-					<MenuItem Header="Vindictus" Tag="346131372" Click="OpenAs_Click" />
-					<MenuItem Header="Tactical Intervention" Tag="1268885814" Click="OpenAs_Click" />
-					<MenuItem Header="Titanfall" Tag="1347633807" Click="OpenAs_Click" />
+					<MenuItem Header="007: Nightfire" Tag="134217728" Click="OpenAs_Click" />
+					<Separator />
+					<MenuItem Header="Source Engine v17" Tag="268435712" Click="OpenAs_Click" />
+					<MenuItem Header="Source Engine v18" Tag="268435968" Click="OpenAs_Click" />
+					<MenuItem Header="Source Engine v19" Tag="268436480" Click="OpenAs_Click" />
+					<MenuItem Header="Source Engine v20" Tag="268437504" Click="OpenAs_Click" />
+					<MenuItem Header="Dark Messiah of Might and Magic" Tag="268437505" Click="OpenAs_Click" />
+					<MenuItem Header="Vindictus" Tag="268437506" Click="OpenAs_Click" />
+					<MenuItem Header="Source Engine v21" Tag="268439552" Click="OpenAs_Click" />
+					<MenuItem Header="Left 4 Dead 2" Tag="268439553" Click="OpenAs_Click" />
+					<MenuItem Header="Tactical Intervention" Tag="268439554" Click="OpenAs_Click" />
+					<MenuItem Header="Source Engine v22" Tag="268443648" Click="OpenAs_Click" />
+					<MenuItem Header="Source Engine v23" Tag="268451840" Click="OpenAs_Click" />
+					<MenuItem Header="Source Engine v27" Tag="268468224" Click="OpenAs_Click" />
+					<MenuItem Header="Titanfall" Tag="536870912" Click="OpenAs_Click" />
 				</MenuItem>
 				<Separator />
 				<MenuItem Header="Output _format...">

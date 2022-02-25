@@ -116,47 +116,16 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="entity"><see cref="Entity"/> to postprocess.</param>
 		private void PostProcessEntity(Entity entity) {
-			switch (_version) {
-				case MapType.CoD:
-				case MapType.CoD2:
-				case MapType.CoD4: {
-					PostProcessCoDEntity(entity);
-					break;
-				}
-				case MapType.Quake2:
-				case MapType.SiN:
-				case MapType.SoF: {
-					PostProcessQuake2Entity(entity);
-					break;
-				}
-				case MapType.Quake3:
-				case MapType.FAKK:
-				case MapType.Raven:
-				case MapType.MOHAA:
-				case MapType.STEF2:
-				case MapType.STEF2Demo: {
-					PostProcessQuake3Entity(entity);
-					break;
-				}
-				case MapType.Nightfire: {
-					PostProcessNightfireEntity(entity);
-					break;
-				}
-				case MapType.Source17:
-				case MapType.Source18:
-				case MapType.Source19:
-				case MapType.Source20:
-				case MapType.Source21:
-				case MapType.Source22:
-				case MapType.Source23:
-				case MapType.DMoMaM:
-				case MapType.L4D2:
-				case MapType.Vindictus:
-				case MapType.TacticalInterventionEncrypted:
-				case MapType.Titanfall: {
-					PostProcessSourceEntity(entity);
-					break;
-				}
+			if (_version == MapType.Nightfire) {
+				PostProcessNightfireEntity(entity);
+			} else if (_version.IsSubtypeOf(MapType.CoD)) {
+				PostProcessCoDEntity(entity);
+			} else if (_version.IsSubtypeOf(MapType.Quake2)) {
+				PostProcessQuake2Entity(entity);
+			} else if (_version.IsSubtypeOf(MapType.Quake3)) {
+				PostProcessQuake3Entity(entity);
+			} else if (_version.IsSubtypeOf(MapType.Source)) {
+				PostProcessSourceEntity(entity);
 			}
 		}
 
@@ -601,38 +570,13 @@ namespace Decompiler {
 				foreach (MAPBrushSide brushSide in brush.sides) {
 					brushSide.textureInfo.Validate(brushSide.plane);
 					PostProcessSpecialTexture(brushSide);
-					switch (_version) {
-						case MapType.Quake2:
-						case MapType.SiN: {
-							PostProcessQuake2Texture(brushSide);
-							break;
-						}
-						case MapType.Quake3:
-						case MapType.MOHAA:
-						case MapType.CoD:
-						case MapType.STEF2:
-						case MapType.STEF2Demo:
-						case MapType.Raven:
-						case MapType.FAKK: {
-							PostProcessQuake3Texture(brushSide);
-							break;
-						}
-						case MapType.Source17:
-						case MapType.Source18:
-						case MapType.Source19:
-						case MapType.Source20:
-						case MapType.Source21:
-						case MapType.Source22:
-						case MapType.Source23:
-						case MapType.Source27:
-						case MapType.DMoMaM:
-						case MapType.L4D2:
-						case MapType.Vindictus:
-						case MapType.TacticalInterventionEncrypted:
-						case MapType.Titanfall: {
-							PostProcessSourceTexture(brushSide);
-							break;
-						}
+
+					if (_version.IsSubtypeOf(MapType.Quake2)) {
+						PostProcessQuake2Texture(brushSide);
+					} else if (_version.IsSubtypeOf(MapType.Quake3)) {
+						PostProcessQuake3Texture(brushSide);
+					} else if (_version.IsSubtypeOf(MapType.Source)) {
+						PostProcessSourceTexture(brushSide);
 					}
 				}
 			}

@@ -136,7 +136,7 @@ namespace Decompiler {
 							MAPBrush newBrush = new MAPBrush();
 							newBrush.patch = patch;
 							entity.brushes.Add(newBrush);
-						} else if ((_bsp.version == MapType.STEF2 || _bsp.version == MapType.STEF2Demo) && face.Type == 5) {
+						} else if (_bsp.version.IsSubtypeOf(MapType.STEF2) && face.Type == 5) {
 							if (modelNumber != 0) {
 								_master.Print("WARNING: Terrain not part of world in " + _bsp.MapNameNoExtension);
 							}
@@ -238,8 +238,7 @@ namespace Decompiler {
 					material = _bsp.materials[face.MaterialIndex].Name;
 				}
 			} else {
-				// TODO: This is awful. Let's rework the enum to have internal ways to check engine forks.
-				if (_bsp.version == MapType.CoD || _bsp.version == MapType.CoD2 || _bsp.version == MapType.CoD4) {
+				if (_bsp.version.IsSubtypeOf(MapType.CoD)) {
 					switch (sideIndex) {
 						case 0: { // XMin
 							plane = new Plane(-1, 0, 0, -brushSide.Distance);
@@ -275,20 +274,7 @@ namespace Decompiler {
 				}
 				threePoints = plane.GenerateThreePoints();
 				if (brushSide.TextureIndex >= 0) {
-					// TODO: This is awful. Let's rework the enum to have internal ways to check engine forks.
-					if (_bsp.version == MapType.Source17 ||
-					    _bsp.version == MapType.Source18 ||
-					    _bsp.version == MapType.Source19 ||
-					    _bsp.version == MapType.Source20 ||
-					    _bsp.version == MapType.Source21 ||
-					    _bsp.version == MapType.Source22 ||
-					    _bsp.version == MapType.Source23 ||
-					    _bsp.version == MapType.Source27 ||
-					    _bsp.version == MapType.Vindictus ||
-					    _bsp.version == MapType.DMoMaM ||
-					    _bsp.version == MapType.L4D2 ||
-					    _bsp.version == MapType.TacticalInterventionEncrypted ||
-					    _bsp.version == MapType.Titanfall) {
+					if (_bsp.version.IsSubtypeOf(MapType.Source)) {
 						texInfo = _bsp.texInfo[brushSide.TextureIndex];
 						TextureData currentTexData;
 						// I've only found one case where this is bad: c2a3a in HL Source. Don't know why.

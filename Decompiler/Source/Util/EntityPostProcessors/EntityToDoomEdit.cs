@@ -67,23 +67,9 @@ namespace Decompiler {
 				foreach (MAPBrushSide brushSide in brush.sides) {
 					brushSide.textureInfo.Validate(brushSide.plane);
 					PostProcessSpecialTexture(brushSide);
-					switch (_version) {
-						case MapType.Source17:
-						case MapType.Source18:
-						case MapType.Source19:
-						case MapType.Source20:
-						case MapType.Source21:
-						case MapType.Source22:
-						case MapType.Source23:
-						case MapType.Source27:
-						case MapType.L4D2:
-						case MapType.DMoMaM:
-						case MapType.Vindictus:
-						case MapType.TacticalInterventionEncrypted:
-						case MapType.Titanfall: {
-							PostProcessSourceTexture(brushSide);
-							break;
-						}
+
+					if (_version.IsSubtypeOf(MapType.Source)) {
+						PostProcessSourceTexture(brushSide);
 					}
 				}
 			}

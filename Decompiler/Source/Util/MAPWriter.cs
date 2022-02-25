@@ -43,54 +43,18 @@ namespace Decompiler {
 		/// </summary>
 		public void WriteAll() {
 			if (_master.settings.toAuto) {
-				switch (_version) {
-					case MapType.Nightfire: {
-						WriteGearcraft();
-						break;
-					}
-					case MapType.MOHAA: {
-						WriteMoHRadiant();
-						break;
-					}
-					case MapType.Quake:
-					case MapType.STEF2:
-					case MapType.STEF2Demo:
-					case MapType.SiN:
-					case MapType.SoF:
-					case MapType.Raven:
-					case MapType.Quake2:
-					case MapType.Daikatana:
-					case MapType.Quake3:
-					case MapType.CoD2:
-					case MapType.CoD4:
-					case MapType.FAKK: {
-						WriteRadiant();
-						break;
-					}
-					case MapType.CoD: {
-						WriteCoDRadiant();
-						break;
-					}
-					case MapType.Source17:
-					case MapType.Source18:
-					case MapType.Source19:
-					case MapType.Source20:
-					case MapType.Source21:
-					case MapType.Source22:
-					case MapType.Source23:
-					case MapType.Source27:
-					case MapType.Vindictus:
-					case MapType.DMoMaM:
-					case MapType.L4D2:
-					case MapType.TacticalInterventionEncrypted:
-					case MapType.Titanfall: {
-						WriteHammer();
-						break;
-					}
-					default: {
-						throw new NotImplementedException("No default output format specified for map type " + _version.ToString());
-						break;
-					}
+				if (_version.IsSubtypeOf(MapType.Source)) {
+					WriteHammer();
+				} else if (_version == MapType.Nightfire) {
+					WriteGearcraft();
+				} else if (_version.IsSubtypeOf(MapType.MOHAA)) {
+					WriteMoHRadiant();
+				} else if (_version.IsSubtypeOf(MapType.CoD)) {
+					WriteCoDRadiant();
+				} else if (_version.IsSubtypeOf(MapType.Quake3)) {
+					WriteRadiant();
+				} else {
+					throw new NotImplementedException("No default output format specified for map type " + _version.ToString());
 				}
 			} else {
 				if (_master.settings.toM510) {
