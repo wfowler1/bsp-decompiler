@@ -42,7 +42,8 @@
 					<MenuItem Header="Star Trek Elite Force 2" Tag="67371264" Click="OpenAs_Click" />
 					<MenuItem Header="Star Trek Elite Force 2 Demo" Tag="67371265" Click="OpenAs_Click" />
 					<MenuItem Header="Medal of Honor: Allied Assault" Tag="67371520" Click="OpenAs_Click" />
-					<MenuItem Header="Medal of Honor: Allied Assault Spearhead/Breakthrough" Tag="67371521" Click="OpenAs_Click" />
+					<MenuItem Header="Medal of Honor: Allied Assault Demo" Tag="67371521" Click="OpenAs_Click" />
+					<MenuItem Header="Medal of Honor: Allied Assault Spearhead/Breakthrough" Tag="67371522" Click="OpenAs_Click" />
 					<MenuItem Header="Heavy Metal FAKK2" Tag="67372032" Click="OpenAs_Click" />
 					<MenuItem Header="American McGee's Alice" Tag="67372033" Click="OpenAs_Click" />
 					<Separator />
@@ -102,6 +103,7 @@
 				<GridView x:Name="jobGridView">
 					<GridViewColumn Header="#" DisplayMemberBinding="{Binding Path=num}" />
 					<GridViewColumn Header="Map name" Width="150" DisplayMemberBinding="{Binding Path=name}" />
+					<GridViewColumn Header="Type" Width="100" DisplayMemberBinding="{Binding Path=type}" />
 					<GridViewColumn Header="Progress" Width="240" x:Name="ProgressColumn">
 						<GridViewColumn.CellTemplate>
 							<DataTemplate>

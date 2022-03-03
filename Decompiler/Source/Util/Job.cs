@@ -70,6 +70,7 @@ namespace Decompiler {
 
 		private string _name = "";
 		private double _progress = 0.0;
+		private MapType _type;
 
 		/// <summary>
 		/// The number of this job in the list.
@@ -117,6 +118,19 @@ namespace Decompiler {
 		}
 
 		/// <summary>
+		/// The <see cref="MapType"/> of the <see cref="BSP"/> being decompiled.
+		/// </summary>
+		public MapType type {
+			get {
+				return _type;
+			}
+			set {
+				_type = value;
+				PropertyChanged(this, new PropertyChangedEventArgs("type"));
+			}
+		}
+
+		/// <summary>
 		/// Creates a new instance of a <see cref="Job"/> object.
 		/// </summary>
 		/// <param name="id">Index of this job.</param>
@@ -155,6 +169,7 @@ namespace Decompiler {
 				MapType version = MapType.Undefined;
 				bsp = new BSP(_path);
 				bsp.version = settings.openAs;
+				type = bsp.version;
 				BSPDecompiler decompiler = new BSPDecompiler(bsp, this);
 				output = decompiler.Decompile();
 				mapDirectory = bsp.Folder;
