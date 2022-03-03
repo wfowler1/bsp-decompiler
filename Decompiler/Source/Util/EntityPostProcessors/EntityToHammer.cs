@@ -39,7 +39,7 @@ namespace Decompiler {
 			// There should really only be one of these. But someone might have screwed with the map...
 			List<Entity> worldspawns = _entities.FindAll(entity => { return entity.ClassName.Equals("worldspawn", StringComparison.InvariantCultureIgnoreCase); });
 
-			if (_version.IsSubtypeOf(MapType.Source)) {
+			if (!_version.IsSubtypeOf(MapType.Source)) {
 				bool hasWater = false;
 				// Make sure all water brushes currently in the world get converted to Source.
 				foreach (Entity worldspawn in worldspawns) {
@@ -123,7 +123,7 @@ namespace Decompiler {
 			}
 
 			if (!_master.settings.noEntCorrection) {
-				if (_version.IsSubtypeOf(MapType.Source)) {
+				if (!_version.IsSubtypeOf(MapType.Source)) {
 					for (int i = 0; i < _entities.Count; ++i) {
 						ParseEntityIO(_entities[i]);
 					}
