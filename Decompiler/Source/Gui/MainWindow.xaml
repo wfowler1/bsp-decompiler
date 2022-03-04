@@ -37,8 +37,9 @@
 					<MenuItem Header="Return to Castle Wolfenstein/Enemy Territory" Tag="67108865" Click="OpenAs_Click" />
 					<MenuItem Header="Jedi Outcast/Academy/Soldier of Fortune 2" Tag="67174400" Click="OpenAs_Click" />
 					<MenuItem Header="Call of Duty" Tag="67239936" Click="OpenAs_Click" />
-					<MenuItem Header="Call of Duty 2" Tag="67239937" Click="OpenAs_Click" />
-					<MenuItem Header="Call of Duty 4" Tag="67239938" Click="OpenAs_Click" />
+					<MenuItem Header="Call of Duty Demo" Tag="67239937" Click="OpenAs_Click" />
+					<MenuItem Header="Call of Duty 2" Tag="67239938" Click="OpenAs_Click" />
+					<MenuItem Header="Call of Duty 4" Tag="67239940" Click="OpenAs_Click" />
 					<MenuItem Header="Star Trek Elite Force 2" Tag="67371264" Click="OpenAs_Click" />
 					<MenuItem Header="Star Trek Elite Force 2 Demo" Tag="67371265" Click="OpenAs_Click" />
 					<MenuItem Header="Medal of Honor: Allied Assault" Tag="67371520" Click="OpenAs_Click" />
