@@ -1,7 +1,7 @@
 <Window x:Class="Decompiler.GUI.MainWindow"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	Title="BSP Decompiler v5 by 005"
+	Title="BSP Decompiler v5"
 	Icon="main.png" Height="517" Width="798">
 	<Window.TaskbarItemInfo>
 		<TaskbarItemInfo x:Name="taskBarItemInfo1" />
