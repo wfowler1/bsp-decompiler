@@ -67,11 +67,11 @@ namespace Decompiler {
 		}
 
 		/// <summary>
-		/// Process the data in a <see cref="MAPBrush"/> into the passed <c>StringBuilder</c>.
+		/// Process the data in a <see cref="MAPBrush"/> into the passed <see cref="StringBuilder"/>.
 		/// </summary>
 		/// <param name="brush">The <see cref="MAPBrush"/> to process.</param>
-		/// <param name="index">The index of <see cref="MAPBrush"/> entity in the <see cref="Entity"/>.</param>
-		/// <param name="sb">A <c>StringBuilder</c> object to append processed data from <paramref name="brush"/> to.</param>
+		/// <param name="index">The index of <paramref name="brush"/> in the <see cref="Entity"/>.</param>
+		/// <param name="sb">A <see cref="StringBuilder"/> object to append processed data from <paramref name="brush"/> to.</param>
 		private void ParseBrush(MAPBrush brush, int index, StringBuilder sb) {
 			// Unsupported features. Ignore these completely.
 			if (brush.mohTerrain != null || brush.ef2Terrain != null) {
