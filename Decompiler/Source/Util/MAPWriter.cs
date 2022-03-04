@@ -43,7 +43,8 @@ namespace Decompiler {
 		/// </summary>
 		public void WriteAll() {
 			if (_master.settings.toAuto) {
-				if (_version.IsSubtypeOf(MapType.Source)) {
+				if (_version.IsSubtypeOf(MapType.GoldSrc)
+					|| _version.IsSubtypeOf(MapType.Source)) {
 					WriteHammer();
 				} else if (_version == MapType.Nightfire) {
 					WriteGearcraft();
@@ -51,7 +52,9 @@ namespace Decompiler {
 					WriteMoHRadiant();
 				} else if (_version.IsSubtypeOf(MapType.CoD)) {
 					WriteCoDRadiant();
-				} else if (_version.IsSubtypeOf(MapType.Quake3)) {
+				} else if (_version.IsSubtypeOf(MapType.Quake)
+					|| _version.IsSubtypeOf(MapType.Quake2)
+					|| _version.IsSubtypeOf(MapType.Quake3)) {
 					WriteRadiant();
 				} else {
 					throw new NotImplementedException("No default output format specified for map type " + _version.ToString());
