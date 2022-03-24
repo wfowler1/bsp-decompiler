@@ -21,7 +21,7 @@ namespace Decompiler {
 		/// </returns>
 		public static List<Face> GetFacesInModel(this BSP bsp, Model model) {
 			if (model.FirstFaceIndex >= 0) {
-				return bsp.GetReferencedObjects<Face>(model, "faces");
+				return bsp.GetReferencedObjects<Face>(model, "Faces");
 			}
 
 			return new List<Face>(0);
@@ -43,16 +43,16 @@ namespace Decompiler {
 		/// </remarks>
 		public static List<Brush> GetBrushesInModel(this BSP bsp, Model model) {
 			if (model.FirstBrushIndex >= 0) {
-				return bsp.GetReferencedObjects<Brush>(model, "brushes");
+				return bsp.GetReferencedObjects<Brush>(model, "Brushes");
 			}
 
 			if (model.FirstLeafIndex >= 0) {
-				List<Leaf> leavesInModel = bsp.GetReferencedObjects<Leaf>(model, "leaves");
+				List<Leaf> leavesInModel = bsp.GetReferencedObjects<Leaf>(model, "Leaves");
 				return bsp.GetBrushesInLeafList(leavesInModel);
 			}
 
 			if (model.HeadNodeIndex >= 0) {
-				return bsp.GetBrushesInLeafList(bsp.GetLeavesInTree(bsp.nodes[model.HeadNodeIndex]));
+				return bsp.GetBrushesInLeafList(bsp.GetLeavesInTree(bsp.Nodes[model.HeadNodeIndex]));
 			}
 
 			return new List<Brush>(0);
@@ -66,12 +66,12 @@ namespace Decompiler {
 		/// <returns>All the <see cref="Brush"/> objects referenced from the given <see cref="Leaf"/> objects.</returns>
 		public static List<Brush> GetBrushesInLeafList(this BSP bsp, IEnumerable<Leaf> leaves) {
 			List<Brush> brushes = new List<Brush>();
-			bool[] brushesUsed = new bool[bsp.brushes.Count];
+			bool[] brushesUsed = new bool[bsp.Brushes.Count];
 			foreach (Leaf leaf in leaves) {
-				List<long> markBrushesInLeaf = bsp.GetReferencedObjects<long>(leaf, "markBrushes");
+				List<long> markBrushesInLeaf = bsp.GetReferencedObjects<long>(leaf, "LeafBrushes");
 				foreach (long markBrush in markBrushesInLeaf) {
 					if (!brushesUsed[(int)markBrush]) {
-						brushes.Add(bsp.brushes[(int)markBrush]);
+						brushes.Add(bsp.Brushes[(int)markBrush]);
 						brushesUsed[(int)markBrush] = true;
 					}
 				}
@@ -105,15 +105,15 @@ namespace Decompiler {
 				currentNode = nodestack.Pop();
 				int right = currentNode.Child2Index;
 				if (right >= 0) {
-					nodestack.Push(bsp.nodes[right]);
+					nodestack.Push(bsp.Nodes[right]);
 				} else {
-					leaves.Add(bsp.leaves[(right * -1) - 1]);
+					leaves.Add(bsp.Leaves[(right * -1) - 1]);
 				}
 				int left = currentNode.Child1Index;
 				if (left >= 0) {
-					nodestack.Push(bsp.nodes[left]);
+					nodestack.Push(bsp.Nodes[left]);
 				} else {
-					leaves.Add(bsp.leaves[(left * -1) - 1]);
+					leaves.Add(bsp.Leaves[(left * -1) - 1]);
 				}
 			}
 

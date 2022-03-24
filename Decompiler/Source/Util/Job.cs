@@ -168,13 +168,13 @@ namespace Decompiler {
 				string mapName = "";
 				MapType version = MapType.Undefined;
 				bsp = new BSP(_path);
-				bsp.version = settings.openAs;
-				type = bsp.version;
+				bsp.MapType = settings.openAs;
+				type = bsp.MapType;
 				BSPDecompiler decompiler = new BSPDecompiler(bsp, this);
 				output = decompiler.Decompile();
-				mapDirectory = bsp.Folder;
-				mapName = bsp.MapNameNoExtension;
-				version = bsp.version;
+				mapDirectory = bsp.Reader.BspFile.Directory.FullName;
+				mapName = bsp.MapName;
+				version = bsp.MapType;
 				MAPWriter writer = new MAPWriter(output, mapDirectory, mapName, version, this);
 				writer.WriteAll();
 				DateTime end = DateTime.Now;

@@ -18,16 +18,16 @@ namespace Decompiler {
 		/// <param name="bsp">The <see cref="BSP"/> the <paramref name="brush"/> is from.</param>
 		/// <returns><c>true</c> if the <see cref="Brush.contents"/> indicate detail, <c>false</c> otherwise.</returns>
 		public static bool IsDetail(this Brush brush, BSP bsp) {
-			if (bsp.version == MapType.Nightfire) {
+			if (bsp.MapType == MapType.Nightfire) {
 				return ((brush.Contents & (1 << 9)) != 0);
-			} else if (bsp.version.IsSubtypeOf(MapType.Quake3)) {
+			} else if (bsp.MapType.IsSubtypeOf(MapType.Quake3)) {
 				int texture = brush.TextureIndex;
 				if (texture >= 0) {
-					return ((bsp.textures[texture].Contents & (1 << 27)) != 0);
+					return ((bsp.Textures[texture].Contents & (1 << 27)) != 0);
 				}
 				return false;
-			} else if (bsp.version.IsSubtypeOf(MapType.Quake2)
-				|| bsp.version.IsSubtypeOf(MapType.Source)) {
+			} else if (bsp.MapType.IsSubtypeOf(MapType.Quake2)
+				|| bsp.MapType.IsSubtypeOf(MapType.Source)) {
 				return ((brush.Contents & (1 << 27)) != 0);
 			}
 
@@ -41,18 +41,18 @@ namespace Decompiler {
 		/// <param name="version">The type of <see cref="BSP"/> the <paramref name="brush"/> is from.</param>
 		/// <returns><c>true</c> if the <see cref="Brush.contents"/> indicate water, <c>false</c> otherwise.</returns>
 		public static bool IsWater(this Brush brush, BSP bsp) {
-			if (bsp.version.IsSubtypeOf(MapType.Quake)) {
+			if (bsp.MapType.IsSubtypeOf(MapType.Quake)) {
 				return brush.Contents == -3;
-			} else if (bsp.version == MapType.Nightfire) {
+			} else if (bsp.MapType == MapType.Nightfire) {
 				return ((brush.Contents & (1 << 20)) != 0);
-			} else if (bsp.version.IsSubtypeOf(MapType.Quake3)) {
+			} else if (bsp.MapType.IsSubtypeOf(MapType.Quake3)) {
 				int texture = brush.TextureIndex;
 				if (texture >= 0) {
-					return ((bsp.textures[texture].Contents & (1 << 5)) != 0);
+					return ((bsp.Textures[texture].Contents & (1 << 5)) != 0);
 				}
 				return false;
-			} else if (bsp.version.IsSubtypeOf(MapType.Quake2)
-				|| bsp.version.IsSubtypeOf(MapType.Source)) {
+			} else if (bsp.MapType.IsSubtypeOf(MapType.Quake2)
+				|| bsp.MapType.IsSubtypeOf(MapType.Source)) {
 				return ((brush.Contents & (1 << 5)) != 0);
 			}
 
@@ -66,10 +66,10 @@ namespace Decompiler {
 		/// <param name="version">The type of <see cref="BSP"/> the <paramref name="brush"/> is from.</param>
 		/// <returns><c>true</c> if the surface flags indicate manual vis, <c>false</c> otherwise.</returns>
 		public static bool IsManVis(this Brush brush, BSP bsp) {
-			if (bsp.version.IsSubtypeOf(MapType.MOHAA)) {
+			if (bsp.MapType.IsSubtypeOf(MapType.MOHAA)) {
 				int texture = brush.TextureIndex;
 				if (texture >= 0) {
-					return bsp.textures[texture].Flags == 0x40010990;
+					return bsp.Textures[texture].Flags == 0x40010990;
 				}
 			}
 
