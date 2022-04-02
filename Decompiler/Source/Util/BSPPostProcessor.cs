@@ -1,10 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
-using System.Threading.Tasks;
-using System.Runtime.Serialization.Formatters.Binary;
 
 using LibBSP;
 using System.Reflection;
@@ -13,7 +8,7 @@ namespace Decompiler {
 	/// <summary>
 	/// Class for orchestrating entity postprocessing and file output for BSP decompiles.
 	/// </summary>
-	public class MAPWriter {
+	public class BSPPostProcessor {
 
 		private Job _master;
 
@@ -23,14 +18,14 @@ namespace Decompiler {
 		private string _mapDirectory;
 		 
 		/// <summary>
-		/// Creates a new instance of a <see cref="MAPWriter"/> object.
+		/// Creates a new instance of a <see cref="BSPPostProcessor"/> object.
 		/// </summary>
 		/// <param name="entities">The <see cref="Entities"/> resulting from a decompile.</param>
 		/// <param name="mapDirectory">The directory in which the original map file resides.</param>
 		/// <param name="mapName">The name of the map.</param>
 		/// <param name="version">The version of BSP this was.</param>
 		/// <param name="master">The parent <see cref="Job"/> object for this instance.</param>
-		public MAPWriter(Entities entities, string mapDirectory, string mapName, MapType version, Job master) {
+		public BSPPostProcessor(Entities entities, string mapDirectory, string mapName, MapType version, Job master) {
 			_entities = entities;
 			_version = version;
 			_mapName = mapName;
@@ -89,7 +84,7 @@ namespace Decompiler {
 			Entities myEntities = deepCopy ? (Entities)DeepCopy(_entities) : _entities;
 			EntityToGearcraft entityPostProcessor = new EntityToGearcraft(myEntities, _version, _master);
 			entityPostProcessor.PostProcessEntities();
-			GearcraftMapGenerator mapMaker = new GearcraftMapGenerator(myEntities, _master);
+			GearcraftMapWriter mapMaker = new GearcraftMapWriter(myEntities);
 			string output = mapMaker.ParseMap();
 
 			string extension = deepCopy ? "_gc.map" : ".map";
@@ -110,7 +105,7 @@ namespace Decompiler {
 			Entities myEntities = deepCopy ? (Entities)DeepCopy(_entities) : _entities;
 			EntityToMoHRadiant entityPostProcessor = new EntityToMoHRadiant(myEntities, _version, _master);
 			entityPostProcessor.PostProcessEntities();
-			MoHRadiantMapGenerator mapMaker = new MoHRadiantMapGenerator(myEntities, _master);
+			MoHRadiantMapWriter mapMaker = new MoHRadiantMapWriter(myEntities);
 			string output = mapMaker.ParseMap();
 
 			string extension = deepCopy ? "_moh.map" : ".map";
@@ -131,7 +126,7 @@ namespace Decompiler {
 			Entities myEntities = deepCopy ? (Entities)DeepCopy(_entities) : _entities;
 			EntityToCoDRadiant entityPostProcessor = new EntityToCoDRadiant(myEntities, _version, _master);
 			entityPostProcessor.PostProcessEntities();
-			CoDRadiantMapGenerator mapMaker = new CoDRadiantMapGenerator(myEntities, _master);
+			CoDRadiantMapWriter mapMaker = new CoDRadiantMapWriter(myEntities);
 			string output = mapMaker.ParseMap();
 
 			string extension = deepCopy ? "_cod.map" : ".map";
@@ -152,7 +147,7 @@ namespace Decompiler {
 			Entities myEntities = deepCopy ? (Entities)DeepCopy(_entities) : _entities;
 			EntityToRadiant entityPostProcessor = new EntityToRadiant(myEntities, _version, _master);
 			entityPostProcessor.PostProcessEntities();
-			RadiantMapGenerator mapMaker = new RadiantMapGenerator(myEntities, _master);
+			RadiantMapWriter mapMaker = new RadiantMapWriter(myEntities);
 			string output = mapMaker.ParseMap();
 
 			string extension = deepCopy ? "_radiant.map" : ".map";
@@ -173,7 +168,7 @@ namespace Decompiler {
 			Entities myEntities = deepCopy ? (Entities)DeepCopy(_entities) : _entities;
 			EntityToDoomEdit entityPostProcessor = new EntityToDoomEdit(myEntities, _version, _master);
 			entityPostProcessor.PostProcessEntities();
-			DoomEditMapGenerator mapMaker = new DoomEditMapGenerator(myEntities, _master);
+			DoomEditMapWriter mapMaker = new DoomEditMapWriter(myEntities);
 			string output = mapMaker.ParseMap();
 
 			string extension = deepCopy ? "_doom.map" : ".map";
@@ -194,7 +189,7 @@ namespace Decompiler {
 			Entities myEntities = deepCopy ? (Entities)DeepCopy(_entities) : _entities;
 			EntityToHammer entityPostProcessor = new EntityToHammer(myEntities, _version, _master);
 			entityPostProcessor.PostProcessEntities();
-			HammerMapGenerator mapMaker = new HammerMapGenerator(myEntities, _master);
+			HammerMapWriter mapMaker = new HammerMapWriter(myEntities);
 			string output = mapMaker.ParseMap();
 
 			string extension = ".vmf";

@@ -166,16 +166,13 @@ namespace Decompiler {
 				Entities output = null;
 				string mapDirectory = "";
 				string mapName = "";
-				MapType version = MapType.Undefined;
-				bsp = new BSP(_path);
-				bsp.MapType = settings.openAs;
+				bsp = new BSP(new FileInfo(_path), settings.openAs);
 				type = bsp.MapType;
 				BSPDecompiler decompiler = new BSPDecompiler(bsp, this);
 				output = decompiler.Decompile();
 				mapDirectory = bsp.Reader.BspFile.Directory.FullName;
 				mapName = bsp.MapName;
-				version = bsp.MapType;
-				MAPWriter writer = new MAPWriter(output, mapDirectory, mapName, version, this);
+				BSPPostProcessor writer = new BSPPostProcessor(output, mapDirectory, mapName, type, this);
 				writer.WriteAll();
 				DateTime end = DateTime.Now;
 				Print("Time taken: " + (end - begin).ToString() + (char)0x0D + (char)0x0A);
