@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 using LibBSP;
@@ -9,6 +10,8 @@ namespace Decompiler {
 	/// Helper class containing methods for working with <see cref="StaticModel"/> objects.
 	/// </summary>
 	public static class StaticModelExtensions {
+
+		private static IFormatProvider _format = CultureInfo.CreateSpecificCulture("en-US");
 
 		/// <summary>
 		/// Parse the properties of this <see cref="StaticModel"/> into an <see cref="Entity"/> object.
@@ -27,7 +30,7 @@ namespace Decompiler {
 			entity["model"] = model.Name;
 			entity.Origin = model.Origin;
 			entity.Angles = model.Angles;
-			entity["scale"] = model.Scale.ToString();
+			entity["scale"] = model.Scale.ToString(_format);
 			entity["angle"] = "0";
 			return entity;
 		}

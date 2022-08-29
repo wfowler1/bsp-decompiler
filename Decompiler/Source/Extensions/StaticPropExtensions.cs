@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 using LibBSP;
@@ -9,6 +10,8 @@ namespace Decompiler {
 	/// Helper class containing methods for working with <see cref="StaticProp"/> objects.
 	/// </summary>
 	public static class StaticPropExtensions {
+		
+		private static IFormatProvider _format = CultureInfo.CreateSpecificCulture("en-US");
 
 		/// <summary>
 		/// Parse the properties of this <see cref="StaticProp"/> into an <see cref="Entity"/> object.
@@ -23,9 +26,9 @@ namespace Decompiler {
 			entity.Origin = prop.Origin;
 			entity.Angles = prop.Angles;
 			entity["solid"] = prop.Solidity.ToString();
-			entity["fademindist"] = prop.MinimumFadeDistance.ToString();
-			entity["fademaxdist"] = prop.MaximumFadeDistance.ToString();
-			entity["fadescale"] = prop.ForcedFadeScale.ToString();
+			entity["fademindist"] = prop.MinimumFadeDistance.ToString(_format);
+			entity["fademaxdist"] = prop.MaximumFadeDistance.ToString(_format);
+			entity["fadescale"] = prop.ForcedFadeScale.ToString(_format);
 			if (prop.Name != null) {
 				entity["targetname"] = prop.Name;
 			}

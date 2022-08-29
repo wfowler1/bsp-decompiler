@@ -17,7 +17,7 @@ namespace Decompiler {
 		/// <returns><see cref="Entity"/> representation of this <see cref="Cubemap"/>.</returns>
 		public static Entity ToEntity(this Cubemap cubemap) {
 			Entity entity = new Entity("env_cubemap");
-			entity["origin"] = cubemap.Origin.X + " " + cubemap.Origin.Y + " " + cubemap.Origin.Z;
+			entity.Origin = cubemap.Origin;
 			entity["cubemapsize"] = cubemap.Size + "";
 			return entity;
 		}
