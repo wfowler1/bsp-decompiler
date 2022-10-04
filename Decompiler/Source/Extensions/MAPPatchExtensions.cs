@@ -18,7 +18,7 @@ namespace Decompiler {
 		/// <param name="v">Translation vector.</param>
 		public static void Translate(this MAPPatch mapPatch, Vector3 v) {
 			for (int i = 0; i < mapPatch.points.Length; ++i) {
-				VertexExtensions.Translate(mapPatch.points[i], v);
+				mapPatch.points[i] += v;
 			}
 		}
 
