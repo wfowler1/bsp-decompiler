@@ -431,6 +431,65 @@ namespace Decompiler {
 					entity["classname"] = "info_teleport_destination";
 					break;
 				}
+				case "target_speaker": {
+					entity.ClassName = "ambient_generic";
+					entity.RenameKey("noise", "message");
+
+					float newVolume = 10;
+					uint newSpawnflags = 0;
+
+					// "Looped Off"
+					if (entity.SpawnflagsSet(2)) {
+						// "Is NOT Looped"
+						newSpawnflags |= 32;
+					}
+
+					if (entity.ContainsKey("attenuation")) {
+						// Clear bits 0, 1, 2 and 3
+						newSpawnflags &= ~(uint)15;
+						switch (entity.GetInt("attenuation")) {
+							case 1: {
+								// "Small Radius"
+								newSpawnflags |= 2;
+								break;
+							}
+							case -1:
+							case 2: {
+								// "Medium Radius"
+								newSpawnflags |= 4;
+								break;
+							}
+							case 3: {
+								// "Large Radius"
+								newSpawnflags |= 8;
+								break;
+							}
+						}
+						entity.Remove("attenuation");
+					} else {
+						// "Looped On"
+						if (entity.SpawnflagsSet(1)) {
+							// "Large Radius"
+							newSpawnflags |= 8;
+						} else {
+							// "Small Radius"
+							newSpawnflags |= 2;
+						}
+					}
+
+					if (entity.ContainsKey("volume")) {
+						float volume = entity.GetFloat("volume", 1);
+						newVolume = volume * 10f;
+						entity.Remove("volume");
+					}
+
+					entity["health"] = newVolume.ToString();
+					entity.Spawnflags = newSpawnflags;
+
+					entity["pitchstart"] = "100";
+					entity["pitch"] = "100";
+					break;
+				}
 			}
 		}
 
