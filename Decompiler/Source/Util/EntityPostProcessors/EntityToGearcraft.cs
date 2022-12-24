@@ -16,6 +16,8 @@ namespace Decompiler {
 		private Entities _entities;
 		private MapType _version;
 
+		private bool _isCTF;
+
 		/// <summary>
 		/// Creates a new instance of an <see cref="EntityToGrarcraft"/> object which will operate on the passed <see cref="Entities"/>.
 		/// </summary>
@@ -44,14 +46,6 @@ namespace Decompiler {
 				_entities.Add(waterEntitiy);
 			}
 
-			// Detect Capture the Flag entities and enforce the gametype
-			bool isCTF = DetectCTF(_entities);
-			if (isCTF) {
-				foreach (Entity entity in worldspawns) {
-					entity["defaultctf"] = "1";
-				}
-			}
-
 			// We might modify the collection as we iterate over it. Can't use foreach.
 			for (int i = 0; i < _entities.Count; ++i) {
 				if (!_master.settings.noEntCorrection) {
@@ -59,6 +53,12 @@ namespace Decompiler {
 				}
 				if (!_master.settings.noTexCorrection) {
 					PostProcessTextures(_entities[i].brushes);
+				}
+			}
+
+			if (_isCTF) {
+				foreach (Entity entity in worldspawns) {
+					entity["defaultctf"] = "1";
 				}
 			}
 		}
@@ -100,15 +100,6 @@ namespace Decompiler {
 			waterEntity["skin"] = "-3";
 			waterEntity["WaveHeight"] = "3.2";
 			return waterEntity;
-		}
-
-		/// <summary>
-		/// Detects Capture the Flag entities in a collection of <see cref="Entity"/> objects.
-		/// </summary>
-		/// <param name="entities">An enumerable list of <see cref="Entity"/> objects to search through.</param>
-		/// <returns>Returns <c>true</c> if there exist Capture the Flag entities in <paramref name="entities"/>.</returns>
-		private static bool DetectCTF(IEnumerable<Entity> entities) {
-			return entities.Any<Entity>(entity => (entity.ClassName == "team_ctf" || entity.ClassName == "ctf_flag_hardcorps"));
 		}
 
 		/// <summary>
@@ -210,6 +201,7 @@ namespace Decompiler {
 				case "ctf_rebel_player_spawn": {
 					entity["classname"] = "info_ctfspawn";
 					entity["team_no"] = "2";
+					_isCTF = true;
 					goto case "info_player_deathmatch";
 				}
 				case "info_player_combine":
@@ -217,6 +209,7 @@ namespace Decompiler {
 				case "ctf_combine_player_spawn": {
 					entity["classname"] = "info_ctfspawn";
 					entity["team_no"] = "1";
+					_isCTF = true;
 					goto case "info_player_deathmatch";
 				}
 				case "info_player_deathmatch": {
@@ -241,6 +234,7 @@ namespace Decompiler {
 					newFlagBase["goal_no"] = "1";
 					newFlagBase["model"] = "models/ctf_flag_stand_mi6.mdl";
 					_entities.Add(newFlagBase);
+					_isCTF = true;
 					break;
 				}
 				case "ctf_rebel_flag": {
@@ -260,6 +254,7 @@ namespace Decompiler {
 					newFlagBase["goal_no"] = "2";
 					newFlagBase["model"] = "models/ctf_flag_stand_phoenix.mdl";
 					_entities.Add(newFlagBase);
+					_isCTF = true;
 					break;
 				}
 			}
@@ -302,12 +297,14 @@ namespace Decompiler {
 					entity["classname"] = "info_player_ctfspawn";
 					entity["team_no"] = "1";
 					entity.Remove("model");
+					_isCTF = true;
 					break;
 				}
 				case "mp_searchanddestroy_spawn_axis": {
 					entity["classname"] = "info_player_ctfspawn";
 					entity["team_no"] = "2";
 					entity.Remove("model");
+					_isCTF = true;
 					break;
 				}
 			}
@@ -352,15 +349,16 @@ namespace Decompiler {
 					entity["goal_no"] = "1"; // 2 for PHX, 1 for MI6
 					entity["goal_max"] = "16 16 72";
 					entity["goal_min"] = "-16 -16 0";
+					entity["model"] = "models/ctf_flag.mdl";
 					Entity flagBase = new Entity("item_ctfbase");
 					flagBase["origin"] = entity["origin"];
 					flagBase["angles"] = entity["angles"];
-					flagBase["angle"] = entity["angle"];
 					flagBase["goal_no"] = "1";
 					flagBase["model"] = "models/ctf_flag_stand_mi6.mdl";
 					flagBase["goal_max"] = "16 16 72";
 					flagBase["goal_min"] = "-16 -16 0";
 					_entities.Add(flagBase);
+					_isCTF = true;
 					break;
 				}
 				case "item_flag_team1":
@@ -371,27 +369,34 @@ namespace Decompiler {
 					entity["goal_no"] = "2"; // 2 for PHX, 1 for MI6
 					entity["goal_max"] = "16 16 72";
 					entity["goal_min"] = "-16 -16 0";
+					entity["model"] = "models/ctf_flag.mdl";
 					Entity flagBase = new Entity("item_ctfbase");
 					flagBase["origin"] = entity["origin"];
 					flagBase["angles"] = entity["angles"];
-					flagBase["angle"] = entity["angle"];
 					flagBase["goal_no"] = "2";
 					flagBase["model"] = "models/ctf_flag_stand_phoenix.mdl";
 					flagBase["goal_max"] = "16 16 72";
 					flagBase["goal_min"] = "-16 -16 0";
 					_entities.Add(flagBase);
+					_isCTF = true;
 					break;
 				}
 				case "info_player_team1":
 				case "info_player_sintek": {
 					entity["classname"] = "info_ctfspawn";
 					entity["team_no"] = "2";
+					Vector3 origin = entity.Origin;
+					entity["origin"] = origin.X + " " + origin.Y + " " + (origin.Z + 18);
+					_isCTF = true;
 					break;
 				}
 				case "info_player_team2":
 				case "info_player_hardcorps": {
 					entity["classname"] = "info_ctfspawn";
 					entity["team_no"] = "1";
+					Vector3 origin = entity.Origin;
+					entity["origin"] = origin.X + " " + origin.Y + " " + (origin.Z + 18);
+					_isCTF = true;
 					break;
 				}
 				case "info_player_start":
@@ -484,6 +489,7 @@ namespace Decompiler {
 					flagBase["goal_max"] = "16 16 72";
 					flagBase["goal_min"] = "-16 -16 0";
 					_entities.Add(flagBase);
+					_isCTF = true;
 					break;
 				}
 				case "team_ctf_redflag": {
@@ -503,18 +509,21 @@ namespace Decompiler {
 					flagBase["goal_max"] = "16 16 72";
 					flagBase["goal_min"] = "-16 -16 0";
 					_entities.Add(flagBase);
+					_isCTF = true;
 					break;
 				}
 				case "team_ctf_redspawn":
 				case "info_player_axis": {
 					entity["classname"] = "info_ctfspawn";
 					entity["team_no"] = "2";
+					_isCTF = true;
 					goto case "info_player_start";
 				}
 				case "team_ctf_bluespawn":
 				case "info_player_allied": {
 					entity["classname"] = "info_ctfspawn";
 					entity["team_no"] = "1";
+					_isCTF = true;
 					goto case "info_player_start";
 				}
 				case "info_player_start":
