@@ -325,11 +325,15 @@ namespace Decompiler {
 		/// <param name="face">The <see cref="Face"/> object to process.</param>
 		/// <returns>A <see cref="MAPPatch"/> object to be added to a <see cref="MAPBrush"/> object.</returns>
 		private MAPPatch ProcessPatch(Face face) {
-			List<Vector3> vertices = _bsp.GetReferencedObjects<Vector3>(face, "Vertices");
+			List<Vertex> vertices = _bsp.GetReferencedObjects<Vertex>(face, "Vertices");
+			Vector3[] points = new Vector3[vertices.Count];
+			for (int i = 0; i < vertices.Count; ++i) {
+				points[i] = vertices[i].position;
+			}
 			return new MAPPatch() {
 				dims = face.PatchSize,
 				texture = _bsp.Textures[face.TextureIndex].Name,
-				points = vertices.ToArray<Vector3>()
+				points = points
 			};
 		}
 
