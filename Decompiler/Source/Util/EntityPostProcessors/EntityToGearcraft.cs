@@ -269,7 +269,7 @@ namespace Decompiler {
 				Vector3 origin = entity.Origin;
 				entity.Remove("origin");
 				entity.Remove("model");
-				if (entity["classname"].ToUpper().Equals("func_rotating".ToUpper())) {
+				if (entity.ValueIs("classname", "func_rotating")) {
 					// TODO: What entities require origin brushes in CoD?
 					if (origin == Vector3.Zero) {
 						// If this brush uses the "origin" attribute
@@ -323,11 +323,9 @@ namespace Decompiler {
 				Vector3 origin = entity.Origin;
 				entity.Remove("origin");
 				entity.Remove("model");
-				if (entity.ValueIs("classname", "func_rotating")) {
-					if (origin != Vector3.Zero) {
-						MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "special/origin");
-						entity.brushes.Add(neworiginBrush);
-					}
+				if (origin != Vector3.Zero) {
+					MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "special/origin");
+					entity.brushes.Add(neworiginBrush);
 				}
 				foreach (MAPBrush brush in entity.brushes) {
 					brush.Translate(origin);
