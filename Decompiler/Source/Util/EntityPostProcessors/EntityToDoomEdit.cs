@@ -54,6 +54,12 @@ namespace Decompiler {
 					break;
 				}
 			}
+
+			foreach (MAPBrush brush in entity.brushes) {
+				foreach (MAPBrushSide side in brush.sides) {
+					side.plane.D *= -1;
+				}
+			}
 		}
 
 		/// <summary>
