@@ -181,6 +181,7 @@ namespace Decompiler {
 			MAPBrush mapBrush = new MAPBrush();
 			mapBrush.isDetail = brush.IsDetail(_bsp);
 			mapBrush.isWater = brush.IsWater(_bsp);
+			mapBrush.isLava = brush.IsLava(_bsp);
 			mapBrush.isManVis = brush.IsManVis(_bsp);
 			int sideNum = 0;
 			foreach (BrushSide side in sides) {
