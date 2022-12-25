@@ -114,7 +114,7 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="brushSide">The <see cref="MAPBrushSide"/> to have its texture parsed.</param>
 		private void PostProcessSourceTexture(MAPBrushSide brushSide) {
-			if (brushSide.texture.Length >= 5 && brushSide.texture.Substring(0, 5).Equals("maps/", StringComparison.InvariantCultureIgnoreCase)) {
+			if (brushSide.texture.StartsWith("maps/", StringComparison.InvariantCultureIgnoreCase)) {
 				brushSide.texture = brushSide.texture.Substring(5);
 				for (int i = 0; i < brushSide.texture.Length; ++i) {
 					if (brushSide.texture[i] == '/') {

@@ -308,7 +308,7 @@ namespace Decompiler {
 				entity.Angles = new Vector3(-90, 0, 0);
 			}
 			string modelName = entity["model"];
-			if (modelName.Length >= 4 && modelName.Substring(modelName.Length - 4).Equals(".spz", StringComparison.InvariantCultureIgnoreCase)) {
+			if (modelName.EndsWith(".spz", StringComparison.InvariantCultureIgnoreCase)) {
 				entity["model"] = modelName.Substring(0, modelName.Length - 4) + ".spr";
 			}
 
@@ -910,12 +910,16 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="brushSide">The <see cref="MAPBrushSide"/> to have its texture parsed.</param>
 		private void PostProcessQuake2Texture(MAPBrushSide brushSide) {
-			if (brushSide.texture.Length >= 5 && brushSide.texture.Substring(brushSide.texture.Length - 5).Equals("/clip", StringComparison.InvariantCultureIgnoreCase)) {
+			if (brushSide.texture.EndsWith("/clip", StringComparison.InvariantCultureIgnoreCase)) {
 				brushSide.texture = "tools/toolsclip";
-			} else if (brushSide.texture.Length >= 5 && brushSide.texture.Substring(brushSide.texture.Length - 5).Equals("/hint", StringComparison.InvariantCultureIgnoreCase)) {
+			} else if (brushSide.texture.EndsWith("/hint", StringComparison.InvariantCultureIgnoreCase)) {
 				brushSide.texture = "tools/toolshint";
-			} else if (brushSide.texture.Length >= 8 && brushSide.texture.Substring(brushSide.texture.Length - 8).Equals("/trigger", StringComparison.InvariantCultureIgnoreCase)) {
+			} else if (brushSide.texture.EndsWith("/trigger", StringComparison.InvariantCultureIgnoreCase)) {
 				brushSide.texture = "tools/toolstrigger";
+			} else if (brushSide.texture.EndsWith("/skip", StringComparison.InvariantCultureIgnoreCase)) {
+				brushSide.texture = "tools/toolsskip";
+			} else if (brushSide.texture.EndsWith("/sky1", StringComparison.InvariantCultureIgnoreCase)) {
+				brushSide.texture = "tools/toolsskybox";
 			} else if (brushSide.texture.Equals("*** unsused_texinfo ***", StringComparison.InvariantCultureIgnoreCase)) {
 				brushSide.texture = "tools/toolsnodraw";
 			}
@@ -926,7 +930,7 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="brushSide">The <see cref="MAPBrushSide"/> to have its texture parsed.</param>
 		private void PostProcessQuake3Texture(MAPBrushSide brushSide) {
-			if (brushSide.texture.Length >= 9 && brushSide.texture.Substring(0, 9).Equals("textures/", StringComparison.InvariantCultureIgnoreCase)) {
+			if (brushSide.texture.StartsWith("textures/", StringComparison.InvariantCultureIgnoreCase)) {
 				brushSide.texture = brushSide.texture.Substring(9);
 			}
 			switch (brushSide.texture.ToLower()) {
@@ -985,7 +989,7 @@ namespace Decompiler {
 					break;
 				}
 			}
-			if (brushSide.texture.Length >= 4 && brushSide.texture.Substring(0, 4).Equals("sky/", StringComparison.InvariantCultureIgnoreCase)) {
+			if (brushSide.texture.StartsWith("sky/", StringComparison.InvariantCultureIgnoreCase)) {
 				brushSide.texture = "tools/toolsskybox";
 			}
 		}
@@ -995,7 +999,7 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="brushSide">The <see cref="MAPBrushSide"/> to have its texture parsed.</param>
 		private void PostProcessSourceTexture(MAPBrushSide brushSide) {
-			if (brushSide.texture.Length >= 5 && brushSide.texture.Substring(0, 5).Equals("maps/", StringComparison.InvariantCultureIgnoreCase)) {
+			if (brushSide.texture.StartsWith("maps/", StringComparison.InvariantCultureIgnoreCase)) {
 				brushSide.texture = brushSide.texture.Substring(5);
 				for (int i = 0; i < brushSide.texture.Length; ++i) {
 					if (brushSide.texture[i] == '/') {

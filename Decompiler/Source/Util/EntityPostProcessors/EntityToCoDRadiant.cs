@@ -29,7 +29,7 @@ namespace Decompiler {
 		}
 
 		/// <summary>
-		/// Processes every <see cref="Entity"/> in an <see cref="Entities"/> object to be used in a MOHRadiant map.
+		/// Processes every <see cref="Entity"/> in an <see cref="Entities"/> object to be used in a CoDRadiant map.
 		/// </summary>
 		public void PostProcessEntities() {
 			// There should really only be one of these. But someone might have screwed with the map...
@@ -115,7 +115,7 @@ namespace Decompiler {
 		}
 
 		/// <summary>
-		/// Postprocesser to convert an <see cref="Entity"/> from a Nightfire BSP to one for MOHRadiant.
+		/// Postprocesser to convert an <see cref="Entity"/> from a Nightfire BSP to one for CoDRadiant.
 		/// </summary>
 		/// <param name="entity">The <see cref="Entity"/> to parse.</param>
 		private void PostProcessNightfireEntity(Entity entity) {
@@ -129,7 +129,7 @@ namespace Decompiler {
 
 		/// <summary>
 		/// Every <see cref="MAPBrushSide"/> contained in <paramref name="brushes"/> will have its texture examined,
-		/// and, if necessary, replaced with the equivalent for MOHRadiant.
+		/// and, if necessary, replaced with the equivalent for CoDRadiant.
 		/// </summary>
 		/// <param name="brushes">The collection of <see cref="MAPBrush"/> objects to have textures parsed.</param>
 		/// <param name="version">The <see cref="MapType"/> of the BSP this entity came from.</param>
@@ -185,7 +185,7 @@ namespace Decompiler {
 		}
 
 		/// <summary>
-		/// Postprocesser to convert the texture referenced by <paramref name="brushSide"/> into one used by MOHRadiant, if necessary.
+		/// Postprocesser to convert the texture referenced by <paramref name="brushSide"/> into one used by CoDRadiant, if necessary.
 		/// </summary>
 		/// <param name="brushSide">The <see cref="MAPBrushSide"/> to have its texture parsed.</param>
 		private void PostProcessNightfireTexture(MAPBrushSide brushSide) {
@@ -228,31 +228,40 @@ namespace Decompiler {
 		}
 
 		/// <summary>
-		/// Postprocesser to convert the texture referenced by <paramref name="brushSide"/> into one used by MOHRadiant, if necessary.
+		/// Postprocesser to convert the texture referenced by <paramref name="brushSide"/> into one used by CoDRadiant, if necessary.
 		/// </summary>
 		/// <param name="brushSide">The <see cref="MAPBrushSide"/> to have its texture parsed.</param>
 		private void PostProcessQuake3Texture(MAPBrushSide brushSide) {
-			if (brushSide.texture.Length >= 9 && brushSide.texture.Substring(0, 9).Equals("textures/", StringComparison.InvariantCultureIgnoreCase)) {
-				brushSide.texture = brushSide.texture.Substring(9);
-			}
+			brushSide.texture = PostProcessQuake3Texture(brushSide.texture);
 		}
 
 		/// <summary>
-		/// Postprocesser to convert the texture referenced by <paramref name="patch"/> into one used by MOHRadiant, if necessary.
+		/// Postprocesser to convert the texture referenced by <paramref name="patch"/> into one used by CoDRadiant, if necessary.
 		/// </summary>
 		/// <param name="patch">The <see cref="MAPPatch"/> to have its texture parsed.</param>
 		private void PostProcessQuake3Texture(MAPPatch patch) {
-			if (patch.texture.Length >= 9 && patch.texture.Substring(0, 9).Equals("textures/", StringComparison.InvariantCultureIgnoreCase)) {
-				patch.texture = patch.texture.Substring(9);
-			}
+			patch.texture = PostProcessQuake3Texture(patch.texture);
 		}
 
 		/// <summary>
-		/// Postprocesser to convert the texture referenced by <paramref name="brushSide"/> into one used by MOHRadiant, if necessary.
+		/// Replace the <paramref name="texture"/> with one used by CoDRadiant, if necessary.
+		/// </summary>
+		/// <param name="texture">The texture name.</param>
+		/// <returns>The new texture name.</returns>
+		private string PostProcessQuake3Texture(string texture) {
+			if (texture.StartsWith("textures/", StringComparison.InvariantCultureIgnoreCase)) {
+				 return texture.Substring(9);
+			}
+
+			return texture;
+		}
+
+		/// <summary>
+		/// Postprocesser to convert the texture referenced by <paramref name="brushSide"/> into one used by CoDRadiant, if necessary.
 		/// </summary>
 		/// <param name="brushSide">The <see cref="MAPBrushSide"/> to have its texture parsed.</param>
 		private void PostProcessSourceTexture(MAPBrushSide brushSide) {
-			if (brushSide.texture.Length >= 5 && brushSide.texture.Substring(0, 5).Equals("maps/", StringComparison.InvariantCultureIgnoreCase)) {
+			if (brushSide.texture.StartsWith("maps/", StringComparison.InvariantCultureIgnoreCase)) {
 				brushSide.texture = brushSide.texture.Substring(5);
 				for (int i = 0; i < brushSide.texture.Length; ++i) {
 					if (brushSide.texture[i] == '/') {

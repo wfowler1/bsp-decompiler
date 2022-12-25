@@ -290,9 +290,7 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="brushSide">The <see cref="MAPBrushSide"/> to have its texture parsed.</param>
 		private void PostProcessQuake3Texture(MAPBrushSide brushSide) {
-			if (brushSide.texture.Length >= 9 && brushSide.texture.Substring(0, 9).Equals("textures/", StringComparison.InvariantCultureIgnoreCase)) {
-				brushSide.texture = brushSide.texture.Substring(9);
-			}
+			brushSide.texture = PostProcessQuake3Texture(brushSide.texture);
 		}
 
 		/// <summary>
@@ -300,9 +298,7 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="patch">The <see cref="MAPPatch"/> to have its texture parsed.</param>
 		private void PostProcessQuake3Texture(MAPPatch patch) {
-			if (patch.texture.Length >= 9 && patch.texture.Substring(0, 9).Equals("textures/", StringComparison.InvariantCultureIgnoreCase)) {
-				patch.texture = patch.texture.Substring(9);
-			}
+			patch.texture = PostProcessQuake3Texture(patch.texture);
 		}
 
 		/// <summary>
@@ -310,9 +306,20 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="terrain">The <see cref="MAPTerrainEF2"/> to have its texture parsed.</param>
 		private void PostProcessQuake3Texture(MAPTerrainEF2 terrain) {
-			if (terrain.texture.Length >= 9 && terrain.texture.Substring(0, 9).Equals("textures/", StringComparison.InvariantCultureIgnoreCase)) {
-				terrain.texture = terrain.texture.Substring(9);
+			terrain.texture = PostProcessQuake3Texture(terrain.texture);
+		}
+
+		/// <summary>
+		/// Replace the <paramref name="texture"/> with one used by GTKRadiant, if necessary.
+		/// </summary>
+		/// <param name="texture">The texture name.</param>
+		/// <returns>The new texture name.</returns>
+		private string PostProcessQuake3Texture(string texture) {
+			if (texture.StartsWith("textures/", StringComparison.InvariantCultureIgnoreCase)) {
+				texture = texture.Substring(9);
 			}
+
+			return texture;
 		}
 
 		/// <summary>
@@ -320,7 +327,7 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="brushSide">The <see cref="MAPBrushSide"/> to have its texture parsed.</param>
 		private void PostProcessSourceTexture(MAPBrushSide brushSide) {
-			if (brushSide.texture.Length >= 5 && brushSide.texture.Substring(0, 5).Equals("maps/", StringComparison.InvariantCultureIgnoreCase)) {
+			if (brushSide.texture.StartsWith("maps/", StringComparison.InvariantCultureIgnoreCase)) {
 				brushSide.texture = brushSide.texture.Substring(5);
 				for (int i = 0; i < brushSide.texture.Length; ++i) {
 					if (brushSide.texture[i] == '/') {
