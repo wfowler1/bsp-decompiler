@@ -55,5 +55,28 @@ namespace Decompiler {
 			return MAPBrushExtensions.CreateBrushFromWind(froms, tos, texture, "**nodrawtexture**", outputTexInfo, depth);
 		}
 
+		/// <summary>
+		/// Finds the <see cref="BrushSide"/> index that best matches this <see cref="Face"/>.
+		/// </summary>
+		/// <param name="face">This <see cref="Face"/>.</param>
+		/// <returns>Index of the <see cref="BrushSide"/> which best matches this <see cref="Face"/>.</returns>
+		public static int FindBestFitBrushSideForFace(this Face face) {
+			int bestIndex = -1;
+
+			// Compare face properties with brush side properties
+			// TODO: Compare face edges with brush geometry as well?
+			if (face.Parent?.Bsp?.BrushSides != null) {
+				for (int i = 0; i < face.Parent.Bsp.BrushSides.Count; ++i) {
+					if (face.PlaneIndex == face.Parent.Bsp.BrushSides[i].PlaneIndex
+						&& face.TextureInfoIndex == face.Parent.Bsp.BrushSides[i].TextureIndex) {
+						bestIndex = i;
+						break;
+					}
+				}
+			}
+
+			return bestIndex;
+		}
+
 	}
 }

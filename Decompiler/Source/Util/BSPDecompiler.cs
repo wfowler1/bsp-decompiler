@@ -14,7 +14,7 @@ namespace Decompiler {
 		private Job _master;
 
 		private BSP _bsp;
-		private int _currentSideIndex = 0;
+		private int _numProcessedBrushSides = 0;
 		private int _itemsToProcess = 0;
 		private int _itemsProcessed = 0;
 
@@ -32,6 +32,7 @@ namespace Decompiler {
 			if (bsp.StaticProps != null) { _itemsToProcess += bsp.StaticProps.Count; }
 			if (bsp.StaticModels != null) { _itemsToProcess += bsp.StaticModels.Count; }
 			if (bsp.Cubemaps != null) { _itemsToProcess += bsp.Cubemaps.Count; }
+			if (bsp.Overlays != null) { _itemsToProcess += bsp.Overlays.Count; }
 		}
 
 		/// <summary>
@@ -41,11 +42,13 @@ namespace Decompiler {
 		public Entities Decompile() {
 			// There's no need to deepcopy; only one process will run on these entities and this will not be saved back to a BSP file
 			Entities entities = _bsp.Entities;
+
 			foreach (Entity entity in entities) {
 				ProcessEntity(entity);
 				++_itemsProcessed;
 				ReportProgress();
 			}
+
 			if (_bsp.StaticProps != null) {
 				foreach (StaticProp prop in _bsp.StaticProps) {
 					entities.Add(prop.ToEntity(_bsp.StaticProps.ModelDictionary));
@@ -53,6 +56,7 @@ namespace Decompiler {
 					ReportProgress();
 				}
 			}
+
 			if (_bsp.StaticModels != null) {
 				foreach (StaticModel model in _bsp.StaticModels) {
 					entities.Add(model.ToEntity());
@@ -60,12 +64,33 @@ namespace Decompiler {
 					ReportProgress();
 				}
 			}
+
 			if (_bsp.Cubemaps != null) {
 				foreach (Cubemap cubemap in _bsp.Cubemaps) {
 					entities.Add(cubemap.ToEntity());
 					++_itemsProcessed;
 					ReportProgress();
 				}
+			}
+
+			if (_bsp.Overlays != null) {
+				List<Entity> overlayAccessors = entities.GetAllOfType("info_overlay_accessor");
+				foreach (Overlay overlay in _bsp.Overlays) {
+					string targetName = null;
+					Entity overlayAccessor = overlayAccessors.Find(entity => { return entity["OverlayID"].Equals(overlay.ID.ToString()); });
+					if (!string.IsNullOrEmpty(overlayAccessor?.Name)) {
+						targetName = overlayAccessor.Name;
+					}
+					int[] faces = overlay.FaceIndices;
+					int[] sides = new int[overlay.FaceCount];
+					for (int i = 0; i < sides.Length; ++i) {
+						sides[i] = _bsp.Faces[faces[i]].FindBestFitBrushSideForFace();
+					}
+					entities.Add(overlay.ToEntity(sides, targetName));
+					++_itemsProcessed;
+					ReportProgress();
+				}
+				entities.RemoveAllOfType("info_overlay_accessor");
 			}
 
 			return entities;
@@ -170,27 +195,29 @@ namespace Decompiler {
 		/// <param name="worldPosition">The position of the parent <see cref="Entity"/> in the world. This is important for calculating UVs on solids.</param>
 		/// <returns>The processed <see cref="MAPBrush"/> object, to be added to an <see cref="Entity"/> object.</returns>
 		private MAPBrush ProcessBrush(Brush brush, Vector3 worldPosition) {
-			List<BrushSide> sides;
-			// CoD BSPs store brush sides sequentially so the brush structure doesn't reference a first side.
-			if (brush.FirstSideIndex < 0) {
-				sides = _bsp.BrushSides.GetRange(_currentSideIndex, brush.NumSides);
-				_currentSideIndex += brush.NumSides;
-			} else {
-				sides = _bsp.GetReferencedObjects<BrushSide>(brush, "BrushSides");
-			}
 			MAPBrush mapBrush = new MAPBrush();
 			mapBrush.isDetail = brush.IsDetail(_bsp);
 			mapBrush.isWater = brush.IsWater(_bsp);
 			mapBrush.isLava = brush.IsLava(_bsp);
 			mapBrush.isManVis = brush.IsManVis(_bsp);
-			int sideNum = 0;
-			foreach (BrushSide side in sides) {
-				MAPBrushSide mapBrushSide = ProcessBrushSide(side, worldPosition, sideNum);
+			int sideIndex;
+			for (int i = 0; i < brush.NumSides; ++i) {
+				// CoD BSPs store brush sides sequentially so the brush structure doesn't reference a first side.
+				if (brush.FirstSideIndex < 0) {
+					sideIndex = _numProcessedBrushSides + i;
+				} else {
+					sideIndex = brush.FirstSideIndex + i;
+				}
+
+				BrushSide brushSide = _bsp.BrushSides[sideIndex];
+				MAPBrushSide mapBrushSide = ProcessBrushSide(brushSide, worldPosition, i);
 				if (mapBrushSide != null) {
 					mapBrush.sides.Add(mapBrushSide);
+					mapBrushSide.id = sideIndex;
 				}
-				++sideNum;
 			}
+
+			_numProcessedBrushSides += brush.NumSides;
 
 			return mapBrush;
 		}
@@ -200,10 +227,10 @@ namespace Decompiler {
 		/// </summary>
 		/// <param name="brushSide">The <see cref="BrushSide"/> to process.</param>
 		/// <param name="worldPosition">The position of the parent <see cref="Entity"/> in the world. This is important for calculating UVs on solids.</param>
-		/// <param name="sideIndex">The index of this side reference in the parent <see cref="Brush"/>. Important for Call of Duty series maps, since
+		/// <param name="sideNum">Which side this is in the parent <see cref="Brush"/>. Important for Call of Duty series maps, since
 		/// the first six <see cref="BrushSide"/>s in a <see cref="Brush"/> don't contain <see cref="Plane"/> references.</param>
 		/// <returns>The processed <see cref="MAPBrushSode"/> object, to be added to a <see cref="Brush"/> object.</returns>
-		private MAPBrushSide ProcessBrushSide(BrushSide brushSide, Vector3 worldPosition, int sideIndex) {
+		private MAPBrushSide ProcessBrushSide(BrushSide brushSide, Vector3 worldPosition, int sideNum) {
 			if (brushSide.IsBevel) { return null; }
 			MAPBrushSide mapBrushSide;
 			// The things we'll need to define a .MAP brush side
@@ -213,6 +240,7 @@ namespace Decompiler {
 			Vector3[] threePoints;
 			Plane plane;
 			int flags = 0;
+			int smoothingGroups = 0;
 
 			// If we have a face reference here, let's use it!
 			if (brushSide.FaceIndex >= 0) {
@@ -238,9 +266,10 @@ namespace Decompiler {
 				if (face.MaterialIndex >= 0) {
 					material = _bsp.Materials[face.MaterialIndex].Name;
 				}
+				smoothingGroups = face.SmoothingGroups;
 			} else {
 				if (_bsp.MapType.IsSubtypeOf(MapType.CoD)) {
-					switch (sideIndex) {
+					switch (sideNum) {
 						case 0: { // XMin
 							plane = new Plane(-1, 0, 0, -brushSide.Distance);
 							break;
@@ -312,7 +341,8 @@ namespace Decompiler {
 				textureInfo = outputTexInfo,
 				material = material,
 				lgtScale = 16,
-				lgtRot = 0
+				lgtRot = 0,
+				smoothingGroups = smoothingGroups
 			};
 
 			return mapBrushSide;
