@@ -46,6 +46,12 @@ namespace Decompiler {
 				_entities.Add(waterEntitiy);
 			}
 
+			// Detect and parse lava
+			Entity lavaEntitiy = PostProcessLava(worldspawns);
+			if (lavaEntitiy != null) {
+				_entities.Add(lavaEntitiy);
+			}
+
 			// We might modify the collection as we iterate over it. Can't use foreach.
 			for (int i = 0; i < _entities.Count; ++i) {
 				if (!_master.settings.noEntCorrection) {
@@ -78,6 +84,37 @@ namespace Decompiler {
 						if (waterEntity == null) {
 							waterEntity = CreateNewWaterEntity();
 						}
+						waterEntity.brushes.Add(entity.brushes[i]);
+						entity.brushes.RemoveAt(i);
+						--i;
+					}
+				}
+			}
+
+			return waterEntity;
+		}
+
+		/// <summary>
+		/// Moves any <see cref="MAPBrush"/> with <c>isLava</c> <c>true</c> from the passed <see cref="Entity"/> objects into a
+		/// new <see cref="Entity"/> object and returns it.
+		/// </summary>
+		/// <param name="entities">An enumerable object of <see cref="Entity"/> objects to strip lava <see cref="MAPBrush"/> objects from.</param>
+		/// <returns>A new <see cref="Entity"/> object containing all the stripped lava <see cref="MAPBrush"/> objects.</returns>
+		private static Entity PostProcessLava(IEnumerable<Entity> entities) {
+			Entity waterEntity = null;
+			foreach (Entity entity in entities) {
+				for (int i = 0; i < entity.brushes.Count; ++i) {
+					if (entity.brushes[i].isLava) {
+						// Don't create a new entity for the water unless we need it, but only create one
+						if (waterEntity == null) {
+							waterEntity = CreateNewWaterEntity();
+						}
+						waterEntity["skin"] = "-4";
+						waterEntity["rendercolor"] = "255 128 0";
+						waterEntity["renderamt"] = "255";
+						waterEntity["rendermode"] = "5";
+						waterEntity["renderfx"] = "14";
+						waterEntity["WaveHeight"] = "1";
 						waterEntity.brushes.Add(entity.brushes[i]);
 						entity.brushes.RemoveAt(i);
 						--i;
