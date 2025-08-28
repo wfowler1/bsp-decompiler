@@ -20,8 +20,9 @@ namespace Decompiler
         /// <param name="face">This <see cref="Face"/>.</param>
         /// <param name="bsp">The <see cref="BSP"/> object this <see cref="Face"/> is from.</param>
         /// <param name="depth">The desired depth of the resulting brush.</param>
+        /// <param name="textureScale">Texture scale for the other sides of the new brush.</param>
         /// <returns>A <see cref="MAPBrush"/> object representing the passed <paramref name="face"/>.</returns>
-        public static MAPBrush CreateBrush(this Face face, BSP bsp, float depth)
+        public static MAPBrush CreateBrush(this Face face, BSP bsp, float depth, float textureScale = 1)
         {
             TextureInfo texInfo;
             string texture;
@@ -42,7 +43,7 @@ namespace Decompiler
             else
             {
                 Vector3[] axes = TextureInfo.TextureAxisFromPlane(bsp.Planes[face.PlaneIndex]);
-                texInfo = new TextureInfo(axes[0], axes[1], Vector2.Zero, Vector2.One, 0, -1, 0);
+                texInfo = new TextureInfo(axes[0], axes[1], Vector2.Zero, new Vector2(textureScale, textureScale), 0, -1, 0);
                 texture = "**cliptexture**";
             }
 
@@ -65,7 +66,7 @@ namespace Decompiler
                 }
             }
 
-            return MAPBrushExtensions.CreateBrushFromWind(froms, tos, texture, "**nodrawtexture**", outputTexInfo, depth);
+            return MAPBrushExtensions.CreateBrushFromWind(froms, tos, texture, "**nodrawtexture**", outputTexInfo, depth, textureScale);
         }
 
         /// <summary>

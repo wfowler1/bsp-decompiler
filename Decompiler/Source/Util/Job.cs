@@ -37,6 +37,7 @@ namespace Decompiler
             public bool noTexCorrection = false;
             public bool noEntCorrection = false;
             public string outputFolder = "";
+            public float defaultTextureScale = 0.5f;
 
             public MapType openAs = MapType.Undefined;
             public bool toAuto = true;

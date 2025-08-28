@@ -141,7 +141,7 @@ namespace Decompiler
                 if (origin != Vector3.Zero)
                 {
                     // If this brush has an origin
-                    MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "common/origin");
+                    MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "common/origin", _master.settings.defaultTextureScale);
                     entity.brushes.Add(neworiginBrush);
                 }
                 foreach (MAPBrush brush in entity.brushes)

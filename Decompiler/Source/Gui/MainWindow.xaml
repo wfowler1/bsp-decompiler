@@ -84,6 +84,7 @@
 				<MenuItem Header="Don't correct entities" x:Name="miNoEntityCorrect" ToolTip="Don't correct entities depending on the output format. This will keep all entities as-is, rather than renaming them for the output format." IsCheckable="True" />
 				<MenuItem Header="Don't correct textures" x:Name="miNoTextureCorrect" ToolTip="Don't correct texture names depending on the output format. This will keep all original texture names, instead of those used by the proper editor." IsCheckable="True" />
 				<MenuItem Header="Replace face flag 512 with special/null" x:Name="miSpecialNull" ToolTip="Only replaces texture on faces in Nightfire maps flag 512 set." IsCheckable="True" />
+				<MenuItem Header="Set Default Texture Scale..." Click="TextureScale_Click" ToolTip="Default texture scale when original scale cannot be determined." />
 				<Separator />
 				<MenuItem Header="Set number of threads..." Click="NumThreads_Click" ToolTip="The job system is multithreaded and multiple maps can be decompiled simultaneously, especially on multiprocessor CPUs." />
 				<MenuItem Header="Set output folder..." Click="OutFolder_Click" ToolTip="Set where to save output mapfiles. Click cancel to use the folder where the map came from." />

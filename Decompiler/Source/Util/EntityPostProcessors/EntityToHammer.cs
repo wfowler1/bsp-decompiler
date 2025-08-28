@@ -316,7 +316,7 @@ namespace Decompiler
                                                          new Vector2(textureShift[0], textureShift[1]),
                                                          new Vector2(textureScale[0], textureScale[1]),
                                                          0, 0, rotation);
-            return MAPBrushExtensions.CreateBrushFromWind(froms, tos, texture, "tools/toolsnodraw", newTextureInfo, 32);
+            return MAPBrushExtensions.CreateBrushFromWind(froms, tos, texture, "tools/toolsnodraw", newTextureInfo, 32, _master.settings.defaultTextureScale);
         }
 
         /// <summary>
@@ -729,7 +729,7 @@ namespace Decompiler
                     Vector3 origin = entity.Origin;
                     Vector3 mins = new Vector3(origin.X - 24, origin.Y - 24, origin.Z - 24);
                     Vector3 maxs = new Vector3(origin.X + 24, origin.Y + 24, origin.Z + 48);
-                    entity.brushes.Add(MAPBrushExtensions.CreateCube(mins, maxs, "tools/toolstrigger"));
+                    entity.brushes.Add(MAPBrushExtensions.CreateCube(mins, maxs, "tools/toolstrigger", _master.settings.defaultTextureScale));
                     entity.Remove("origin");
                     entity["classname"] = "trigger_teleport";
                     break;
@@ -1198,6 +1198,8 @@ namespace Decompiler
                 case "system/clip":
                 case "system/physics_clip":
                 case "common/clip":
+                case "common/moveclip":
+                case "common/clipall":
                 {
                     brushSide.texture = "tools/toolsclip";
                     break;

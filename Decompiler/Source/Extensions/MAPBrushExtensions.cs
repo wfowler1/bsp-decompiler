@@ -48,11 +48,10 @@ namespace Decompiler
         /// <param name="texture">The texture to use on the front of this brush.</param>
         /// <param name="backtex">The texture to use on the sides and back of this brush.</param>
         /// <param name="texInfo">The texture axis information to be used on the front of this brush.</param>
-        /// <param name="xScale">The scale of the texture along the S axis.</param>
-        /// <param name="yScale">The scale of the texture along the T axis.</param>
         /// <param name="depth">The desired depth of the brush, how far the back should extend from the front.</param>
+        /// <param name="textureScale">Texture scale for the generated <paramref name="backtex"/> sides.</param>
         /// <returns>A <see cref="MAPBrush"/> object created using the passed vertices and texture information.</returns>
-        public static MAPBrush CreateBrushFromWind(IList<Vector3> froms, IList<Vector3> tos, string texture, string backtex, TextureInfo texInfo, float depth)
+        public static MAPBrush CreateBrushFromWind(IList<Vector3> froms, IList<Vector3> tos, string texture, string backtex, TextureInfo texInfo, float depth, float textureScale = 1)
         {
             Vector3[] planepts = new Vector3[3];
             List<MAPBrushSide> sides = new List<MAPBrushSide>(froms.Count + 2); // Each edge, plus a front and back side
@@ -84,7 +83,7 @@ namespace Decompiler
                 vertices = new Vector3[] { planepts[0], planepts[1], planepts[2] },
                 plane = backplane,
                 texture = backtex,
-                textureInfo = new TextureInfo(generatedAxes[0], generatedAxes[1], Vector2.Zero, Vector2.One, 0, 0, 0),
+                textureInfo = new TextureInfo(generatedAxes[0], generatedAxes[1], Vector2.Zero, new Vector2(textureScale, textureScale), 0, 0, 0),
                 material = "wld_lightmap",
                 lgtScale = 16,
                 lgtRot = 0
@@ -103,7 +102,7 @@ namespace Decompiler
                     vertices = new Vector3[] { planepts[0], planepts[1], planepts[2] },
                     plane = sideplane,
                     texture = backtex,
-                    textureInfo = new TextureInfo(generatedAxes[0], generatedAxes[1], Vector2.Zero, Vector2.One, 0, 0, 0),
+                    textureInfo = new TextureInfo(generatedAxes[0], generatedAxes[1], Vector2.Zero, new Vector2(textureScale, textureScale), 0, 0, 0),
                     material = "wld_lightmap",
                     lgtScale = 16,
                     lgtRot = 0
@@ -122,8 +121,9 @@ namespace Decompiler
         /// <param name="mins">The minimum extents of the new brush.</param>
         /// <param name="maxs">The maximum extents of the new brush.</param>
         /// <param name="texture">The texture to use on this brush.</param>
+        /// <param name="textureScale">Texture scale.</param>
         /// <returns>The resulting <see cref="MAPBrush"/> object.</returns>
-        public static MAPBrush CreateCube(Vector3 mins, Vector3 maxs, string texture)
+        public static MAPBrush CreateCube(Vector3 mins, Vector3 maxs, string texture, float textureScale = 1)
         {
             MAPBrush newBrush = new MAPBrush();
             Vector3[][] planes = new Vector3[6][];
@@ -187,7 +187,7 @@ namespace Decompiler
                     vertices = planes[i],
                     plane = Plane.CreateFromVertices(planes[i][0], planes[i][2], planes[i][1]),
                     texture = texture,
-                    textureInfo = new TextureInfo(new Vector3(textureS[i][0], textureS[i][1], textureS[i][2]), new Vector3(textureT[i][0], textureT[i][1], textureT[i][2]), Vector2.Zero, Vector2.One, 0, 0, 0),
+                    textureInfo = new TextureInfo(new Vector3(textureS[i][0], textureS[i][1], textureS[i][2]), new Vector3(textureT[i][0], textureT[i][1], textureT[i][2]), Vector2.Zero, new Vector2(textureScale, textureScale), 0, 0, 0),
                     material = "wld_lightmap",
                     lgtScale = 16,
                     lgtRot = 0

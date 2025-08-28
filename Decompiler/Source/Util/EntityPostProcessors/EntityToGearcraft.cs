@@ -203,7 +203,7 @@ namespace Decompiler
                 if (origin != Vector3.Zero)
                 {
                     // If this brush has an origin
-                    MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "special/origin");
+                    MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "special/origin", _master.settings.defaultTextureScale);
                     entity.brushes.Add(neworiginBrush);
                 }
                 foreach (MAPBrush brush in entity.brushes)
@@ -230,7 +230,7 @@ namespace Decompiler
                     // TODO: What entities require origin brushes?
                     if (origin != Vector3.Zero)
                     {
-                        MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "special/origin");
+                        MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "special/origin", _master.settings.defaultTextureScale);
                         entity.brushes.Add(neworiginBrush);
                     }
                 }
@@ -374,7 +374,7 @@ namespace Decompiler
                     if (origin == Vector3.Zero)
                     {
                         // If this brush uses the "origin" attribute
-                        MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "special/origin");
+                        MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "special/origin", _master.settings.defaultTextureScale);
                         entity.brushes.Add(neworiginBrush);
                     }
                 }
@@ -435,7 +435,7 @@ namespace Decompiler
                 entity.Remove("model");
                 if (origin != Vector3.Zero)
                 {
-                    MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "special/origin");
+                    MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "special/origin", _master.settings.defaultTextureScale);
                     entity.brushes.Add(neworiginBrush);
                 }
                 foreach (MAPBrush brush in entity.brushes)
@@ -547,7 +547,7 @@ namespace Decompiler
                     Vector3 origin = entity.Origin;
                     Vector3 mins = new Vector3(origin.X - 24, origin.Y - 24, origin.Z - 24);
                     Vector3 maxs = new Vector3(origin.X + 24, origin.Y + 24, origin.Z + 48);
-                    entity.brushes.Add(MAPBrushExtensions.CreateCube(mins, maxs, "special/trigger"));
+                    entity.brushes.Add(MAPBrushExtensions.CreateCube(mins, maxs, "special/trigger", _master.settings.defaultTextureScale));
                     entity.Remove("origin");
                     entity["classname"] = "trigger_teleport";
                     break;
@@ -648,7 +648,7 @@ namespace Decompiler
                     // TODO: What entities require origin brushes in Quake 3?
                     if (origin != Vector3.Zero)
                     {
-                        MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "special/origin");
+                        MAPBrush neworiginBrush = MAPBrushExtensions.CreateCube(new Vector3(-16, -16, -16), new Vector3(16, 16, 16), "special/origin", _master.settings.defaultTextureScale);
                         entity.brushes.Add(neworiginBrush);
                     }
                 }
@@ -915,6 +915,8 @@ namespace Decompiler
                 case "system/clip":
                 case "system/physics_clip":
                 case "common/clip":
+                case "common/moveclip":
+                case "common/clipall":
                 {
                     brushSide.texture = "special/clip";
                     break;

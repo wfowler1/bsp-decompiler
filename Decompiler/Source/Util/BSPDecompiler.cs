@@ -189,7 +189,7 @@ namespace Decompiler
                                 _master.Print("WARNING: Displacement not part of world in " + _bsp.MapName);
                             }
                             MAPDisplacement displacement = ProcessDisplacement(_bsp.Displacements[face.DisplacementIndex]);
-                            MAPBrush newBrush = face.CreateBrush(_bsp, 32);
+                            MAPBrush newBrush = face.CreateBrush(_bsp, 32, _master.settings.defaultTextureScale);
                             newBrush.sides[0].displacement = displacement;
                             // If we are not decompiling to VMF, vis will need to skip this brush.
                             newBrush.isDetail = true;
@@ -331,7 +331,7 @@ namespace Decompiler
                 else
                 {
                     Vector3[] newAxes = TextureInfo.TextureAxisFromPlane(plane);
-                    texInfo = new TextureInfo(newAxes[0], newAxes[1], Vector2.Zero, Vector2.One, flags, -1, 0);
+                    texInfo = new TextureInfo(newAxes[0], newAxes[1], Vector2.Zero, new Vector2(_master.settings.defaultTextureScale, _master.settings.defaultTextureScale), flags, -1, 0);
                 }
                 flags = _master.settings.noFaceFlags ? 0 : face.Type;
                 if (face.MaterialIndex >= 0)
@@ -415,7 +415,7 @@ namespace Decompiler
                 else
                 {
                     Vector3[] newAxes = TextureInfo.TextureAxisFromPlane(plane);
-                    texInfo = new TextureInfo(newAxes[0], newAxes[1], Vector2.Zero, Vector2.One, flags, -1, 0);
+                    texInfo = new TextureInfo(newAxes[0], newAxes[1], Vector2.Zero, new Vector2(_master.settings.defaultTextureScale, _master.settings.defaultTextureScale), flags, -1, 0);
                     texture = "**cliptexture**";
                 }
             }
@@ -428,7 +428,7 @@ namespace Decompiler
             else
             {
                 Vector3[] newAxes = TextureInfo.TextureAxisFromPlane(plane);
-                outputTexInfo = new TextureInfo(newAxes[0], newAxes[1], Vector2.Zero, Vector2.One, 0, -1, 0);
+                outputTexInfo = new TextureInfo(newAxes[0], newAxes[1], Vector2.Zero, new Vector2(_master.settings.defaultTextureScale, _master.settings.defaultTextureScale), 0, -1, 0);
             }
 
             mapBrushSide = new MAPBrushSide()

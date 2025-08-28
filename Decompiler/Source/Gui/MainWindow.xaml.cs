@@ -34,6 +34,7 @@ namespace Decompiler.GUI
         private JobQueueManager jobs = new JobQueueManager();
 
         private string outputFolder = "";
+        private float defaultTextureScale = 0.5f;
 
         private MapType openAs = MapType.Undefined;
         private MenuItem _OpenAsChecked = null;
@@ -193,7 +194,8 @@ namespace Decompiler.GUI
                     toGTK = miSaveAsGTK.IsChecked,
                     toDoomEdit = miSaveAsDE.IsChecked,
                     toMoH = miSaveAsMOH.IsChecked,
-                    toCoD = miSaveAsCoD.IsChecked
+                    toCoD = miSaveAsCoD.IsChecked,
+                    defaultTextureScale = defaultTextureScale
                 };
                 Job theJob = new Job(jobs.Count, filesToOpen[i], settings);
                 theJob.PropertyChanged += new PropertyChangedEventHandler(UpdateTaskbar);
@@ -220,6 +222,31 @@ namespace Decompiler.GUI
         }
 
         /// <summary>
+        /// Handler for Options -&gt; Set Default Texture Scale menu option.
+        /// </summary>
+        /// <param name="sender">Sender of this event.</param>
+        /// <param name="e"><c>RoutedEventArgs</c> for this event.</param>
+        private void TextureScale_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                int input = Int32.Parse(Microsoft.VisualBasic.Interaction.InputBox("Please enter default texture scale.\nThis is used for generated faces, or when scale cannot be determined from the BSP (Quake 3 engines).\nCurrent value: " + defaultTextureScale, "Enter new texure scale", defaultTextureScale.ToString(), -1, -1));
+                if (input != 0)
+                {
+                    defaultTextureScale = input;
+                }
+                else
+                {
+                    Print(this, new MessageEventArgs("Please enter a nonzero number for default texture scale! Current value of " + defaultTextureScale + " remains unchanged."));
+                }
+            }
+            catch
+            {
+                Print(this, new MessageEventArgs("Please enter a nonzero number for default texture scale! Current value of " + defaultTextureScale + " remains unchanged."));
+            }
+        }
+
+        /// <summary>
         /// Handler for Options -&gt; Set number of threads menu option.
         /// </summary>
         /// <param name="sender">Sender of this event.</param>
@@ -235,12 +262,12 @@ namespace Decompiler.GUI
                 }
                 else
                 {
-                    Print(this, new MessageEventArgs("Please enter a whole number greater than 0!"));
+                    Print(this, new MessageEventArgs("Please enter a whole number greater than 0 for thread count!"));
                 }
             }
             catch
             {
-                Print(this, new MessageEventArgs("Please enter a whole number greater than 0!"));
+                Print(this, new MessageEventArgs("Please enter a whole number greater than 0 for thread count!"));
             }
         }
 
