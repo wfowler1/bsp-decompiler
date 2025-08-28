@@ -7,6 +7,11 @@ namespace Decompiler
     /// </summary>
     public static class BrushExtensions
     {
+        // Contents flags:
+        // Quake: https://github.com/id-Software/Quake/blob/master/WinQuake/bspfile.h#L137
+        // Quake 2: https://github.com/id-Software/Quake-2/blob/372afde46e7defc9dd2d719a1732b8ace1fa096e/qcommon/qfiles.h#L333
+        // Quake 3: https://github.com/id-Software/Quake-III-Arena/blob/dbe4ddb10315479fc00086f08e25d968b4b43c49/code/game/surfaceflags.h
+        // Source: https://github.com/ValveSoftware/source-sdk-2013/blob/68c8b82fdcb41b8ad5abde9fe1f0654254217b8e/src/public/bspflags.h
 
         /// <summary>
         /// Determines if the contents of the passed <see cref="Brush"/> have the "detail" flag set.
@@ -66,7 +71,7 @@ namespace Decompiler
             else if (bsp.MapType.IsSubtypeOf(MapType.Quake2)
                 || bsp.MapType.IsSubtypeOf(MapType.Source))
             {
-                return ((brush.Contents & (1 << 26)) != 0);
+                return ((brush.Contents & (1 << 5)) != 0);
             }
 
             return false;
@@ -93,10 +98,9 @@ namespace Decompiler
                 }
                 return false;
             }
-            else if (bsp.MapType.IsSubtypeOf(MapType.Quake2)
-                || bsp.MapType.IsSubtypeOf(MapType.Source))
+            else if (bsp.MapType.IsSubtypeOf(MapType.Quake2))
             {
-                return ((brush.Contents & (1 << 28)) != 0);
+                return ((brush.Contents & (1 << 3)) != 0);
             }
 
             return false;
